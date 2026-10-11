@@ -38,6 +38,35 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
   if (n != 1 && n != 2 && n != 4)
     throw std::runtime_error("Unsupported RIU access width");
+  if (candidateSpi && n == 2 && a >= 0x1f001000 && a < 0x1f001100) {
+    auto value = spi_.read(a - 0x1f001000, mask, tick);
+    if (value) {
+      event("read", a, n, *value,
+            "SPI ISP command/read FIFO state; only statically proven consumed bits returned; "
+            "candidate W25Q64BV");
+      return *value;
+    }
+  }
+  if (candidateUtmi && n == 1 && (a == 0x1f207578 || a == 0x1f207478) && mask == 2) {
+    auto done = utmi_[a == 0x1f207478].done(tick);
+    auto value = (get(a, 1) & ~2u) | (done ? 2u : 0u);
+    event("read", a, n, value,
+          "only CA_END consumed; derived from guest clock/start/hold/release sequence; analogue "
+          "calibration data unknown");
+    return value;
+  }
+  if (virtualRtc && n == 2 &&
+      (a == 0x1f002420 || a == 0x1f002424 || a == 0x1f002620 || a == 0x1f002624)) {
+    auto v = rtc_[a >= 0x1f002600].snapshot((a & 255) == 0x24);
+    if (v) {
+      event("read", a, n, *v,
+            "RTC snapshot from guest divider/control commands; virtual clock pacing");
+      return *v;
+    }
+    stopReason = "RTC counter read before guest snapshot command";
+    event("blocked_read", a, n, 0xa5a5, stopReason);
+    return 0xa5a5;
+  }
   if (candidateMiu && (a == 0x1f202400 || a == 0x1f200c00) && miuArmed_[a == 0x1f200c00]) {
     auto index = unsigned(a == 0x1f200c00);
     auto v = get(a, n) & ~0x8000u;
@@ -156,6 +185,43 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   } else
     put(a, n, v);
   event("write", a, n, v, "recorded register storage; not a complete device");
+  if (candidateSpi && n == 2 && a >= 0x1f001000 && a < 0x1f001100) {
+    auto off = a - 0x1f001000;
+    if (off == 0 || off == 4 || off == 0x10 || off == 0x18 || off == 0x20 || off == 0x30 ||
+        off == 0xa8) {
+      spi_.flashByte = [this](uint32_t offset) { return flashRead(offset, 1).at(0); };
+      spi_.write(off, uint16_t(v), tick);
+      event("spi_command", a, n, v,
+            "original guest ISP FIFO/control command; delayed readiness, no invented response to "
+            "unsupported opcodes");
+      if (!spi_.error.empty())
+        stopReason = spi_.error;
+    }
+  }
+  if (candidateUtmi && n == 1) {
+    if (a == 0x1f200e00 || a == 0x1f200f00)
+      utmi_[a == 0x1f200f00].clock(uint8_t(v));
+    if ((a == 0x1f207578 || a == 0x1f207478) && (knownBits(a, 1) & 1)) {
+      utmi_[a == 0x1f207478].command(v & 1, tick);
+      event(
+          "utmi_calibration", a, n, v & 1,
+          "guest CA_START transition; requires programmed clock and held start before completion");
+    }
+  }
+  if (virtualRtc && n == 1 && (a == 0x1f002400 || a == 0x1f002600)) {
+    auto index = unsigned(a == 0x1f002600);
+    auto divider = get(a + 4, 2) | (get(a + 8, 2) << 16);
+    auto load = get(a + 12, 2) | (get(a + 16, 2) << 16);
+    bool dividerKnown = knownBits(a + 4, 2) == 0xffff && knownBits(a + 8, 2) == 0xffff;
+    bool loadKnown = knownBits(a + 12, 2) == 0xffff && knownBits(a + 16, 2) == 0xffff;
+    auto control = rtc_[index].command(uint8_t(v), tick, divider, dividerKnown, load, loadKnown);
+    put(a, 1, control);
+    if (!rtc_[index].error.empty())
+      stopReason = rtc_[index].error;
+    if (v & 16)
+      event("rtc_snapshot", a, 1, control,
+            "counter latched by original guest READ_EN command; no host wall clock");
+  }
   if (candidateMiu && (a == 0x1f202400 || a == 0x1f200c00)) {
     auto index = unsigned(a == 0x1f200c00);
     constexpr uint32_t sequence[] = {0, 8, 12, 14, 31};

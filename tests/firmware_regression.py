@@ -57,5 +57,31 @@ with tempfile.TemporaryDirectory(prefix='manta-regression-') as temp:
  assert transitions.count('0x2')==9 and transitions.count('0x0')==9,transitions
  assert 'IIC init fail SDA:0 SCL:1' in (temp/'fault.console').read_text()
  assert fault['runtime_entry_reached'] and fault['i2c_sda_stuck_fixture']
-Path(a.report).write_text(json.dumps({'result':'PASS','streams_verified':len(streams),'strict_reset':reset,'strict_replay':replay,'cpu_disabled_checkpoint':crippled,'diagnostic_stage2':stage,'without_gpio':noGpio,'firmware_from_reset':cold,'stuck_sda_fixture':fault,'guest_inflate_sha256':KNOWN[0][3]},indent=2)+'\n')
-print('PASS: twelve streams, reset/replay, CPU dependency, guest inflate, cold boot Hello T4, GPIO dependency and original nine-clock I2C recovery')
+ diagnosticFlags=coldFlags+['--gpio-i2c','--defer-diagnostic-reads']
+ deferred=run('deferred',diagnosticFlags)
+ assert deferred['stop_pc']=='0x8054843c' and deferred['stop_address']=='0x1f002420'
+ assert deferred['deferred_diagnostic_reads']==2 and len(deferred['invalid_observation_bytes'])==4
+ assert len(deferred['recent_instructions'])==4096 and deferred['gop_aperture_events']==0
+ timerTrace=temp/'timer.jsonl'
+ timer=run('timer',diagnosticFlags+['--virtual-rtc','--cp0-timer','--record-trace',str(timerTrace)])
+ timerEvents=[json.loads(line) for line in timerTrace.read_text().splitlines()]
+ assert timer['stop_pc']=='0x804f1094' and timer['stop_address']=='0x1f207578'
+ assert timer['guest_exception_vector_entries']==10 and timer['guest_software_tick']==10
+ assert any(e['kind']=='rtc_snapshot' for e in timerEvents)
+ assert sum(e['kind']=='exception_vector' for e in timerEvents)==10
+ assert 'USB_Init_Configure' in (temp/'timer.console').read_text()
+ utmi=run('utmi',diagnosticFlags+['--virtual-rtc','--cp0-timer','--candidate-utmi'])
+ assert utmi['stop_pc']=='0x8053c1c4' and utmi['stop_address']=='0x1f00105c'
+ assert utmi['guest_software_tick']==46 and 'USB_Init_Configure done...' in (temp/'utmi.console').read_text()
+ spiTrace=temp/'spi.jsonl'
+ spi=run('spi',diagnosticFlags+['--virtual-rtc','--cp0-timer','--candidate-utmi','--candidate-spi','--record-trace',str(spiTrace)])
+ spiEvents=[json.loads(line) for line in spiTrace.read_text().splitlines()]
+ assert spi['stop_pc']=='0x8053c6ec' and spi['stop_address']=='0x1f001030' and spi['reason']=='unresolved SPI 0xcf REMS2 response'
+ assert spi['instruction_dispatches']>104000000 and spi['guest_software_tick']==46
+ assert spi['gop_aperture_events']==0 and not spi['gop_initializer_entered'] and not spi['osd_demonstrated']
+ assert any(e['kind']=='spi_command' and e['address']=='0x1f001004' and e['value']=='0x5' for e in spiEvents)
+ assert any(e['kind']=='read' and e['address']=='0x1f001014' and (int(e['value'],16)&1)==0 for e in spiEvents)
+ assert len(spi['invalid_observation_bytes'])==4
+assert hashlib.sha256(Path(a.firmware).read_bytes()).hexdigest()==hashlib.sha256(b).hexdigest(),'original SPI image changed'
+Path(a.report).write_text(json.dumps({'result':'PASS','streams_verified':len(streams),'strict_reset':reset,'strict_replay':replay,'cpu_disabled_checkpoint':crippled,'diagnostic_stage2':stage,'without_gpio':noGpio,'firmware_from_reset':cold,'stuck_sda_fixture':fault,'invalid_diagnostic_cache':deferred,'guest_timer':timer,'utmi_init':utmi,'spi_probe':spi,'guest_inflate_sha256':KNOWN[0][3]},indent=2)+'\n')
+print('PASS: guarded POR cache, RTC snapshot, original timer ISR, USB PHY handshake, SPI status/unknown CF stop; twelve streams, reset/replay, CPU dependency, guest inflate, cold boot Hello T4, GPIO dependency and original nine-clock I2C recovery')

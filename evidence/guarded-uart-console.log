@@ -1,0 +1,23 @@
+Guarded diagnostic continuation; POR observations stay invalid. Original guest UART follows.
+UART_115200
+
+BIST0-OK
+
+BIST1-OK
+
+[0123456789ABCDEF][0123456789ABCDEF]-77
+
+[0123456789ABCDEF][0123456789ABCDEF]-77
+
+_snPD @@@ Hello T4
+
+
+
+
+ USB_Init_ConfigureUSB port 0 enter power save done
+
+done
+
+USB_Init_Configure done...
+
+

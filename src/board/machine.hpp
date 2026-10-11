@@ -2,6 +2,7 @@
 #include "cpu/engine.hpp"
 #include "peripherals/riu.hpp"
 #include "storage/flash.hpp"
+#include "board/unknown_observations.hpp"
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -11,7 +12,8 @@ namespace manta {
 struct Options {
   bool stage2 = false, initPrefix = false, symbolicInit = false, candidateBdma = false,
        candidateUart = false, gpioI2c = false, candidateMiu = false, traceInstructions = false,
-       i2cSdaStuck = false;
+       i2cSdaStuck = false, deferDiagnosticReads = false, virtualRtc = false, cp0Timer = false,
+       candidateUtmi = false, candidateSpi = false;
   uint64_t limit = 1000000;
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage;
@@ -32,6 +34,16 @@ class Msd309Machine {
   std::unordered_map<uint64_t, Poll> polls_;
   uint64_t writeEpoch_ = 0, maxPoll_ = 0;
   std::deque<uint32_t> history_;
+  struct Instruction {
+    uint64_t tick;
+    uint32_t pc, word, ra, sp;
+  };
+  std::deque<Instruction> recentInstructions_;
+  std::deque<std::string> recentMmio_;
+  UnknownObservations unknownObservations_;
+  unsigned deferredReads_ = 0;
+  uint64_t timerEntries_ = 0, gopEvents_ = 0, geEvents_ = 0;
+  bool gopInitializerEntered_ = false;
   uint64_t dispatches_ = 0, mmio_ = 0, flashReads_ = 0, dramWrites_ = 0;
   bool stopped_ = false;
   uint32_t blockingPc_ = 0, blockingAddress_ = 0;
@@ -40,6 +52,7 @@ class Msd309Machine {
   std::string guestDecompressedSha_;
   bool preparingPrefix_ = false;
   uint32_t proveImmediateRmw(uint32_t pc, uint32_t address, unsigned width);
+  bool proveDiagnosticCache(uint32_t pc, uint32_t address, unsigned width);
   void stop(std::string why, uint32_t address = 0);
   void event(const std::string &kind, uint32_t address, unsigned width, uint32_t value,
              const std::string &detail);

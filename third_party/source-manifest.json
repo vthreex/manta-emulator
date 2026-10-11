@@ -2,7 +2,17 @@
   "source_url": "https://files.pythonhosted.org/packages/b2/1b/b4248aa8422e86de690cf8e85cf8feae4c33405a097d1ebe71570bdaa6f5/unicorn-2.1.4.tar.gz",
   "source_archive": "unicorn-2.1.4.tar.gz",
   "sha256": "00567a70e323f749b419cd86bee4f9115beab7ebba32194581c090cbb7c59cff",
-  "unicorn_dll_sha256": "010d85dce84b8f6ffaec3d5420f1b5f7768f859eb831be574c7da23e656ee8f1",
+  "unicorn_dll_sha256": "0d21f5cf519dd12dae791a7f69dc7af32de17dbee0dad30dcb90afa30673c981",
   "version": "2.1.4",
-  "engine_source_unmodified": true
+  "engine_source_unmodified": false,
+  "engine_source_archive": "unicorn-2.1.4-manta-source.zip",
+  "engine_source_sha256": "be8f621f2888a24a94de5910b8371f37cb21a4f875361f3868d61abbceb32245",
+  "upstream_tag_source_url": "https://github.com/unicorn-engine/unicorn/tree/2.1.4",
+  "upstream_tag_zip_sha256": "787a4b46ad5df58f1eec11343c55b163779df32dbe9e7d9d0f99967f34a1ff79",
+  "engine_patch": "tools/patch_unicorn_timer.py",
+  "engine_changes": [
+    "MIPS CP0 Count/Compare and architectural timer interrupt scheduling",
+    "Windows x64 VEH trampoline stack alignment/shadow space",
+    "MIPS CPU allocation alignment"
+  ]
 }

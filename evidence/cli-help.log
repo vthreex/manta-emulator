@@ -1,0 +1,15 @@
+manta --firmware ORIGINAL.bin [--headless] [--nvram overlay.cow]
+--record-trace FILE --replay-trace FILE --trace-instructions
+--defer-diagnostic-reads: unknown diagnostic caches stay invalid; halt at use
+--virtual-rtc: guest-programmed counter with deterministic virtual clock
+--cp0-timer: source-built engine Count/Compare and guest interrupt entry
+--candidate-utmi: calibration handshake; analogue data unknown
+--candidate-spi: ISP read/status subset; unknown responses stop
+--summary FILE --coverage FILE --max-instructions N
+--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS
+Diagnostic: --diagnostic-stage2 --symbolic-init --candidate-bdma
+Optional diagnostic: --diagnostic-init-prefix --candidate-uart
+Research peripherals: --candidate-miu --gpio-i2c
+Electrical fault fixture: --i2c-sda-stuck (first bus SDA held low)
+--window-smoke-test opens the native blank window briefly
+Unimplemented features/options fail explicitly; see docs/STATUS.md.

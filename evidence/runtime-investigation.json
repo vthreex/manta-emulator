@@ -1,0 +1,501 @@
+{
+  "runtime_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+  "caveat": "Straight-line constants and nearest stack prologue are candidates; indirect callers and path-sensitive dataflow require manual validation.",
+  "observed_gop_initializer_entered": false,
+  "observed_gop_mmio_events": 0,
+  "authentic_frame_rendered": false,
+  "selected_direct_calls": [
+    {
+      "pc": "0x804887b8",
+      "caller_candidate": "0x80488754",
+      "target": "0x804697d4"
+    },
+    {
+      "pc": "0x80533670",
+      "caller_candidate": "0x805333ac",
+      "target": "0x80539ce4"
+    },
+    {
+      "pc": "0x8053c0fc",
+      "caller_candidate": "0x8053c0a0",
+      "target": "0x8053db88"
+    },
+    {
+      "pc": "0x8053dbcc",
+      "caller_candidate": "0x8053db88",
+      "target": "0x8053c574"
+    },
+    {
+      "pc": "0x80547c9c",
+      "caller_candidate": "0x80547c00",
+      "target": "0x805482e4"
+    }
+  ],
+  "selected_string_refs": [
+    {
+      "pc": "0x80536ea4",
+      "string_address": "0x80631e84",
+      "text": "MDrv_GOP_GWIN_SetGwinPriority",
+      "function_candidate": "0x80536d98"
+    },
+    {
+      "pc": "0x805373b4",
+      "string_address": "0x80631c84",
+      "text": "MDrv_GOP_GWIN_EnableVMirror",
+      "function_candidate": "0x8053736c"
+    },
+    {
+      "pc": "0x805374ac",
+      "string_address": "0x80631ca0",
+      "text": "MDrv_GOP_GWIN_EnableHMirror",
+      "function_candidate": "0x80537464"
+    },
+    {
+      "pc": "0x805375c8",
+      "string_address": "0x80631d84",
+      "text": "MDrv_GOP_GWIN_Get_StretchWin",
+      "function_candidate": "0x8053755c"
+    },
+    {
+      "pc": "0x805376c0",
+      "string_address": "0x80631ebc",
+      "text": "MDrv_GOP_GWIN_SetHSPipe",
+      "function_candidate": "0x80537678"
+    },
+    {
+      "pc": "0x80537834",
+      "string_address": "0x80631cbc",
+      "text": "MDrv_GOP_GWIN_IsGWINEnabled",
+      "function_candidate": "0x805377f4"
+    },
+    {
+      "pc": "0x805379ec",
+      "string_address": "0x80631cd8",
+      "text": "MDrv_GOP_GWIN_GetGwinInfo",
+      "function_candidate": "0x805379a8"
+    },
+    {
+      "pc": "0x80537df0",
+      "string_address": "0x80631dc0",
+      "text": "MDrv_GOP_GWIN_SetMixerDstPlane",
+      "function_candidate": "0x80537dbc"
+    },
+    {
+      "pc": "0x80537e9c",
+      "string_address": "0x80631de0",
+      "text": "MDrv_GOP_GWIN_GetDstPlane",
+      "function_candidate": "0x80537e68"
+    },
+    {
+      "pc": "0x80537f4c",
+      "string_address": "0x80631e18",
+      "text": "MDrv_GOP_SetGOPClk",
+      "function_candidate": "0x80537f30"
+    },
+    {
+      "pc": "0x80537fa8",
+      "string_address": "0x80631e2c",
+      "text": "MDrv_GOP_MIXER_SetGOPEnable2Mixer",
+      "function_candidate": "0x80537f88"
+    },
+    {
+      "pc": "0x80537ff4",
+      "string_address": "0x80631e50",
+      "text": "MDrv_GOP_SetGOPEnable2SC",
+      "function_candidate": "0x80537f88"
+    },
+    {
+      "pc": "0x80538030",
+      "string_address": "0x80631e6c",
+      "text": "MDrv_GOP_SetGOPHighPri",
+      "function_candidate": "0x80538010"
+    },
+    {
+      "pc": "0x80538998",
+      "string_address": "0x80631cf4",
+      "text": "MDrv_GOP_GWIN_SetGwinInfo",
+      "function_candidate": "0x80538948"
+    },
+    {
+      "pc": "0x80538e1c",
+      "string_address": "0x80631d20",
+      "text": "MDrv_GOP_GWIN_EnableGwin",
+      "function_candidate": "0x80538db8"
+    },
+    {
+      "pc": "0x80538fd4",
+      "string_address": "0x80631d3c",
+      "text": "MDrv_GOP_GWIN_SetWinFmt",
+      "function_candidate": "0x80538f70"
+    },
+    {
+      "pc": "0x80539174",
+      "string_address": "0x80631d54",
+      "text": "MDrv_GOP_GWIN_SetBlending",
+      "function_candidate": "0x8053912c"
+    },
+    {
+      "pc": "0x80539928",
+      "string_address": "0x80631da4",
+      "text": "MDrv_GOP_GWIN_SetStretchWin",
+      "function_candidate": "0x805398ac"
+    },
+    {
+      "pc": "0x80539a48",
+      "string_address": "0x80631dfc",
+      "text": "MDrv_GOP_GWIN_SetDstPlane",
+      "function_candidate": "0x80539a10"
+    },
+    {
+      "pc": "0x80539d38",
+      "string_address": "0x80631ed4",
+      "text": "MDrv_GOP_Init",
+      "function_candidate": "0x80539ce4"
+    }
+  ],
+  "por_startup_disassembly": {
+    "start": "0x804697d4",
+    "instructions": [
+      {
+        "pc": "0x804697d4",
+        "word": "0x27bdff60",
+        "instruction": "addiu $sp, $sp, -0xa0"
+      },
+      {
+        "pc": "0x804697d8",
+        "word": "0x24040010",
+        "instruction": "addiu $a0, $zero, 0x10"
+      },
+      {
+        "pc": "0x804697dc",
+        "word": "0x3c02806c",
+        "instruction": "lui $v0, 0x806c"
+      },
+      {
+        "pc": "0x804697e0",
+        "word": "0x3c03806c",
+        "instruction": "lui $v1, 0x806c"
+      },
+      {
+        "pc": "0x804697e4",
+        "word": "0xafbf009c",
+        "instruction": "sw $ra, 0x9c($sp)"
+      },
+      {
+        "pc": "0x804697e8",
+        "word": "0xafb50098",
+        "instruction": "sw $s5, 0x98($sp)"
+      },
+      {
+        "pc": "0x804697ec",
+        "word": "0xafb40094",
+        "instruction": "sw $s4, 0x94($sp)"
+      },
+      {
+        "pc": "0x804697f0",
+        "word": "0xafb2008c",
+        "instruction": "sw $s2, 0x8c($sp)"
+      },
+      {
+        "pc": "0x804697f4",
+        "word": "0xafb10088",
+        "instruction": "sw $s1, 0x88($sp)"
+      },
+      {
+        "pc": "0x804697f8",
+        "word": "0xafb00084",
+        "instruction": "sw $s0, 0x84($sp)"
+      },
+      {
+        "pc": "0x804697fc",
+        "word": "0xafb30090",
+        "instruction": "sw $s3, 0x90($sp)"
+      },
+      {
+        "pc": "0x80469800",
+        "word": "0xac449618",
+        "instruction": "sw $a0, -0x69e8($v0)"
+      },
+      {
+        "pc": "0x80469804",
+        "word": "0x3c11806c",
+        "instruction": "lui $s1, 0x806c"
+      },
+      {
+        "pc": "0x80469808",
+        "word": "0x24020025",
+        "instruction": "addiu $v0, $zero, 0x25"
+      },
+      {
+        "pc": "0x8046980c",
+        "word": "0xa060910b",
+        "instruction": "sb $zero, -0x6ef5($v1)"
+      },
+      {
+        "pc": "0x80469810",
+        "word": "0x3c14806c",
+        "instruction": "lui $s4, 0x806c"
+      },
+      {
+        "pc": "0x80469814",
+        "word": "0x3c03806c",
+        "instruction": "lui $v1, 0x806c"
+      },
+      {
+        "pc": "0x80469818",
+        "word": "0x3c158070",
+        "instruction": "lui $s5, 0x8070"
+      },
+      {
+        "pc": "0x8046981c",
+        "word": "0x3c12806c",
+        "instruction": "lui $s2, 0x806c"
+      },
+      {
+        "pc": "0x80469820",
+        "word": "0xac649604",
+        "instruction": "sw $a0, -0x69fc($v1)"
+      },
+      {
+        "pc": "0x80469824",
+        "word": "0xaea28f8c",
+        "instruction": "sw $v0, -0x7074($s5)"
+      },
+      {
+        "pc": "0x80469828",
+        "word": "0xa2809039",
+        "instruction": "sb $zero, -0x6fc7($s4)"
+      },
+      {
+        "pc": "0x8046982c",
+        "word": "0xc10121b",
+        "instruction": "jal 0x8040486c"
+      },
+      {
+        "pc": "0x80469830",
+        "word": "0xa2409139",
+        "instruction": "sb $zero, -0x6ec7($s2)"
+      },
+      {
+        "pc": "0x80469834",
+        "word": "0x8e248d0c",
+        "instruction": "lw $a0, -0x72f4($s1)"
+      },
+      {
+        "pc": "0x80469838",
+        "word": "0x3c100020",
+        "instruction": "lui $s0, 0x20"
+      },
+      {
+        "pc": "0x8046983c",
+        "word": "0x36034b10",
+        "instruction": "ori $v1, $s0, 0x4b10"
+      },
+      {
+        "pc": "0x80469840",
+        "word": "0x832021",
+        "instruction": "addu $a0, $a0, $v1"
+      },
+      {
+        "pc": "0x80469844",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x80469848",
+        "word": "0x304280c0",
+        "instruction": "andi $v0, $v0, 0x80c0"
+      },
+      {
+        "pc": "0x8046984c",
+        "word": "0x34427f20",
+        "instruction": "ori $v0, $v0, 0x7f20"
+      },
+      {
+        "pc": "0x80469850",
+        "word": "0xa4820000",
+        "instruction": "sh $v0, ($a0)"
+      },
+      {
+        "pc": "0x80469854",
+        "word": "0xc11a598",
+        "instruction": "jal 0x80469660"
+      },
+      {
+        "pc": "0x80469858",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8046985c",
+        "word": "0xc13d6ee",
+        "instruction": "jal 0x804f5bb8"
+      },
+      {
+        "pc": "0x80469860",
+        "word": "0x2021",
+        "instruction": "move $a0, $zero"
+      },
+      {
+        "pc": "0x80469864",
+        "word": "0x8e248d0c",
+        "instruction": "lw $a0, -0x72f4($s1)"
+      },
+      {
+        "pc": "0x80469868",
+        "word": "0x36026720",
+        "instruction": "ori $v0, $s0, 0x6720"
+      },
+      {
+        "pc": "0x8046986c",
+        "word": "0x36036724",
+        "instruction": "ori $v1, $s0, 0x6724"
+      },
+      {
+        "pc": "0x80469870",
+        "word": "0x821021",
+        "instruction": "addu $v0, $a0, $v0"
+      },
+      {
+        "pc": "0x80469874",
+        "word": "0x94460000",
+        "instruction": "lhu $a2, ($v0)"
+      },
+      {
+        "pc": "0x80469878",
+        "word": "0x3c02806c",
+        "instruction": "lui $v0, 0x806c"
+      },
+      {
+        "pc": "0x8046987c",
+        "word": "0x831821",
+        "instruction": "addu $v1, $a0, $v1"
+      },
+      {
+        "pc": "0x80469880",
+        "word": "0xa446913c",
+        "instruction": "sh $a2, -0x6ec4($v0)"
+      },
+      {
+        "pc": "0x80469884",
+        "word": "0x94650000",
+        "instruction": "lhu $a1, ($v1)"
+      },
+      {
+        "pc": "0x80469888",
+        "word": "0x36020a38",
+        "instruction": "ori $v0, $s0, 0xa38"
+      },
+      {
+        "pc": "0x8046988c",
+        "word": "0x3c03806c",
+        "instruction": "lui $v1, 0x806c"
+      },
+      {
+        "pc": "0x80469890",
+        "word": "0xa4659134",
+        "instruction": "sh $a1, -0x6ecc($v1)"
+      },
+      {
+        "pc": "0x80469894",
+        "word": "0x821021",
+        "instruction": "addu $v0, $a0, $v0"
+      },
+      {
+        "pc": "0x80469898",
+        "word": "0x94430000",
+        "instruction": "lhu $v1, ($v0)"
+      },
+      {
+        "pc": "0x8046989c",
+        "word": "0x36100a3c",
+        "instruction": "ori $s0, $s0, 0xa3c"
+      },
+      {
+        "pc": "0x804698a0",
+        "word": "0x3c02806c",
+        "instruction": "lui $v0, 0x806c"
+      },
+      {
+        "pc": "0x804698a4",
+        "word": "0x902021",
+        "instruction": "addu $a0, $a0, $s0"
+      },
+      {
+        "pc": "0x804698a8",
+        "word": "0xa443914a",
+        "instruction": "sh $v1, -0x6eb6($v0)"
+      },
+      {
+        "pc": "0x804698ac",
+        "word": "0x94830000",
+        "instruction": "lhu $v1, ($a0)"
+      },
+      {
+        "pc": "0x804698b0",
+        "word": "0x3c02806c",
+        "instruction": "lui $v0, 0x806c"
+      },
+      {
+        "pc": "0x804698b4",
+        "word": "0xc101182",
+        "instruction": "jal 0x80404608"
+      },
+      {
+        "pc": "0x804698b8",
+        "word": "0xa443910e",
+        "instruction": "sh $v1, -0x6ef2($v0)"
+      },
+      {
+        "pc": "0x804698bc",
+        "word": "0xc101210",
+        "instruction": "jal 0x80404840"
+      },
+      {
+        "pc": "0x804698c0",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x804698c4",
+        "word": "0xc1186b9",
+        "instruction": "jal 0x80461ae4"
+      },
+      {
+        "pc": "0x804698c8",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x804698cc",
+        "word": "0xc101103",
+        "instruction": "jal 0x8040440c"
+      },
+      {
+        "pc": "0x804698d0",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x804698d4",
+        "word": "0xc140079",
+        "instruction": "jal 0x805001e4"
+      },
+      {
+        "pc": "0x804698d8",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x804698dc",
+        "word": "0xc1012f4",
+        "instruction": "jal 0x80404bd0"
+      },
+      {
+        "pc": "0x804698e0",
+        "word": "0x0",
+        "instruction": "nop "
+      }
+    ]
+  }
+}

@@ -2,6 +2,7 @@
 #include "peripherals/riu.hpp"
 #include "storage/flash.hpp"
 #include "storage/sha256.hpp"
+#include "board/unknown_observations.hpp"
 #include <array>
 #include <algorithm>
 #include <filesystem>
@@ -210,6 +211,168 @@ void miuTests() {
   r.write(0x1f2025c0, 2, 3, 0, 0, 500);
   require(!r.stopReason.empty(), "invalid BIST bounds fail explicitly");
 }
+void unknownObservationTests() {
+  manta::UnknownObservations u;
+  std::array<uint32_t, 32> regs{};
+  regs[2] = 0x806c0000;
+  auto reg = [&](unsigned n) { return regs[n]; };
+  u.seed(3);
+  require(!u.observe(0x1234, 0x10600001, reg).empty(),
+          "unknown observation cannot select a branch");
+  require(!u.observe(0x1234, 0xa443914a, reg).empty(),
+          "unknown observation cannot escape through an unverified store");
+  require(u.observe(0x804698a8, 0xa443914a, reg).empty(),
+          "verified original SH may cache an invalid observation");
+  require(u.bytes().size() == 2 && u.bytes().at(0x6b914a) == 0x1f200a38,
+          "invalid observation retains MMIO origin in both RAM bytes");
+  require(u.observe(0x1234, 0x3c038000, reg).empty() && !u.registerUnknown(3),
+          "known LUI overwrites tainted register");
+  require(!u.observe(0x1234, 0x9443914a, reg).empty(),
+          "cached invalid value stops before original LHU consumes it");
+  require(u.observe(0x1234, 0xa440914a, reg).empty() && u.bytes().empty(),
+          "known guest SH clears only overwritten unknown bytes");
+  require(u.observe(0x1234, 0x9443914a, reg).empty(), "known overwritten RAM is readable again");
+  u.seed(3);
+  require(u.observe(0x1234, 0x0085180a, reg).empty() && !u.registerUnknown(3),
+          "taken MOVZ replaces unknown destination");
+  u.seed(3);
+  regs[5] = 1;
+  require(u.observe(0x1234, 0x0085180a, reg).empty() && u.registerUnknown(3),
+          "untaken MOVZ must preserve invalid destination");
+}
+void rtcTests() {
+  manta::Rtc r;
+  require(!r.snapshot(false), "RTC snapshot is invalid before guest READ_EN");
+  r.command(0, 0, 12000000, true, 0, false);
+  r.command(3, 0, 12000000, true, 0, false);
+  require(r.command(0x13, 312000000, 12000000, true, 0, false) == 3, "RTC read strobe self-clears");
+  require(r.snapshot(false) == 1 && r.snapshot(true) == 0,
+          "RTC counter advances from programmed divider and virtual oscillator");
+  r.advance(624000000, 12000000);
+  require(r.snapshot(false) == 1, "RTC low/high reads use one atomic snapshot");
+  r.command(0x1b, 624000000, 12000000, true, 0xffff, true);
+  require(r.snapshot(false) == 0xffff, "RTC LOAD_EN consumes original programmed load value");
+  r.command(0x13, 936000000, 12000000, true, 0, false);
+  require(r.snapshot(false) == 0 && r.snapshot(true) == 1,
+          "RTC 32-bit carry reaches high counter half");
+  r.command(1, 936000000, 12000000, true, 0, false);
+  r.command(0x11, 1248000000, 12000000, true, 0, false);
+  require(r.snapshot(true) == 1, "disabled RTC counter does not advance");
+  manta::Rtc missing;
+  missing.command(3, 0, 0, false, 0, false);
+  require(!missing.error.empty(), "RTC cannot manufacture time without known nonzero divider");
+  manta::Rtc badLoad;
+  badLoad.command(0xb, 0, 12000000, true, 0, false);
+  require(!badLoad.error.empty(), "RTC rejects unknown load input");
+}
+#ifdef UC_MIPS_MANTA_TIMER_API
+static void timerHook(uc_engine *, uint64_t, uint32_t, void *p) {
+  auto &e = *static_cast<manta::Engine *>(p);
+  e.tickCount(1);
+}
+void timerTests() {
+  manta::Engine e;
+  e.map(0, 0x1000);
+  e.reg(UC_MIPS_REG_CP0_COUNT, 0);
+  e.reg(UC_MIPS_REG_CP0_COMPARE, 10);
+  e.tickCount(9);
+  require(e.reg(UC_MIPS_REG_CP0_COUNT) == 9 && !(e.reg(UC_MIPS_REG_CP0_CAUSE) & 0x8000),
+          "CP0 timer is not pending before Count reaches Compare");
+  e.tickCount(1);
+  require((e.reg(UC_MIPS_REG_CP0_CAUSE) & 0x40008000) == 0x40008000,
+          "CP0 equality latches TI and IP7");
+  e.reg(UC_MIPS_REG_CP0_COMPARE, 100);
+  require(!(e.reg(UC_MIPS_REG_CP0_CAUSE) & 0x40008000),
+          "Compare write acknowledges timer pending latch");
+  e.reg(UC_MIPS_REG_CP0_COUNT, 0xfffffff0);
+  e.reg(UC_MIPS_REG_CP0_COMPARE, 2);
+  e.tickCount(17);
+  require(e.reg(UC_MIPS_REG_CP0_COUNT) == 1 && !(e.reg(UC_MIPS_REG_CP0_CAUSE) & 0x8000),
+          "Count wraps without triggering a later Compare early");
+  e.tickCount(1);
+  require(e.reg(UC_MIPS_REG_CP0_COUNT) == 2 && (e.reg(UC_MIPS_REG_CP0_CAUSE) & 0x8000),
+          "Compare crossing across Count wrap asserts timer IRQ");
+  e.reg(UC_MIPS_REG_CP0_COMPARE, 100);
+  e.reg(UC_MIPS_REG_CP0_COUNT, 10);
+  uint32_t code[] = {0x40024800, 0x2443000c, 0x40835800, 0x34088001, 0x40886000,
+                     0,          0x26100001, 0x1000fffe, 0};
+  uint32_t handler[] = {0x401a4800, 0x275a0028, 0x409a5800, 0x26310001, 0x42000018, 0};
+  e.write(0, code, sizeof(code));
+  e.write(0x180, handler, sizeof(handler));
+  uc_hook h;
+  manta::check(
+      uc_hook_add(e.handle, &h, UC_HOOK_CODE, reinterpret_cast<void *>(timerHook), &e, 1, 0));
+  require(e.run(0x80000000, 200) == UC_ERR_OK,
+          "timer IRQ executes guest exception handler and ERET without host PC changes");
+  require(e.reg(UC_MIPS_REG_17) > 0 && e.reg(UC_MIPS_REG_16) > 0,
+          "guest handler and interrupted loop both execute");
+  require(!(e.reg(UC_MIPS_REG_CP0_STATUS) & 2), "ERET restores execution outside exception level");
+}
+#endif
+void utmiTests() {
+  manta::UtmiCalibration u;
+  u.command(true, 0);
+  u.command(false, 3120000);
+  require(!u.done(4000000), "UTMI completion requires guest clock sequence");
+  u.clock(0x28);
+  u.command(true, 0);
+  u.command(false, 3120000);
+  require(!u.done(4000000), "UTMI clock enable alone cannot replace reset/enable sequence");
+  u.clock(0xa);
+  u.clock(0x28);
+  u.command(true, 0);
+  u.command(false, 10);
+  require(!u.done(4000000), "UTMI short start pulse does not complete calibration");
+  u.command(true, 5000000);
+  require(!u.done(9000000), "UTMI requires original guest clear of start bit");
+  u.command(false, 9000000);
+  require(!u.done(9000001) && u.done(9000064),
+          "UTMI completion follows held start/release and virtual deadline");
+  u.clock(0xa);
+  require(!u.done(10000000), "UTMI clock reset cancels completed calibration");
+}
+void spiTests() {
+  manta::SpiIsp s;
+  require(!s.read(0x5c, 1, 100),
+          "SPI engine has no invented command readiness before guest enable");
+  s.write(0x18, 0x40, 0);
+  s.write(0, 0xaaaa, 100);
+  require(s.read(0x5c, 1, 101) == 0 && s.read(0x5c, 1, 164) == 1,
+          "SPI command FIFO ready after original engine enable and deadline");
+  s.write(4, 5, 200);
+  s.write(0x30, 1, 300);
+  require(s.read(0x54, 1, 301) == 0 && s.read(0x54, 1, 364) == 1,
+          "SPI RDSR data-ready follows command/read strobe");
+  require(!s.read(0x14, 255, 364), "unknown NOR protection bits cannot be consumed");
+  require((s.read(0x14, 1, 364).value() & 1) == 0,
+          "actual idle NOR WIP bit reaches guest status path");
+  s.write(0x20, 1, 400);
+  s.write(0xa8, 0x3333, 400);
+  s.write(0x10, 0x9f, 400);
+  for (auto b : {0xef, 0x40, 0x17}) {
+    s.write(0x30, 1, 500);
+    require((s.read(0x14, 255, 564).value() & 255) == unsigned(b),
+            "candidate W25Q64BV JEDEC bytes follow serial read clocks");
+  }
+  s.write(0x20, 1, 600);
+  s.write(0xa8, 0x3333, 600);
+  s.write(0x10, 0xcf, 600);
+  s.write(0x30, 1, 700);
+  require(!s.error.empty(), "unsupported CF command stops instead of inventing chip response");
+  manta::SpiIsp noClock;
+  noClock.write(0, 0xaaaa, 0);
+  require(!noClock.error.empty(), "SPI command readiness requires guest clock configuration");
+  manta::SpiIsp read;
+  read.flashByte = [](uint32_t a) { return uint8_t(a ^ 0x5a); };
+  read.write(0x18, 0x40, 0);
+  read.write(0, 0xaaaa, 0);
+  read.write(0xa8, 0x3333, 100);
+  for (auto b : {3, 0x7f, 0, 0})
+    read.write(0x10, uint16_t(b), 100);
+  read.write(0x30, 1, 200);
+  require((read.read(0x14, 255, 264).value() & 255) == 0x5a,
+          "SPI read addresses reach host-backed NOR top sectors");
+}
 int main() {
   try {
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
@@ -223,6 +386,13 @@ int main() {
     riuTests();
     gpioTests();
     miuTests();
+    unknownObservationTests();
+    rtcTests();
+    utmiTests();
+    spiTests();
+#ifdef UC_MIPS_MANTA_TIMER_API
+    timerTests();
+#endif
     std::cout << checks << " checks passed\n";
     return 0;
   } catch (const std::exception &e) {

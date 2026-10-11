@@ -20,4 +20,12 @@ uc_err Engine::run(uint32_t start, uint64_t n) {
 void Engine::map(uint32_t a, size_t n, uint32_t p) { check(uc_mem_map(handle, a, n, p)); }
 void Engine::write(uint32_t a, const void *p, size_t n) { check(uc_mem_write(handle, a, p, n)); }
 void Engine::read(uint32_t a, void *p, size_t n) const { check(uc_mem_read(handle, a, p, n)); }
+void Engine::tickCount(uint32_t delta) {
+#ifdef UC_MIPS_MANTA_TIMER_API
+  reg(UC_MIPS_REG_CP0_TICK, delta);
+#else
+  (void)delta;
+  throw std::runtime_error("--cp0-timer requires the source-built Unicorn timer extension");
+#endif
+}
 } // namespace manta

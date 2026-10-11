@@ -8,7 +8,7 @@ The requested complete TV emulator is **not achieved**. No authentic OSD has bee
 | Twelve bounded, end-marked DEFLATE streams | demonstrated | [Manifest](../evidence/forensics/manifest.json), [regression](../evidence/regression.json); includes four supplied reference hashes |
 | Boot disassembly, loader ranges, runtime entry | demonstrated | [Boot flow](boot-flow.md), [flash map](firmware-map.md) |
 | Locale resource parsing | demonstrated | [Locale table summary](../evidence/forensics/locale-table-summary.json); rendering tokens/fonts unresolved |
-| Unicorn MIPS execution and memory aliases | partially implemented | [Native tests](../evidence/ctest.log); exact CPU variant, exception delivery, IRQ/cache behavior incomplete |
+| Unicorn MIPS execution and memory aliases | partially implemented | [Native tests](../evidence/ctest.log); exact CPU variant and general IRQ/cache behavior incomplete; CP0 timer ISR demonstrated |
 | Observable MMIO, known-bit initialization tracking | implemented | Every bus callback logged; unknown consumed inputs stop; [register map](verified-register-map.md) |
 | Strict reset boot without candidate models | partially implemented | Old boundary preserved at `BFC00C60 / BF001C74`: [trace](../evidence/reset.jsonl) |
 | Symbolic reset initialization | partially implemented | Without candidate MIU, old readiness boundary preserved; with candidate MIU, proven RMW keeps unknown bits from becoming known status |
@@ -22,9 +22,14 @@ The requested complete TV emulator is **not achieved**. No authentic OSD has bee
 | Original I2C bus initialization/recovery | demonstrated | GPIO disabled reproduces old boundary; stuck-SDA fixture elicits nine clocks and stock error; [regression](../evidence/regression.json) |
 | GPIO/I2C attached devices | unsupported | No invented tuner/EEPROM/amplifier ACK or data; exact enum-to-board-pad mapping unresolved |
 | MIU initialization / BIST | partially implemented | Programmed sequence and bounded guest DRAM comparisons cause completion/failure; exact calibration patterns and analog PHY/timing unresolved |
-| Interrupt masks / ADC configuration RMW | partially implemented | Original guest sets IRQ/FIQ masks and ADC fields; known-bit tracking stops unknown status; no IRQ delivery yet |
+| Interrupt masks / ADC configuration RMW | partially implemented | Original guest sets IRQ/FIQ masks and ADC fields; known-bit tracking stops unknown status; board IRQ pending/delivery unsupported; CP0 timer ISR demonstrated |
+| Guarded unknown diagnostic caches | implemented | Optional continuation; four POR-origin RAM bytes stay invalid; first consumption stops |
+| RTC counter/snapshot | partially implemented | Guest divider/reset/load/read strobes; coherent virtual snapshots; alarms/IRQ unsupported |
+| CP0 Count/Compare and guest ISR | demonstrated | Stock vector runs 46 times; guest ticker reaches 46; virtual pacing provisional |
+| UTMI calibration handshake | partially implemented | Guest clock/start/hold/release causes CA_END; analogue data and device transfers unsupported |
+| SPI ISP read control/status | partially implemented | Guest clock/FIFO strobes and idle WIP demonstrated; unresolved CF REMS2 response; no guest writes/settings |
 | POR/status dependency | unsupported | Stops `80469898 / BF200A38`; next `BF200A3C`; reset meanings/values unavailable from schematic |
-| GOP/graphics/scaler/panel, authentic OSD | unsupported | No guest frame, fonts or graphics codec decoded yet |
+| GOP/graphics/scaler/panel, authentic OSD | unsupported | GOP routines/aperture found statically; initializer has not executed, zero authentic frames |
 | PM51, IR remote, front panel, standby/wake | unsupported | No arbitrary key injection or fabricated power state |
 | Video input, DVB, ATV, USB/media, audio, PVR, 3D | unsupported | No guest device models or authentic menus demonstrated |
 | Menu/settings/hotel/factory behavior | unsupported | Manual contract and original strings are evidence, not observed interaction |
@@ -35,4 +40,4 @@ The requested complete TV emulator is **not achieved**. No authentic OSD has bee
 
 Gate A has useful reproducible checkpoints but the full rendering/call-graph investigation remains partial. Gate B is partial: the unchanged reset bootloader now performs its own second-stage copy, CRC, inflate and application entry with explicit candidate digital MIU/BIST/BDMA models. These are not a timing-exact hardware validation. Gates C, D and E are not reached. Gate F has build/trace/storage/CPU/forensics tests but no full-TV regression suite.
 
-The next actual boundary is the halfword at BF200A38 read by 80469898. Identify its reset/producer semantics before permitting consumption. Then trace the next guest encounters, including SPI, interrupt/timer dispatch and GOP/graphics. No guest GOP frame or original OSD has been observed. See [uncertainties](uncertainties.md) and [engine limitations](engine-limitations.md). No physical TV was modified or accessed.
+Strict candidate boot still stops at BF200A38 / 80469898. Guarded diagnostic continuation reaches 8053C6EC / BF001030 after 104,577,792 dispatches and 46 stock timer ISR entries, stopping at the unresolved CF REMS2 response. POR reset/producer remains unresolved; all four cached bytes remain invalid. No GOP initialization or original frame has executed. See [investigation](por-timer-spi-investigation.md). No physical TV was modified or accessed.

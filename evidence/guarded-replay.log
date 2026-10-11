@@ -1,0 +1,2 @@
+PASS: all deterministic bus events replayed by re-executing original guest; final summary identical.
+104577792 dispatches; 46 original ISR entries; unresolved SPI 0xcf REMS2 response.

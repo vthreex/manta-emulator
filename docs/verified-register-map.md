@@ -23,8 +23,10 @@
 | `BF2033D0/D4/D8/DC`, `BF203390/94/98/9C` | `8060A744`, `8060AD4C`: 128 IRQ/FIQ mask bits, 16-bit halves at four-byte stride | Symbolic RMW only; guest progressively defines every mask bit; IRQ delivery/pending status unsupported |
 | `BF204B10` | `80469844`: AND 80C0 / OR 7F20 / SH | Bounded straight-line immediate RMW proof preserves unknown unused bits |
 | `BF221ADC`, `BF221BDC` | Boot writes low-byte phase seed 88, then sweeps low/high nibbles and chooses 77 | Only known low byte consumed; upper unknown bits discarded by original ANDI; PHY phase effects unresolved |
-| `BF200A38`, `BF200A3C` | `80469898/804698AC`: LHU and cache in BSS; later popcount/text conversion | First read stops; bank name POR_STATUS provisional; schematic supplies no register definition |
+| `BF200A38`, `BF200A3C` | `80469898/804698AC`: LHU and cache in BSS; later popcount/text conversion | Strict read stops; POR scratch interpretation provisional; diagnostic caches remain invalid |
 
 Prioritized remaining work: current POR/status reset-value and producer dependency; GPIO/I2C open-drain protocol and attached devices; interrupt controller/timers; ISP/SPI controller and guest COW writes; PM51/IR mailbox; GOP/GFX/scaler; audio, tuner/demod/TS, USB/media, PVR and 3D. No register map from MSD309PX or a later MStar SoC was copied wholesale.
 
 The observable bus records PC, width, value, physical address, instruction-dispatch tick, RA and SP. Stop summaries include all general registers, the last 64 PCs, and 16 stack words. A reliable full stack unwind and calibrated cycle timing are unsupported.
+
+New encountered subsets: RTC BF002400/2600; UTMI CA_START/CA_END BF207578/7478; SPI ISP BF001000..10FC. Actual sequences, source corroboration and limitations are in [investigation](por-timer-spi-investigation.md). Summaries now include 4096 runtime dispatches, 256 bus accesses, Count/Compare/Cause/EPC and guest software tick. No full stack unwind is claimed.

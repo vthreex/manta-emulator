@@ -50,6 +50,16 @@ static int appMain(const std::vector<std::string> &args) {
         o.i2cSdaStuck = true;
       else if (a == "--trace-instructions")
         o.traceInstructions = true;
+      else if (a == "--defer-diagnostic-reads")
+        o.deferDiagnosticReads = true;
+      else if (a == "--virtual-rtc")
+        o.virtualRtc = true;
+      else if (a == "--candidate-spi")
+        o.candidateSpi = true;
+      else if (a == "--candidate-utmi")
+        o.candidateUtmi = true;
+      else if (a == "--cp0-timer")
+        o.cp0Timer = true;
       else if (a == "--max-instructions")
         o.limit = std::stoull(value(i), nullptr, 0);
       else if (a == "--record-trace")
@@ -65,20 +75,26 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--pause-on-mmio")
         o.pauseMmio = uint32_t(std::stoul(value(i), nullptr, 0));
       else if (a == "--help") {
-        std::cout << "manta --firmware ORIGINAL.bin [--headless] [--nvram "
-                     "overlay.cow]\n"
-                     "--record-trace FILE --replay-trace FILE --trace-instructions\n"
-                     "--summary FILE --coverage FILE --max-instructions N\n"
-                     "--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS\n"
-                     "Diagnostic: --diagnostic-stage2 --symbolic-init "
-                     "--candidate-bdma\n"
-                     "Optional diagnostic: --diagnostic-init-prefix "
-                     "--candidate-uart\n"
-                     "Research peripherals: --candidate-miu --gpio-i2c\n"
-                     "Electrical fault fixture: --i2c-sda-stuck (first bus SDA held low)\n"
-                     "--window-smoke-test opens the native blank window briefly\n"
-                     "Unimplemented features/options fail explicitly; see "
-                     "docs/STATUS.md.\n";
+        std::cout
+            << "manta --firmware ORIGINAL.bin [--headless] [--nvram "
+               "overlay.cow]\n"
+               "--record-trace FILE --replay-trace FILE --trace-instructions\n"
+               "--defer-diagnostic-reads: unknown diagnostic caches stay invalid; halt at use\n"
+               "--virtual-rtc: guest-programmed counter with deterministic virtual clock\n"
+               "--cp0-timer: source-built engine Count/Compare and guest interrupt entry\n"
+               "--candidate-utmi: calibration handshake; analogue data unknown\n"
+               "--candidate-spi: ISP read/status subset; unknown responses stop\n"
+               "--summary FILE --coverage FILE --max-instructions N\n"
+               "--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS\n"
+               "Diagnostic: --diagnostic-stage2 --symbolic-init "
+               "--candidate-bdma\n"
+               "Optional diagnostic: --diagnostic-init-prefix "
+               "--candidate-uart\n"
+               "Research peripherals: --candidate-miu --gpio-i2c\n"
+               "Electrical fault fixture: --i2c-sda-stuck (first bus SDA held low)\n"
+               "--window-smoke-test opens the native blank window briefly\n"
+               "Unimplemented features/options fail explicitly; see "
+               "docs/STATUS.md.\n";
         return 0;
       } else
         throw std::runtime_error("Unsupported option/feature: " + a);

@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 #include "peripherals/gpio_i2c.hpp"
+#include "peripherals/rtc.hpp"
+#include "peripherals/utmi.hpp"
+#include "peripherals/spi_isp.hpp"
 namespace manta {
 struct RiuByte {
   uint8_t value = 0xa5, known = 0;
@@ -16,6 +19,9 @@ class Riu {
   std::map<uint32_t, uint32_t> pendingRmw_;
   bool uartEnabled_ = false;
   GpioI2c gpio_;
+  Rtc rtc_[2];
+  UtmiCalibration utmi_[2];
+  SpiIsp spi_;
   unsigned miuSequence_[2]{};
   uint64_t miuReady_[2]{};
   bool miuArmed_[2]{};
@@ -33,6 +39,9 @@ public:
   bool candidateBdma = false;
   bool gpioI2c = false;
   bool candidateMiu = false;
+  bool virtualRtc = false;
+  bool candidateUtmi = false;
+  bool candidateSpi = false;
   void resetMiuModel() {
     // Inferred from stock BIST0 preceding any selector write, followed by
     // explicit bit15=1 selection in BIST1. Only this bit is defined.
