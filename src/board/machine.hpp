@@ -10,15 +10,20 @@
 #include <unordered_map>
 namespace manta {
 struct Options {
+  int exploratoryScBank = -1;
+  int exploratoryGammaEnable = -1;
+  NorModel flashModel = NorModel::W25Q64BV;
+  SpiUnknownInput spiUnknownInput = SpiUnknownInput::Stop;
   bool stage2 = false, initPrefix = false, symbolicInit = false, candidateBdma = false,
        candidateUart = false, gpioI2c = false, candidateMiu = false, traceInstructions = false,
        i2cSdaStuck = false, deferDiagnosticReads = false, virtualRtc = false, cp0Timer = false,
-       candidateUtmi = false, candidateSpi = false;
+       candidateUtmi = false, candidateSpi = false, candidateChipId = false, candidateGamma = false;
   uint64_t limit = 1000000;
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage;
 };
 class Msd309Machine {
+  std::vector<uint8_t> dramBacking_; // outlives CPU mappings, shared MIU aliases
   Engine cpu_;
   Flash flash_;
   Riu riu_;
@@ -44,6 +49,9 @@ class Msd309Machine {
   unsigned deferredReads_ = 0;
   uint64_t timerEntries_ = 0, gopEvents_ = 0, geEvents_ = 0;
   bool gopInitializerEntered_ = false;
+  bool spiJedecRead_ = false, spiDescriptorSelected_ = false;
+  std::array<uint8_t,3> spiJedec_{};
+  std::array<uint8_t,40> spiDescriptor_{};
   uint64_t dispatches_ = 0, mmio_ = 0, flashReads_ = 0, dramWrites_ = 0;
   bool stopped_ = false;
   uint32_t blockingPc_ = 0, blockingAddress_ = 0;

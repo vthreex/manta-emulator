@@ -10,12 +10,32 @@ namespace manta {
 // them. This deliberately stops at the first use rather than choosing a value.
 class UnknownObservations {
   std::array<bool, 32> registers_{};
+  std::array<bool, 32> timingRegisters_{};
+  std::array<uint32_t,32> clockOrigins_{};
   std::map<uint32_t, uint32_t> bytes_; // address -> originating MMIO register
+  uint32_t spiCacheAddress_ = 0;
+  bool spiCacheArmed_ = false;
 public:
-  void seed(unsigned reg) { registers_.at(reg) = true; }
+  void seedClockSnapshot(unsigned reg, uint32_t origin) { seed(reg); clockOrigins_[reg] = origin; }
+  void seedTimingSnapshot(unsigned reg) { seed(reg); timingRegisters_[reg] = true; }
+  bool timingSnapshotUnknown(unsigned reg) const { return registers_[reg] && timingRegisters_[reg]; }
+  void seedSpiCache(uint32_t address) { seed(4); spiCacheAddress_ = address & 0x1fffffff; spiCacheArmed_ = true; }
+  void seed(unsigned reg) { registers_.at(reg) = true; timingRegisters_[reg] = false; clockOrigins_[reg] = 0; }
   const auto &bytes() const { return bytes_; }
   bool registerUnknown(unsigned reg) const { return registers_.at(reg); }
   std::string observe(uint32_t pc, uint32_t w, const std::function<uint32_t(unsigned)> &reg) {
+    // Exact identity copies in the stock clock snapshot routine. Other masks,
+    // arithmetic, branch conditions and MMIO stores still reject the data.
+    if ((pc == 0x805fd444 && w == 0x311100ff && clockOrigins_[8]) ||
+        (pc == 0x805fd44c && w == 0x313200ff && clockOrigins_[9])) {
+      unsigned from = pc == 0x805fd444 ? 8 : 9, to = from + 9;
+      registers_[to] = true; clockOrigins_[to] = clockOrigins_[from];
+      return {};
+    }
+    // Stock display timing setup saves/restores one opaque byte around a
+    // temporary hold. AND FF leaves every valid byte bit unchanged.
+    if (pc == 0x805e5bfc && w == 0x314a00ff && timingSnapshotUnknown(10)) return {};
+    if (pc == 0x805e5e4c && w == 0x30c600ff && timingSnapshotUnknown(6)) return {};
     unsigned op = w >> 26, rs = (w >> 21) & 31, rt = (w >> 16) & 31, rd = (w >> 11) & 31,
              fn = w & 63;
     bool useRs = false, useRt = false;
@@ -115,14 +135,25 @@ public:
     // an unknown register. Their source read is separately byte-verified.
     bool cache =
         (pc == 0x804698a8 && address == 0x006b914a) || (pc == 0x804698b8 && address == 0x006b910e);
-    if ((useRs && registers_[rs]) || (useRt && registers_[rt] && !(cache && op == 41)))
+    bool spiCache = spiCacheArmed_ && pc == 0x8053c724 && w == 0xa0640000 && address == spiCacheAddress_;
+    bool restore = address == 0x1f205e00 &&
+                   ((pc == 0x805e5d44 && w == 0xa06a5e00 && timingSnapshotUnknown(10)) ||
+                    (pc == 0x805e5eb4 && w == 0xa0465e00 && timingSnapshotUnknown(6)));
+    bool clockCopy = op == 43 && address < 0x10000000 && clockOrigins_[rt];
+    if ((useRs && registers_[rs]) || (useRt && registers_[rt] && !((cache && op == 41) || spiCache || restore || clockCopy)))
       return "unknown diagnostic observation consumed by guest instruction";
+    uint32_t reloadedClock = 0;
     if (readWidth) {
       if (op == 34 || op == 38)
         address &= ~3u;
       for (unsigned i = 0; i < readWidth; ++i)
-        if (bytes_.contains(address + i))
-          return "unknown diagnostic observation consumed from guest RAM";
+        if (bytes_.contains(address + i)) {
+          auto origin = bytes_.at(address+i);
+          if (op != 35 || (origin != 0x1f201751 && origin != 0x1f201754) ||
+              (reloadedClock && reloadedClock != origin))
+            return "unknown diagnostic observation consumed from guest RAM";
+          reloadedClock = origin; // transparent interrupt/save-frame copy only
+        }
     }
     if (writeWidth && address < 0x10000000) {
       if (op == 42 || op == 46)
@@ -138,14 +169,22 @@ public:
         begin = lane;
       }
       for (unsigned i = begin; i < end; ++i) {
-        if (cache && registers_[rt])
+        if (clockCopy && registers_[rt]) bytes_[address+i] = clockOrigins_[rt];
+        else if (spiCache && registers_[rt])
+          bytes_[address + i] = 0x1f001014;
+        else if (cache && registers_[rt])
           bytes_[address + i] = pc == 0x804698a8 ? 0x1f200a38 : 0x1f200a3c;
         else if (op != 56)
           bytes_.erase(address + i); // SC success not known at dispatch
       }
+      if (spiCache) spiCacheArmed_ = false;
     }
-    if (destination > 0)
+    if (destination > 0) {
       registers_[unsigned(destination)] = false;
+      timingRegisters_[unsigned(destination)] = false;
+      clockOrigins_[unsigned(destination)] = 0;
+      if (reloadedClock) { registers_[unsigned(destination)] = true; clockOrigins_[unsigned(destination)] = reloadedClock; }
+    }
     registers_[0] = false;
     return {};
   }

@@ -18,6 +18,9 @@ uc_err Engine::run(uint32_t start, uint64_t n) {
   return uc_emu_start(handle, start, 0, 0, size_t(n));
 }
 void Engine::map(uint32_t a, size_t n, uint32_t p) { check(uc_mem_map(handle, a, n, p)); }
+void Engine::mapShared(uint32_t a, size_t n, void *backing, uint32_t p) {
+  check(uc_mem_map_ptr(handle, a, n, p, backing));
+}
 void Engine::write(uint32_t a, const void *p, size_t n) { check(uc_mem_write(handle, a, p, n)); }
 void Engine::read(uint32_t a, void *p, size_t n) const { check(uc_mem_read(handle, a, p, n)); }
 void Engine::tickCount(uint32_t delta) {

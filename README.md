@@ -1,12 +1,12 @@
 # Manta LCD4214 firmware execution research build
 
-This is a native C++20/Unicorn research emulator with demonstrated execution of the original guest decompressor and application entry. **It does not yet cold-boot the TV to an OSD.** No TV menu is drawn by host code. The native window remains blank and explicitly says the guest video is uninitialized.
+This is a native C++20/Unicorn research emulator with demonstrated execution of the original guest decompressor and application entry. **It does not yet cold-boot the TV to an OSD.** No TV menu is drawn by host code. The native window remains blank; its console reports that guest display initialization is incomplete.
 
 The latest candidate reset-from-flash run executes 90,220,219 instruction dispatches, runs the original BIST and bootloader copy, verifies the guest-decompressed main image against its independent SHA-256, reaches `0x803B0600`, emits `@@@ Hello T4`, passes GPIO/I2C and interrupt-mask initialization, and stops reading `BF200A38` at `80469898`. See [STATUS](docs/STATUS.md), [boot flow](docs/boot-flow.md), and [evidence](evidence/cold-boot-summary.json).
 
 `T4` is best identified as MStar's **Titania4** platform label, inferred from the original strings and independent MSD309PX hardware research. It does not identify an exact silicon revision or mean the TV finished booting. See [T4 evidence](docs/platform-t4.md).
 
-The latest **guarded diagnostic** run reaches `8053C6EC / BF001030` after 104,577,792 dispatches, with 46 stock timer ISR entries and `USB_Init_Configure done...`. POR observations stay invalid; strict boot at `80469898 / BF200A38` remains unresolved. See [investigation](docs/por-timer-spi-investigation.md).
+The latest guarded unknown-CF run demonstrates **EF4017** identification and descriptor selection, then stops at `8053DD14` before using invalid cached CF samples. Explicitly exploratory continuation reaches `805FBC8C / BF205E78`, with **175,471,842** dispatches, **273** stock timer ISR entries and **768** original gamma RAM commits. POR observations stay invalid; strict candidate boot at `80469898 / BF200A38` remains unresolved. See [current investigation](docs/spi-and-display-continuation.md).
 
 ## Run the Windows build
 
@@ -38,6 +38,12 @@ Guarded continuation requires the supplied source-built engine:
 ```
 
 The two byte-verified cache paths remain invalid and stop at first use. RTC/UTMI/SPI are bounded functional models; silicon timing, analogue results, SPI writes and CF response are unresolved. No authentic frame is available.
+
+`--defer-spi-probe` demonstrates original **9F / EF4017** identification and descriptor selection while preserving unknown CF samples, stopping at their first use. CF is an actual transmitted opcode, but the previous REMS2 label was wrong; see [SPI/display continuation](docs/spi-and-display-continuation.md).
+
+The latest explicitly exploratory run reaches `805FBC8C / BF205E78`, SC bank 1: **175,471,842** original dispatches, **273** original timer ISR entries and **768** original gamma RAM writes. Its SPI electrical input, chip identity and initial scaler/gamma states are separately configured hypotheses. Strict POR and CF behavior remain unresolved. No GOP initializer or authentic frame has executed. Reproduction options, confidence and exact remaining dependency are in the continuation report.
+
+The native window now opens immediately while the guest executes. `--window-smoke-test` needs no firmware and exits 0 after creating a blank native window. Guest stop code 2 means incomplete emulation and is independent of window initialization.
 
 The earlier, explicitly diagnostic path remains available:
 
@@ -84,4 +90,4 @@ The Unicorn 2.1.4 generic MIPS memory-hook defect is documented in [engine limit
 
 License: GPL-2.0-or-later for this project; see [LICENSE](LICENSE). Bundled Unicorn contains the documented timer and Windows/alignment fixes; matching source, upstream source, licenses and provenance are in `third_party/`. Reference source was used to research conventions, not assumed to match this board.
 
-95 native checks pass. Original-firmware regressions preserve reset/replay, twelve streams, CPU/GPIO dependency and recovery, and add guarded POR caches, RTC, original ISR, UTMI and SPI unknown-response stops. The delivered Windows build was tested using equivalent CMake commands; the new bootstrap recipe has not been run end-to-end.
+145 native checks pass, including real guest MMIO bank switching, shared MIU aliases, gamma busy/data commits and unknown-origin guards. Original-firmware regressions cover reset/replay, twelve streams, CPU/GPIO dependency, POR/CF guards, Winbond descriptor selection, original MMU setup, gamma upload and continued original ISR execution. The delivered Windows build was tested using equivalent CMake commands; the bootstrap recipe has not been run end-to-end. No Linux build or sanitizer verification is claimed.

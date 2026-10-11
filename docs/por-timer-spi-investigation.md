@@ -1,5 +1,7 @@
 # POR, timer and SPI investigation
 
+Historical checkpoint for commit 4cf77a4. The CF identification label below was incorrect; current SPI, MIU, scaler and gamma results supersede this checkpoint in [SPI/display continuation](spi-and-display-continuation.md).
+
 Strict candidate boot still stops at **80469898 / BF200A38**. Its reset/producer contents are unresolved. A separate guarded diagnostic continuation reaches **8053C6EC / BF001030**, after 104,577,792 original guest dispatches. Four POR-origin RAM bytes remain invalid. No GOP initializer or authentic frame has been reached. No guest opcode or PC is patched.
 
 ## POR observation cache
@@ -30,7 +32,7 @@ Original 8053DD84 initializes SPI, with divider 40 at BF001018. Caller chain: 80
 
 `--candidate-spi` requires guest clock configuration and enable, models FIFO readiness after virtual deadlines, and provides only known idle WIP/WEL bits for opcode 05. Native tests additionally cover candidate W25Q64BV JEDEC bytes and bounded backing reads; **stock execution has not reached those commands**. Guest program/erase/protection/settings persistence remain unsupported.
 
-The current packet is **CF FF FF 00**, followed by a receive strobe at **8053C6EC / BF001030**. CF is a [Macronix REMS2 opcode](https://www.alldatasheet.com/html-pdf/267917/MCNIX/MX25L12845E/4314/27/MX25L12845E.html). The supplied service schematic shows U8 MX25L3205DM2I-12G on a different board, with no output pull-up drawn. The Manta repair reference associates a Winbond 25Q64BV; its [instruction table](https://datasheet.octopart.com/W25Q64BVSFIG-Winbond-datasheet-14152614.pdf) does not define CF. Image bytes cannot prove chip marking or floating-input behavior. No FF/00/device-ID response was invented. Execution stops with `unresolved SPI 0xcf REMS2 response`.
+The packet at this checkpoint is **CF FF FF 00**, followed by a receive strobe at **8053C6EC / BF001030**. The old error text incorrectly called CF REMS2. Matching MStar code calls it REMS4; Macronix documents CF REMS4D for MX25L6445E and EF REMS2 for MX25L6405D. The supplied service schematic shows U8 MX25L3205DM2I-12G on a different board, with no output pull-up drawn. The Manta repair reference associates a Winbond 25Q64BV, which does not document CF. Image bytes cannot prove chip marking or undocumented output behavior. See the corrected evidence and separately configured electrical experiments in [the continuation report](spi-and-display-continuation.md).
 
 ## Graphics and PDF cross-reference
 

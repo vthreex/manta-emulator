@@ -1,8 +1,29 @@
+UpdateCTestConfiguration  from :<repo-root>/work/build/DartConfiguration.tcl
+Parse Config file:<repo-root>/work/build/DartConfiguration.tcl
 Test project <repo-root>/work/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
     Start 1: core_semantics
-1/1 Test #1: core_semantics ...................   Passed    0.10 sec
 
-100% tests passed out of 1
+1: Test command: <repo-root>\work\build\core_tests.exe
+1: Working Directory: <repo-root>/work/build
+1: Test timeout computed to be: 1500
+1: 145 checks passed
+1/2 Test #1: core_semantics ...................   Passed    0.20 sec
+test 2
+    Start 2: native_window_startup
 
-Total Test time (real) =   0.10 sec
-95 checks passed
+2: Test command: <repo-root>\work\build\manta.exe "--window-smoke-test"
+2: Working Directory: <repo-root>/work/build
+2: Test timeout computed to be: 15
+2: NATIVE_WINDOW_CREATED; guest display not initialized
+2/2 Test #2: native_window_startup ............   Passed    0.57 sec
+
+100% tests passed out of 2
+
+Total Test time (real) =   0.77 sec

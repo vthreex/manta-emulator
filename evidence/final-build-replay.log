@@ -1,0 +1,1 @@
+PASS: final delivery binary re-executed all 175471842 guest dispatches and matched full trace; native exit 2 is the expected honest hardware boundary

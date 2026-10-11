@@ -3,6 +3,7 @@
 #include "storage/flash.hpp"
 #include "storage/sha256.hpp"
 #include "board/unknown_observations.hpp"
+#include "video/gop.hpp"
 #include <array>
 #include <algorithm>
 #include <filesystem>
@@ -331,47 +332,185 @@ void utmiTests() {
   u.clock(0xa);
   require(!u.done(10000000), "UTMI clock reset cancels completed calibration");
 }
+void sharedMiuTests() {
+  std::vector<uint8_t> backing(0x2000);
+  manta::Engine e;
+  e.map(0,0x1000);
+  e.mapShared(0x08000000,backing.size(),backing.data());
+  e.mapShared(0x40000000,backing.size(),backing.data());
+  // Same PageMask/EntryHi/EntryLo pair installed by original 805CB7CC..7E0.
+  uint32_t code[] = {0x3c081fff,0x3508e000,0x40882800,0x3c09c000,0x40895000,
+    0x3c0a0100,0x354a0007,0x408a1000,0x354a0017,0x408a1800,0x40800000,
+    0x000000c0,0x42000002,0x000000c0,0x3c08d000,0x35080100,0x3409abcd,
+    0xad090000,0x3c08c000,0x35080100,0x8d100000,0x3c088800,0x35080100,0x8d110000};
+  e.write(0,code,sizeof(code));
+  e.reg(UC_MIPS_REG_CP0_STATUS,0x10000000);
+  require(e.run(0x80000000,std::size(code))==UC_ERR_OK,"original TLB geometry accesses shared MIU1 bus mapping");
+  require(e.reg(UC_MIPS_REG_16)==0xabcd && e.reg(UC_MIPS_REG_17)==0xabcd,
+          "cached C0 and logical 8800 MIU1 aliases observe the uncached D0 guest store");
+  uint32_t a=0,b=0; e.read(0x08000100,&a,4);e.read(0x40000100,&b,4);
+  require(a==0xabcd && b==a,"host physical MIU aliases share backing bytes rather than independent allocations");
+}
 void spiTests() {
   manta::SpiIsp s;
-  require(!s.read(0x5c, 1, 100),
-          "SPI engine has no invented command readiness before guest enable");
-  s.write(0x18, 0x40, 0);
-  s.write(0, 0xaaaa, 100);
+  require(!s.read(0x5c, 1, 100), "SPI requires guest clock and engine enable");
+  s.write(0x18, 0x40, 0); s.write(0, 0xaaaa, 100);
   require(s.read(0x5c, 1, 101) == 0 && s.read(0x5c, 1, 164) == 1,
-          "SPI command FIFO ready after original engine enable and deadline");
-  s.write(4, 5, 200);
-  s.write(0x30, 1, 300);
-  require(s.read(0x54, 1, 301) == 0 && s.read(0x54, 1, 364) == 1,
-          "SPI RDSR data-ready follows command/read strobe");
-  require(!s.read(0x14, 255, 364), "unknown NOR protection bits cannot be consumed");
-  require((s.read(0x14, 1, 364).value() & 1) == 0,
-          "actual idle NOR WIP bit reaches guest status path");
+          "SPI FIFO readiness follows enable and deterministic clock deadline");
+  s.write(4, 5, 200); s.write(0x30, 1, 210);
+  require(s.read(0x54, 1, 270) == 0 && s.read(0x54, 1, 328) == 1,
+          "SPI RX waits for queued command clocks and receive clocks");
+  require(!s.read(0x14, 255, 328), "persistent NOR protection bits stay unknown");
+  require((s.read(0x14, 1, 328).value() & 1) == 0, "known idle BUSY bit consumed by original driver");
   s.write(0x20, 1, 400);
-  s.write(0xa8, 0x3333, 400);
-  s.write(0x10, 0x9f, 400);
+  require(!s.nor.selected() && !s.read(0x14, 255, 500), "CS rising flushes receive FIFO");
+  s.write(0xa8, 0x3333, 400); s.write(0x10, 0x9f, 500);
   for (auto b : {0xef, 0x40, 0x17}) {
-    s.write(0x30, 1, 500);
-    require((s.read(0x14, 255, 564).value() & 255) == unsigned(b),
-            "candidate W25Q64BV JEDEC bytes follow serial read clocks");
+    s.write(0x30, 1, 600);
+    require((s.read(0x14, 255, 664).value() & 255) == unsigned(b), "W25Q64BV documented JEDEC sequence");
   }
-  s.write(0x20, 1, 600);
-  s.write(0xa8, 0x3333, 600);
-  s.write(0x10, 0xcf, 600);
-  s.write(0x30, 1, 700);
-  require(!s.error.empty(), "unsupported CF command stops instead of inventing chip response");
-  manta::SpiIsp noClock;
-  noClock.write(0, 0xaaaa, 0);
-  require(!noClock.error.empty(), "SPI command readiness requires guest clock configuration");
-  manta::SpiIsp read;
-  read.flashByte = [](uint32_t a) { return uint8_t(a ^ 0x5a); };
-  read.write(0x18, 0x40, 0);
-  read.write(0, 0xaaaa, 0);
-  read.write(0xa8, 0x3333, 100);
-  for (auto b : {3, 0x7f, 0, 0})
-    read.write(0x10, uint16_t(b), 100);
-  read.write(0x30, 1, 200);
-  require((read.read(0x14, 255, 264).value() & 255) == 0x5a,
-          "SPI read addresses reach host-backed NOR top sectors");
+  s.write(0x20, 1, 700); s.write(0xa8, 0x3333, 700);
+  for (auto [tick, byte] : std::array<std::pair<unsigned,unsigned>,4>{{{800,0xcf},{900,255},{1000,255},{1100,0}}})
+    s.write(0x10, uint16_t(byte), tick);
+  s.write(0x30, 1, 1200);
+  require(s.error.find("undocumented SPI opcode 0xcf") == 0, "CF is not a Winbond ID or Macronix REMS2 response");
+  manta::SpiIsp overrun; overrun.write(0x18,0x40,0); overrun.write(0,0xaaaa,0);
+  overrun.write(0xa8,0x3333,100); overrun.write(0x10,0x9f,100); overrun.write(0x10,0,101);
+  require(overrun.error == "SPI transmit FIFO overrun", "transmit FIFO rejects another byte before shift completion");
+  manta::SpiIsp noClock; noClock.write(0,0xaaaa,0);
+  require(!noClock.error.empty(), "ISP enable cannot replace divider configuration");
+  auto packet = [](manta::SpiNor &n, std::initializer_list<uint8_t> bytes) {
+    n.select(); for (auto b : bytes) n.transmit(b);
+  };
+  manta::SpiNor n;
+  n.flashByte = [](uint32_t a) { return uint8_t(a ^ 0x5a); };
+  packet(n,{0x90,255,255,0});
+  require(n.receive().value == 0xef && n.receive().value == 0x16 && n.receive().value == 0xef,
+          "90h two dummy bytes/address-zero returns repeating Winbond manufacturer/device");
+  packet(n,{0x90,0,0,1});
+  require(n.receive().value == 0x16 && n.receive().value == 0xef, "90h address one reverses ID order");
+  packet(n,{0xab,0,0,0});
+  require(n.receive().value == 0x16 && n.receive().value == 0x16, "ABh waits for three dummy bytes then repeats electronic ID");
+  packet(n,{3,0x7f,0xff,0xff});
+  require(n.receive().value == uint8_t(0x7fffff ^ 0x5a) && n.receive().value == 0x5a,
+          "array address shifts MSB-first and wraps at configured NOR boundary");
+  packet(n,{0x0b,0,0,1,255});
+  require(n.receive().value == 0x5b, "fast read consumes its dummy byte before array output");
+  packet(n,{6}); n.deselect(); packet(n,{5});
+  require((n.receive().value & 3) == 2, "WREN latches only when complete command ends at CS rising");
+  packet(n,{4}); n.deselect(); packet(n,{5});
+  require((n.receive().value & 3) == 0, "WRDI clears WEL on CS rising");
+  manta::SpiNor malformed; packet(malformed,{0x90,0,0}); malformed.receive();
+  require(!malformed.error.empty(), "missing address/dummy phase cannot return a chip ID");
+  manta::SpiNor mx; mx.model=manta::NorModel::MX25L6405D; packet(mx,{0x9f});
+  require(mx.receive().value == 0xc2 && mx.receive().value == 0x20 && mx.receive().value == 0x17,
+          "alternative Macronix chip has its own documented JEDEC bytes");
+  packet(mx,{0xcf,255,255,0}); mx.receive();
+  require(!mx.error.empty(), "MX25L6405D never inherits another Macronix part's CF response");
+  manta::SpiNor unknown; unknown.unknownInput=manta::SpiUnknownInput::Deferred;
+  packet(unknown,{0xcf,255,255,0});
+  require(unknown.receive().known == 0 && unknown.undocumentedSamples == 1,
+          "deferred CF sample stays invalid instead of claiming high impedance or an ID");
+  unknown.unknownInput=manta::SpiUnknownInput::AssumedPullUp;
+  require(unknown.receive().value == 255, "explicit hypothetical floating-input pull-up is separate from chip response");
+  unknown.unknownInput=manta::SpiUnknownInput::AssumedPullDown;
+  require(unknown.receive().value == 0, "explicit hypothetical pull-down is a separate experiment");
+  manta::UnknownObservations guard;
+  std::array<uint32_t,32> regs{}; regs[3]=0x807ffff0;
+  auto reg=[&](unsigned i){return regs[i];};
+  guard.seedSpiCache(regs[3]);
+  require(guard.observe(0x8053c724,0xa0640000,reg).empty() && guard.bytes().at(0x7ffff0)==0x1f001014,
+          "byte-verified original SPI SB retains unknown controller origin");
+  require(!guard.observe(0x8053dd14,0x93a40010,[&](unsigned i){return i==29 ? 0x807fffe0 : regs[i];}).empty(),
+          "unknown CF cache stops before original vendor check consumes it");
+  require(!guard.observe(0x1000,0x10800001,reg).empty(), "invalid sample register stays invalid after caching");
+  manta::SpiNor unselected; unselected.transmit(0x9f);
+  require(!unselected.error.empty(), "flash rejects clocks without asserted CS");
+}
+
+void gopGuestBankTests() {
+  manta::Engine e; e.map(0,0x2000);
+  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};
+  auto read = +[](uc_engine*,uint64_t off,unsigned n,void *p)->uint64_t {
+    return static_cast<manta::Riu*>(p)->read(0x1f200000+uint32_t(off),n,0,0,0);
+  };
+  auto write = +[](uc_engine*,uint64_t off,unsigned n,uint64_t v,void *p) {
+    static_cast<manta::Riu*>(p)->write(0x1f200000+uint32_t(off),n,uint32_t(v),0,0,0);
+  };
+  manta::check(uc_mmio_map(e.handle,0x1f200000,0x10000,read,&r,write,&r));
+  const uint32_t code[] = {0x3c08bf20,0x35083e00,0x24090001,0xa50901fc,0x240a1234,0xa50a0004,
+    0x24090004,0xa50901fc,0x240a7777,0xa50a0004,0x24090001,0xa50901fc,0x950b0004};
+  e.write(0,code,sizeof(code));
+  require(e.run(0x80000000,13)==UC_ERR_OK && e.reg(UC_MIPS_REG_11)==0x1234,
+          "real guest MIPS MMIO writes switch GOP banks and read back original framebuffer base");
+  require(r.gopByte(1,4).value==0x34 && r.gopByte(4,4).value==0x77,
+          "guest MMIO bus retains separate GOP bank contents");
+}
+void displayHardwareTests() {
+  manta::Riu r; r.event = [](auto&,auto,auto,auto,auto&){};
+  require(!r.gopBankKnown(), "GOP reset selector remains unknown");
+  rejects([&]{r.write(0x1f203e04,2,123,0,0,0);});
+  r.write(0x1f203ffc,2,1,0,0,0);
+  require((r.knownBits(0x1f203ffc,2)&0xf0f0)==0, "GOP bank writes cannot fabricate interrupt or hardware write-ack flags");
+  auto w = [&](unsigned index, uint16_t value) { r.write(0x1f203e00+index*4,2,value,0,0,0); };
+  w(0,0x51); w(1,0x1234); w(2,1); w(9,960); w(4,0); w(5,960); w(6,0); w(7,1080);
+  auto descriptor = manta::readGopWindow(r,1,0);
+  require(descriptor && descriptor->miuRelativeAddress==0x891a0 && descriptor->pitch==7680 &&
+          descriptor->width==1920 && descriptor->height==1080 && descriptor->bpp==32,
+          "original GOP register geometry decodes eight-byte address/pitch units and 64-bit horizontal units");
+  r.write(0x1f203ffc,2,4,0,0,0); w(1,0x7777);
+  require(r.gopByte(1,4).value==0x34 && r.gopByte(4,4).value==0x77,
+          "GOP register banks retain different framebuffer bases");
+  require(!manta::readGopWindow(r,4,0), "incomplete GOP descriptor cannot produce a guest frame");
+  r.write(0x1f203ffc,2,1,0,0,0); w(9,1);
+  require(!manta::readGopWindow(r,1,0), "GOP pitch cannot address outside a configured scanline");
+  manta::Riu sc; sc.event = r.event;
+  sc.saveTimingSnapshot(); sc.write(0x1f205e00,1,0x10,0,0,0); sc.write(0x1f205e30,2,0x1111,0,0,0);
+  sc.write(0x1f205e00,1,0x24,0,0,0); sc.write(0x1f205e30,2,0x2222,0,0,0);
+  sc.write(0x1f205e00,1,0x10,0,0,0);
+  require(sc.read(0x1f205e30,2,0,0,0)==0x1111, "SC bank switching preserves independent timing registers");
+  require(sc.restoreTimingSnapshot() && sc.knownBits(0x1f205e00,1)==0,
+          "opaque SC selector restore retains unknown original state");
+  rejects([&]{sc.read(0x1f205e30,2,0,0,0);});
+  manta::UnknownObservations guard;
+  std::array<uint32_t,32> regs{}; regs[3]=0xbf200000;
+  auto reg=[&](unsigned i){return regs[i];};
+  guard.seedTimingSnapshot(10);
+  require(guard.observe(0x805e5bfc,0x314a00ff,reg).empty() && guard.timingSnapshotUnknown(10),
+          "exact original byte mask cannot legitimize opaque selector bits");
+  require(guard.observe(0x805e5d44,0xa06a5e00,reg).empty(), "only original selector restore consumes its opaque snapshot");
+  require(!guard.observe(0x805e5d44,0xa06a5e04,reg).empty(), "opaque selector cannot become a device command");
+  manta::UnknownObservations wrongOrigin; wrongOrigin.seed(10);
+  require(!wrongOrigin.observe(0x805e5d44,0xa06a5e00,reg).empty(), "POR or other unknown origins cannot use selector restore permission");
+  manta::UnknownObservations clocks;
+  clocks.seedClockSnapshot(8,0x1f201751);
+  require(clocks.observe(0x805fd444,0x311100ff,reg).empty() && clocks.registerUnknown(17),
+          "original clock identity copy preserves invalid origin");
+  regs[29]=0x80700000;
+  require(clocks.observe(0x803b0200,0xafa80020,reg).empty() && clocks.bytes().at(0x700020)==0x1f201751,
+          "interrupt save frame may transparently carry opaque clock snapshot");
+  require(clocks.observe(0x803b0204,0x8fa80020,reg).empty() && clocks.registerUnknown(8),
+          "interrupt reload keeps opaque clock invalid");
+  require(!clocks.observe(0x805fd4bc,0x3225003c,reg).empty(), "unknown saved clock selector cannot drive a different mode's clock change");
+  require(!clocks.observe(0x1000,0x11000001,reg).empty(), "transparent clock copies cannot authorize a branch");
+  manta::GammaRam gamma;
+  gamma.write(0x40,511,0xabc,100);
+  require(gamma.status(163)==0x40 && !gamma.written[1][511], "gamma RAM remains busy before transfer completion");
+  rejects([&]{gamma.write(0x20,5,1,160);});
+  require(gamma.status(164)==0 && gamma.data[1][511]==0xabc && gamma.written[1][511] && gamma.commits==1,
+          "gamma channel strobe commits actual addressed twelve-bit sample");
+  rejects([&]{gamma.write(0x60,5,1,200);}); rejects([&]{gamma.write(0x20,1024,1,200);});
+  manta::Riu g; g.event=r.event; g.symbolicInit=true; g.candidateGamma=true;
+  g.write(0x1f205e00,1,0x10,0,0,0);
+  g.prepareMaskedRead(0x1f205fb4,0xe0);
+  require((g.read(0x1f205fb4,1,0,0,0)&0xe0)==0, "gamma status exposes only causally idle channel bits");
+  g.write(0x1f205fb0,2,1,0,0,0); g.write(0x1f205fb8,2,0x321,0,0,0);
+  g.prepareRmw(0x1f205fb4,0x20); g.write(0x1f205fb4,1,0x25,0,0,100);
+  g.prepareMaskedRead(0x1f205fb4,0xe0);
+  require((g.read(0x1f205fb4,1,0,0,120)&0xe0)==0x20, "RIU gamma transaction drives original firmware busy poll");
+  g.prepareMaskedRead(0x1f205fb4,0xe0); g.read(0x1f205fb4,1,0,0,164);
+  require(g.gammaCommits()==1 && g.knownBits(0x1f205fb4,1)==0xe0,
+          "gamma completion leaves unrelated control bits unknown");
 }
 int main() {
   try {
@@ -390,6 +529,9 @@ int main() {
     rtcTests();
     utmiTests();
     spiTests();
+    sharedMiuTests();
+    displayHardwareTests();
+    gopGuestBankTests();
 #ifdef UC_MIPS_MANTA_TIMER_API
     timerTests();
 #endif

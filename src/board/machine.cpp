@@ -1,5 +1,6 @@
 #include "board/machine.hpp"
 #include "storage/sha256.hpp"
+#include "video/gop.hpp"
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -20,6 +21,21 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.virtualRtc = o.virtualRtc;
   riu_.candidateUtmi = o.candidateUtmi;
   riu_.candidateSpi = o.candidateSpi;
+  riu_.candidateChipId = o.candidateChipId;
+  riu_.candidateGamma = o.candidateGamma;
+  riu_.configureSpi(o.flashModel, o.spiUnknownInput);
+  if (o.exploratoryScBank >= 0) {
+    if (!o.deferDiagnosticReads || !o.symbolicInit)
+      throw std::runtime_error("Exploratory SC bank requires guarded diagnostic execution");
+    riu_.configureExploratoryScBank(unsigned(o.exploratoryScBank));
+  }
+  if (o.exploratoryGammaEnable >= 0) {
+    if (!o.deferDiagnosticReads || !o.symbolicInit || !o.candidateGamma)
+      throw std::runtime_error("Gamma enable-state experiments require guarded execution and --candidate-gamma");
+    riu_.configureExploratoryGammaEnable(o.exploratoryGammaEnable != 0);
+  }
+  if (o.spiUnknownInput != SpiUnknownInput::Stop && (!o.candidateSpi || !o.deferDiagnosticReads))
+    throw std::runtime_error("SPI unknown-input experiments require --candidate-spi --defer-diagnostic-reads");
   if (o.candidateMiu)
     riu_.resetMiuModel();
   if (o.i2cSdaStuck) {
@@ -59,10 +75,24 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if (!replay_)
       throw std::runtime_error("Cannot open replay");
   }
-  cpu_.map(0, o.candidateMiu ? 0x10000000 : 0x08000000);
+  if (o.candidateMiu) {
+    dramBacking_.resize(0x10000000);
+    cpu_.mapShared(0, dramBacking_.size(), dramBacking_.data());
+    // Firmware MsOS_PA2Uncached (805CB940) translates logical MIU1
+    // 08000000..0FFFFFFF to D0000000..D7FFFFFF. Guest MMU translates this
+    // to bus 40000000..47FFFFFF. It aliases the existing MIU1 backing.
+    cpu_.mapShared(0x40000000, 0x08000000, dramBacking_.data() + 0x08000000);
+  } else cpu_.map(0, 0x08000000);
   cpu_.map(0x1fc00000, 0x400000, UC_PROT_READ | UC_PROT_EXEC);
   auto aperture = riu_.flashRead(0, 0x400000);
   cpu_.write(0x1fc00000, aperture.data(), aperture.size());
+  if (o.candidateSpi) {
+    // Stock 8053DAD0 reads B4000000 + flash offset. The equivalent MStar
+    // driver names this XIU flash0; map exactly chip capacity, no metadata.
+    cpu_.map(0x14000000, 0x800000, UC_PROT_READ);
+    auto xiu = riu_.flashRead(0, 0x800000);
+    cpu_.write(0x14000000, xiu.data(), xiu.size());
+  }
   check(uc_mmio_map(cpu_.handle, 0x1f000000, 0x400000, mmioRead, this, mmioWrite, this));
   if (o.stage2)
     cpu_.write(0x01000000, flash_.stock().data() + 0x2c60, 0x5960);
@@ -161,6 +191,27 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
     m.runtimeReached_ = true;
   uint32_t w = 0;
   m.cpu_.read(uint32_t(a) & 0x1fffffff, &w, 4);
+  if ((w >> 26) == 16 && ((w >> 21) & 31) == 4 &&
+      (((w >> 11) & 31) <= 6 || ((w >> 11) & 31) == 10)) {
+    m.event("cp0_mmu_write", (w >> 11) & 31, 4, m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31)),
+            "original guest MTC0 MMU register; select " + std::to_string(w & 7));
+  }
+  if (w == 0x42000002 || w == 0x42000006)
+    m.event("guest_tlb_write", uint32_t(a), 4, w, "original architectural TLB entry installation");
+  if (a == 0x8053dbe0) {
+    m.cpu_.read((m.cpu_.reg(UC_MIPS_REG_SP) + 0x14) & 0x1fffffff, m.spiJedec_.data(), 3);
+    m.spiJedecRead_ = m.cpu_.reg(UC_MIPS_REG_2) == 1;
+    m.event("spi_jedec_return", uint32_t(a), 3,
+            (uint32_t(m.spiJedec_[0]) << 16) | (uint32_t(m.spiJedec_[1]) << 8) | m.spiJedec_[2],
+            "unchanged guest JEDEC read returned; bytes cached in original stack buffer");
+  }
+  if (a == 0x8053dd14) {
+    m.cpu_.read(m.cpu_.reg(UC_MIPS_REG_16) & 0x1fffffff, m.spiDescriptor_.data(), 40);
+    m.spiDescriptorSelected_ = true;
+    m.event("spi_descriptor_selected", m.cpu_.reg(UC_MIPS_REG_16), 40,
+            m.spiDescriptor_[0] | (uint32_t(m.spiDescriptor_[1]) << 8),
+            "original guest copied JEDEC-matching descriptor; CF variant check has not consumed its samples yet");
+  }
   // Runtime history is bounded; retain thousands of instructions without a
   // 90-million-line trace. RA/SP are call context observations, not an unwind.
   if (a >= 0x803b0180 && a < 0x806b8ce0) {
@@ -174,7 +225,9 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
         uint32_t(a), w, [&](unsigned i) { return m.cpu_.reg(UC_MIPS_REG_0 + int(i)); });
     if (!why.empty()) {
       m.event("unknown_observation_use", uint32_t(a), 4, w, why);
-      m.stop(why);
+      auto op = w >> 26;
+      auto address = (m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 21) & 31)) + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
+      m.stop(why, op >= 32 && op <= 38 ? address : 0);
       return;
     }
   }
@@ -183,7 +236,8 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
     auto rs = (w >> 21) & 31;
     auto address =
         (m.cpu_.reg(UC_MIPS_REG_0 + int(rs)) + uint32_t(int32_t(int16_t(w & 65535)))) & 0x1fffffff;
-    if (op < 40 && address >= 0x1fc00000 && address < 0x20000000)
+    if (op < 40 && ((address >= 0x1fc00000 && address < 0x20000000) ||
+                    (m.options_.candidateSpi && address >= 0x14000000 && address < 0x14800000)))
       ++m.flashReads_;
     if (op >= 40 && address < 0x08000000)
       ++m.dramWrites_;
@@ -247,6 +301,66 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       if (defined)
         m.riu_.prepareRmw(a, defined);
     }
+    if (m.options_.symbolicInit) {
+      uint32_t words[4]{};
+      m.cpu_.read(pc & 0x1fffffff, words, sizeof(words));
+      auto op = words[0] >> 26, rt = (words[0] >> 16) & 31;
+      if ((op == 36 || op == 37) && rt) {
+        for (unsigned i = 1; i < 4; ++i) {
+          auto nextOp = words[i] >> 26, nextRs = (words[i] >> 21) & 31, nextRt = (words[i] >> 16) & 31;
+          if (nextOp == 12 && nextRs == rt && nextRt == rt) {
+            m.riu_.prepareMaskedRead(a, words[i] & 65535); break;
+          }
+          if (nextOp != 9 || nextRs == rt || nextRt == rt) break;
+        }
+      }
+    }
+    if (m.options_.symbolicInit && m.options_.deferDiagnosticReads && a == 0x1f205e00 && n == 1 &&
+        m.riu_.knownBits(a, n) != 255 &&
+        (pc == 0x805e5b54 || pc == 0x805e5b58 || pc == 0x805e5e28 || pc == 0x805e5e2c)) {
+      bool second = pc >= 0x805e5e28;
+      uint32_t first[3]{}, maskWord=0, storeWord=0;
+      m.cpu_.read(second ? 0x005e5e28 : 0x005e5b54, first, sizeof(first));
+      m.cpu_.read(second ? 0x005e5e4c : 0x005e5bfc, &maskWord, 4);
+      m.cpu_.read(second ? 0x005e5eb4 : 0x005e5d44, &storeWord, 4);
+      if (first[0]==(second ? 0x90665e00u : 0x906a5e00u) && first[1]==0x90625e00 &&
+          first[2]==(second ? 0x24020024u : 0x24020010u) &&
+          maskWord==(second ? 0x30c600ffu : 0x314a00ffu) && storeWord==(second ? 0xa0465e00u : 0xa06a5e00u)) {
+        if (pc == 0x805e5b54 || pc == 0x805e5e28) {
+          m.riu_.saveTimingSnapshot(); m.unknownObservations_.seedTimingSnapshot(second ? 6 : 10);
+        }
+        else m.unknownObservations_.seed(2); // immediately overwritten by known ADDIU
+        m.event("opaque_timing_snapshot", a, n, 0xa5,
+                "INVALID saved control byte; exact original restore only, no branch/output may consume it");
+        return 0xa5;
+      }
+    }
+    if (m.options_.symbolicInit && m.options_.deferDiagnosticReads &&
+        ((pc >= 0x805e5890 && pc < 0x805e6200) || (pc >= 0x805e6b9c && pc < 0x805e6d40)) &&
+        a >= 0x1f205e00 && a < 0x1f206600) {
+      uint32_t path[4]{};
+      m.cpu_.read(pc & 0x1fffffff, path, sizeof(path));
+      auto op = path[0] >> 26, rt = (path[0] >> 16) & 31;
+      auto nextOp = path[1] >> 26, nextRt = (path[1] >> 16) & 31;
+      bool overwritten = nextOp == 9 && (path[1] & 0x03e00000) == 0 && nextRt == rt;
+      bool replaced = false;
+      for (unsigned i = 1; !overwritten && !replaced && i < 4; ++i) {
+        auto futureOp = path[i] >> 26, futureRt = (path[i] >> 16) & 31, futureRs = (path[i] >> 21) & 31;
+        if ((futureOp == 40 || futureOp == 41) && futureRt != rt &&
+            ((path[0] ^ path[i]) & 0x03e0ffff) == 0) { replaced = true; break; }
+        if (futureRt == rt && ((futureOp == 9 && futureRs == 0) || futureOp == 15 ||
+            ((futureOp == 35 || futureOp == 36 || futureOp == 37) && futureRs != rt))) {
+          overwritten = true; break;
+        }
+        if (futureOp != 9 || futureRt == rt || futureRs == rt || futureRt == ((path[0] >> 21) & 31)) break;
+      }
+      if ((op == 36 || op == 37) && rt && (overwritten || replaced)) {
+        m.unknownObservations_.seed(rt);
+        m.event("discarded_timing_read", a, n, 0xa5,
+                "INVALID timing latch observation: original next instruction overwrites value or register; first other use stops");
+        return n == 1 ? 0xa5 : 0xa5a5;
+      }
+    }
     if (m.options_.deferDiagnosticReads && m.riu_.knownBits(a, n) != 0xffff &&
         m.proveDiagnosticCache(pc, a, n)) {
       m.unknownObservations_.seed(3);
@@ -255,6 +369,19 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
               "INVALID unknown diagnostic observation; original guest may cache it, first "
               "consumption stops");
       return 0xa5a5;
+    }
+    if (m.options_.deferDiagnosticReads && n == 1 && m.cpu_.reg(UC_MIPS_REG_4) == 1 &&
+        ((pc == 0x805fd41c && a == 0x1f201751) || (pc == 0x805fd424 && a == 0x1f201754))) {
+      uint32_t path[13]{};
+      m.cpu_.read(0x005fd41c, path, sizeof(path));
+      constexpr uint32_t expected[] = {0x90c80000,0x00621821,0x90e90000,0xa4a00000,0x94620000,
+        0x309000ff,0x24040001,0x3042ff00,0x00501025,0xa4620000,0x311100ff,0x0c172ef6,0x313200ff};
+      if (std::equal(std::begin(path),std::end(path),std::begin(expected))) {
+        m.unknownObservations_.seedClockSnapshot(pc == 0x805fd41c ? 8 : 9, a);
+        m.event("unused_clock_snapshot", a, n, 0xa5,
+                "INVALID snapshot in byte-verified mode-1 path; transparent saves allowed, first branch/calculation/device use stops");
+        return 0xa5;
+      }
     }
     auto mask = m.cpu_.reg(
         pc == 0x8055b578 || pc == 0x8055b584 || pc == 0x8053bc08 ? UC_MIPS_REG_7 : UC_MIPS_REG_3);
@@ -288,6 +415,19 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       m.cpu_.read(pc & 0x1fffffff, instructions, sizeof(instructions));
       if ((instructions[0] & 0xfc1f0000) == 0x94020000 && instructions[1] == 0x30420001)
         mask = 1;
+      if (a == 0x1f001014 && (pc == 0x8053c710 || pc == 0x8053c8a0)) {
+        uint32_t path[6]{};
+        m.cpu_.read(pc & 0x1fffffff, path, sizeof(path));
+        const uint32_t cfPath[] = {0x94e40000,0x02461821,0x24c60001,0x00d3102b,0x1440fff2,0xa0640000};
+        const uint32_t idPath[] = {0x94e40000,0x02661821,0x24c60001,0x00d2102b,0x1440fff2,0xa0640000};
+        if (std::equal(std::begin(path), std::end(path), pc == 0x8053c710 ? cfPath : idPath)) {
+          mask = 255; // exact LHU -> SB path discards upper halfword
+          if (pc == 0x8053c710 && m.options_.spiUnknownInput == SpiUnknownInput::Deferred && m.riu_.spiDataUnknown(m.dispatches_)) {
+            m.unknownObservations_.seedSpiCache(m.cpu_.reg(UC_MIPS_REG_18) + m.cpu_.reg(UC_MIPS_REG_6));
+            m.event("deferred_spi_input", a, n, 0xa5, "INVALID undocumented CF sample; verified SB cache only, first consumption stops");
+          }
+        }
+      }
     }
     auto v = m.riu_.read(a, n, pc, mask, m.dispatches_);
     if (!m.riu_.stopReason.empty())
@@ -347,6 +487,36 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
     } else if (op == 9 && !dependent[rs] && rt != 0) {
       dependent[rt] = 0;
       values[rt] = values[rs] + uint32_t(int32_t(int16_t(w)));
+    } else if (op == 0 && ((w & 63) == 33 || (w & 63) == 35) &&
+               !dependent[rs] && !dependent[rt] && ((w >> 11) & 31) != 0) {
+      auto rd = (w >> 11) & 31;
+      dependent[rd] = 0;
+      values[rd] = (w & 63) == 33 ? values[rs] + values[rt] : values[rs] - values[rt];
+    } else if (op == 0 && (w & 63) == 0 && !dependent[rt] && ((w >> 11) & 31) != 0) {
+      auto rd = (w >> 11) & 31;
+      dependent[rd] = 0;
+      values[rd] = values[rt] << ((w >> 6) & 31);
+    } else if (op == 0 && ((w & 63) == 10 || (w & 63) == 11) &&
+               !dependent[rs] && !dependent[rt] && !dependent[(w >> 11) & 31]) {
+      auto rd = (w >> 11) & 31;
+      if (rd && ((w & 63) == 10 ? values[rt] == 0 : values[rt] != 0)) values[rd] = values[rs];
+    } else if (op == 31 && rs == 0 && (w & 0x7ff) == 0x620 && !dependent[rt] && ((w >> 11) & 31)) {
+      auto rd = (w >> 11) & 31;
+      values[rd] = uint32_t(int32_t(int16_t(values[rt]))); dependent[rd] = 0;
+    } else if (op == 0 && (w & 63) == 39 && !dependent[rs] && !dependent[rt] && ((w >> 11) & 31)) {
+      auto rd = (w >> 11) & 31;
+      values[rd] = ~(values[rs] | values[rt]); dependent[rd] = 0;
+    } else if ((op == 35 || op == 36 || op == 37) && !dependent[rs] && rt != 0) {
+      // An independent RAM callback-pointer load may occur inside a device
+      // RMW. It neither consumes nor defines the sampled register bits.
+      auto target = (values[rs] + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
+      auto loadSize = op == 35 ? 4u : op == 37 ? 2u : 1u;
+      if (target >= 0x08000000 - loadSize || (target & (loadSize - 1))) return 0;
+      for (unsigned byte = 0; byte < loadSize; ++byte)
+        if (unknownObservations_.bytes().contains(target + byte)) return 0;
+      values[rt] = 0;
+      cpu_.read(target, &values[rt], loadSize);
+      dependent[rt] = 0;
     } else if (op == 0 && ((w & 63) == 36 || (w & 63) == 37)) {
       auto rd = (w >> 11) & 31;
       if (rd == 0 || (dependent[rs] && dependent[rt]))
@@ -375,7 +545,23 @@ void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v,
     auto pc = m.cpu_.reg(UC_MIPS_REG_PC);
     if ((pc & 0x1fffffff) >= 0x1fc00000 && (pc & 0x1fffffff) < 0x1fc02c60)
       pc = (pc & 0x1fffffff) | 0xa0000000;
+    if ((pc == 0x805e5d44 || pc == 0x805e5eb4) && a == 0x1f205e00 && n == 1 &&
+        m.unknownObservations_.timingSnapshotUnknown(pc == 0x805e5d44 ? 10 : 6) && m.riu_.restoreTimingSnapshot()) {
+      m.event("opaque_timing_restore", a, n, 0xa5,
+              "original control snapshot restored with original unknown-bit provenance; poison not programmed as a hardware value");
+      return;
+    }
     m.riu_.write(a, n, uint32_t(v), pc, m.cpu_.reg(UC_MIPS_REG_3), m.dispatches_);
+    if (a >= 0x1f203e00 && a < 0x1f203ffc && m.riu_.gopBankKnown()) {
+      auto bank = m.riu_.gopBank();
+      for (unsigned window = 0; window < (bank == 1 ? 4u : 2u); ++window) {
+        if (auto info = readGopWindow(m.riu_, bank, window))
+          m.event("gop_window_descriptor", info->miuRelativeAddress, info->pitch, info->format,
+                  "guest-selected bank " + std::to_string(bank) + " window " + std::to_string(window) +
+                  " size " + std::to_string(info->width) + "x" + std::to_string(info->height) +
+                  "; MIU selection/compositing unresolved; descriptor is not an authentic frame");
+      }
+    }
     if (!m.riu_.stopReason.empty())
       m.stop(m.riu_.stopReason, a);
   } catch (const std::exception &e) {
@@ -435,6 +621,13 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"candidate_miu\": " << (options_.candidateMiu ? "true" : "false")
     << ",\n  \"deferred_diagnostic_reads\": " << deferredReads_
     << ",\n  \"candidate_spi\": " << (options_.candidateSpi ? "true" : "false")
+    << ",\n  \"candidate_chip_id\": " << (options_.candidateChipId ? "true" : "false")
+    << ",\n  \"spi_flash_model\": \"" << (options_.flashModel == NorModel::W25Q64BV ? "w25q64bv" : "mx25l6405d") << "\""
+    << ",\n  \"spi_unknown_input_policy\": " << unsigned(options_.spiUnknownInput)
+    << ",\n  \"spi_undocumented_samples\": " << riu_.undocumentedSpiSamples()
+    << ",\n  \"spi_jedec_read_returned\": " << (spiJedecRead_ ? "true" : "false")
+    << ",\n  \"spi_descriptor_selected\": " << (spiDescriptorSelected_ ? "true" : "false")
+    << ",\n  \"spi_jedec\": [" << unsigned(spiJedec_[0]) << ',' << unsigned(spiJedec_[1]) << ',' << unsigned(spiJedec_[2]) << ']'
     << ",\n  \"candidate_utmi\": " << (options_.candidateUtmi ? "true" : "false")
     << ",\n  \"virtual_rtc\": " << (options_.virtualRtc ? "true" : "false")
     << ",\n  \"cp0_timer\": " << (options_.cp0Timer ? "true" : "false")
@@ -500,6 +693,10 @@ std::string Msd309Machine::summary() const {
   cpu_.read(0x006e561c, &softwareTick, 4);
   s << ",\n  \"guest_software_tick\": " << softwareTick
     << ",\n  \"gop_initializer_entered\": " << (gopInitializerEntered_ ? "true" : "false")
+    << ",\n  \"exploratory_sc_initial_bank\": " << options_.exploratoryScBank
+    << ",\n  \"candidate_gamma\": " << (options_.candidateGamma ? "true" : "false")
+    << ",\n  \"exploratory_gamma_initial_enable\": " << options_.exploratoryGammaEnable
+    << ",\n  \"gamma_ram_commits\": " << riu_.gammaCommits()
     << ",\n  \"gop_aperture_events\": " << gopEvents_
     << ",\n  \"ge_candidate_aperture_events\": " << geEvents_;
   s << ",\n  \"cp0_status\":\"" << hex(cpu_.reg(UC_MIPS_REG_CP0_STATUS))

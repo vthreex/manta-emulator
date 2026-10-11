@@ -2,10 +2,34 @@
 #include <array>
 #include <stdexcept>
 namespace manta {
+bool Riu::gopBankKnown() const {
+  auto it = bytes_.find(0x1f203ffc);
+  return it != bytes_.end() && (it->second.known & 15) == 15;
+}
+uint8_t Riu::gopBank() const {
+  if (!gopBankKnown()) throw std::runtime_error("GOP access before bank selector is known");
+  return bytes_.at(0x1f203ffc).value & 15;
+}
+RiuByte Riu::gopByte(unsigned bank, unsigned offset) const {
+  if (bank >= 16 || offset >= 0x1fc) throw std::runtime_error("GOP bank/register out of bounds");
+  auto it = bytes_.find(0x80000000u + (bank << 10) + offset);
+  return it == bytes_.end() ? RiuByte{} : it->second;
+}
+uint32_t Riu::storageKey(uint32_t a) const {
+  if (a >= 0x1f203e00 && a < 0x1f203ffc)
+    return 0x80000000u + (uint32_t(gopBank()) << 10) + a - 0x1f203e00;
+  if (a >= 0x1f205e04 && a < 0x1f206000) {
+    auto selector = bytes_.find(0x1f205e00);
+    if (selector == bytes_.end() || selector->second.known != 255)
+      throw std::runtime_error("SC access before bank selector is known");
+    return 0x81000000u + (uint32_t(selector->second.value) << 10) + a - 0x1f205e00;
+  }
+  return a;
+}
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
-    auto it = bytes_.find(a + i);
+    auto it = bytes_.find(storageKey(a + i));
     if (it != bytes_.end())
       v |= uint32_t(it->second.known) << (8 * i);
   }
@@ -14,14 +38,14 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
 uint32_t Riu::get(uint32_t a, unsigned n) const {
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
-    auto it = bytes_.find(a + i);
+    auto it = bytes_.find(storageKey(a + i));
     v |= uint32_t(it == bytes_.end() ? 0xa5 : it->second.value) << (i * 8);
   }
   return v;
 }
 void Riu::put(uint32_t a, unsigned n, uint32_t v) {
   for (unsigned i = 0; i < n; ++i)
-    bytes_[a + i] = {uint8_t(v >> (i * 8)), 255};
+    bytes_[storageKey(a + i)] = {uint8_t(v >> (i * 8)), 255};
 }
 uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc) {
   std::array<uint32_t, 256> t{};
@@ -36,14 +60,21 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
   return crc;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  bool masked = consumedRead_.contains(a);
+  auto provenConsumed = masked ? consumedRead_.at(a) : 0;
+  consumedRead_.clear(); // one-shot proof, including peripheral early returns
   if (n != 1 && n != 2 && n != 4)
     throw std::runtime_error("Unsupported RIU access width");
+  if (candidateChipId && a == 0x1f003d98 && n == 2) {
+    event("read", a, n, 0x18, "candidate Titania4 immutable chip identity inferred from original HAL check at 8054CDC4; silicon capture unverified");
+    return 0x18;
+  }
   if (candidateSpi && n == 2 && a >= 0x1f001000 && a < 0x1f001100) {
     auto value = spi_.read(a - 0x1f001000, mask, tick);
     if (value) {
       event("read", a, n, *value,
             "SPI ISP command/read FIFO state; only statically proven consumed bits returned; "
-            "candidate W25Q64BV");
+            "configured " + std::string(spi_.nor.name()));
       return *value;
     }
   }
@@ -110,10 +141,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     event("read", a, n, v, "candidate BDMA busy/done status");
     return v;
   }
-  bool known = true;
-  for (unsigned i = 0; i < n; ++i)
-    if (!bytes_.contains(a + i) || bytes_.at(a + i).known != 255)
-      known = false;
+  bool known = knownBits(a, n) == (n == 4 ? 0xffffffffu : (1u << (n * 8)) - 1);
   const bool runtimeRmw = pc == 0x8055b578 || pc == 0x8055b584 || pc == 0x803bd6f4 ||
                           pc == 0x803bd754 || pc == 0x803bd2e4 || pc == 0x8053bbdc ||
                           pc == 0x8053bc08 || pc == 0x8053bd18 || pc == 0x8053bc84 ||
@@ -121,6 +149,20 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   const bool rmw = pc == 0xbfc00c60 || pc == 0xbfc02804 || pc == 0xbfc02818 || pc == 0xbfc0282c ||
                    pc == 0xbfc02858 || pc == 0x81000408 || runtimeRmw;
   auto v = get(a, n);
+  if (candidateGamma && a == 0x1f205fb4 && n == 1 && get(0x1f205e00, 1) == 0x10) {
+    auto before = gamma_.commits;
+    auto &b = bytes_[storageKey(a)];
+    b.value = uint8_t((b.value & ~0xe0) | gamma_.status(tick)); b.known |= 0xe0;
+    v = b.value;
+    if (gamma_.commits != before)
+      event("gamma_commit", a, 1, uint32_t(gamma_.commits), "original guest-programmed gamma RAM transaction committed");
+  }
+  if (masked) {
+    if ((knownBits(a, n) & provenConsumed) == provenConsumed) {
+      event("read", a, n, v, "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown");
+      return v;
+    }
+  }
   if (candidateMiu && symbolicInit && (pc == 0xbfc01bc4 || pc == 0xbfc01b70) && n == 4 &&
       (a == 0x1f221adc || a == 0x1f221bdc) && (knownBits(a, n) & 255) == 255) {
     event("read", a, n, v,
@@ -161,7 +203,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   if (symbolicInit && pendingRmw_.contains(a)) {
     auto forced = pendingRmw_.at(a);
     for (unsigned i = 0; i < n; ++i) {
-      auto &b = bytes_[a + i];
+      auto &b = bytes_[storageKey(a + i)];
       b.value = uint8_t(v >> (i * 8));
       b.known |= uint8_t(forced >> (i * 8));
     }
@@ -184,12 +226,36 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  // Bank-select writes do not manufacture interrupt or hardware write-ack
+  // status. These fields have no producer model yet and remain unknown.
+  if (a <= 0x1f203ffd && a + n > 0x1f203ffc) {
+    for (unsigned i=0; i<n; ++i)
+      if (a+i == 0x1f203ffc || a+i == 0x1f203ffd)
+        bytes_[a+i].known &= 0x0f;
+  }
   event("write", a, n, v, "recorded register storage; not a complete device");
+  if (candidateGamma && a == 0x1f205fb4 && n == 1 && get(0x1f205e00, 1) == 0x10) {
+    auto command = v & 0xe0;
+    if ((knownBits(a, 1) & 0xe0) != 0xe0)
+      throw std::runtime_error("gamma command contains unknown channel bits");
+    if (command) {
+      auto channel = command == 0x20 ? 0 : command == 0x40 ? 1 : 2;
+      auto dataAddress = 0x1f205fb8u + channel * 4;
+      if ((knownBits(0x1f205fb0, 2) & 0x3ff) != 0x3ff || (knownBits(dataAddress, 2) & 0xfff) != 0xfff)
+        throw std::runtime_error("gamma transfer address/sample contains unknown bits");
+      gamma_.write(uint8_t(command), get(0x1f205fb0, 2) & 0x3ff, get(dataAddress, 2) & 0xfff, tick);
+      event("gamma_write", get(0x1f205fb0, 2) & 0x3ff, channel, get(dataAddress, 2) & 0xfff,
+            "original channel strobe captured original 12-bit sample; RAM completion pending");
+    }
+  }
   if (candidateSpi && n == 2 && a >= 0x1f001000 && a < 0x1f001100) {
     auto off = a - 0x1f001000;
     if (off == 0 || off == 4 || off == 0x10 || off == 0x18 || off == 0x20 || off == 0x30 ||
         off == 0xa8) {
       spi_.flashByte = [this](uint32_t offset) { return flashRead(offset, 1).at(0); };
+        spi_.busEvent = [this, a, n](const std::string &kind, uint32_t value) {
+          event(kind, a, n, value, "CS-framed MSB-first SPI bus; CF output unknown unless explicit exploratory electrical input configured");
+        };
       spi_.write(off, uint16_t(v), tick);
       event("spi_command", a, n, v,
             "original guest ISP FIFO/control command; delayed readiness, no invented response to "

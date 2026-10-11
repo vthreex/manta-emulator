@@ -19,6 +19,7 @@ public:
   void reg(int id, uint32_t value);
   uc_err run(uint32_t start, uint64_t instructions);
   void map(uint32_t address, size_t size, uint32_t permissions = UC_PROT_ALL);
+  void mapShared(uint32_t address, size_t size, void *backing, uint32_t permissions = UC_PROT_ALL);
   void write(uint32_t address, const void *data, size_t size);
   void read(uint32_t address, void *data, size_t size) const;
   void tickCount(uint32_t delta);

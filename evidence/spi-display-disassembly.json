@@ -1,0 +1,7775 @@
+{
+  "original_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "runtime_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+  "image_base": "0x803b0180",
+  "functions": {
+    "CF_probe": [
+      {
+        "pc": "0x8053c574",
+        "word": "0x27bdffd8",
+        "instruction": "addiu $sp, $sp, -0x28"
+      },
+      {
+        "pc": "0x8053c578",
+        "word": "0xafb10018",
+        "instruction": "sw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x8053c57c",
+        "word": "0x3c11806e",
+        "instruction": "lui $s1, 0x806e"
+      },
+      {
+        "pc": "0x8053c580",
+        "word": "0xafb30020",
+        "instruction": "sw $s3, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053c584",
+        "word": "0xafb2001c",
+        "instruction": "sw $s2, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053c588",
+        "word": "0xafb00014",
+        "instruction": "sw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053c58c",
+        "word": "0x809021",
+        "instruction": "move $s2, $a0"
+      },
+      {
+        "pc": "0x8053c590",
+        "word": "0xafbf0024",
+        "instruction": "sw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053c594",
+        "word": "0xc172ec8",
+        "instruction": "jal 0x805cbb20"
+      },
+      {
+        "pc": "0x8053c598",
+        "word": "0xa09821",
+        "instruction": "move $s3, $a1"
+      },
+      {
+        "pc": "0x8053c59c",
+        "word": "0x8e24884c",
+        "instruction": "lw $a0, -0x77b4($s1)"
+      },
+      {
+        "pc": "0x8053c5a0",
+        "word": "0x24050bb8",
+        "instruction": "addiu $a1, $zero, 0xbb8"
+      },
+      {
+        "pc": "0x8053c5a4",
+        "word": "0xc172e11",
+        "instruction": "jal 0x805cb844"
+      },
+      {
+        "pc": "0x8053c5a8",
+        "word": "0x8021",
+        "instruction": "move $s0, $zero"
+      },
+      {
+        "pc": "0x8053c5ac",
+        "word": "0x14400008",
+        "instruction": "bnez $v0, 0x8053c5d0"
+      },
+      {
+        "pc": "0x8053c5b0",
+        "word": "0x8fbf0024",
+        "instruction": "lw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053c5b4",
+        "word": "0x2001021",
+        "instruction": "move $v0, $s0"
+      },
+      {
+        "pc": "0x8053c5b8",
+        "word": "0x8fb30020",
+        "instruction": "lw $s3, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053c5bc",
+        "word": "0x8fb2001c",
+        "instruction": "lw $s2, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053c5c0",
+        "word": "0x8fb10018",
+        "instruction": "lw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x8053c5c4",
+        "word": "0x8fb00014",
+        "instruction": "lw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053c5c8",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053c5cc",
+        "word": "0x27bd0028",
+        "instruction": "addiu $sp, $sp, 0x28"
+      },
+      {
+        "pc": "0x8053c5d0",
+        "word": "0x3c02806b",
+        "instruction": "lui $v0, 0x806b"
+      },
+      {
+        "pc": "0x8053c5d4",
+        "word": "0x8c50ded0",
+        "instruction": "lw $s0, -0x2130($v0)"
+      },
+      {
+        "pc": "0x8053c5d8",
+        "word": "0x2403aaaa",
+        "instruction": "addiu $v1, $zero, -0x5556"
+      },
+      {
+        "pc": "0x8053c5dc",
+        "word": "0xa6030000",
+        "instruction": "sh $v1, ($s0)"
+      },
+      {
+        "pc": "0x8053c5e0",
+        "word": "0xc14f067",
+        "instruction": "jal 0x8053c19c"
+      },
+      {
+        "pc": "0x8053c5e4",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c5e8",
+        "word": "0x10400056",
+        "instruction": "beqz $v0, 0x8053c744"
+      },
+      {
+        "pc": "0x8053c5ec",
+        "word": "0x3c0205f5",
+        "instruction": "lui $v0, 0x5f5"
+      },
+      {
+        "pc": "0x8053c5f0",
+        "word": "0x3443e100",
+        "instruction": "ori $v1, $v0, 0xe100"
+      },
+      {
+        "pc": "0x8053c5f4",
+        "word": "0x814f181",
+        "instruction": "j 0x8053c604"
+      },
+      {
+        "pc": "0x8053c5f8",
+        "word": "0x2604005c",
+        "instruction": "addiu $a0, $s0, 0x5c"
+      },
+      {
+        "pc": "0x8053c5fc",
+        "word": "0x10600051",
+        "instruction": "beqz $v1, 0x8053c744"
+      },
+      {
+        "pc": "0x8053c600",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c604",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x8053c608",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c60c",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c5fc"
+      },
+      {
+        "pc": "0x8053c610",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c614",
+        "word": "0x24023333",
+        "instruction": "addiu $v0, $zero, 0x3333"
+      },
+      {
+        "pc": "0x8053c618",
+        "word": "0xa60200a8",
+        "instruction": "sh $v0, 0xa8($s0)"
+      },
+      {
+        "pc": "0x8053c61c",
+        "word": "0x240300cf",
+        "instruction": "addiu $v1, $zero, 0xcf"
+      },
+      {
+        "pc": "0x8053c620",
+        "word": "0x3c0205f5",
+        "instruction": "lui $v0, 0x5f5"
+      },
+      {
+        "pc": "0x8053c624",
+        "word": "0xa6030010",
+        "instruction": "sh $v1, 0x10($s0)"
+      },
+      {
+        "pc": "0x8053c628",
+        "word": "0x26040058",
+        "instruction": "addiu $a0, $s0, 0x58"
+      },
+      {
+        "pc": "0x8053c62c",
+        "word": "0x814f18f",
+        "instruction": "j 0x8053c63c"
+      },
+      {
+        "pc": "0x8053c630",
+        "word": "0x3443e100",
+        "instruction": "ori $v1, $v0, 0xe100"
+      },
+      {
+        "pc": "0x8053c634",
+        "word": "0x10600043",
+        "instruction": "beqz $v1, 0x8053c744"
+      },
+      {
+        "pc": "0x8053c638",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c63c",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x8053c640",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c644",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c634"
+      },
+      {
+        "pc": "0x8053c648",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c64c",
+        "word": "0x240200ff",
+        "instruction": "addiu $v0, $zero, 0xff"
+      },
+      {
+        "pc": "0x8053c650",
+        "word": "0x3c0305f5",
+        "instruction": "lui $v1, 0x5f5"
+      },
+      {
+        "pc": "0x8053c654",
+        "word": "0xa6020010",
+        "instruction": "sh $v0, 0x10($s0)"
+      },
+      {
+        "pc": "0x8053c658",
+        "word": "0x814f19a",
+        "instruction": "j 0x8053c668"
+      },
+      {
+        "pc": "0x8053c65c",
+        "word": "0x3463e100",
+        "instruction": "ori $v1, $v1, 0xe100"
+      },
+      {
+        "pc": "0x8053c660",
+        "word": "0x10600038",
+        "instruction": "beqz $v1, 0x8053c744"
+      },
+      {
+        "pc": "0x8053c664",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c668",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x8053c66c",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c670",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c660"
+      },
+      {
+        "pc": "0x8053c674",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c678",
+        "word": "0x240200ff",
+        "instruction": "addiu $v0, $zero, 0xff"
+      },
+      {
+        "pc": "0x8053c67c",
+        "word": "0x3c0305f5",
+        "instruction": "lui $v1, 0x5f5"
+      },
+      {
+        "pc": "0x8053c680",
+        "word": "0xa6020010",
+        "instruction": "sh $v0, 0x10($s0)"
+      },
+      {
+        "pc": "0x8053c684",
+        "word": "0x814f1a5",
+        "instruction": "j 0x8053c694"
+      },
+      {
+        "pc": "0x8053c688",
+        "word": "0x3463e100",
+        "instruction": "ori $v1, $v1, 0xe100"
+      },
+      {
+        "pc": "0x8053c68c",
+        "word": "0x1060002d",
+        "instruction": "beqz $v1, 0x8053c744"
+      },
+      {
+        "pc": "0x8053c690",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c694",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x8053c698",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c69c",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c68c"
+      },
+      {
+        "pc": "0x8053c6a0",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c6a4",
+        "word": "0x3c0205f5",
+        "instruction": "lui $v0, 0x5f5"
+      },
+      {
+        "pc": "0x8053c6a8",
+        "word": "0xa6000010",
+        "instruction": "sh $zero, 0x10($s0)"
+      },
+      {
+        "pc": "0x8053c6ac",
+        "word": "0x814f1af",
+        "instruction": "j 0x8053c6bc"
+      },
+      {
+        "pc": "0x8053c6b0",
+        "word": "0x3443e100",
+        "instruction": "ori $v1, $v0, 0xe100"
+      },
+      {
+        "pc": "0x8053c6b4",
+        "word": "0x10600023",
+        "instruction": "beqz $v1, 0x8053c744"
+      },
+      {
+        "pc": "0x8053c6b8",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c6bc",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x8053c6c0",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c6c4",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c6b4"
+      },
+      {
+        "pc": "0x8053c6c8",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c6cc",
+        "word": "0x12600016",
+        "instruction": "beqz $s3, 0x8053c728"
+      },
+      {
+        "pc": "0x8053c6d0",
+        "word": "0x3c0205f5",
+        "instruction": "lui $v0, 0x5f5"
+      },
+      {
+        "pc": "0x8053c6d4",
+        "word": "0x344ae100",
+        "instruction": "ori $t2, $v0, 0xe100"
+      },
+      {
+        "pc": "0x8053c6d8",
+        "word": "0x26080030",
+        "instruction": "addiu $t0, $s0, 0x30"
+      },
+      {
+        "pc": "0x8053c6dc",
+        "word": "0x26050054",
+        "instruction": "addiu $a1, $s0, 0x54"
+      },
+      {
+        "pc": "0x8053c6e0",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x8053c6e4",
+        "word": "0x24090001",
+        "instruction": "addiu $t1, $zero, 1"
+      },
+      {
+        "pc": "0x8053c6e8",
+        "word": "0x26070014",
+        "instruction": "addiu $a3, $s0, 0x14"
+      },
+      {
+        "pc": "0x8053c6ec",
+        "word": "0xa5090000",
+        "instruction": "sh $t1, ($t0)"
+      },
+      {
+        "pc": "0x8053c6f0",
+        "word": "0x814f1c0",
+        "instruction": "j 0x8053c700"
+      },
+      {
+        "pc": "0x8053c6f4",
+        "word": "0x1401821",
+        "instruction": "move $v1, $t2"
+      },
+      {
+        "pc": "0x8053c6f8",
+        "word": "0x10600012",
+        "instruction": "beqz $v1, 0x8053c744"
+      },
+      {
+        "pc": "0x8053c6fc",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c700",
+        "word": "0x94a20000",
+        "instruction": "lhu $v0, ($a1)"
+      },
+      {
+        "pc": "0x8053c704",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c708",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c6f8"
+      },
+      {
+        "pc": "0x8053c70c",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c710",
+        "word": "0x94e40000",
+        "instruction": "lhu $a0, ($a3)"
+      },
+      {
+        "pc": "0x8053c714",
+        "word": "0x2461821",
+        "instruction": "addu $v1, $s2, $a2"
+      },
+      {
+        "pc": "0x8053c718",
+        "word": "0x24c60001",
+        "instruction": "addiu $a2, $a2, 1"
+      },
+      {
+        "pc": "0x8053c71c",
+        "word": "0xd3102b",
+        "instruction": "sltu $v0, $a2, $s3"
+      },
+      {
+        "pc": "0x8053c720",
+        "word": "0x1440fff2",
+        "instruction": "bnez $v0, 0x8053c6ec"
+      },
+      {
+        "pc": "0x8053c724",
+        "word": "0xa0640000",
+        "instruction": "sb $a0, ($v1)"
+      },
+      {
+        "pc": "0x8053c728",
+        "word": "0x24032222",
+        "instruction": "addiu $v1, $zero, 0x2222"
+      },
+      {
+        "pc": "0x8053c72c",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x8053c730",
+        "word": "0xa6020020",
+        "instruction": "sh $v0, 0x20($s0)"
+      },
+      {
+        "pc": "0x8053c734",
+        "word": "0xa60300a8",
+        "instruction": "sh $v1, 0xa8($s0)"
+      },
+      {
+        "pc": "0x8053c738",
+        "word": "0x26030020",
+        "instruction": "addiu $v1, $s0, 0x20"
+      },
+      {
+        "pc": "0x8053c73c",
+        "word": "0x814f1d3",
+        "instruction": "j 0x8053c74c"
+      },
+      {
+        "pc": "0x8053c740",
+        "word": "0x24100001",
+        "instruction": "addiu $s0, $zero, 1"
+      },
+      {
+        "pc": "0x8053c744",
+        "word": "0x26030020",
+        "instruction": "addiu $v1, $s0, 0x20"
+      },
+      {
+        "pc": "0x8053c748",
+        "word": "0x8021",
+        "instruction": "move $s0, $zero"
+      },
+      {
+        "pc": "0x8053c74c",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x8053c750",
+        "word": "0xa4620000",
+        "instruction": "sh $v0, ($v1)"
+      },
+      {
+        "pc": "0x8053c754",
+        "word": "0xc14f054",
+        "instruction": "jal 0x8053c150"
+      },
+      {
+        "pc": "0x8053c758",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c75c",
+        "word": "0xc172e13",
+        "instruction": "jal 0x805cb84c"
+      },
+      {
+        "pc": "0x8053c760",
+        "word": "0x8e24884c",
+        "instruction": "lw $a0, -0x77b4($s1)"
+      },
+      {
+        "pc": "0x8053c764",
+        "word": "0x8fbf0024",
+        "instruction": "lw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053c768",
+        "word": "0x2001021",
+        "instruction": "move $v0, $s0"
+      },
+      {
+        "pc": "0x8053c76c",
+        "word": "0x8fb30020",
+        "instruction": "lw $s3, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053c770",
+        "word": "0x8fb2001c",
+        "instruction": "lw $s2, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053c774",
+        "word": "0x8fb10018",
+        "instruction": "lw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x8053c778",
+        "word": "0x8fb00014",
+        "instruction": "lw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053c77c",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053c780",
+        "word": "0x27bd0028",
+        "instruction": "addiu $sp, $sp, 0x28"
+      }
+    ],
+    "JEDEC_probe": [
+      {
+        "pc": "0x8053c784",
+        "word": "0x27bdffd8",
+        "instruction": "addiu $sp, $sp, -0x28"
+      },
+      {
+        "pc": "0x8053c788",
+        "word": "0xafb10018",
+        "instruction": "sw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x8053c78c",
+        "word": "0x3c11806e",
+        "instruction": "lui $s1, 0x806e"
+      },
+      {
+        "pc": "0x8053c790",
+        "word": "0xafb30020",
+        "instruction": "sw $s3, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053c794",
+        "word": "0xafb2001c",
+        "instruction": "sw $s2, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053c798",
+        "word": "0xafb00014",
+        "instruction": "sw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053c79c",
+        "word": "0x809821",
+        "instruction": "move $s3, $a0"
+      },
+      {
+        "pc": "0x8053c7a0",
+        "word": "0xafbf0024",
+        "instruction": "sw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053c7a4",
+        "word": "0xc172ec8",
+        "instruction": "jal 0x805cbb20"
+      },
+      {
+        "pc": "0x8053c7a8",
+        "word": "0xa09021",
+        "instruction": "move $s2, $a1"
+      },
+      {
+        "pc": "0x8053c7ac",
+        "word": "0x8e24884c",
+        "instruction": "lw $a0, -0x77b4($s1)"
+      },
+      {
+        "pc": "0x8053c7b0",
+        "word": "0x24050bb8",
+        "instruction": "addiu $a1, $zero, 0xbb8"
+      },
+      {
+        "pc": "0x8053c7b4",
+        "word": "0xc172e11",
+        "instruction": "jal 0x805cb844"
+      },
+      {
+        "pc": "0x8053c7b8",
+        "word": "0x8021",
+        "instruction": "move $s0, $zero"
+      },
+      {
+        "pc": "0x8053c7bc",
+        "word": "0x14400008",
+        "instruction": "bnez $v0, 0x8053c7e0"
+      },
+      {
+        "pc": "0x8053c7c0",
+        "word": "0x8fbf0024",
+        "instruction": "lw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053c7c4",
+        "word": "0x2001021",
+        "instruction": "move $v0, $s0"
+      },
+      {
+        "pc": "0x8053c7c8",
+        "word": "0x8fb30020",
+        "instruction": "lw $s3, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053c7cc",
+        "word": "0x8fb2001c",
+        "instruction": "lw $s2, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053c7d0",
+        "word": "0x8fb10018",
+        "instruction": "lw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x8053c7d4",
+        "word": "0x8fb00014",
+        "instruction": "lw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053c7d8",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053c7dc",
+        "word": "0x27bd0028",
+        "instruction": "addiu $sp, $sp, 0x28"
+      },
+      {
+        "pc": "0x8053c7e0",
+        "word": "0x3c02806b",
+        "instruction": "lui $v0, 0x806b"
+      },
+      {
+        "pc": "0x8053c7e4",
+        "word": "0x8c50ded0",
+        "instruction": "lw $s0, -0x2130($v0)"
+      },
+      {
+        "pc": "0x8053c7e8",
+        "word": "0x2403aaaa",
+        "instruction": "addiu $v1, $zero, -0x5556"
+      },
+      {
+        "pc": "0x8053c7ec",
+        "word": "0xa6030000",
+        "instruction": "sh $v1, ($s0)"
+      },
+      {
+        "pc": "0x8053c7f0",
+        "word": "0xc14f067",
+        "instruction": "jal 0x8053c19c"
+      },
+      {
+        "pc": "0x8053c7f4",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c7f8",
+        "word": "0x10400036",
+        "instruction": "beqz $v0, 0x8053c8d4"
+      },
+      {
+        "pc": "0x8053c7fc",
+        "word": "0x3c0205f5",
+        "instruction": "lui $v0, 0x5f5"
+      },
+      {
+        "pc": "0x8053c800",
+        "word": "0x3443e100",
+        "instruction": "ori $v1, $v0, 0xe100"
+      },
+      {
+        "pc": "0x8053c804",
+        "word": "0x814f205",
+        "instruction": "j 0x8053c814"
+      },
+      {
+        "pc": "0x8053c808",
+        "word": "0x2604005c",
+        "instruction": "addiu $a0, $s0, 0x5c"
+      },
+      {
+        "pc": "0x8053c80c",
+        "word": "0x10600031",
+        "instruction": "beqz $v1, 0x8053c8d4"
+      },
+      {
+        "pc": "0x8053c810",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c814",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x8053c818",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c81c",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c80c"
+      },
+      {
+        "pc": "0x8053c820",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c824",
+        "word": "0x24023333",
+        "instruction": "addiu $v0, $zero, 0x3333"
+      },
+      {
+        "pc": "0x8053c828",
+        "word": "0xa60200a8",
+        "instruction": "sh $v0, 0xa8($s0)"
+      },
+      {
+        "pc": "0x8053c82c",
+        "word": "0x2403009f",
+        "instruction": "addiu $v1, $zero, 0x9f"
+      },
+      {
+        "pc": "0x8053c830",
+        "word": "0x3c0205f5",
+        "instruction": "lui $v0, 0x5f5"
+      },
+      {
+        "pc": "0x8053c834",
+        "word": "0xa6030010",
+        "instruction": "sh $v1, 0x10($s0)"
+      },
+      {
+        "pc": "0x8053c838",
+        "word": "0x26040058",
+        "instruction": "addiu $a0, $s0, 0x58"
+      },
+      {
+        "pc": "0x8053c83c",
+        "word": "0x814f213",
+        "instruction": "j 0x8053c84c"
+      },
+      {
+        "pc": "0x8053c840",
+        "word": "0x3443e100",
+        "instruction": "ori $v1, $v0, 0xe100"
+      },
+      {
+        "pc": "0x8053c844",
+        "word": "0x10600023",
+        "instruction": "beqz $v1, 0x8053c8d4"
+      },
+      {
+        "pc": "0x8053c848",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c84c",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x8053c850",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c854",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c844"
+      },
+      {
+        "pc": "0x8053c858",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c85c",
+        "word": "0x12400016",
+        "instruction": "beqz $s2, 0x8053c8b8"
+      },
+      {
+        "pc": "0x8053c860",
+        "word": "0x3c0205f5",
+        "instruction": "lui $v0, 0x5f5"
+      },
+      {
+        "pc": "0x8053c864",
+        "word": "0x344ae100",
+        "instruction": "ori $t2, $v0, 0xe100"
+      },
+      {
+        "pc": "0x8053c868",
+        "word": "0x26080030",
+        "instruction": "addiu $t0, $s0, 0x30"
+      },
+      {
+        "pc": "0x8053c86c",
+        "word": "0x26050054",
+        "instruction": "addiu $a1, $s0, 0x54"
+      },
+      {
+        "pc": "0x8053c870",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x8053c874",
+        "word": "0x24090001",
+        "instruction": "addiu $t1, $zero, 1"
+      },
+      {
+        "pc": "0x8053c878",
+        "word": "0x26070014",
+        "instruction": "addiu $a3, $s0, 0x14"
+      },
+      {
+        "pc": "0x8053c87c",
+        "word": "0xa5090000",
+        "instruction": "sh $t1, ($t0)"
+      },
+      {
+        "pc": "0x8053c880",
+        "word": "0x814f224",
+        "instruction": "j 0x8053c890"
+      },
+      {
+        "pc": "0x8053c884",
+        "word": "0x1401821",
+        "instruction": "move $v1, $t2"
+      },
+      {
+        "pc": "0x8053c888",
+        "word": "0x10600012",
+        "instruction": "beqz $v1, 0x8053c8d4"
+      },
+      {
+        "pc": "0x8053c88c",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c890",
+        "word": "0x94a20000",
+        "instruction": "lhu $v0, ($a1)"
+      },
+      {
+        "pc": "0x8053c894",
+        "word": "0x30420001",
+        "instruction": "andi $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053c898",
+        "word": "0x1040fffb",
+        "instruction": "beqz $v0, 0x8053c888"
+      },
+      {
+        "pc": "0x8053c89c",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x8053c8a0",
+        "word": "0x94e40000",
+        "instruction": "lhu $a0, ($a3)"
+      },
+      {
+        "pc": "0x8053c8a4",
+        "word": "0x2661821",
+        "instruction": "addu $v1, $s3, $a2"
+      },
+      {
+        "pc": "0x8053c8a8",
+        "word": "0x24c60001",
+        "instruction": "addiu $a2, $a2, 1"
+      },
+      {
+        "pc": "0x8053c8ac",
+        "word": "0xd2102b",
+        "instruction": "sltu $v0, $a2, $s2"
+      },
+      {
+        "pc": "0x8053c8b0",
+        "word": "0x1440fff2",
+        "instruction": "bnez $v0, 0x8053c87c"
+      },
+      {
+        "pc": "0x8053c8b4",
+        "word": "0xa0640000",
+        "instruction": "sb $a0, ($v1)"
+      },
+      {
+        "pc": "0x8053c8b8",
+        "word": "0x24032222",
+        "instruction": "addiu $v1, $zero, 0x2222"
+      },
+      {
+        "pc": "0x8053c8bc",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x8053c8c0",
+        "word": "0xa6020020",
+        "instruction": "sh $v0, 0x20($s0)"
+      },
+      {
+        "pc": "0x8053c8c4",
+        "word": "0xa60300a8",
+        "instruction": "sh $v1, 0xa8($s0)"
+      },
+      {
+        "pc": "0x8053c8c8",
+        "word": "0x26030020",
+        "instruction": "addiu $v1, $s0, 0x20"
+      },
+      {
+        "pc": "0x8053c8cc",
+        "word": "0x814f237",
+        "instruction": "j 0x8053c8dc"
+      },
+      {
+        "pc": "0x8053c8d0",
+        "word": "0x24100001",
+        "instruction": "addiu $s0, $zero, 1"
+      },
+      {
+        "pc": "0x8053c8d4",
+        "word": "0x26030020",
+        "instruction": "addiu $v1, $s0, 0x20"
+      },
+      {
+        "pc": "0x8053c8d8",
+        "word": "0x8021",
+        "instruction": "move $s0, $zero"
+      },
+      {
+        "pc": "0x8053c8dc",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x8053c8e0",
+        "word": "0xa4620000",
+        "instruction": "sh $v0, ($v1)"
+      },
+      {
+        "pc": "0x8053c8e4",
+        "word": "0xc14f054",
+        "instruction": "jal 0x8053c150"
+      },
+      {
+        "pc": "0x8053c8e8",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053c8ec",
+        "word": "0xc172e13",
+        "instruction": "jal 0x805cb84c"
+      },
+      {
+        "pc": "0x8053c8f0",
+        "word": "0x8e24884c",
+        "instruction": "lw $a0, -0x77b4($s1)"
+      },
+      {
+        "pc": "0x8053c8f4",
+        "word": "0x8fbf0024",
+        "instruction": "lw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053c8f8",
+        "word": "0x2001021",
+        "instruction": "move $v0, $s0"
+      },
+      {
+        "pc": "0x8053c8fc",
+        "word": "0x8fb30020",
+        "instruction": "lw $s3, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053c900",
+        "word": "0x8fb2001c",
+        "instruction": "lw $s2, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053c904",
+        "word": "0x8fb10018",
+        "instruction": "lw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x8053c908",
+        "word": "0x8fb00014",
+        "instruction": "lw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053c90c",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053c910",
+        "word": "0x27bd0028",
+        "instruction": "addiu $sp, $sp, 0x28"
+      },
+      {
+        "pc": "0x8053c914",
+        "word": "0x27bdffa0",
+        "instruction": "addiu $sp, $sp, -0x60"
+      },
+      {
+        "pc": "0x8053c918",
+        "word": "0xafb70054",
+        "instruction": "sw $s7, 0x54($sp)"
+      },
+      {
+        "pc": "0x8053c91c",
+        "word": "0xafb5004c",
+        "instruction": "sw $s5, 0x4c($sp)"
+      }
+    ],
+    "flash_descriptor_selection": [
+      {
+        "pc": "0x8053db88",
+        "word": "0x27bdffd8",
+        "instruction": "addiu $sp, $sp, -0x28"
+      },
+      {
+        "pc": "0x8053db8c",
+        "word": "0xafb10020",
+        "instruction": "sw $s1, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053db90",
+        "word": "0x3c118070",
+        "instruction": "lui $s1, 0x8070"
+      },
+      {
+        "pc": "0x8053db94",
+        "word": "0xafb0001c",
+        "instruction": "sw $s0, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053db98",
+        "word": "0x27a40010",
+        "instruction": "addiu $a0, $sp, 0x10"
+      },
+      {
+        "pc": "0x8053db9c",
+        "word": "0x2630fc9c",
+        "instruction": "addiu $s0, $s1, -0x364"
+      },
+      {
+        "pc": "0x8053dba0",
+        "word": "0x24050002",
+        "instruction": "addiu $a1, $zero, 2"
+      },
+      {
+        "pc": "0x8053dba4",
+        "word": "0xafbf0024",
+        "instruction": "sw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053dba8",
+        "word": "0xae20fc9c",
+        "instruction": "sw $zero, -0x364($s1)"
+      },
+      {
+        "pc": "0x8053dbac",
+        "word": "0xae000004",
+        "instruction": "sw $zero, 4($s0)"
+      },
+      {
+        "pc": "0x8053dbb0",
+        "word": "0xae000008",
+        "instruction": "sw $zero, 8($s0)"
+      },
+      {
+        "pc": "0x8053dbb4",
+        "word": "0xae00000c",
+        "instruction": "sw $zero, 0xc($s0)"
+      },
+      {
+        "pc": "0x8053dbb8",
+        "word": "0xae000010",
+        "instruction": "sw $zero, 0x10($s0)"
+      },
+      {
+        "pc": "0x8053dbbc",
+        "word": "0xae000014",
+        "instruction": "sw $zero, 0x14($s0)"
+      },
+      {
+        "pc": "0x8053dbc0",
+        "word": "0xae000018",
+        "instruction": "sw $zero, 0x18($s0)"
+      },
+      {
+        "pc": "0x8053dbc4",
+        "word": "0xae00001c",
+        "instruction": "sw $zero, 0x1c($s0)"
+      },
+      {
+        "pc": "0x8053dbc8",
+        "word": "0xae000020",
+        "instruction": "sw $zero, 0x20($s0)"
+      },
+      {
+        "pc": "0x8053dbcc",
+        "word": "0xc14f15d",
+        "instruction": "jal 0x8053c574"
+      },
+      {
+        "pc": "0x8053dbd0",
+        "word": "0xae000024",
+        "instruction": "sw $zero, 0x24($s0)"
+      },
+      {
+        "pc": "0x8053dbd4",
+        "word": "0x27a40014",
+        "instruction": "addiu $a0, $sp, 0x14"
+      },
+      {
+        "pc": "0x8053dbd8",
+        "word": "0xc14f1e1",
+        "instruction": "jal 0x8053c784"
+      },
+      {
+        "pc": "0x8053dbdc",
+        "word": "0x24050003",
+        "instruction": "addiu $a1, $zero, 3"
+      },
+      {
+        "pc": "0x8053dbe0",
+        "word": "0x24030001",
+        "instruction": "addiu $v1, $zero, 1"
+      },
+      {
+        "pc": "0x8053dbe4",
+        "word": "0x10430007",
+        "instruction": "beq $v0, $v1, 0x8053dc04"
+      },
+      {
+        "pc": "0x8053dbe8",
+        "word": "0x3c08806e",
+        "instruction": "lui $t0, 0x806e"
+      },
+      {
+        "pc": "0x8053dbec",
+        "word": "0x8fbf0024",
+        "instruction": "lw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053dbf0",
+        "word": "0x91028848",
+        "instruction": "lbu $v0, -0x77b8($t0)"
+      },
+      {
+        "pc": "0x8053dbf4",
+        "word": "0x8fb10020",
+        "instruction": "lw $s1, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053dbf8",
+        "word": "0x8fb0001c",
+        "instruction": "lw $s0, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053dbfc",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053dc00",
+        "word": "0x27bd0028",
+        "instruction": "addiu $sp, $sp, 0x28"
+      },
+      {
+        "pc": "0x8053dc04",
+        "word": "0x3c02806b",
+        "instruction": "lui $v0, 0x806b"
+      },
+      {
+        "pc": "0x8053dc08",
+        "word": "0x2449dee0",
+        "instruction": "addiu $t1, $v0, -0x2120"
+      },
+      {
+        "pc": "0x8053dc0c",
+        "word": "0x91220002",
+        "instruction": "lbu $v0, 2($t1)"
+      },
+      {
+        "pc": "0x8053dc10",
+        "word": "0x1040000b",
+        "instruction": "beqz $v0, 0x8053dc40"
+      },
+      {
+        "pc": "0x8053dc14",
+        "word": "0x1201821",
+        "instruction": "move $v1, $t1"
+      },
+      {
+        "pc": "0x8053dc18",
+        "word": "0x93a50014",
+        "instruction": "lbu $a1, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053dc1c",
+        "word": "0x93a60015",
+        "instruction": "lbu $a2, 0x15($sp)"
+      },
+      {
+        "pc": "0x8053dc20",
+        "word": "0x93a70016",
+        "instruction": "lbu $a3, 0x16($sp)"
+      },
+      {
+        "pc": "0x8053dc24",
+        "word": "0x2021",
+        "instruction": "move $a0, $zero"
+      },
+      {
+        "pc": "0x8053dc28",
+        "word": "0x1045001e",
+        "instruction": "beq $v0, $a1, 0x8053dca4"
+      },
+      {
+        "pc": "0x8053dc2c",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053dc30",
+        "word": "0x9062002a",
+        "instruction": "lbu $v0, 0x2a($v1)"
+      },
+      {
+        "pc": "0x8053dc34",
+        "word": "0x24840001",
+        "instruction": "addiu $a0, $a0, 1"
+      },
+      {
+        "pc": "0x8053dc38",
+        "word": "0x1440fffb",
+        "instruction": "bnez $v0, 0x8053dc28"
+      },
+      {
+        "pc": "0x8053dc3c",
+        "word": "0x24630028",
+        "instruction": "addiu $v1, $v1, 0x28"
+      },
+      {
+        "pc": "0x8053dc40",
+        "word": "0x3c08806e",
+        "instruction": "lui $t0, 0x806e"
+      },
+      {
+        "pc": "0x8053dc44",
+        "word": "0x91038848",
+        "instruction": "lbu $v1, -0x77b8($t0)"
+      },
+      {
+        "pc": "0x8053dc48",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x8053dc4c",
+        "word": "0x1062ffe7",
+        "instruction": "beq $v1, $v0, 0x8053dbec"
+      },
+      {
+        "pc": "0x8053dc50",
+        "word": "0x2003821",
+        "instruction": "move $a3, $s0"
+      },
+      {
+        "pc": "0x8053dc54",
+        "word": "0x252a0070",
+        "instruction": "addiu $t2, $t1, 0x70"
+      },
+      {
+        "pc": "0x8053dc58",
+        "word": "0x25260050",
+        "instruction": "addiu $a2, $t1, 0x50"
+      },
+      {
+        "pc": "0x8053dc5c",
+        "word": "0x8cc20000",
+        "instruction": "lw $v0, ($a2)"
+      },
+      {
+        "pc": "0x8053dc60",
+        "word": "0x8cc30004",
+        "instruction": "lw $v1, 4($a2)"
+      },
+      {
+        "pc": "0x8053dc64",
+        "word": "0x8cc40008",
+        "instruction": "lw $a0, 8($a2)"
+      },
+      {
+        "pc": "0x8053dc68",
+        "word": "0x8cc5000c",
+        "instruction": "lw $a1, 0xc($a2)"
+      },
+      {
+        "pc": "0x8053dc6c",
+        "word": "0x24c60010",
+        "instruction": "addiu $a2, $a2, 0x10"
+      },
+      {
+        "pc": "0x8053dc70",
+        "word": "0xace20000",
+        "instruction": "sw $v0, ($a3)"
+      },
+      {
+        "pc": "0x8053dc74",
+        "word": "0xace30004",
+        "instruction": "sw $v1, 4($a3)"
+      },
+      {
+        "pc": "0x8053dc78",
+        "word": "0xace40008",
+        "instruction": "sw $a0, 8($a3)"
+      },
+      {
+        "pc": "0x8053dc7c",
+        "word": "0xace5000c",
+        "instruction": "sw $a1, 0xc($a3)"
+      },
+      {
+        "pc": "0x8053dc80",
+        "word": "0x14cafff6",
+        "instruction": "bne $a2, $t2, 0x8053dc5c"
+      },
+      {
+        "pc": "0x8053dc84",
+        "word": "0x24e70010",
+        "instruction": "addiu $a3, $a3, 0x10"
+      },
+      {
+        "pc": "0x8053dc88",
+        "word": "0x8cc20004",
+        "instruction": "lw $v0, 4($a2)"
+      },
+      {
+        "pc": "0x8053dc8c",
+        "word": "0x8cc30000",
+        "instruction": "lw $v1, ($a2)"
+      },
+      {
+        "pc": "0x8053dc90",
+        "word": "0xace20004",
+        "instruction": "sw $v0, 4($a3)"
+      },
+      {
+        "pc": "0x8053dc94",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x8053dc98",
+        "word": "0xace30000",
+        "instruction": "sw $v1, ($a3)"
+      },
+      {
+        "pc": "0x8053dc9c",
+        "word": "0x814f6fb",
+        "instruction": "j 0x8053dbec"
+      },
+      {
+        "pc": "0x8053dca0",
+        "word": "0xa1028848",
+        "instruction": "sb $v0, -0x77b8($t0)"
+      },
+      {
+        "pc": "0x8053dca4",
+        "word": "0x90620003",
+        "instruction": "lbu $v0, 3($v1)"
+      },
+      {
+        "pc": "0x8053dca8",
+        "word": "0x1446ffe1",
+        "instruction": "bne $v0, $a2, 0x8053dc30"
+      },
+      {
+        "pc": "0x8053dcac",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053dcb0",
+        "word": "0x90620004",
+        "instruction": "lbu $v0, 4($v1)"
+      },
+      {
+        "pc": "0x8053dcb4",
+        "word": "0x1447ffde",
+        "instruction": "bne $v0, $a3, 0x8053dc30"
+      },
+      {
+        "pc": "0x8053dcb8",
+        "word": "0x410c0",
+        "instruction": "sll $v0, $a0, 3"
+      },
+      {
+        "pc": "0x8053dcbc",
+        "word": "0x41940",
+        "instruction": "sll $v1, $a0, 5"
+      },
+      {
+        "pc": "0x8053dcc0",
+        "word": "0x431021",
+        "instruction": "addu $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x8053dcc4",
+        "word": "0x1223021",
+        "instruction": "addu $a2, $t1, $v0"
+      },
+      {
+        "pc": "0x8053dcc8",
+        "word": "0x2003821",
+        "instruction": "move $a3, $s0"
+      },
+      {
+        "pc": "0x8053dccc",
+        "word": "0x24c80020",
+        "instruction": "addiu $t0, $a2, 0x20"
+      },
+      {
+        "pc": "0x8053dcd0",
+        "word": "0x88c20003",
+        "instruction": "lwl $v0, 3($a2)"
+      },
+      {
+        "pc": "0x8053dcd4",
+        "word": "0x88c30007",
+        "instruction": "lwl $v1, 7($a2)"
+      },
+      {
+        "pc": "0x8053dcd8",
+        "word": "0x88c4000b",
+        "instruction": "lwl $a0, 0xb($a2)"
+      },
+      {
+        "pc": "0x8053dcdc",
+        "word": "0x88c5000f",
+        "instruction": "lwl $a1, 0xf($a2)"
+      },
+      {
+        "pc": "0x8053dce0",
+        "word": "0x98c20000",
+        "instruction": "lwr $v0, ($a2)"
+      },
+      {
+        "pc": "0x8053dce4",
+        "word": "0x98c30004",
+        "instruction": "lwr $v1, 4($a2)"
+      },
+      {
+        "pc": "0x8053dce8",
+        "word": "0x98c40008",
+        "instruction": "lwr $a0, 8($a2)"
+      },
+      {
+        "pc": "0x8053dcec",
+        "word": "0x98c5000c",
+        "instruction": "lwr $a1, 0xc($a2)"
+      },
+      {
+        "pc": "0x8053dcf0",
+        "word": "0x24c60010",
+        "instruction": "addiu $a2, $a2, 0x10"
+      },
+      {
+        "pc": "0x8053dcf4",
+        "word": "0xace20000",
+        "instruction": "sw $v0, ($a3)"
+      },
+      {
+        "pc": "0x8053dcf8",
+        "word": "0xace30004",
+        "instruction": "sw $v1, 4($a3)"
+      },
+      {
+        "pc": "0x8053dcfc",
+        "word": "0xace40008",
+        "instruction": "sw $a0, 8($a3)"
+      },
+      {
+        "pc": "0x8053dd00",
+        "word": "0xace5000c",
+        "instruction": "sw $a1, 0xc($a3)"
+      },
+      {
+        "pc": "0x8053dd04",
+        "word": "0x14c8fff2",
+        "instruction": "bne $a2, $t0, 0x8053dcd0"
+      },
+      {
+        "pc": "0x8053dd08",
+        "word": "0x24e70010",
+        "instruction": "addiu $a3, $a3, 0x10"
+      },
+      {
+        "pc": "0x8053dd0c",
+        "word": "0x88c20003",
+        "instruction": "lwl $v0, 3($a2)"
+      },
+      {
+        "pc": "0x8053dd10",
+        "word": "0x88c30007",
+        "instruction": "lwl $v1, 7($a2)"
+      },
+      {
+        "pc": "0x8053dd14",
+        "word": "0x93a40010",
+        "instruction": "lbu $a0, 0x10($sp)"
+      },
+      {
+        "pc": "0x8053dd18",
+        "word": "0x98c20000",
+        "instruction": "lwr $v0, ($a2)"
+      },
+      {
+        "pc": "0x8053dd1c",
+        "word": "0x98c30004",
+        "instruction": "lwr $v1, 4($a2)"
+      },
+      {
+        "pc": "0x8053dd20",
+        "word": "0xace20000",
+        "instruction": "sw $v0, ($a3)"
+      },
+      {
+        "pc": "0x8053dd24",
+        "word": "0x240200c2",
+        "instruction": "addiu $v0, $zero, 0xc2"
+      },
+      {
+        "pc": "0x8053dd28",
+        "word": "0x10820005",
+        "instruction": "beq $a0, $v0, 0x8053dd40"
+      },
+      {
+        "pc": "0x8053dd2c",
+        "word": "0xace30004",
+        "instruction": "sw $v1, 4($a3)"
+      },
+      {
+        "pc": "0x8053dd30",
+        "word": "0x3c08806e",
+        "instruction": "lui $t0, 0x806e"
+      },
+      {
+        "pc": "0x8053dd34",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x8053dd38",
+        "word": "0x814f6fb",
+        "instruction": "j 0x8053dbec"
+      },
+      {
+        "pc": "0x8053dd3c",
+        "word": "0xa1028848",
+        "instruction": "sb $v0, -0x77b8($t0)"
+      },
+      {
+        "pc": "0x8053dd40",
+        "word": "0x93a30011",
+        "instruction": "lbu $v1, 0x11($sp)"
+      },
+      {
+        "pc": "0x8053dd44",
+        "word": "0x24020016",
+        "instruction": "addiu $v0, $zero, 0x16"
+      },
+      {
+        "pc": "0x8053dd48",
+        "word": "0x10620008",
+        "instruction": "beq $v1, $v0, 0x8053dd6c"
+      },
+      {
+        "pc": "0x8053dd4c",
+        "word": "0x24020017",
+        "instruction": "addiu $v0, $zero, 0x17"
+      },
+      {
+        "pc": "0x8053dd50",
+        "word": "0x1462fff7",
+        "instruction": "bne $v1, $v0, 0x8053dd30"
+      },
+      {
+        "pc": "0x8053dd54",
+        "word": "0x3c02806b",
+        "instruction": "lui $v0, 0x806b"
+      },
+      {
+        "pc": "0x8053dd58",
+        "word": "0x24030506",
+        "instruction": "addiu $v1, $zero, 0x506"
+      },
+      {
+        "pc": "0x8053dd5c",
+        "word": "0x2442e248",
+        "instruction": "addiu $v0, $v0, -0x1db8"
+      },
+      {
+        "pc": "0x8053dd60",
+        "word": "0xa623fc9c",
+        "instruction": "sh $v1, -0x364($s1)"
+      },
+      {
+        "pc": "0x8053dd64",
+        "word": "0x814f74c",
+        "instruction": "j 0x8053dd30"
+      },
+      {
+        "pc": "0x8053dd68",
+        "word": "0xae020008",
+        "instruction": "sw $v0, 8($s0)"
+      },
+      {
+        "pc": "0x8053dd6c",
+        "word": "0x3c02806b",
+        "instruction": "lui $v0, 0x806b"
+      },
+      {
+        "pc": "0x8053dd70",
+        "word": "0x24030505",
+        "instruction": "addiu $v1, $zero, 0x505"
+      },
+      {
+        "pc": "0x8053dd74",
+        "word": "0x2442e188",
+        "instruction": "addiu $v0, $v0, -0x1e78"
+      },
+      {
+        "pc": "0x8053dd78",
+        "word": "0xa623fc9c",
+        "instruction": "sh $v1, -0x364($s1)"
+      },
+      {
+        "pc": "0x8053dd7c",
+        "word": "0x814f74c",
+        "instruction": "j 0x8053dd30"
+      }
+    ],
+    "GOP_initializer": [
+      {
+        "pc": "0x80539ce4",
+        "word": "0x27bdffc0",
+        "instruction": "addiu $sp, $sp, -0x40"
+      },
+      {
+        "pc": "0x80539ce8",
+        "word": "0xafb30024",
+        "instruction": "sw $s3, 0x24($sp)"
+      },
+      {
+        "pc": "0x80539cec",
+        "word": "0x30b300ff",
+        "instruction": "andi $s3, $a1, 0xff"
+      },
+      {
+        "pc": "0x80539cf0",
+        "word": "0x2e620002",
+        "instruction": "sltiu $v0, $s3, 2"
+      },
+      {
+        "pc": "0x80539cf4",
+        "word": "0xafbf003c",
+        "instruction": "sw $ra, 0x3c($sp)"
+      },
+      {
+        "pc": "0x80539cf8",
+        "word": "0xafbe0038",
+        "instruction": "sw $fp, 0x38($sp)"
+      },
+      {
+        "pc": "0x80539cfc",
+        "word": "0xafb70034",
+        "instruction": "sw $s7, 0x34($sp)"
+      },
+      {
+        "pc": "0x80539d00",
+        "word": "0xafb60030",
+        "instruction": "sw $s6, 0x30($sp)"
+      },
+      {
+        "pc": "0x80539d04",
+        "word": "0xafb5002c",
+        "instruction": "sw $s5, 0x2c($sp)"
+      },
+      {
+        "pc": "0x80539d08",
+        "word": "0xafb40028",
+        "instruction": "sw $s4, 0x28($sp)"
+      },
+      {
+        "pc": "0x80539d0c",
+        "word": "0xafb20020",
+        "instruction": "sw $s2, 0x20($sp)"
+      },
+      {
+        "pc": "0x80539d10",
+        "word": "0xafb1001c",
+        "instruction": "sw $s1, 0x1c($sp)"
+      },
+      {
+        "pc": "0x80539d14",
+        "word": "0xafb00018",
+        "instruction": "sw $s0, 0x18($sp)"
+      },
+      {
+        "pc": "0x80539d18",
+        "word": "0xafa40040",
+        "instruction": "sw $a0, 0x40($sp)"
+      },
+      {
+        "pc": "0x80539d1c",
+        "word": "0x14400013",
+        "instruction": "bnez $v0, 0x80539d6c"
+      },
+      {
+        "pc": "0x80539d20",
+        "word": "0xafa00010",
+        "instruction": "sw $zero, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539d24",
+        "word": "0x3c048063",
+        "instruction": "lui $a0, 0x8063"
+      },
+      {
+        "pc": "0x80539d28",
+        "word": "0x3c058063",
+        "instruction": "lui $a1, 0x8063"
+      },
+      {
+        "pc": "0x80539d2c",
+        "word": "0x2603021",
+        "instruction": "move $a2, $s3"
+      },
+      {
+        "pc": "0x80539d30",
+        "word": "0x248413e0",
+        "instruction": "addiu $a0, $a0, 0x13e0"
+      },
+      {
+        "pc": "0x80539d34",
+        "word": "0xc180869",
+        "instruction": "jal 0x806021a4"
+      },
+      {
+        "pc": "0x80539d38",
+        "word": "0x24a51ed4",
+        "instruction": "addiu $a1, $a1, 0x1ed4"
+      },
+      {
+        "pc": "0x80539d3c",
+        "word": "0x8fbf003c",
+        "instruction": "lw $ra, 0x3c($sp)"
+      },
+      {
+        "pc": "0x80539d40",
+        "word": "0x8fbe0038",
+        "instruction": "lw $fp, 0x38($sp)"
+      },
+      {
+        "pc": "0x80539d44",
+        "word": "0x8fb70034",
+        "instruction": "lw $s7, 0x34($sp)"
+      },
+      {
+        "pc": "0x80539d48",
+        "word": "0x8fb60030",
+        "instruction": "lw $s6, 0x30($sp)"
+      },
+      {
+        "pc": "0x80539d4c",
+        "word": "0x8fb5002c",
+        "instruction": "lw $s5, 0x2c($sp)"
+      },
+      {
+        "pc": "0x80539d50",
+        "word": "0x8fb40028",
+        "instruction": "lw $s4, 0x28($sp)"
+      },
+      {
+        "pc": "0x80539d54",
+        "word": "0x8fb30024",
+        "instruction": "lw $s3, 0x24($sp)"
+      },
+      {
+        "pc": "0x80539d58",
+        "word": "0x8fb20020",
+        "instruction": "lw $s2, 0x20($sp)"
+      },
+      {
+        "pc": "0x80539d5c",
+        "word": "0x8fb1001c",
+        "instruction": "lw $s1, 0x1c($sp)"
+      },
+      {
+        "pc": "0x80539d60",
+        "word": "0x8fb00018",
+        "instruction": "lw $s0, 0x18($sp)"
+      },
+      {
+        "pc": "0x80539d64",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x80539d68",
+        "word": "0x27bd0040",
+        "instruction": "addiu $sp, $sp, 0x40"
+      },
+      {
+        "pc": "0x80539d6c",
+        "word": "0x2602021",
+        "instruction": "move $a0, $s3"
+      },
+      {
+        "pc": "0x80539d70",
+        "word": "0xc14e7f0",
+        "instruction": "jal 0x80539fc0"
+      },
+      {
+        "pc": "0x80539d74",
+        "word": "0x27a50010",
+        "instruction": "addiu $a1, $sp, 0x10"
+      },
+      {
+        "pc": "0x80539d78",
+        "word": "0x8fa20040",
+        "instruction": "lw $v0, 0x40($sp)"
+      },
+      {
+        "pc": "0x80539d7c",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539d80",
+        "word": "0x24060001",
+        "instruction": "addiu $a2, $zero, 1"
+      },
+      {
+        "pc": "0x80539d84",
+        "word": "0x24510610",
+        "instruction": "addiu $s1, $v0, 0x610"
+      },
+      {
+        "pc": "0x80539d88",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539d8c",
+        "word": "0x24a51f00",
+        "instruction": "addiu $a1, $a1, 0x1f00"
+      },
+      {
+        "pc": "0x80539d90",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539d94",
+        "word": "0x24070001",
+        "instruction": "addiu $a3, $zero, 1"
+      },
+      {
+        "pc": "0x80539d98",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539d9c",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539da0",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539da4",
+        "word": "0x24a51f00",
+        "instruction": "addiu $a1, $a1, 0x1f00"
+      },
+      {
+        "pc": "0x80539da8",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539dac",
+        "word": "0x24070007",
+        "instruction": "addiu $a3, $zero, 7"
+      },
+      {
+        "pc": "0x80539db0",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539db4",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539db8",
+        "word": "0x24064100",
+        "instruction": "addiu $a2, $zero, 0x4100"
+      },
+      {
+        "pc": "0x80539dbc",
+        "word": "0x24a51f02",
+        "instruction": "addiu $a1, $a1, 0x1f02"
+      },
+      {
+        "pc": "0x80539dc0",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539dc4",
+        "word": "0x3407ff00",
+        "instruction": "ori $a3, $zero, 0xff00"
+      },
+      {
+        "pc": "0x80539dc8",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539dcc",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539dd0",
+        "word": "0x24061000",
+        "instruction": "addiu $a2, $zero, 0x1000"
+      },
+      {
+        "pc": "0x80539dd4",
+        "word": "0x24a51f6a",
+        "instruction": "addiu $a1, $a1, 0x1f6a"
+      },
+      {
+        "pc": "0x80539dd8",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539ddc",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x80539de0",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539de4",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539de8",
+        "word": "0x24061000",
+        "instruction": "addiu $a2, $zero, 0x1000"
+      },
+      {
+        "pc": "0x80539dec",
+        "word": "0x24a51f6c",
+        "instruction": "addiu $a1, $a1, 0x1f6c"
+      },
+      {
+        "pc": "0x80539df0",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539df4",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x80539df8",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539dfc",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539e00",
+        "word": "0x24064000",
+        "instruction": "addiu $a2, $zero, 0x4000"
+      },
+      {
+        "pc": "0x80539e04",
+        "word": "0x24a51f00",
+        "instruction": "addiu $a1, $a1, 0x1f00"
+      },
+      {
+        "pc": "0x80539e08",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539e0c",
+        "word": "0x24074000",
+        "instruction": "addiu $a3, $zero, 0x4000"
+      },
+      {
+        "pc": "0x80539e10",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539e14",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539e18",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539e1c",
+        "word": "0x24a51f00",
+        "instruction": "addiu $a1, $a1, 0x1f00"
+      },
+      {
+        "pc": "0x80539e20",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539e24",
+        "word": "0x24070400",
+        "instruction": "addiu $a3, $zero, 0x400"
+      },
+      {
+        "pc": "0x80539e28",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539e2c",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539e30",
+        "word": "0x24060098",
+        "instruction": "addiu $a2, $zero, 0x98"
+      },
+      {
+        "pc": "0x80539e34",
+        "word": "0x24a51f04",
+        "instruction": "addiu $a1, $a1, 0x1f04"
+      },
+      {
+        "pc": "0x80539e38",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539e3c",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x80539e40",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539e44",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539e48",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539e4c",
+        "word": "0x24a51f00",
+        "instruction": "addiu $a1, $a1, 0x1f00"
+      },
+      {
+        "pc": "0x80539e50",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539e54",
+        "word": "0x24070400",
+        "instruction": "addiu $a3, $zero, 0x400"
+      },
+      {
+        "pc": "0x80539e58",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539e5c",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539e60",
+        "word": "0x24060700",
+        "instruction": "addiu $a2, $zero, 0x700"
+      },
+      {
+        "pc": "0x80539e64",
+        "word": "0x24a51f32",
+        "instruction": "addiu $a1, $a1, 0x1f32"
+      },
+      {
+        "pc": "0x80539e68",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539e6c",
+        "word": "0x24070700",
+        "instruction": "addiu $a3, $zero, 0x700"
+      },
+      {
+        "pc": "0x80539e70",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539e74",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539e78",
+        "word": "0x24060060",
+        "instruction": "addiu $a2, $zero, 0x60"
+      },
+      {
+        "pc": "0x80539e7c",
+        "word": "0x24a51f32",
+        "instruction": "addiu $a1, $a1, 0x1f32"
+      },
+      {
+        "pc": "0x80539e80",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539e84",
+        "word": "0x240700ff",
+        "instruction": "addiu $a3, $zero, 0xff"
+      },
+      {
+        "pc": "0x80539e88",
+        "word": "0x8fa20010",
+        "instruction": "lw $v0, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539e8c",
+        "word": "0x3c050002",
+        "instruction": "lui $a1, 2"
+      },
+      {
+        "pc": "0x80539e90",
+        "word": "0x34a51f60",
+        "instruction": "ori $a1, $a1, 0x1f60"
+      },
+      {
+        "pc": "0x80539e94",
+        "word": "0x452821",
+        "instruction": "addu $a1, $v0, $a1"
+      },
+      {
+        "pc": "0x80539e98",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539e9c",
+        "word": "0x24070001",
+        "instruction": "addiu $a3, $zero, 1"
+      },
+      {
+        "pc": "0x80539ea0",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539ea4",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539ea8",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539eac",
+        "word": "0xc14e8dd",
+        "instruction": "jal 0x8053a374"
+      },
+      {
+        "pc": "0x80539eb0",
+        "word": "0x2602821",
+        "instruction": "move $a1, $s3"
+      },
+      {
+        "pc": "0x80539eb4",
+        "word": "0x16600027",
+        "instruction": "bnez $s3, 0x80539f54"
+      },
+      {
+        "pc": "0x80539eb8",
+        "word": "0x9021",
+        "instruction": "move $s2, $zero"
+      },
+      {
+        "pc": "0x80539ebc",
+        "word": "0x3c020001",
+        "instruction": "lui $v0, 1"
+      },
+      {
+        "pc": "0x80539ec0",
+        "word": "0x345e1f18",
+        "instruction": "ori $fp, $v0, 0x1f18"
+      },
+      {
+        "pc": "0x80539ec4",
+        "word": "0x34571f1a",
+        "instruction": "ori $s7, $v0, 0x1f1a"
+      },
+      {
+        "pc": "0x80539ec8",
+        "word": "0x34561f1c",
+        "instruction": "ori $s6, $v0, 0x1f1c"
+      },
+      {
+        "pc": "0x80539ecc",
+        "word": "0x34551f28",
+        "instruction": "ori $s5, $v0, 0x1f28"
+      },
+      {
+        "pc": "0x80539ed0",
+        "word": "0x24140004",
+        "instruction": "addiu $s4, $zero, 4"
+      },
+      {
+        "pc": "0x80539ed4",
+        "word": "0x32500003",
+        "instruction": "andi $s0, $s2, 3"
+      },
+      {
+        "pc": "0x80539ed8",
+        "word": "0x108180",
+        "instruction": "sll $s0, $s0, 6"
+      },
+      {
+        "pc": "0x80539edc",
+        "word": "0x21e2821",
+        "instruction": "addu $a1, $s0, $fp"
+      },
+      {
+        "pc": "0x80539ee0",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539ee4",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x80539ee8",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539eec",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539ef0",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539ef4",
+        "word": "0x2172821",
+        "instruction": "addu $a1, $s0, $s7"
+      },
+      {
+        "pc": "0x80539ef8",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539efc",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539f00",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x80539f04",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539f08",
+        "word": "0x2162821",
+        "instruction": "addu $a1, $s0, $s6"
+      },
+      {
+        "pc": "0x80539f0c",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539f10",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539f14",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x80539f18",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539f1c",
+        "word": "0x2152821",
+        "instruction": "addu $a1, $s0, $s5"
+      },
+      {
+        "pc": "0x80539f20",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539f24",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539f28",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x80539f2c",
+        "word": "0x3c020001",
+        "instruction": "lui $v0, 1"
+      },
+      {
+        "pc": "0x80539f30",
+        "word": "0x34421f2a",
+        "instruction": "ori $v0, $v0, 0x1f2a"
+      },
+      {
+        "pc": "0x80539f34",
+        "word": "0x26520001",
+        "instruction": "addiu $s2, $s2, 1"
+      },
+      {
+        "pc": "0x80539f38",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539f3c",
+        "word": "0x2022821",
+        "instruction": "addu $a1, $s0, $v0"
+      },
+      {
+        "pc": "0x80539f40",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x80539f44",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539f48",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x80539f4c",
+        "word": "0x1654ffe2",
+        "instruction": "bne $s2, $s4, 0x80539ed8"
+      },
+      {
+        "pc": "0x80539f50",
+        "word": "0x32500003",
+        "instruction": "andi $s0, $s2, 3"
+      },
+      {
+        "pc": "0x80539f54",
+        "word": "0x8fa30040",
+        "instruction": "lw $v1, 0x40($sp)"
+      },
+      {
+        "pc": "0x80539f58",
+        "word": "0x8c62062c",
+        "instruction": "lw $v0, 0x62c($v1)"
+      },
+      {
+        "pc": "0x80539f5c",
+        "word": "0x90430000",
+        "instruction": "lbu $v1, ($v0)"
+      },
+      {
+        "pc": "0x80539f60",
+        "word": "0x14600010",
+        "instruction": "bnez $v1, 0x80539fa4"
+      },
+      {
+        "pc": "0x80539f64",
+        "word": "0x8fa50010",
+        "instruction": "lw $a1, 0x10($sp)"
+      },
+      {
+        "pc": "0x80539f68",
+        "word": "0x8fa40040",
+        "instruction": "lw $a0, 0x40($sp)"
+      },
+      {
+        "pc": "0x80539f6c",
+        "word": "0xc14e0f3",
+        "instruction": "jal 0x805383cc"
+      },
+      {
+        "pc": "0x80539f70",
+        "word": "0x2602821",
+        "instruction": "move $a1, $s3"
+      },
+      {
+        "pc": "0x80539f74",
+        "word": "0x8fbf003c",
+        "instruction": "lw $ra, 0x3c($sp)"
+      },
+      {
+        "pc": "0x80539f78",
+        "word": "0x8fbe0038",
+        "instruction": "lw $fp, 0x38($sp)"
+      },
+      {
+        "pc": "0x80539f7c",
+        "word": "0x8fb70034",
+        "instruction": "lw $s7, 0x34($sp)"
+      },
+      {
+        "pc": "0x80539f80",
+        "word": "0x8fb60030",
+        "instruction": "lw $s6, 0x30($sp)"
+      },
+      {
+        "pc": "0x80539f84",
+        "word": "0x8fb5002c",
+        "instruction": "lw $s5, 0x2c($sp)"
+      },
+      {
+        "pc": "0x80539f88",
+        "word": "0x8fb40028",
+        "instruction": "lw $s4, 0x28($sp)"
+      },
+      {
+        "pc": "0x80539f8c",
+        "word": "0x8fb30024",
+        "instruction": "lw $s3, 0x24($sp)"
+      },
+      {
+        "pc": "0x80539f90",
+        "word": "0x8fb20020",
+        "instruction": "lw $s2, 0x20($sp)"
+      },
+      {
+        "pc": "0x80539f94",
+        "word": "0x8fb1001c",
+        "instruction": "lw $s1, 0x1c($sp)"
+      },
+      {
+        "pc": "0x80539f98",
+        "word": "0x8fb00018",
+        "instruction": "lw $s0, 0x18($sp)"
+      },
+      {
+        "pc": "0x80539f9c",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x80539fa0",
+        "word": "0x27bd0040",
+        "instruction": "addiu $sp, $sp, 0x40"
+      },
+      {
+        "pc": "0x80539fa4",
+        "word": "0x2202021",
+        "instruction": "move $a0, $s1"
+      },
+      {
+        "pc": "0x80539fa8",
+        "word": "0x24060004",
+        "instruction": "addiu $a2, $zero, 4"
+      },
+      {
+        "pc": "0x80539fac",
+        "word": "0x24a51f00",
+        "instruction": "addiu $a1, $a1, 0x1f00"
+      },
+      {
+        "pc": "0x80539fb0",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x80539fb4",
+        "word": "0x24070004",
+        "instruction": "addiu $a3, $zero, 4"
+      },
+      {
+        "pc": "0x80539fb8",
+        "word": "0x814e7db",
+        "instruction": "j 0x80539f6c"
+      },
+      {
+        "pc": "0x80539fbc",
+        "word": "0x8fa40040",
+        "instruction": "lw $a0, 0x40($sp)"
+      }
+    ],
+    "GOP_banked_helpers": [
+      {
+        "pc": "0x8053a140",
+        "word": "0x30a7ff00",
+        "instruction": "andi $a3, $a1, 0xff00"
+      },
+      {
+        "pc": "0x8053a144",
+        "word": "0x24021f00",
+        "instruction": "addiu $v0, $zero, 0x1f00"
+      },
+      {
+        "pc": "0x8053a148",
+        "word": "0x10e20016",
+        "instruction": "beq $a3, $v0, 0x8053a1a4"
+      },
+      {
+        "pc": "0x8053a14c",
+        "word": "0xa01821",
+        "instruction": "move $v1, $a1"
+      },
+      {
+        "pc": "0x8053a150",
+        "word": "0x2ce21f01",
+        "instruction": "sltiu $v0, $a3, 0x1f01"
+      },
+      {
+        "pc": "0x8053a154",
+        "word": "0x14400008",
+        "instruction": "bnez $v0, 0x8053a178"
+      },
+      {
+        "pc": "0x8053a158",
+        "word": "0x24020b00",
+        "instruction": "addiu $v0, $zero, 0xb00"
+      },
+      {
+        "pc": "0x8053a15c",
+        "word": "0x24022800",
+        "instruction": "addiu $v0, $zero, 0x2800"
+      },
+      {
+        "pc": "0x8053a160",
+        "word": "0x10e20009",
+        "instruction": "beq $a3, $v0, 0x8053a188"
+      },
+      {
+        "pc": "0x8053a164",
+        "word": "0x24022f00",
+        "instruction": "addiu $v0, $zero, 0x2f00"
+      },
+      {
+        "pc": "0x8053a168",
+        "word": "0x10e20007",
+        "instruction": "beq $a3, $v0, 0x8053a188"
+      },
+      {
+        "pc": "0x8053a16c",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053a170",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a174",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053a178",
+        "word": "0x10e20003",
+        "instruction": "beq $a3, $v0, 0x8053a188"
+      },
+      {
+        "pc": "0x8053a17c",
+        "word": "0x24021200",
+        "instruction": "addiu $v0, $zero, 0x1200"
+      },
+      {
+        "pc": "0x8053a180",
+        "word": "0x14e2001c",
+        "instruction": "bne $a3, $v0, 0x8053a1f4"
+      },
+      {
+        "pc": "0x8053a184",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053a188",
+        "word": "0x8c820004",
+        "instruction": "lw $v0, 4($a0)"
+      },
+      {
+        "pc": "0x8053a18c",
+        "word": "0x3063ffff",
+        "instruction": "andi $v1, $v1, 0xffff"
+      },
+      {
+        "pc": "0x8053a190",
+        "word": "0x31840",
+        "instruction": "sll $v1, $v1, 1"
+      },
+      {
+        "pc": "0x8053a194",
+        "word": "0x621821",
+        "instruction": "addu $v1, $v1, $v0"
+      },
+      {
+        "pc": "0x8053a198",
+        "word": "0x94640000",
+        "instruction": "lhu $a0, ($v1)"
+      },
+      {
+        "pc": "0x8053a19c",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a1a0",
+        "word": "0xa4c40000",
+        "instruction": "sh $a0, ($a2)"
+      },
+      {
+        "pc": "0x8053a1a4",
+        "word": "0x8c850004",
+        "instruction": "lw $a1, 4($a0)"
+      },
+      {
+        "pc": "0x8053a1a8",
+        "word": "0x7c643c00",
+        "instruction": "ext $a0, $v1, 0x10, 8"
+      },
+      {
+        "pc": "0x8053a1ac",
+        "word": "0x94a23ffc",
+        "instruction": "lhu $v0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a1b0",
+        "word": "0x3047000f",
+        "instruction": "andi $a3, $v0, 0xf"
+      },
+      {
+        "pc": "0x8053a1b4",
+        "word": "0x10870011",
+        "instruction": "beq $a0, $a3, 0x8053a1fc"
+      },
+      {
+        "pc": "0x8053a1b8",
+        "word": "0x3062ffff",
+        "instruction": "andi $v0, $v1, 0xffff"
+      },
+      {
+        "pc": "0x8053a1bc",
+        "word": "0x94a23ffc",
+        "instruction": "lhu $v0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a1c0",
+        "word": "0x3084000f",
+        "instruction": "andi $a0, $a0, 0xf"
+      },
+      {
+        "pc": "0x8053a1c4",
+        "word": "0x3063ffff",
+        "instruction": "andi $v1, $v1, 0xffff"
+      },
+      {
+        "pc": "0x8053a1c8",
+        "word": "0x3042fff0",
+        "instruction": "andi $v0, $v0, 0xfff0"
+      },
+      {
+        "pc": "0x8053a1cc",
+        "word": "0x822025",
+        "instruction": "or $a0, $a0, $v0"
+      },
+      {
+        "pc": "0x8053a1d0",
+        "word": "0x31840",
+        "instruction": "sll $v1, $v1, 1"
+      },
+      {
+        "pc": "0x8053a1d4",
+        "word": "0xa4a43ffc",
+        "instruction": "sh $a0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a1d8",
+        "word": "0x651821",
+        "instruction": "addu $v1, $v1, $a1"
+      },
+      {
+        "pc": "0x8053a1dc",
+        "word": "0x94640000",
+        "instruction": "lhu $a0, ($v1)"
+      },
+      {
+        "pc": "0x8053a1e0",
+        "word": "0xa4c40000",
+        "instruction": "sh $a0, ($a2)"
+      },
+      {
+        "pc": "0x8053a1e4",
+        "word": "0x94a23ffc",
+        "instruction": "lhu $v0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a1e8",
+        "word": "0x3042fff0",
+        "instruction": "andi $v0, $v0, 0xfff0"
+      },
+      {
+        "pc": "0x8053a1ec",
+        "word": "0xe21025",
+        "instruction": "or $v0, $a3, $v0"
+      },
+      {
+        "pc": "0x8053a1f0",
+        "word": "0xa4a23ffc",
+        "instruction": "sh $v0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a1f4",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a1f8",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053a1fc",
+        "word": "0x21040",
+        "instruction": "sll $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053a200",
+        "word": "0x451021",
+        "instruction": "addu $v0, $v0, $a1"
+      },
+      {
+        "pc": "0x8053a204",
+        "word": "0x94430000",
+        "instruction": "lhu $v1, ($v0)"
+      },
+      {
+        "pc": "0x8053a208",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a20c",
+        "word": "0xa4c30000",
+        "instruction": "sh $v1, ($a2)"
+      },
+      {
+        "pc": "0x8053a210",
+        "word": "0x27bdffd0",
+        "instruction": "addiu $sp, $sp, -0x30"
+      },
+      {
+        "pc": "0x8053a214",
+        "word": "0xafb0001c",
+        "instruction": "sw $s0, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053a218",
+        "word": "0x3402ffff",
+        "instruction": "ori $v0, $zero, 0xffff"
+      },
+      {
+        "pc": "0x8053a21c",
+        "word": "0x30f0ffff",
+        "instruction": "andi $s0, $a3, 0xffff"
+      },
+      {
+        "pc": "0x8053a220",
+        "word": "0xafb30028",
+        "instruction": "sw $s3, 0x28($sp)"
+      },
+      {
+        "pc": "0x8053a224",
+        "word": "0xafb20024",
+        "instruction": "sw $s2, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053a228",
+        "word": "0xafb10020",
+        "instruction": "sw $s1, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053a22c",
+        "word": "0xafbf002c",
+        "instruction": "sw $ra, 0x2c($sp)"
+      },
+      {
+        "pc": "0x8053a230",
+        "word": "0x30d1ffff",
+        "instruction": "andi $s1, $a2, 0xffff"
+      },
+      {
+        "pc": "0x8053a234",
+        "word": "0x809821",
+        "instruction": "move $s3, $a0"
+      },
+      {
+        "pc": "0x8053a238",
+        "word": "0x12020009",
+        "instruction": "beq $s0, $v0, 0x8053a260"
+      },
+      {
+        "pc": "0x8053a23c",
+        "word": "0xa09021",
+        "instruction": "move $s2, $a1"
+      },
+      {
+        "pc": "0x8053a240",
+        "word": "0xc14e850",
+        "instruction": "jal 0x8053a140"
+      },
+      {
+        "pc": "0x8053a244",
+        "word": "0x27a60010",
+        "instruction": "addiu $a2, $sp, 0x10"
+      },
+      {
+        "pc": "0x8053a248",
+        "word": "0x97a20010",
+        "instruction": "lhu $v0, 0x10($sp)"
+      },
+      {
+        "pc": "0x8053a24c",
+        "word": "0x101827",
+        "instruction": "nor $v1, $zero, $s0"
+      },
+      {
+        "pc": "0x8053a250",
+        "word": "0x2112024",
+        "instruction": "and $a0, $s0, $s1"
+      },
+      {
+        "pc": "0x8053a254",
+        "word": "0x621824",
+        "instruction": "and $v1, $v1, $v0"
+      },
+      {
+        "pc": "0x8053a258",
+        "word": "0x648825",
+        "instruction": "or $s1, $v1, $a0"
+      },
+      {
+        "pc": "0x8053a25c",
+        "word": "0xa7a30010",
+        "instruction": "sh $v1, 0x10($sp)"
+      },
+      {
+        "pc": "0x8053a260",
+        "word": "0x3243ff00",
+        "instruction": "andi $v1, $s2, 0xff00"
+      },
+      {
+        "pc": "0x8053a264",
+        "word": "0x24021f00",
+        "instruction": "addiu $v0, $zero, 0x1f00"
+      },
+      {
+        "pc": "0x8053a268",
+        "word": "0x1062001e",
+        "instruction": "beq $v1, $v0, 0x8053a2e4"
+      },
+      {
+        "pc": "0x8053a26c",
+        "word": "0x2c621f01",
+        "instruction": "sltiu $v0, $v1, 0x1f01"
+      },
+      {
+        "pc": "0x8053a270",
+        "word": "0x1440000c",
+        "instruction": "bnez $v0, 0x8053a2a4"
+      },
+      {
+        "pc": "0x8053a274",
+        "word": "0x24020b00",
+        "instruction": "addiu $v0, $zero, 0xb00"
+      },
+      {
+        "pc": "0x8053a278",
+        "word": "0x24022800",
+        "instruction": "addiu $v0, $zero, 0x2800"
+      },
+      {
+        "pc": "0x8053a27c",
+        "word": "0x1062000d",
+        "instruction": "beq $v1, $v0, 0x8053a2b4"
+      },
+      {
+        "pc": "0x8053a280",
+        "word": "0x24022f00",
+        "instruction": "addiu $v0, $zero, 0x2f00"
+      },
+      {
+        "pc": "0x8053a284",
+        "word": "0x1062000b",
+        "instruction": "beq $v1, $v0, 0x8053a2b4"
+      },
+      {
+        "pc": "0x8053a288",
+        "word": "0x8fbf002c",
+        "instruction": "lw $ra, 0x2c($sp)"
+      },
+      {
+        "pc": "0x8053a28c",
+        "word": "0x8fb30028",
+        "instruction": "lw $s3, 0x28($sp)"
+      },
+      {
+        "pc": "0x8053a290",
+        "word": "0x8fb20024",
+        "instruction": "lw $s2, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053a294",
+        "word": "0x8fb10020",
+        "instruction": "lw $s1, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053a298",
+        "word": "0x8fb0001c",
+        "instruction": "lw $s0, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053a29c",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a2a0",
+        "word": "0x27bd0030",
+        "instruction": "addiu $sp, $sp, 0x30"
+      },
+      {
+        "pc": "0x8053a2a4",
+        "word": "0x10620003",
+        "instruction": "beq $v1, $v0, 0x8053a2b4"
+      },
+      {
+        "pc": "0x8053a2a8",
+        "word": "0x24021200",
+        "instruction": "addiu $v0, $zero, 0x1200"
+      },
+      {
+        "pc": "0x8053a2ac",
+        "word": "0x1462fff7",
+        "instruction": "bne $v1, $v0, 0x8053a28c"
+      },
+      {
+        "pc": "0x8053a2b0",
+        "word": "0x8fbf002c",
+        "instruction": "lw $ra, 0x2c($sp)"
+      },
+      {
+        "pc": "0x8053a2b4",
+        "word": "0x8e630004",
+        "instruction": "lw $v1, 4($s3)"
+      },
+      {
+        "pc": "0x8053a2b8",
+        "word": "0x3242ffff",
+        "instruction": "andi $v0, $s2, 0xffff"
+      },
+      {
+        "pc": "0x8053a2bc",
+        "word": "0x8fbf002c",
+        "instruction": "lw $ra, 0x2c($sp)"
+      },
+      {
+        "pc": "0x8053a2c0",
+        "word": "0x21040",
+        "instruction": "sll $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053a2c4",
+        "word": "0x431021",
+        "instruction": "addu $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x8053a2c8",
+        "word": "0xa4510000",
+        "instruction": "sh $s1, ($v0)"
+      },
+      {
+        "pc": "0x8053a2cc",
+        "word": "0x8fb30028",
+        "instruction": "lw $s3, 0x28($sp)"
+      },
+      {
+        "pc": "0x8053a2d0",
+        "word": "0x8fb20024",
+        "instruction": "lw $s2, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053a2d4",
+        "word": "0x8fb10020",
+        "instruction": "lw $s1, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053a2d8",
+        "word": "0x8fb0001c",
+        "instruction": "lw $s0, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053a2dc",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a2e0",
+        "word": "0x27bd0030",
+        "instruction": "addiu $sp, $sp, 0x30"
+      },
+      {
+        "pc": "0x8053a2e4",
+        "word": "0x8e650004",
+        "instruction": "lw $a1, 4($s3)"
+      },
+      {
+        "pc": "0x8053a2e8",
+        "word": "0x122402",
+        "instruction": "srl $a0, $s2, 0x10"
+      },
+      {
+        "pc": "0x8053a2ec",
+        "word": "0x94a23ffc",
+        "instruction": "lhu $v0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a2f0",
+        "word": "0x3046000f",
+        "instruction": "andi $a2, $v0, 0xf"
+      },
+      {
+        "pc": "0x8053a2f4",
+        "word": "0x10c40015",
+        "instruction": "beq $a2, $a0, 0x8053a34c"
+      },
+      {
+        "pc": "0x8053a2f8",
+        "word": "0x3242ffff",
+        "instruction": "andi $v0, $s2, 0xffff"
+      },
+      {
+        "pc": "0x8053a2fc",
+        "word": "0x94a23ffc",
+        "instruction": "lhu $v0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a300",
+        "word": "0x3243ffff",
+        "instruction": "andi $v1, $s2, 0xffff"
+      },
+      {
+        "pc": "0x8053a304",
+        "word": "0x3084000f",
+        "instruction": "andi $a0, $a0, 0xf"
+      },
+      {
+        "pc": "0x8053a308",
+        "word": "0x3042fff0",
+        "instruction": "andi $v0, $v0, 0xfff0"
+      },
+      {
+        "pc": "0x8053a30c",
+        "word": "0x31840",
+        "instruction": "sll $v1, $v1, 1"
+      },
+      {
+        "pc": "0x8053a310",
+        "word": "0x822025",
+        "instruction": "or $a0, $a0, $v0"
+      },
+      {
+        "pc": "0x8053a314",
+        "word": "0x651821",
+        "instruction": "addu $v1, $v1, $a1"
+      },
+      {
+        "pc": "0x8053a318",
+        "word": "0xa4a43ffc",
+        "instruction": "sh $a0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a31c",
+        "word": "0xa4710000",
+        "instruction": "sh $s1, ($v1)"
+      },
+      {
+        "pc": "0x8053a320",
+        "word": "0x94a23ffc",
+        "instruction": "lhu $v0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a324",
+        "word": "0x8fbf002c",
+        "instruction": "lw $ra, 0x2c($sp)"
+      },
+      {
+        "pc": "0x8053a328",
+        "word": "0x8fb30028",
+        "instruction": "lw $s3, 0x28($sp)"
+      },
+      {
+        "pc": "0x8053a32c",
+        "word": "0x3042fff0",
+        "instruction": "andi $v0, $v0, 0xfff0"
+      },
+      {
+        "pc": "0x8053a330",
+        "word": "0xc21025",
+        "instruction": "or $v0, $a2, $v0"
+      },
+      {
+        "pc": "0x8053a334",
+        "word": "0x8fb20024",
+        "instruction": "lw $s2, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053a338",
+        "word": "0x8fb10020",
+        "instruction": "lw $s1, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053a33c",
+        "word": "0x8fb0001c",
+        "instruction": "lw $s0, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053a340",
+        "word": "0xa4a23ffc",
+        "instruction": "sh $v0, 0x3ffc($a1)"
+      },
+      {
+        "pc": "0x8053a344",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a348",
+        "word": "0x27bd0030",
+        "instruction": "addiu $sp, $sp, 0x30"
+      },
+      {
+        "pc": "0x8053a34c",
+        "word": "0x8fbf002c",
+        "instruction": "lw $ra, 0x2c($sp)"
+      },
+      {
+        "pc": "0x8053a350",
+        "word": "0x21040",
+        "instruction": "sll $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053a354",
+        "word": "0x451021",
+        "instruction": "addu $v0, $v0, $a1"
+      },
+      {
+        "pc": "0x8053a358",
+        "word": "0xa4510000",
+        "instruction": "sh $s1, ($v0)"
+      },
+      {
+        "pc": "0x8053a35c",
+        "word": "0x8fb30028",
+        "instruction": "lw $s3, 0x28($sp)"
+      },
+      {
+        "pc": "0x8053a360",
+        "word": "0x8fb20024",
+        "instruction": "lw $s2, 0x24($sp)"
+      },
+      {
+        "pc": "0x8053a364",
+        "word": "0x8fb10020",
+        "instruction": "lw $s1, 0x20($sp)"
+      },
+      {
+        "pc": "0x8053a368",
+        "word": "0x8fb0001c",
+        "instruction": "lw $s0, 0x1c($sp)"
+      },
+      {
+        "pc": "0x8053a36c",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a370",
+        "word": "0x27bd0030",
+        "instruction": "addiu $sp, $sp, 0x30"
+      },
+      {
+        "pc": "0x8053a374",
+        "word": "0x27bdffe8",
+        "instruction": "addiu $sp, $sp, -0x18"
+      },
+      {
+        "pc": "0x8053a378",
+        "word": "0x30a500ff",
+        "instruction": "andi $a1, $a1, 0xff"
+      },
+      {
+        "pc": "0x8053a37c",
+        "word": "0xafb00010",
+        "instruction": "sw $s0, 0x10($sp)"
+      },
+      {
+        "pc": "0x8053a380",
+        "word": "0xafbf0014",
+        "instruction": "sw $ra, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053a384",
+        "word": "0x10a00008",
+        "instruction": "beqz $a1, 0x8053a3a8"
+      },
+      {
+        "pc": "0x8053a388",
+        "word": "0x808021",
+        "instruction": "move $s0, $a0"
+      },
+      {
+        "pc": "0x8053a38c",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x8053a390",
+        "word": "0x10a20022",
+        "instruction": "beq $a1, $v0, 0x8053a41c"
+      },
+      {
+        "pc": "0x8053a394",
+        "word": "0x24020002",
+        "instruction": "addiu $v0, $zero, 2"
+      },
+      {
+        "pc": "0x8053a398",
+        "word": "0x10a20025",
+        "instruction": "beq $a1, $v0, 0x8053a430"
+      },
+      {
+        "pc": "0x8053a39c",
+        "word": "0x24020003",
+        "instruction": "addiu $v0, $zero, 3"
+      },
+      {
+        "pc": "0x8053a3a0",
+        "word": "0x10a20021",
+        "instruction": "beq $a1, $v0, 0x8053a428"
+      },
+      {
+        "pc": "0x8053a3a4",
+        "word": "0x3c02000a",
+        "instruction": "lui $v0, 0xa"
+      },
+      {
+        "pc": "0x8053a3a8",
+        "word": "0x24051f00",
+        "instruction": "addiu $a1, $zero, 0x1f00"
+      },
+      {
+        "pc": "0x8053a3ac",
+        "word": "0x2002021",
+        "instruction": "move $a0, $s0"
+      },
+      {
+        "pc": "0x8053a3b0",
+        "word": "0x3021",
+        "instruction": "move $a2, $zero"
+      },
+      {
+        "pc": "0x8053a3b4",
+        "word": "0xc14e884",
+        "instruction": "jal 0x8053a210"
+      },
+      {
+        "pc": "0x8053a3b8",
+        "word": "0x24070200",
+        "instruction": "addiu $a3, $zero, 0x200"
+      },
+      {
+        "pc": "0x8053a3bc",
+        "word": "0x3c04806b",
+        "instruction": "lui $a0, 0x806b"
+      },
+      {
+        "pc": "0x8053a3c0",
+        "word": "0x8c83de8c",
+        "instruction": "lw $v1, -0x2174($a0)"
+      },
+      {
+        "pc": "0x8053a3c4",
+        "word": "0x8e02001c",
+        "instruction": "lw $v0, 0x1c($s0)"
+      },
+      {
+        "pc": "0x8053a3c8",
+        "word": "0x2484de8c",
+        "instruction": "addiu $a0, $a0, -0x2174"
+      },
+      {
+        "pc": "0x8053a3cc",
+        "word": "0x8c850004",
+        "instruction": "lw $a1, 4($a0)"
+      },
+      {
+        "pc": "0x8053a3d0",
+        "word": "0x8c860008",
+        "instruction": "lw $a2, 8($a0)"
+      },
+      {
+        "pc": "0x8053a3d4",
+        "word": "0x8c87000c",
+        "instruction": "lw $a3, 0xc($a0)"
+      },
+      {
+        "pc": "0x8053a3d8",
+        "word": "0x8c880010",
+        "instruction": "lw $t0, 0x10($a0)"
+      },
+      {
+        "pc": "0x8053a3dc",
+        "word": "0xa8430003",
+        "instruction": "swl $v1, 3($v0)"
+      },
+      {
+        "pc": "0x8053a3e0",
+        "word": "0xb8430000",
+        "instruction": "swr $v1, ($v0)"
+      },
+      {
+        "pc": "0x8053a3e4",
+        "word": "0xa8450007",
+        "instruction": "swl $a1, 7($v0)"
+      },
+      {
+        "pc": "0x8053a3e8",
+        "word": "0xb8450004",
+        "instruction": "swr $a1, 4($v0)"
+      },
+      {
+        "pc": "0x8053a3ec",
+        "word": "0xa846000b",
+        "instruction": "swl $a2, 0xb($v0)"
+      },
+      {
+        "pc": "0x8053a3f0",
+        "word": "0xb8460008",
+        "instruction": "swr $a2, 8($v0)"
+      },
+      {
+        "pc": "0x8053a3f4",
+        "word": "0xa847000f",
+        "instruction": "swl $a3, 0xf($v0)"
+      },
+      {
+        "pc": "0x8053a3f8",
+        "word": "0xb847000c",
+        "instruction": "swr $a3, 0xc($v0)"
+      },
+      {
+        "pc": "0x8053a3fc",
+        "word": "0xa8480013",
+        "instruction": "swl $t0, 0x13($v0)"
+      },
+      {
+        "pc": "0x8053a400",
+        "word": "0xb8480010",
+        "instruction": "swr $t0, 0x10($v0)"
+      },
+      {
+        "pc": "0x8053a404",
+        "word": "0x94830014",
+        "instruction": "lhu $v1, 0x14($a0)"
+      },
+      {
+        "pc": "0x8053a408",
+        "word": "0xa4430014",
+        "instruction": "sh $v1, 0x14($v0)"
+      },
+      {
+        "pc": "0x8053a40c",
+        "word": "0x8fbf0014",
+        "instruction": "lw $ra, 0x14($sp)"
+      },
+      {
+        "pc": "0x8053a410",
+        "word": "0x8fb00010",
+        "instruction": "lw $s0, 0x10($sp)"
+      },
+      {
+        "pc": "0x8053a414",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a418",
+        "word": "0x27bd0018",
+        "instruction": "addiu $sp, $sp, 0x18"
+      },
+      {
+        "pc": "0x8053a41c",
+        "word": "0x3c020003",
+        "instruction": "lui $v0, 3"
+      },
+      {
+        "pc": "0x8053a420",
+        "word": "0x814e8eb",
+        "instruction": "j 0x8053a3ac"
+      },
+      {
+        "pc": "0x8053a424",
+        "word": "0x34451f00",
+        "instruction": "ori $a1, $v0, 0x1f00"
+      },
+      {
+        "pc": "0x8053a428",
+        "word": "0x814e8eb",
+        "instruction": "j 0x8053a3ac"
+      },
+      {
+        "pc": "0x8053a42c",
+        "word": "0x34451f00",
+        "instruction": "ori $a1, $v0, 0x1f00"
+      },
+      {
+        "pc": "0x8053a430",
+        "word": "0x3c020007",
+        "instruction": "lui $v0, 7"
+      },
+      {
+        "pc": "0x8053a434",
+        "word": "0x814e8eb",
+        "instruction": "j 0x8053a3ac"
+      },
+      {
+        "pc": "0x8053a438",
+        "word": "0x34451f00",
+        "instruction": "ori $a1, $v0, 0x1f00"
+      },
+      {
+        "pc": "0x8053a43c",
+        "word": "0x30a7ff00",
+        "instruction": "andi $a3, $a1, 0xff00"
+      },
+      {
+        "pc": "0x8053a440",
+        "word": "0x24021f00",
+        "instruction": "addiu $v0, $zero, 0x1f00"
+      },
+      {
+        "pc": "0x8053a444",
+        "word": "0xa01821",
+        "instruction": "move $v1, $a1"
+      },
+      {
+        "pc": "0x8053a448",
+        "word": "0x10e20019",
+        "instruction": "beq $a3, $v0, 0x8053a4b0"
+      },
+      {
+        "pc": "0x8053a44c",
+        "word": "0xc04021",
+        "instruction": "move $t0, $a2"
+      },
+      {
+        "pc": "0x8053a450",
+        "word": "0x2ce21f01",
+        "instruction": "sltiu $v0, $a3, 0x1f01"
+      },
+      {
+        "pc": "0x8053a454",
+        "word": "0x14400008",
+        "instruction": "bnez $v0, 0x8053a478"
+      },
+      {
+        "pc": "0x8053a458",
+        "word": "0x24020b00",
+        "instruction": "addiu $v0, $zero, 0xb00"
+      },
+      {
+        "pc": "0x8053a45c",
+        "word": "0x24022800",
+        "instruction": "addiu $v0, $zero, 0x2800"
+      },
+      {
+        "pc": "0x8053a460",
+        "word": "0x10e20007",
+        "instruction": "beq $a3, $v0, 0x8053a480"
+      },
+      {
+        "pc": "0x8053a464",
+        "word": "0x24022f00",
+        "instruction": "addiu $v0, $zero, 0x2f00"
+      },
+      {
+        "pc": "0x8053a468",
+        "word": "0x10e20005",
+        "instruction": "beq $a3, $v0, 0x8053a480"
+      },
+      {
+        "pc": "0x8053a46c",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053a470",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a474",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053a478",
+        "word": "0x14e2002f",
+        "instruction": "bne $a3, $v0, 0x8053a538"
+      },
+      {
+        "pc": "0x8053a47c",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053a480",
+        "word": "0x8c850004",
+        "instruction": "lw $a1, 4($a0)"
+      },
+      {
+        "pc": "0x8053a484",
+        "word": "0x3062ffff",
+        "instruction": "andi $v0, $v1, 0xffff"
+      },
+      {
+        "pc": "0x8053a488",
+        "word": "0x21040",
+        "instruction": "sll $v0, $v0, 1"
+      },
+      {
+        "pc": "0x8053a48c",
+        "word": "0x24a40004",
+        "instruction": "addiu $a0, $a1, 4"
+      },
+      {
+        "pc": "0x8053a490",
+        "word": "0x822021",
+        "instruction": "addu $a0, $a0, $v0"
+      },
+      {
+        "pc": "0x8053a494",
+        "word": "0x83402",
+        "instruction": "srl $a2, $t0, 0x10"
+      },
+      {
+        "pc": "0x8053a498",
+        "word": "0x451021",
+        "instruction": "addu $v0, $v0, $a1"
+      },
+      {
+        "pc": "0x8053a49c",
+        "word": "0x3103ffff",
+        "instruction": "andi $v1, $t0, 0xffff"
+      },
+      {
+        "pc": "0x8053a4a0",
+        "word": "0xa4430000",
+        "instruction": "sh $v1, ($v0)"
+      },
+      {
+        "pc": "0x8053a4a4",
+        "word": "0xa4860000",
+        "instruction": "sh $a2, ($a0)"
+      },
+      {
+        "pc": "0x8053a4a8",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x8053a4ac",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x8053a4b0",
+        "word": "0x8c870004",
+        "instruction": "lw $a3, 4($a0)"
+      },
+      {
+        "pc": "0x8053a4b4",
+        "word": "0x52402",
+        "instruction": "srl $a0, $a1, 0x10"
+      }
+    ],
+    "SC_timing": [
+      {
+        "pc": "0x805e5ab8",
+        "word": "0x27bdffe0",
+        "instruction": "addiu $sp, $sp, -0x20"
+      },
+      {
+        "pc": "0x805e5abc",
+        "word": "0x3c09806f",
+        "instruction": "lui $t1, 0x806f"
+      },
+      {
+        "pc": "0x805e5ac0",
+        "word": "0xafb00014",
+        "instruction": "sw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x805e5ac4",
+        "word": "0x25306b18",
+        "instruction": "addiu $s0, $t1, 0x6b18"
+      },
+      {
+        "pc": "0x805e5ac8",
+        "word": "0xafbf001c",
+        "instruction": "sw $ra, 0x1c($sp)"
+      },
+      {
+        "pc": "0x805e5acc",
+        "word": "0xafb10018",
+        "instruction": "sw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x805e5ad0",
+        "word": "0x803021",
+        "instruction": "move $a2, $a0"
+      },
+      {
+        "pc": "0x805e5ad4",
+        "word": "0x2003821",
+        "instruction": "move $a3, $s0"
+      },
+      {
+        "pc": "0x805e5ad8",
+        "word": "0x24880030",
+        "instruction": "addiu $t0, $a0, 0x30"
+      },
+      {
+        "pc": "0x805e5adc",
+        "word": "0x8cc20000",
+        "instruction": "lw $v0, ($a2)"
+      },
+      {
+        "pc": "0x805e5ae0",
+        "word": "0x8cc30004",
+        "instruction": "lw $v1, 4($a2)"
+      },
+      {
+        "pc": "0x805e5ae4",
+        "word": "0x8cc40008",
+        "instruction": "lw $a0, 8($a2)"
+      },
+      {
+        "pc": "0x805e5ae8",
+        "word": "0x8cc5000c",
+        "instruction": "lw $a1, 0xc($a2)"
+      },
+      {
+        "pc": "0x805e5aec",
+        "word": "0x24c60010",
+        "instruction": "addiu $a2, $a2, 0x10"
+      },
+      {
+        "pc": "0x805e5af0",
+        "word": "0xace20000",
+        "instruction": "sw $v0, ($a3)"
+      },
+      {
+        "pc": "0x805e5af4",
+        "word": "0xace30004",
+        "instruction": "sw $v1, 4($a3)"
+      },
+      {
+        "pc": "0x805e5af8",
+        "word": "0xace40008",
+        "instruction": "sw $a0, 8($a3)"
+      },
+      {
+        "pc": "0x805e5afc",
+        "word": "0xace5000c",
+        "instruction": "sw $a1, 0xc($a3)"
+      },
+      {
+        "pc": "0x805e5b00",
+        "word": "0x14c8fff6",
+        "instruction": "bne $a2, $t0, 0x805e5adc"
+      },
+      {
+        "pc": "0x805e5b04",
+        "word": "0x24e70010",
+        "instruction": "addiu $a3, $a3, 0x10"
+      },
+      {
+        "pc": "0x805e5b08",
+        "word": "0x8cc30000",
+        "instruction": "lw $v1, ($a2)"
+      },
+      {
+        "pc": "0x805e5b0c",
+        "word": "0x3c11806f",
+        "instruction": "lui $s1, 0x806f"
+      },
+      {
+        "pc": "0x805e5b10",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5b14",
+        "word": "0xace30000",
+        "instruction": "sw $v1, ($a3)"
+      },
+      {
+        "pc": "0x805e5b18",
+        "word": "0x9082174c",
+        "instruction": "lbu $v0, 0x174c($a0)"
+      },
+      {
+        "pc": "0x805e5b1c",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805e5b20",
+        "word": "0x3442001c",
+        "instruction": "ori $v0, $v0, 0x1c"
+      },
+      {
+        "pc": "0x805e5b24",
+        "word": "0xa082174c",
+        "instruction": "sb $v0, 0x174c($a0)"
+      },
+      {
+        "pc": "0x805e5b28",
+        "word": "0x8e236b4c",
+        "instruction": "lw $v1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5b2c",
+        "word": "0x9062174c",
+        "instruction": "lbu $v0, 0x174c($v1)"
+      },
+      {
+        "pc": "0x805e5b30",
+        "word": "0x304200fd",
+        "instruction": "andi $v0, $v0, 0xfd"
+      },
+      {
+        "pc": "0x805e5b34",
+        "word": "0xa062174c",
+        "instruction": "sb $v0, 0x174c($v1)"
+      },
+      {
+        "pc": "0x805e5b38",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5b3c",
+        "word": "0x9082174c",
+        "instruction": "lbu $v0, 0x174c($a0)"
+      },
+      {
+        "pc": "0x805e5b40",
+        "word": "0x304200fe",
+        "instruction": "andi $v0, $v0, 0xfe"
+      },
+      {
+        "pc": "0x805e5b44",
+        "word": "0xa082174c",
+        "instruction": "sb $v0, 0x174c($a0)"
+      },
+      {
+        "pc": "0x805e5b48",
+        "word": "0x8e236b4c",
+        "instruction": "lw $v1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5b4c",
+        "word": "0x95256b18",
+        "instruction": "lhu $a1, 0x6b18($t1)"
+      },
+      {
+        "pc": "0x805e5b50",
+        "word": "0x96060002",
+        "instruction": "lhu $a2, 2($s0)"
+      },
+      {
+        "pc": "0x805e5b54",
+        "word": "0x906a5e00",
+        "instruction": "lbu $t2, 0x5e00($v1)"
+      },
+      {
+        "pc": "0x805e5b58",
+        "word": "0x90625e00",
+        "instruction": "lbu $v0, 0x5e00($v1)"
+      },
+      {
+        "pc": "0x805e5b5c",
+        "word": "0x24020010",
+        "instruction": "addiu $v0, $zero, 0x10"
+      },
+      {
+        "pc": "0x805e5b60",
+        "word": "0x96070004",
+        "instruction": "lhu $a3, 4($s0)"
+      },
+      {
+        "pc": "0x805e5b64",
+        "word": "0x96090006",
+        "instruction": "lhu $t1, 6($s0)"
+      },
+      {
+        "pc": "0x805e5b68",
+        "word": "0xa0625e00",
+        "instruction": "sb $v0, 0x5e00($v1)"
+      },
+      {
+        "pc": "0x805e5b6c",
+        "word": "0x8e2b6b4c",
+        "instruction": "lw $t3, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5b70",
+        "word": "0x96030008",
+        "instruction": "lhu $v1, 8($s0)"
+      },
+      {
+        "pc": "0x805e5b74",
+        "word": "0x30a80fff",
+        "instruction": "andi $t0, $a1, 0xfff"
+      },
+      {
+        "pc": "0x805e5b78",
+        "word": "0x95625e30",
+        "instruction": "lhu $v0, 0x5e30($t3)"
+      },
+      {
+        "pc": "0x805e5b7c",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x805e5b80",
+        "word": "0x30630fff",
+        "instruction": "andi $v1, $v1, 0xfff"
+      },
+      {
+        "pc": "0x805e5b84",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5b88",
+        "word": "0x431025",
+        "instruction": "or $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805e5b8c",
+        "word": "0xa5625e30",
+        "instruction": "sh $v0, 0x5e30($t3)"
+      },
+      {
+        "pc": "0x805e5b90",
+        "word": "0x9603000a",
+        "instruction": "lhu $v1, 0xa($s0)"
+      },
+      {
+        "pc": "0x805e5b94",
+        "word": "0x95645e34",
+        "instruction": "lhu $a0, 0x5e34($t3)"
+      },
+      {
+        "pc": "0x805e5b98",
+        "word": "0xa72821",
+        "instruction": "addu $a1, $a1, $a3"
+      },
+      {
+        "pc": "0x805e5b9c",
+        "word": "0x2463ffff",
+        "instruction": "addiu $v1, $v1, -1"
+      },
+      {
+        "pc": "0x805e5ba0",
+        "word": "0x30630fff",
+        "instruction": "andi $v1, $v1, 0xfff"
+      },
+      {
+        "pc": "0x805e5ba4",
+        "word": "0x3084f000",
+        "instruction": "andi $a0, $a0, 0xf000"
+      },
+      {
+        "pc": "0x805e5ba8",
+        "word": "0x832025",
+        "instruction": "or $a0, $a0, $v1"
+      },
+      {
+        "pc": "0x805e5bac",
+        "word": "0xa5645e34",
+        "instruction": "sh $a0, 0x5e34($t3)"
+      },
+      {
+        "pc": "0x805e5bb0",
+        "word": "0x95625e10",
+        "instruction": "lhu $v0, 0x5e10($t3)"
+      },
+      {
+        "pc": "0x805e5bb4",
+        "word": "0x24a5ffff",
+        "instruction": "addiu $a1, $a1, -1"
+      },
+      {
+        "pc": "0x805e5bb8",
+        "word": "0x30a50fff",
+        "instruction": "andi $a1, $a1, 0xfff"
+      },
+      {
+        "pc": "0x805e5bbc",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5bc0",
+        "word": "0x1021025",
+        "instruction": "or $v0, $t0, $v0"
+      },
+      {
+        "pc": "0x805e5bc4",
+        "word": "0xa5625e10",
+        "instruction": "sh $v0, 0x5e10($t3)"
+      },
+      {
+        "pc": "0x805e5bc8",
+        "word": "0x95635e14",
+        "instruction": "lhu $v1, 0x5e14($t3)"
+      },
+      {
+        "pc": "0x805e5bcc",
+        "word": "0x30c70fff",
+        "instruction": "andi $a3, $a2, 0xfff"
+      },
+      {
+        "pc": "0x805e5bd0",
+        "word": "0xc93021",
+        "instruction": "addu $a2, $a2, $t1"
+      },
+      {
+        "pc": "0x805e5bd4",
+        "word": "0x3063f000",
+        "instruction": "andi $v1, $v1, 0xf000"
+      },
+      {
+        "pc": "0x805e5bd8",
+        "word": "0xa31825",
+        "instruction": "or $v1, $a1, $v1"
+      },
+      {
+        "pc": "0x805e5bdc",
+        "word": "0xa5635e14",
+        "instruction": "sh $v1, 0x5e14($t3)"
+      },
+      {
+        "pc": "0x805e5be0",
+        "word": "0x95645e18",
+        "instruction": "lhu $a0, 0x5e18($t3)"
+      },
+      {
+        "pc": "0x805e5be4",
+        "word": "0x24c6ffff",
+        "instruction": "addiu $a2, $a2, -1"
+      },
+      {
+        "pc": "0x805e5be8",
+        "word": "0x30c60fff",
+        "instruction": "andi $a2, $a2, 0xfff"
+      },
+      {
+        "pc": "0x805e5bec",
+        "word": "0x3084f000",
+        "instruction": "andi $a0, $a0, 0xf000"
+      },
+      {
+        "pc": "0x805e5bf0",
+        "word": "0xe42025",
+        "instruction": "or $a0, $a3, $a0"
+      },
+      {
+        "pc": "0x805e5bf4",
+        "word": "0xa5645e18",
+        "instruction": "sh $a0, 0x5e18($t3)"
+      },
+      {
+        "pc": "0x805e5bf8",
+        "word": "0x95625e1c",
+        "instruction": "lhu $v0, 0x5e1c($t3)"
+      },
+      {
+        "pc": "0x805e5bfc",
+        "word": "0x314a00ff",
+        "instruction": "andi $t2, $t2, 0xff"
+      },
+      {
+        "pc": "0x805e5c00",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5c04",
+        "word": "0xc21025",
+        "instruction": "or $v0, $a2, $v0"
+      },
+      {
+        "pc": "0x805e5c08",
+        "word": "0xa5625e1c",
+        "instruction": "sh $v0, 0x5e1c($t3)"
+      },
+      {
+        "pc": "0x805e5c0c",
+        "word": "0x95635e20",
+        "instruction": "lhu $v1, 0x5e20($t3)"
+      },
+      {
+        "pc": "0x805e5c10",
+        "word": "0x8e090010",
+        "instruction": "lw $t1, 0x10($s0)"
+      },
+      {
+        "pc": "0x805e5c14",
+        "word": "0x3063f000",
+        "instruction": "andi $v1, $v1, 0xf000"
+      },
+      {
+        "pc": "0x805e5c18",
+        "word": "0x1034025",
+        "instruction": "or $t0, $t0, $v1"
+      },
+      {
+        "pc": "0x805e5c1c",
+        "word": "0xa5685e20",
+        "instruction": "sh $t0, 0x5e20($t3)"
+      },
+      {
+        "pc": "0x805e5c20",
+        "word": "0x95625e24",
+        "instruction": "lhu $v0, 0x5e24($t3)"
+      },
+      {
+        "pc": "0x805e5c24",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5c28",
+        "word": "0xa22825",
+        "instruction": "or $a1, $a1, $v0"
+      },
+      {
+        "pc": "0x805e5c2c",
+        "word": "0xa5655e24",
+        "instruction": "sh $a1, 0x5e24($t3)"
+      },
+      {
+        "pc": "0x805e5c30",
+        "word": "0x95625e28",
+        "instruction": "lhu $v0, 0x5e28($t3)"
+      },
+      {
+        "pc": "0x805e5c34",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5c38",
+        "word": "0xe23825",
+        "instruction": "or $a3, $a3, $v0"
+      },
+      {
+        "pc": "0x805e5c3c",
+        "word": "0xa5675e28",
+        "instruction": "sh $a3, 0x5e28($t3)"
+      },
+      {
+        "pc": "0x805e5c40",
+        "word": "0x95625e2c",
+        "instruction": "lhu $v0, 0x5e2c($t3)"
+      },
+      {
+        "pc": "0x805e5c44",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5c48",
+        "word": "0xc23025",
+        "instruction": "or $a2, $a2, $v0"
+      },
+      {
+        "pc": "0x805e5c4c",
+        "word": "0xa5665e2c",
+        "instruction": "sh $a2, 0x5e2c($t3)"
+      },
+      {
+        "pc": "0x805e5c50",
+        "word": "0x92020018",
+        "instruction": "lbu $v0, 0x18($s0)"
+      },
+      {
+        "pc": "0x805e5c54",
+        "word": "0x95635e04",
+        "instruction": "lhu $v1, 0x5e04($t3)"
+      },
+      {
+        "pc": "0x805e5c58",
+        "word": "0x2442ffff",
+        "instruction": "addiu $v0, $v0, -1"
+      },
+      {
+        "pc": "0x805e5c5c",
+        "word": "0x304200ff",
+        "instruction": "andi $v0, $v0, 0xff"
+      },
+      {
+        "pc": "0x805e5c60",
+        "word": "0x3063ff00",
+        "instruction": "andi $v1, $v1, 0xff00"
+      },
+      {
+        "pc": "0x805e5c64",
+        "word": "0x621825",
+        "instruction": "or $v1, $v1, $v0"
+      },
+      {
+        "pc": "0x805e5c68",
+        "word": "0xa5635e04",
+        "instruction": "sh $v1, 0x5e04($t3)"
+      },
+      {
+        "pc": "0x805e5c6c",
+        "word": "0x9603001a",
+        "instruction": "lhu $v1, 0x1a($s0)"
+      },
+      {
+        "pc": "0x805e5c70",
+        "word": "0x9604000a",
+        "instruction": "lhu $a0, 0xa($s0)"
+      },
+      {
+        "pc": "0x805e5c74",
+        "word": "0x95625e08",
+        "instruction": "lhu $v0, 0x5e08($t3)"
+      },
+      {
+        "pc": "0x805e5c78",
+        "word": "0x832023",
+        "instruction": "subu $a0, $a0, $v1"
+      },
+      {
+        "pc": "0x805e5c7c",
+        "word": "0x30840fff",
+        "instruction": "andi $a0, $a0, 0xfff"
+      },
+      {
+        "pc": "0x805e5c80",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5c84",
+        "word": "0x441025",
+        "instruction": "or $v0, $v0, $a0"
+      },
+      {
+        "pc": "0x805e5c88",
+        "word": "0xa5625e08",
+        "instruction": "sh $v0, 0x5e08($t3)"
+      },
+      {
+        "pc": "0x805e5c8c",
+        "word": "0x9604001a",
+        "instruction": "lhu $a0, 0x1a($s0)"
+      },
+      {
+        "pc": "0x805e5c90",
+        "word": "0x9203001c",
+        "instruction": "lbu $v1, 0x1c($s0)"
+      },
+      {
+        "pc": "0x805e5c94",
+        "word": "0x9605000a",
+        "instruction": "lhu $a1, 0xa($s0)"
+      },
+      {
+        "pc": "0x805e5c98",
+        "word": "0x95625e0c",
+        "instruction": "lhu $v0, 0x5e0c($t3)"
+      },
+      {
+        "pc": "0x805e5c9c",
+        "word": "0x641823",
+        "instruction": "subu $v1, $v1, $a0"
+      },
+      {
+        "pc": "0x805e5ca0",
+        "word": "0x651821",
+        "instruction": "addu $v1, $v1, $a1"
+      },
+      {
+        "pc": "0x805e5ca4",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5ca8",
+        "word": "0x30630fff",
+        "instruction": "andi $v1, $v1, 0xfff"
+      },
+      {
+        "pc": "0x805e5cac",
+        "word": "0x621825",
+        "instruction": "or $v1, $v1, $v0"
+      },
+      {
+        "pc": "0x805e5cb0",
+        "word": "0xa5635e0c",
+        "instruction": "sh $v1, 0x5e0c($t3)"
+      },
+      {
+        "pc": "0x805e5cb4",
+        "word": "0x95625e40",
+        "instruction": "lhu $v0, 0x5e40($t3)"
+      },
+      {
+        "pc": "0x805e5cb8",
+        "word": "0x9203001d",
+        "instruction": "lbu $v1, 0x1d($s0)"
+      },
+      {
+        "pc": "0x805e5cbc",
+        "word": "0x30427fff",
+        "instruction": "andi $v0, $v0, 0x7fff"
+      },
+      {
+        "pc": "0x805e5cc0",
+        "word": "0x31bc0",
+        "instruction": "sll $v1, $v1, 0xf"
+      },
+      {
+        "pc": "0x805e5cc4",
+        "word": "0x431025",
+        "instruction": "or $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805e5cc8",
+        "word": "0x3042ffff",
+        "instruction": "andi $v0, $v0, 0xffff"
+      },
+      {
+        "pc": "0x805e5ccc",
+        "word": "0xa5625e40",
+        "instruction": "sh $v0, 0x5e40($t3)"
+      },
+      {
+        "pc": "0x805e5cd0",
+        "word": "0x95635e40",
+        "instruction": "lhu $v1, 0x5e40($t3)"
+      },
+      {
+        "pc": "0x805e5cd4",
+        "word": "0x3063ffff",
+        "instruction": "andi $v1, $v1, 0xffff"
+      },
+      {
+        "pc": "0x805e5cd8",
+        "word": "0x34634000",
+        "instruction": "ori $v1, $v1, 0x4000"
+      },
+      {
+        "pc": "0x805e5cdc",
+        "word": "0xa5635e40",
+        "instruction": "sh $v1, 0x5e40($t3)"
+      },
+      {
+        "pc": "0x805e5ce0",
+        "word": "0x9604001e",
+        "instruction": "lhu $a0, 0x1e($s0)"
+      },
+      {
+        "pc": "0x805e5ce4",
+        "word": "0x95625e84",
+        "instruction": "lhu $v0, 0x5e84($t3)"
+      },
+      {
+        "pc": "0x805e5ce8",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x805e5cec",
+        "word": "0xa5645e84",
+        "instruction": "sh $a0, 0x5e84($t3)"
+      },
+      {
+        "pc": "0x805e5cf0",
+        "word": "0x112200ce",
+        "instruction": "beq $t1, $v0, 0x805e602c"
+      },
+      {
+        "pc": "0x805e5cf4",
+        "word": "0x24020005",
+        "instruction": "addiu $v0, $zero, 5"
+      },
+      {
+        "pc": "0x805e5cf8",
+        "word": "0x112200cc",
+        "instruction": "beq $t1, $v0, 0x805e602c"
+      },
+      {
+        "pc": "0x805e5cfc",
+        "word": "0x24020006",
+        "instruction": "addiu $v0, $zero, 6"
+      },
+      {
+        "pc": "0x805e5d00",
+        "word": "0x112200cb",
+        "instruction": "beq $t1, $v0, 0x805e6030"
+      },
+      {
+        "pc": "0x805e5d04",
+        "word": "0x8e236b4c",
+        "instruction": "lw $v1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5d08",
+        "word": "0x91625e88",
+        "instruction": "lbu $v0, 0x5e88($t3)"
+      },
+      {
+        "pc": "0x805e5d0c",
+        "word": "0xa1605e88",
+        "instruction": "sb $zero, 0x5e88($t3)"
+      },
+      {
+        "pc": "0x805e5d10",
+        "word": "0x96040020",
+        "instruction": "lhu $a0, 0x20($s0)"
+      },
+      {
+        "pc": "0x805e5d14",
+        "word": "0x8e236b4c",
+        "instruction": "lw $v1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5d18",
+        "word": "0x94625f18",
+        "instruction": "lhu $v0, 0x5f18($v1)"
+      },
+      {
+        "pc": "0x805e5d1c",
+        "word": "0xa4645f18",
+        "instruction": "sh $a0, 0x5f18($v1)"
+      },
+      {
+        "pc": "0x805e5d20",
+        "word": "0x94625f1c",
+        "instruction": "lhu $v0, 0x5f1c($v1)"
+      },
+      {
+        "pc": "0x805e5d24",
+        "word": "0x92040022",
+        "instruction": "lbu $a0, 0x22($s0)"
+      },
+      {
+        "pc": "0x805e5d28",
+        "word": "0x3042ff00",
+        "instruction": "andi $v0, $v0, 0xff00"
+      },
+      {
+        "pc": "0x805e5d2c",
+        "word": "0x441025",
+        "instruction": "or $v0, $v0, $a0"
+      },
+      {
+        "pc": "0x805e5d30",
+        "word": "0xa4625f1c",
+        "instruction": "sh $v0, 0x5f1c($v1)"
+      },
+      {
+        "pc": "0x805e5d34",
+        "word": "0x96040024",
+        "instruction": "lhu $a0, 0x24($s0)"
+      },
+      {
+        "pc": "0x805e5d38",
+        "word": "0x94625e6c",
+        "instruction": "lhu $v0, 0x5e6c($v1)"
+      },
+      {
+        "pc": "0x805e5d3c",
+        "word": "0xa4645e6c",
+        "instruction": "sh $a0, 0x5e6c($v1)"
+      },
+      {
+        "pc": "0x805e5d40",
+        "word": "0x90625e00",
+        "instruction": "lbu $v0, 0x5e00($v1)"
+      },
+      {
+        "pc": "0x805e5d44",
+        "word": "0xa06a5e00",
+        "instruction": "sb $t2, 0x5e00($v1)"
+      },
+      {
+        "pc": "0x805e5d48",
+        "word": "0x8e226b4c",
+        "instruction": "lw $v0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5d4c",
+        "word": "0x90446400",
+        "instruction": "lbu $a0, 0x6400($v0)"
+      },
+      {
+        "pc": "0x805e5d50",
+        "word": "0x90436400",
+        "instruction": "lbu $v1, 0x6400($v0)"
+      },
+      {
+        "pc": "0x805e5d54",
+        "word": "0xa0406400",
+        "instruction": "sb $zero, 0x6400($v0)"
+      },
+      {
+        "pc": "0x805e5d58",
+        "word": "0x8e256b4c",
+        "instruction": "lw $a1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5d5c",
+        "word": "0x92030026",
+        "instruction": "lbu $v1, 0x26($s0)"
+      },
+      {
+        "pc": "0x805e5d60",
+        "word": "0x308600ff",
+        "instruction": "andi $a2, $a0, 0xff"
+      },
+      {
+        "pc": "0x805e5d64",
+        "word": "0x94a26500",
+        "instruction": "lhu $v0, 0x6500($a1)"
+      },
+      {
+        "pc": "0x805e5d68",
+        "word": "0x3c04806b",
+        "instruction": "lui $a0, 0x806b"
+      },
+      {
+        "pc": "0x805e5d6c",
+        "word": "0x3042ff00",
+        "instruction": "andi $v0, $v0, 0xff00"
+      },
+      {
+        "pc": "0x805e5d70",
+        "word": "0x431025",
+        "instruction": "or $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805e5d74",
+        "word": "0xa4a26500",
+        "instruction": "sh $v0, 0x6500($a1)"
+      },
+      {
+        "pc": "0x805e5d78",
+        "word": "0x96030028",
+        "instruction": "lhu $v1, 0x28($s0)"
+      },
+      {
+        "pc": "0x805e5d7c",
+        "word": "0x94a26524",
+        "instruction": "lhu $v0, 0x6524($a1)"
+      },
+      {
+        "pc": "0x805e5d80",
+        "word": "0xa4a36524",
+        "instruction": "sh $v1, 0x6524($a1)"
+      },
+      {
+        "pc": "0x805e5d84",
+        "word": "0x9602002a",
+        "instruction": "lhu $v0, 0x2a($s0)"
+      },
+      {
+        "pc": "0x805e5d88",
+        "word": "0x94a36528",
+        "instruction": "lhu $v1, 0x6528($a1)"
+      },
+      {
+        "pc": "0x805e5d8c",
+        "word": "0xa4a26528",
+        "instruction": "sh $v0, 0x6528($a1)"
+      },
+      {
+        "pc": "0x805e5d90",
+        "word": "0x9203002c",
+        "instruction": "lbu $v1, 0x2c($s0)"
+      },
+      {
+        "pc": "0x805e5d94",
+        "word": "0x94a2652c",
+        "instruction": "lhu $v0, 0x652c($a1)"
+      },
+      {
+        "pc": "0x805e5d98",
+        "word": "0xa4a3652c",
+        "instruction": "sh $v1, 0x652c($a1)"
+      },
+      {
+        "pc": "0x805e5d9c",
+        "word": "0x94a265bc",
+        "instruction": "lhu $v0, 0x65bc($a1)"
+      },
+      {
+        "pc": "0x805e5da0",
+        "word": "0xa4a065bc",
+        "instruction": "sh $zero, 0x65bc($a1)"
+      },
+      {
+        "pc": "0x805e5da4",
+        "word": "0x94a265dc",
+        "instruction": "lhu $v0, 0x65dc($a1)"
+      },
+      {
+        "pc": "0x805e5da8",
+        "word": "0x3042ff03",
+        "instruction": "andi $v0, $v0, 0xff03"
+      },
+      {
+        "pc": "0x805e5dac",
+        "word": "0x3442000c",
+        "instruction": "ori $v0, $v0, 0xc"
+      },
+      {
+        "pc": "0x805e5db0",
+        "word": "0xa4a265dc",
+        "instruction": "sh $v0, 0x65dc($a1)"
+      },
+      {
+        "pc": "0x805e5db4",
+        "word": "0x908272a8",
+        "instruction": "lbu $v0, 0x72a8($a0)"
+      },
+      {
+        "pc": "0x805e5db8",
+        "word": "0x94a365e0",
+        "instruction": "lhu $v1, 0x65e0($a1)"
+      },
+      {
+        "pc": "0x805e5dbc",
+        "word": "0x21040",
+        "instruction": "sll $v0, $v0, 1"
+      },
+      {
+        "pc": "0x805e5dc0",
+        "word": "0x304200ff",
+        "instruction": "andi $v0, $v0, 0xff"
+      },
+      {
+        "pc": "0x805e5dc4",
+        "word": "0x3063ff01",
+        "instruction": "andi $v1, $v1, 0xff01"
+      },
+      {
+        "pc": "0x805e5dc8",
+        "word": "0x621825",
+        "instruction": "or $v1, $v1, $v0"
+      },
+      {
+        "pc": "0x805e5dcc",
+        "word": "0xa4a365e0",
+        "instruction": "sh $v1, 0x65e0($a1)"
+      },
+      {
+        "pc": "0x805e5dd0",
+        "word": "0x8e040010",
+        "instruction": "lw $a0, 0x10($s0)"
+      },
+      {
+        "pc": "0x805e5dd4",
+        "word": "0x24020003",
+        "instruction": "addiu $v0, $zero, 3"
+      },
+      {
+        "pc": "0x805e5dd8",
+        "word": "0x10820008",
+        "instruction": "beq $a0, $v0, 0x805e5dfc"
+      },
+      {
+        "pc": "0x805e5ddc",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5de0",
+        "word": "0x94a265f4",
+        "instruction": "lhu $v0, 0x65f4($a1)"
+      },
+      {
+        "pc": "0x805e5de4",
+        "word": "0x2403ff00",
+        "instruction": "addiu $v1, $zero, -0x100"
+      },
+      {
+        "pc": "0x805e5de8",
+        "word": "0x3042ffff",
+        "instruction": "andi $v0, $v0, 0xffff"
+      },
+      {
+        "pc": "0x805e5dec",
+        "word": "0x431024",
+        "instruction": "and $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805e5df0",
+        "word": "0x3442001f",
+        "instruction": "ori $v0, $v0, 0x1f"
+      },
+      {
+        "pc": "0x805e5df4",
+        "word": "0xa4a265f4",
+        "instruction": "sh $v0, 0x65f4($a1)"
+      },
+      {
+        "pc": "0x805e5df8",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5dfc",
+        "word": "0x9603002e",
+        "instruction": "lhu $v1, 0x2e($s0)"
+      },
+      {
+        "pc": "0x805e5e00",
+        "word": "0x3c07806f",
+        "instruction": "lui $a3, 0x806f"
+      },
+      {
+        "pc": "0x805e5e04",
+        "word": "0x948265cc",
+        "instruction": "lhu $v0, 0x65cc($a0)"
+      },
+      {
+        "pc": "0x805e5e08",
+        "word": "0xa48365cc",
+        "instruction": "sh $v1, 0x65cc($a0)"
+      },
+      {
+        "pc": "0x805e5e0c",
+        "word": "0x9482654c",
+        "instruction": "lhu $v0, 0x654c($a0)"
+      },
+      {
+        "pc": "0x805e5e10",
+        "word": "0x3042ffff",
+        "instruction": "andi $v0, $v0, 0xffff"
+      },
+      {
+        "pc": "0x805e5e14",
+        "word": "0x34420001",
+        "instruction": "ori $v0, $v0, 1"
+      },
+      {
+        "pc": "0x805e5e18",
+        "word": "0xa482654c",
+        "instruction": "sh $v0, 0x654c($a0)"
+      },
+      {
+        "pc": "0x805e5e1c",
+        "word": "0x90826400",
+        "instruction": "lbu $v0, 0x6400($a0)"
+      },
+      {
+        "pc": "0x805e5e20",
+        "word": "0xa0866400",
+        "instruction": "sb $a2, 0x6400($a0)"
+      },
+      {
+        "pc": "0x805e5e24",
+        "word": "0x8e236b4c",
+        "instruction": "lw $v1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5e28",
+        "word": "0x90665e00",
+        "instruction": "lbu $a2, 0x5e00($v1)"
+      },
+      {
+        "pc": "0x805e5e2c",
+        "word": "0x90625e00",
+        "instruction": "lbu $v0, 0x5e00($v1)"
+      },
+      {
+        "pc": "0x805e5e30",
+        "word": "0x24020024",
+        "instruction": "addiu $v0, $zero, 0x24"
+      },
+      {
+        "pc": "0x805e5e34",
+        "word": "0xa0625e00",
+        "instruction": "sb $v0, 0x5e00($v1)"
+      },
+      {
+        "pc": "0x805e5e38",
+        "word": "0x8e256b4c",
+        "instruction": "lw $a1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5e3c",
+        "word": "0x92040030",
+        "instruction": "lbu $a0, 0x30($s0)"
+      },
+      {
+        "pc": "0x805e5e40",
+        "word": "0x24020008",
+        "instruction": "addiu $v0, $zero, 8"
+      },
+      {
+        "pc": "0x805e5e44",
+        "word": "0x90a35efc",
+        "instruction": "lbu $v1, 0x5efc($a1)"
+      },
+      {
+        "pc": "0x805e5e48",
+        "word": "0x4100b",
+        "instruction": "movn $v0, $zero, $a0"
+      },
+      {
+        "pc": "0x805e5e4c",
+        "word": "0x30c600ff",
+        "instruction": "andi $a2, $a2, 0xff"
+      },
+      {
+        "pc": "0x805e5e50",
+        "word": "0x306300f7",
+        "instruction": "andi $v1, $v1, 0xf7"
+      },
+      {
+        "pc": "0x805e5e54",
+        "word": "0x431025",
+        "instruction": "or $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805e5e58",
+        "word": "0xa0a25efc",
+        "instruction": "sb $v0, 0x5efc($a1)"
+      },
+      {
+        "pc": "0x805e5e5c",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5e60",
+        "word": "0x90825efc",
+        "instruction": "lbu $v0, 0x5efc($a0)"
+      },
+      {
+        "pc": "0x805e5e64",
+        "word": "0x304200ef",
+        "instruction": "andi $v0, $v0, 0xef"
+      },
+      {
+        "pc": "0x805e5e68",
+        "word": "0xa0825efc",
+        "instruction": "sb $v0, 0x5efc($a0)"
+      },
+      {
+        "pc": "0x805e5e6c",
+        "word": "0x9203002c",
+        "instruction": "lbu $v1, 0x2c($s0)"
+      },
+      {
+        "pc": "0x805e5e70",
+        "word": "0x24020002",
+        "instruction": "addiu $v0, $zero, 2"
+      },
+      {
+        "pc": "0x805e5e74",
+        "word": "0x30630003",
+        "instruction": "andi $v1, $v1, 3"
+      },
+      {
+        "pc": "0x805e5e78",
+        "word": "0x10620091",
+        "instruction": "beq $v1, $v0, 0x805e60c0"
+      },
+      {
+        "pc": "0x805e5e7c",
+        "word": "0x8ce46b4c",
+        "instruction": "lw $a0, 0x6b4c($a3)"
+      },
+      {
+        "pc": "0x805e5e80",
+        "word": "0x24020003",
+        "instruction": "addiu $v0, $zero, 3"
+      },
+      {
+        "pc": "0x805e5e84",
+        "word": "0x10620083",
+        "instruction": "beq $v1, $v0, 0x805e6094"
+      },
+      {
+        "pc": "0x805e5e88",
+        "word": "0x8ce36b4c",
+        "instruction": "lw $v1, 0x6b4c($a3)"
+      },
+      {
+        "pc": "0x805e5e8c",
+        "word": "0x90625efc",
+        "instruction": "lbu $v0, 0x5efc($v1)"
+      },
+      {
+        "pc": "0x805e5e90",
+        "word": "0x304200fe",
+        "instruction": "andi $v0, $v0, 0xfe"
+      },
+      {
+        "pc": "0x805e5e94",
+        "word": "0xa0625efc",
+        "instruction": "sb $v0, 0x5efc($v1)"
+      },
+      {
+        "pc": "0x805e5e98",
+        "word": "0x8ce46b4c",
+        "instruction": "lw $a0, 0x6b4c($a3)"
+      },
+      {
+        "pc": "0x805e5e9c",
+        "word": "0x90825efc",
+        "instruction": "lbu $v0, 0x5efc($a0)"
+      },
+      {
+        "pc": "0x805e5ea0",
+        "word": "0x304200fb",
+        "instruction": "andi $v0, $v0, 0xfb"
+      },
+      {
+        "pc": "0x805e5ea4",
+        "word": "0xa0825efc",
+        "instruction": "sb $v0, 0x5efc($a0)"
+      },
+      {
+        "pc": "0x805e5ea8",
+        "word": "0x8e226b4c",
+        "instruction": "lw $v0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5eac",
+        "word": "0x24040003",
+        "instruction": "addiu $a0, $zero, 3"
+      },
+      {
+        "pc": "0x805e5eb0",
+        "word": "0x90435e00",
+        "instruction": "lbu $v1, 0x5e00($v0)"
+      },
+      {
+        "pc": "0x805e5eb4",
+        "word": "0xa0465e00",
+        "instruction": "sb $a2, 0x5e00($v0)"
+      },
+      {
+        "pc": "0x805e5eb8",
+        "word": "0xc179624",
+        "instruction": "jal 0x805e5890"
+      },
+      {
+        "pc": "0x805e5ebc",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e5ec0",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5ec4",
+        "word": "0x8e030010",
+        "instruction": "lw $v1, 0x10($s0)"
+      },
+      {
+        "pc": "0x805e5ec8",
+        "word": "0x94826308",
+        "instruction": "lhu $v0, 0x6308($a0)"
+      },
+      {
+        "pc": "0x805e5ecc",
+        "word": "0x24021000",
+        "instruction": "addiu $v0, $zero, 0x1000"
+      },
+      {
+        "pc": "0x805e5ed0",
+        "word": "0xa4826308",
+        "instruction": "sh $v0, 0x6308($a0)"
+      },
+      {
+        "pc": "0x805e5ed4",
+        "word": "0x94826200",
+        "instruction": "lhu $v0, 0x6200($a0)"
+      },
+      {
+        "pc": "0x805e5ed8",
+        "word": "0xa4806200",
+        "instruction": "sh $zero, 0x6200($a0)"
+      },
+      {
+        "pc": "0x805e5edc",
+        "word": "0x94826204",
+        "instruction": "lhu $v0, 0x6204($a0)"
+      },
+      {
+        "pc": "0x805e5ee0",
+        "word": "0x2463fffb",
+        "instruction": "addiu $v1, $v1, -5"
+      },
+      {
+        "pc": "0x805e5ee4",
+        "word": "0x24020203",
+        "instruction": "addiu $v0, $zero, 0x203"
+      },
+      {
+        "pc": "0x805e5ee8",
+        "word": "0xa4826204",
+        "instruction": "sh $v0, 0x6204($a0)"
+      },
+      {
+        "pc": "0x805e5eec",
+        "word": "0x2c630002",
+        "instruction": "sltiu $v1, $v1, 2"
+      },
+      {
+        "pc": "0x805e5ef0",
+        "word": "0x94826208",
+        "instruction": "lhu $v0, 0x6208($a0)"
+      },
+      {
+        "pc": "0x805e5ef4",
+        "word": "0xa4806208",
+        "instruction": "sh $zero, 0x6208($a0)"
+      },
+      {
+        "pc": "0x805e5ef8",
+        "word": "0x1460007b",
+        "instruction": "bnez $v1, 0x805e60e8"
+      },
+      {
+        "pc": "0x805e5efc",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e5f00",
+        "word": "0x9482620c",
+        "instruction": "lhu $v0, 0x620c($a0)"
+      },
+      {
+        "pc": "0x805e5f04",
+        "word": "0x24020003",
+        "instruction": "addiu $v0, $zero, 3"
+      },
+      {
+        "pc": "0x805e5f08",
+        "word": "0xa482620c",
+        "instruction": "sh $v0, 0x620c($a0)"
+      },
+      {
+        "pc": "0x805e5f0c",
+        "word": "0x8e256b4c",
+        "instruction": "lw $a1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5f10",
+        "word": "0x92030014",
+        "instruction": "lbu $v1, 0x14($s0)"
+      },
+      {
+        "pc": "0x805e5f14",
+        "word": "0x240604b0",
+        "instruction": "addiu $a2, $zero, 0x4b0"
+      },
+      {
+        "pc": "0x805e5f18",
+        "word": "0x94a4620c",
+        "instruction": "lhu $a0, 0x620c($a1)"
+      },
+      {
+        "pc": "0x805e5f1c",
+        "word": "0x319c0",
+        "instruction": "sll $v1, $v1, 7"
+      },
+      {
+        "pc": "0x805e5f20",
+        "word": "0x306300ff",
+        "instruction": "andi $v1, $v1, 0xff"
+      },
+      {
+        "pc": "0x805e5f24",
+        "word": "0x3084ffbf",
+        "instruction": "andi $a0, $a0, 0xffbf"
+      },
+      {
+        "pc": "0x805e5f28",
+        "word": "0xa4a4620c",
+        "instruction": "sh $a0, 0x620c($a1)"
+      },
+      {
+        "pc": "0x805e5f2c",
+        "word": "0x94a2620c",
+        "instruction": "lhu $v0, 0x620c($a1)"
+      },
+      {
+        "pc": "0x805e5f30",
+        "word": "0x3821",
+        "instruction": "move $a3, $zero"
+      },
+      {
+        "pc": "0x805e5f34",
+        "word": "0x3042ff7f",
+        "instruction": "andi $v0, $v0, 0xff7f"
+      },
+      {
+        "pc": "0x805e5f38",
+        "word": "0x621825",
+        "instruction": "or $v1, $v1, $v0"
+      },
+      {
+        "pc": "0x805e5f3c",
+        "word": "0xa4a3620c",
+        "instruction": "sh $v1, 0x620c($a1)"
+      },
+      {
+        "pc": "0x805e5f40",
+        "word": "0x9603000c",
+        "instruction": "lhu $v1, 0xc($s0)"
+      },
+      {
+        "pc": "0x805e5f44",
+        "word": "0x2c62044d",
+        "instruction": "sltiu $v0, $v1, 0x44d"
+      },
+      {
+        "pc": "0x805e5f48",
+        "word": "0x10400006",
+        "instruction": "beqz $v0, 0x805e5f64"
+      },
+      {
+        "pc": "0x805e5f4c",
+        "word": "0x2c620227",
+        "instruction": "sltiu $v0, $v1, 0x227"
+      },
+      {
+        "pc": "0x805e5f50",
+        "word": "0x24060258",
+        "instruction": "addiu $a2, $zero, 0x258"
+      },
+      {
+        "pc": "0x805e5f54",
+        "word": "0x10400003",
+        "instruction": "beqz $v0, 0x805e5f64"
+      },
+      {
+        "pc": "0x805e5f58",
+        "word": "0x3821",
+        "instruction": "move $a3, $zero"
+      },
+      {
+        "pc": "0x805e5f5c",
+        "word": "0x240601f4",
+        "instruction": "addiu $a2, $zero, 0x1f4"
+      },
+      {
+        "pc": "0x805e5f60",
+        "word": "0x3821",
+        "instruction": "move $a3, $zero"
+      },
+      {
+        "pc": "0x805e5f64",
+        "word": "0x9602000a",
+        "instruction": "lhu $v0, 0xa($s0)"
+      },
+      {
+        "pc": "0x805e5f68",
+        "word": "0x96040008",
+        "instruction": "lhu $a0, 8($s0)"
+      },
+      {
+        "pc": "0x805e5f6c",
+        "word": "0x8e080010",
+        "instruction": "lw $t0, 0x10($s0)"
+      },
+      {
+        "pc": "0x805e5f70",
+        "word": "0x440019",
+        "instruction": "multu $v0, $a0"
+      },
+      {
+        "pc": "0x805e5f74",
+        "word": "0x1012",
+        "instruction": "mflo $v0"
+      },
+      {
+        "pc": "0x805e5f78",
+        "word": "0x1810",
+        "instruction": "mfhi $v1"
+      },
+      {
+        "pc": "0x805e5f7c",
+        "word": "0x70e25002",
+        "instruction": "mul $t2, $a3, $v0"
+      },
+      {
+        "pc": "0x805e5f80",
+        "word": "0x460019",
+        "instruction": "multu $v0, $a2"
+      },
+      {
+        "pc": "0x805e5f84",
+        "word": "0x24020003",
+        "instruction": "addiu $v0, $zero, 3"
+      },
+      {
+        "pc": "0x805e5f88",
+        "word": "0x2810",
+        "instruction": "mfhi $a1"
+      },
+      {
+        "pc": "0x805e5f8c",
+        "word": "0x2012",
+        "instruction": "mflo $a0"
+      },
+      {
+        "pc": "0x805e5f90",
+        "word": "0x70664802",
+        "instruction": "mul $t1, $v1, $a2"
+      },
+      {
+        "pc": "0x805e5f94",
+        "word": "0x12a3821",
+        "instruction": "addu $a3, $t1, $t2"
+      },
+      {
+        "pc": "0x805e5f98",
+        "word": "0xe53821",
+        "instruction": "addu $a3, $a3, $a1"
+      },
+      {
+        "pc": "0x805e5f9c",
+        "word": "0x11020062",
+        "instruction": "beq $t0, $v0, 0x805e6128"
+      },
+      {
+        "pc": "0x805e5fa0",
+        "word": "0xe02821",
+        "instruction": "move $a1, $a3"
+      },
+      {
+        "pc": "0x805e5fa4",
+        "word": "0x2d020004",
+        "instruction": "sltiu $v0, $t0, 4"
+      },
+      {
+        "pc": "0x805e5fa8",
+        "word": "0x10400026",
+        "instruction": "beqz $v0, 0x805e6044"
+      },
+      {
+        "pc": "0x805e5fac",
+        "word": "0x2502fffb",
+        "instruction": "addiu $v0, $t0, -5"
+      },
+      {
+        "pc": "0x805e5fb0",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x805e5fb4",
+        "word": "0x11020051",
+        "instruction": "beq $t0, $v0, 0x805e60fc"
+      },
+      {
+        "pc": "0x805e5fb8",
+        "word": "0x41782",
+        "instruction": "srl $v0, $a0, 0x1e"
+      },
+      {
+        "pc": "0x805e5fbc",
+        "word": "0x53880",
+        "instruction": "sll $a3, $a1, 2"
+      },
+      {
+        "pc": "0x805e5fc0",
+        "word": "0x473825",
+        "instruction": "or $a3, $v0, $a3"
+      },
+      {
+        "pc": "0x805e5fc4",
+        "word": "0x43080",
+        "instruction": "sll $a2, $a0, 2"
+      },
+      {
+        "pc": "0x805e5fc8",
+        "word": "0x3c030040",
+        "instruction": "lui $v1, 0x40"
+      },
+      {
+        "pc": "0x805e5fcc",
+        "word": "0x64042",
+        "instruction": "srl $t0, $a2, 1"
+      },
+      {
+        "pc": "0x805e5fd0",
+        "word": "0x727c0",
+        "instruction": "sll $a0, $a3, 0x1f"
+      },
+      {
+        "pc": "0x805e5fd4",
+        "word": "0x72842",
+        "instruction": "srl $a1, $a3, 1"
+      },
+      {
+        "pc": "0x805e5fd8",
+        "word": "0x34635f7e",
+        "instruction": "ori $v1, $v1, 0x5f7e"
+      },
+      {
+        "pc": "0x805e5fdc",
+        "word": "0xa32821",
+        "instruction": "addu $a1, $a1, $v1"
+      },
+      {
+        "pc": "0x805e5fe0",
+        "word": "0xc0ee23b",
+        "instruction": "jal 0x803b88ec"
+      },
+      {
+        "pc": "0x805e5fe4",
+        "word": "0x882025",
+        "instruction": "or $a0, $a0, $t0"
+      },
+      {
+        "pc": "0x805e5fe8",
+        "word": "0x23402",
+        "instruction": "srl $a2, $v0, 0x10"
+      },
+      {
+        "pc": "0x805e5fec",
+        "word": "0x3045ffff",
+        "instruction": "andi $a1, $v0, 0xffff"
+      },
+      {
+        "pc": "0x805e5ff0",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e5ff4",
+        "word": "0x8fbf001c",
+        "instruction": "lw $ra, 0x1c($sp)"
+      },
+      {
+        "pc": "0x805e5ff8",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x805e5ffc",
+        "word": "0x94836230",
+        "instruction": "lhu $v1, 0x6230($a0)"
+      },
+      {
+        "pc": "0x805e6000",
+        "word": "0x8fb10018",
+        "instruction": "lw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x805e6004",
+        "word": "0x8fb00014",
+        "instruction": "lw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x805e6008",
+        "word": "0x3063fff7",
+        "instruction": "andi $v1, $v1, 0xfff7"
+      },
+      {
+        "pc": "0x805e600c",
+        "word": "0xa4836230",
+        "instruction": "sh $v1, 0x6230($a0)"
+      },
+      {
+        "pc": "0x805e6010",
+        "word": "0x9483623c",
+        "instruction": "lhu $v1, 0x623c($a0)"
+      },
+      {
+        "pc": "0x805e6014",
+        "word": "0xa485623c",
+        "instruction": "sh $a1, 0x623c($a0)"
+      },
+      {
+        "pc": "0x805e6018",
+        "word": "0x94836240",
+        "instruction": "lhu $v1, 0x6240($a0)"
+      },
+      {
+        "pc": "0x805e601c",
+        "word": "0x27bd0020",
+        "instruction": "addiu $sp, $sp, 0x20"
+      },
+      {
+        "pc": "0x805e6020",
+        "word": "0xa4866240",
+        "instruction": "sh $a2, 0x6240($a0)"
+      },
+      {
+        "pc": "0x805e6024",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x805e6028",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e602c",
+        "word": "0x8e236b4c",
+        "instruction": "lw $v1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e6030",
+        "word": "0x90625e88",
+        "instruction": "lbu $v0, 0x5e88($v1)"
+      },
+      {
+        "pc": "0x805e6034",
+        "word": "0x24020011",
+        "instruction": "addiu $v0, $zero, 0x11"
+      },
+      {
+        "pc": "0x805e6038",
+        "word": "0xa0625e88",
+        "instruction": "sb $v0, 0x5e88($v1)"
+      },
+      {
+        "pc": "0x805e603c",
+        "word": "0x8179745",
+        "instruction": "j 0x805e5d14"
+      },
+      {
+        "pc": "0x805e6040",
+        "word": "0x96040020",
+        "instruction": "lhu $a0, 0x20($s0)"
+      },
+      {
+        "pc": "0x805e6044",
+        "word": "0x2c420002",
+        "instruction": "sltiu $v0, $v0, 2"
+      },
+      {
+        "pc": "0x805e6048",
+        "word": "0x1040ffdc",
+        "instruction": "beqz $v0, 0x805e5fbc"
+      },
+      {
+        "pc": "0x805e604c",
+        "word": "0x41782",
+        "instruction": "srl $v0, $a0, 0x1e"
+      },
+      {
+        "pc": "0x805e6050",
+        "word": "0x73880",
+        "instruction": "sll $a3, $a3, 2"
+      },
+      {
+        "pc": "0x805e6054",
+        "word": "0x473825",
+        "instruction": "or $a3, $v0, $a3"
+      },
+      {
+        "pc": "0x805e6058",
+        "word": "0x10e00043",
+        "instruction": "beqz $a3, 0x805e6168"
+      },
+      {
+        "pc": "0x805e605c",
+        "word": "0x44080",
+        "instruction": "sll $t0, $a0, 2"
+      },
+      {
+        "pc": "0x805e6060",
+        "word": "0x41fc2",
+        "instruction": "srl $v1, $a0, 0x1f"
+      },
+      {
+        "pc": "0x805e6064",
+        "word": "0x51040",
+        "instruction": "sll $v0, $a1, 1"
+      },
+      {
+        "pc": "0x805e6068",
+        "word": "0x621025",
+        "instruction": "or $v0, $v1, $v0"
+      },
+      {
+        "pc": "0x805e606c",
+        "word": "0x14400047",
+        "instruction": "bnez $v0, 0x805e618c"
+      },
+      {
+        "pc": "0x805e6070",
+        "word": "0x41840",
+        "instruction": "sll $v1, $a0, 1"
+      },
+      {
+        "pc": "0x805e6074",
+        "word": "0x3c025968",
+        "instruction": "lui $v0, 0x5968"
+      },
+      {
+        "pc": "0x805e6078",
+        "word": "0x34422f01",
+        "instruction": "ori $v0, $v0, 0x2f01"
+      },
+      {
+        "pc": "0x805e607c",
+        "word": "0x62102b",
+        "instruction": "sltu $v0, $v1, $v0"
+      },
+      {
+        "pc": "0x805e6080",
+        "word": "0x10400042",
+        "instruction": "beqz $v0, 0x805e618c"
+      },
+      {
+        "pc": "0x805e6084",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e6088",
+        "word": "0x33f82",
+        "instruction": "srl $a3, $v1, 0x1e"
+      },
+      {
+        "pc": "0x805e608c",
+        "word": "0x8179863",
+        "instruction": "j 0x805e618c"
+      },
+      {
+        "pc": "0x805e6090",
+        "word": "0x440c0",
+        "instruction": "sll $t0, $a0, 3"
+      },
+      {
+        "pc": "0x805e6094",
+        "word": "0x90625efc",
+        "instruction": "lbu $v0, 0x5efc($v1)"
+      },
+      {
+        "pc": "0x805e6098",
+        "word": "0x304200ff",
+        "instruction": "andi $v0, $v0, 0xff"
+      },
+      {
+        "pc": "0x805e609c",
+        "word": "0x34420001",
+        "instruction": "ori $v0, $v0, 1"
+      },
+      {
+        "pc": "0x805e60a0",
+        "word": "0xa0625efc",
+        "instruction": "sb $v0, 0x5efc($v1)"
+      },
+      {
+        "pc": "0x805e60a4",
+        "word": "0x8ce46b4c",
+        "instruction": "lw $a0, 0x6b4c($a3)"
+      },
+      {
+        "pc": "0x805e60a8",
+        "word": "0x90825efc",
+        "instruction": "lbu $v0, 0x5efc($a0)"
+      },
+      {
+        "pc": "0x805e60ac",
+        "word": "0x304200ff",
+        "instruction": "andi $v0, $v0, 0xff"
+      },
+      {
+        "pc": "0x805e60b0",
+        "word": "0x34420004",
+        "instruction": "ori $v0, $v0, 4"
+      },
+      {
+        "pc": "0x805e60b4",
+        "word": "0xa0825efc",
+        "instruction": "sb $v0, 0x5efc($a0)"
+      },
+      {
+        "pc": "0x805e60b8",
+        "word": "0x81797ab",
+        "instruction": "j 0x805e5eac"
+      },
+      {
+        "pc": "0x805e60bc",
+        "word": "0x8e226b4c",
+        "instruction": "lw $v0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e60c0",
+        "word": "0x90825efc",
+        "instruction": "lbu $v0, 0x5efc($a0)"
+      },
+      {
+        "pc": "0x805e60c4",
+        "word": "0x304200ff",
+        "instruction": "andi $v0, $v0, 0xff"
+      },
+      {
+        "pc": "0x805e60c8",
+        "word": "0x34420001",
+        "instruction": "ori $v0, $v0, 1"
+      },
+      {
+        "pc": "0x805e60cc",
+        "word": "0xa0825efc",
+        "instruction": "sb $v0, 0x5efc($a0)"
+      },
+      {
+        "pc": "0x805e60d0",
+        "word": "0x8ce36b4c",
+        "instruction": "lw $v1, 0x6b4c($a3)"
+      },
+      {
+        "pc": "0x805e60d4",
+        "word": "0x90625efc",
+        "instruction": "lbu $v0, 0x5efc($v1)"
+      },
+      {
+        "pc": "0x805e60d8",
+        "word": "0x304200fb",
+        "instruction": "andi $v0, $v0, 0xfb"
+      },
+      {
+        "pc": "0x805e60dc",
+        "word": "0xa0625efc",
+        "instruction": "sb $v0, 0x5efc($v1)"
+      },
+      {
+        "pc": "0x805e60e0",
+        "word": "0x81797ab",
+        "instruction": "j 0x805e5eac"
+      },
+      {
+        "pc": "0x805e60e4",
+        "word": "0x8e226b4c",
+        "instruction": "lw $v0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e60e8",
+        "word": "0x9482620c",
+        "instruction": "lhu $v0, 0x620c($a0)"
+      },
+      {
+        "pc": "0x805e60ec",
+        "word": "0x24020002",
+        "instruction": "addiu $v0, $zero, 2"
+      },
+      {
+        "pc": "0x805e60f0",
+        "word": "0xa482620c",
+        "instruction": "sh $v0, 0x620c($a0)"
+      },
+      {
+        "pc": "0x805e60f4",
+        "word": "0x81797c4",
+        "instruction": "j 0x805e5f10"
+      },
+      {
+        "pc": "0x805e60f8",
+        "word": "0x8e256b4c",
+        "instruction": "lw $a1, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e60fc",
+        "word": "0x8e020014",
+        "instruction": "lw $v0, 0x14($s0)"
+      },
+      {
+        "pc": "0x805e6100",
+        "word": "0x1048003b",
+        "instruction": "beq $v0, $t0, 0x805e61f0"
+      },
+      {
+        "pc": "0x805e6104",
+        "word": "0x418c0",
+        "instruction": "sll $v1, $a0, 3"
+      },
+      {
+        "pc": "0x805e6108",
+        "word": "0x738c0",
+        "instruction": "sll $a3, $a3, 3"
+      },
+      {
+        "pc": "0x805e610c",
+        "word": "0x41742",
+        "instruction": "srl $v0, $a0, 0x1d"
+      },
+      {
+        "pc": "0x805e6110",
+        "word": "0x473825",
+        "instruction": "or $a3, $v0, $a3"
+      },
+      {
+        "pc": "0x805e6114",
+        "word": "0x643023",
+        "instruction": "subu $a2, $v1, $a0"
+      },
+      {
+        "pc": "0x805e6118",
+        "word": "0xe53823",
+        "instruction": "subu $a3, $a3, $a1"
+      },
+      {
+        "pc": "0x805e611c",
+        "word": "0x66182b",
+        "instruction": "sltu $v1, $v1, $a2"
+      },
+      {
+        "pc": "0x805e6120",
+        "word": "0x81797f2",
+        "instruction": "j 0x805e5fc8"
+      },
+      {
+        "pc": "0x805e6124",
+        "word": "0xe33823",
+        "instruction": "subu $a3, $a3, $v1"
+      },
+      {
+        "pc": "0x805e6128",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e612c",
+        "word": "0x8fbf001c",
+        "instruction": "lw $ra, 0x1c($sp)"
+      },
+      {
+        "pc": "0x805e6130",
+        "word": "0x2821",
+        "instruction": "move $a1, $zero"
+      },
+      {
+        "pc": "0x805e6134",
+        "word": "0x94836230",
+        "instruction": "lhu $v1, 0x6230($a0)"
+      },
+      {
+        "pc": "0x805e6138",
+        "word": "0x24060d80",
+        "instruction": "addiu $a2, $zero, 0xd80"
+      },
+      {
+        "pc": "0x805e613c",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x805e6140",
+        "word": "0x3063fff7",
+        "instruction": "andi $v1, $v1, 0xfff7"
+      },
+      {
+        "pc": "0x805e6144",
+        "word": "0xa4836230",
+        "instruction": "sh $v1, 0x6230($a0)"
+      },
+      {
+        "pc": "0x805e6148",
+        "word": "0x9483623c",
+        "instruction": "lhu $v1, 0x623c($a0)"
+      },
+      {
+        "pc": "0x805e614c",
+        "word": "0xa485623c",
+        "instruction": "sh $a1, 0x623c($a0)"
+      },
+      {
+        "pc": "0x805e6150",
+        "word": "0x94836240",
+        "instruction": "lhu $v1, 0x6240($a0)"
+      },
+      {
+        "pc": "0x805e6154",
+        "word": "0x8fb10018",
+        "instruction": "lw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x805e6158",
+        "word": "0x8fb00014",
+        "instruction": "lw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x805e615c",
+        "word": "0xa4866240",
+        "instruction": "sh $a2, 0x6240($a0)"
+      },
+      {
+        "pc": "0x805e6160",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x805e6164",
+        "word": "0x27bd0020",
+        "instruction": "addiu $sp, $sp, 0x20"
+      },
+      {
+        "pc": "0x805e6168",
+        "word": "0x3c025968",
+        "instruction": "lui $v0, 0x5968"
+      },
+      {
+        "pc": "0x805e616c",
+        "word": "0x34422f01",
+        "instruction": "ori $v0, $v0, 0x2f01"
+      },
+      {
+        "pc": "0x805e6170",
+        "word": "0x102102b",
+        "instruction": "sltu $v0, $t0, $v0"
+      },
+      {
+        "pc": "0x805e6174",
+        "word": "0x1040ffbb",
+        "instruction": "beqz $v0, 0x805e6064"
+      },
+      {
+        "pc": "0x805e6178",
+        "word": "0x41fc2",
+        "instruction": "srl $v1, $a0, 0x1f"
+      },
+      {
+        "pc": "0x805e617c",
+        "word": "0x81f82",
+        "instruction": "srl $v1, $t0, 0x1e"
+      },
+      {
+        "pc": "0x805e6180",
+        "word": "0x81080",
+        "instruction": "sll $v0, $t0, 2"
+      },
+      {
+        "pc": "0x805e6184",
+        "word": "0x404021",
+        "instruction": "move $t0, $v0"
+      },
+      {
+        "pc": "0x805e6188",
+        "word": "0x603821",
+        "instruction": "move $a3, $v1"
+      },
+      {
+        "pc": "0x805e618c",
+        "word": "0x3c030040",
+        "instruction": "lui $v1, 0x40"
+      },
+      {
+        "pc": "0x805e6190",
+        "word": "0x83042",
+        "instruction": "srl $a2, $t0, 1"
+      },
+      {
+        "pc": "0x805e6194",
+        "word": "0x727c0",
+        "instruction": "sll $a0, $a3, 0x1f"
+      },
+      {
+        "pc": "0x805e6198",
+        "word": "0x72842",
+        "instruction": "srl $a1, $a3, 1"
+      },
+      {
+        "pc": "0x805e619c",
+        "word": "0x34635f7e",
+        "instruction": "ori $v1, $v1, 0x5f7e"
+      },
+      {
+        "pc": "0x805e61a0",
+        "word": "0x862025",
+        "instruction": "or $a0, $a0, $a2"
+      },
+      {
+        "pc": "0x805e61a4",
+        "word": "0xa32821",
+        "instruction": "addu $a1, $a1, $v1"
+      },
+      {
+        "pc": "0x805e61a8",
+        "word": "0xc0ee23b",
+        "instruction": "jal 0x803b88ec"
+      },
+      {
+        "pc": "0x805e61ac",
+        "word": "0x1003021",
+        "instruction": "move $a2, $t0"
+      },
+      {
+        "pc": "0x805e61b0",
+        "word": "0x8e246b4c",
+        "instruction": "lw $a0, 0x6b4c($s1)"
+      },
+      {
+        "pc": "0x805e61b4",
+        "word": "0x8fbf001c",
+        "instruction": "lw $ra, 0x1c($sp)"
+      },
+      {
+        "pc": "0x805e61b8",
+        "word": "0x3045ffff",
+        "instruction": "andi $a1, $v0, 0xffff"
+      },
+      {
+        "pc": "0x805e61bc",
+        "word": "0x94836230",
+        "instruction": "lhu $v1, 0x6230($a0)"
+      },
+      {
+        "pc": "0x805e61c0",
+        "word": "0x23402",
+        "instruction": "srl $a2, $v0, 0x10"
+      },
+      {
+        "pc": "0x805e61c4",
+        "word": "0x8fb10018",
+        "instruction": "lw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x805e61c8",
+        "word": "0x3063fff7",
+        "instruction": "andi $v1, $v1, 0xfff7"
+      },
+      {
+        "pc": "0x805e61cc",
+        "word": "0xa4836230",
+        "instruction": "sh $v1, 0x6230($a0)"
+      },
+      {
+        "pc": "0x805e61d0",
+        "word": "0x9483623c",
+        "instruction": "lhu $v1, 0x623c($a0)"
+      },
+      {
+        "pc": "0x805e61d4",
+        "word": "0xa485623c",
+        "instruction": "sh $a1, 0x623c($a0)"
+      },
+      {
+        "pc": "0x805e61d8",
+        "word": "0x24020001",
+        "instruction": "addiu $v0, $zero, 1"
+      },
+      {
+        "pc": "0x805e61dc",
+        "word": "0x94836240",
+        "instruction": "lhu $v1, 0x6240($a0)"
+      },
+      {
+        "pc": "0x805e61e0",
+        "word": "0x8fb00014",
+        "instruction": "lw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x805e61e4",
+        "word": "0xa4866240",
+        "instruction": "sh $a2, 0x6240($a0)"
+      },
+      {
+        "pc": "0x805e61e8",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x805e61ec",
+        "word": "0x27bd0020",
+        "instruction": "addiu $sp, $sp, 0x20"
+      },
+      {
+        "pc": "0x805e61f0",
+        "word": "0x41742",
+        "instruction": "srl $v0, $a0, 0x1d"
+      },
+      {
+        "pc": "0x805e61f4",
+        "word": "0x738c0",
+        "instruction": "sll $a3, $a3, 3"
+      },
+      {
+        "pc": "0x805e61f8",
+        "word": "0x643023",
+        "instruction": "subu $a2, $v1, $a0"
+      },
+      {
+        "pc": "0x805e61fc",
+        "word": "0x473825",
+        "instruction": "or $a3, $v0, $a3"
+      },
+      {
+        "pc": "0x805e6200",
+        "word": "0x66182b",
+        "instruction": "sltu $v1, $v1, $a2"
+      },
+      {
+        "pc": "0x805e6204",
+        "word": "0xe53823",
+        "instruction": "subu $a3, $a3, $a1"
+      },
+      {
+        "pc": "0x805e6208",
+        "word": "0xe33823",
+        "instruction": "subu $a3, $a3, $v1"
+      },
+      {
+        "pc": "0x805e620c",
+        "word": "0x3c030080",
+        "instruction": "lui $v1, 0x80"
+      },
+      {
+        "pc": "0x805e6210",
+        "word": "0x64042",
+        "instruction": "srl $t0, $a2, 1"
+      },
+      {
+        "pc": "0x805e6214",
+        "word": "0x727c0",
+        "instruction": "sll $a0, $a3, 0x1f"
+      },
+      {
+        "pc": "0x805e6218",
+        "word": "0x72842",
+        "instruction": "srl $a1, $a3, 1"
+      },
+      {
+        "pc": "0x805e621c",
+        "word": "0x3463befc",
+        "instruction": "ori $v1, $v1, 0xbefc"
+      }
+    ],
+    "gamma_RAM_transfer": [
+      {
+        "pc": "0x805e55d4",
+        "word": "0x3c0b806f",
+        "instruction": "lui $t3, 0x806f"
+      },
+      {
+        "pc": "0x805e55d8",
+        "word": "0x8d626b4c",
+        "instruction": "lw $v0, 0x6b4c($t3)"
+      },
+      {
+        "pc": "0x805e55dc",
+        "word": "0x308a00ff",
+        "instruction": "andi $t2, $a0, 0xff"
+      },
+      {
+        "pc": "0x805e55e0",
+        "word": "0x30c6ffff",
+        "instruction": "andi $a2, $a2, 0xffff"
+      },
+      {
+        "pc": "0x805e55e4",
+        "word": "0x90445e00",
+        "instruction": "lbu $a0, 0x5e00($v0)"
+      },
+      {
+        "pc": "0x805e55e8",
+        "word": "0x90435e00",
+        "instruction": "lbu $v1, 0x5e00($v0)"
+      },
+      {
+        "pc": "0x805e55ec",
+        "word": "0x24030010",
+        "instruction": "addiu $v1, $zero, 0x10"
+      },
+      {
+        "pc": "0x805e55f0",
+        "word": "0xa0435e00",
+        "instruction": "sb $v1, 0x5e00($v0)"
+      },
+      {
+        "pc": "0x805e55f4",
+        "word": "0x8d696b4c",
+        "instruction": "lw $t1, 0x6b4c($t3)"
+      },
+      {
+        "pc": "0x805e55f8",
+        "word": "0x30a3ffff",
+        "instruction": "andi $v1, $a1, 0xffff"
+      },
+      {
+        "pc": "0x805e55fc",
+        "word": "0x308c00ff",
+        "instruction": "andi $t4, $a0, 0xff"
+      },
+      {
+        "pc": "0x805e5600",
+        "word": "0x25285fb4",
+        "instruction": "addiu $t0, $t1, 0x5fb4"
+      },
+      {
+        "pc": "0x805e5604",
+        "word": "0x8179586",
+        "instruction": "j 0x805e5618"
+      },
+      {
+        "pc": "0x805e5608",
+        "word": "0x3407ffff",
+        "instruction": "ori $a3, $zero, 0xffff"
+      },
+      {
+        "pc": "0x805e560c",
+        "word": "0x3087ffff",
+        "instruction": "andi $a3, $a0, 0xffff"
+      },
+      {
+        "pc": "0x805e5610",
+        "word": "0x10e00005",
+        "instruction": "beqz $a3, 0x805e5628"
+      },
+      {
+        "pc": "0x805e5614",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e5618",
+        "word": "0x91020000",
+        "instruction": "lbu $v0, ($t0)"
+      },
+      {
+        "pc": "0x805e561c",
+        "word": "0x304200e0",
+        "instruction": "andi $v0, $v0, 0xe0"
+      },
+      {
+        "pc": "0x805e5620",
+        "word": "0x1440fffa",
+        "instruction": "bnez $v0, 0x805e560c"
+      },
+      {
+        "pc": "0x805e5624",
+        "word": "0x24e4ffff",
+        "instruction": "addiu $a0, $a3, -1"
+      },
+      {
+        "pc": "0x805e5628",
+        "word": "0x95225fb0",
+        "instruction": "lhu $v0, 0x5fb0($t1)"
+      },
+      {
+        "pc": "0x805e562c",
+        "word": "0x306303ff",
+        "instruction": "andi $v1, $v1, 0x3ff"
+      },
+      {
+        "pc": "0x805e5630",
+        "word": "0xa2080",
+        "instruction": "sll $a0, $t2, 2"
+      },
+      {
+        "pc": "0x805e5634",
+        "word": "0x3042fc00",
+        "instruction": "andi $v0, $v0, 0xfc00"
+      },
+      {
+        "pc": "0x805e5638",
+        "word": "0x431025",
+        "instruction": "or $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805e563c",
+        "word": "0x24845fb8",
+        "instruction": "addiu $a0, $a0, 0x5fb8"
+      },
+      {
+        "pc": "0x805e5640",
+        "word": "0xa5225fb0",
+        "instruction": "sh $v0, 0x5fb0($t1)"
+      },
+      {
+        "pc": "0x805e5644",
+        "word": "0x1242021",
+        "instruction": "addu $a0, $t1, $a0"
+      },
+      {
+        "pc": "0x805e5648",
+        "word": "0x94820000",
+        "instruction": "lhu $v0, ($a0)"
+      },
+      {
+        "pc": "0x805e564c",
+        "word": "0x30c30fff",
+        "instruction": "andi $v1, $a2, 0xfff"
+      },
+      {
+        "pc": "0x805e5650",
+        "word": "0x3042f000",
+        "instruction": "andi $v0, $v0, 0xf000"
+      },
+      {
+        "pc": "0x805e5654",
+        "word": "0x431025",
+        "instruction": "or $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805e5658",
+        "word": "0x24030001",
+        "instruction": "addiu $v1, $zero, 1"
+      },
+      {
+        "pc": "0x805e565c",
+        "word": "0xa4820000",
+        "instruction": "sh $v0, ($a0)"
+      },
+      {
+        "pc": "0x805e5660",
+        "word": "0x1143001c",
+        "instruction": "beq $t2, $v1, 0x805e56d4"
+      },
+      {
+        "pc": "0x805e5664",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e5668",
+        "word": "0x15400012",
+        "instruction": "bnez $t2, 0x805e56b4"
+      },
+      {
+        "pc": "0x805e566c",
+        "word": "0x24020002",
+        "instruction": "addiu $v0, $zero, 2"
+      },
+      {
+        "pc": "0x805e5670",
+        "word": "0x91225fb4",
+        "instruction": "lbu $v0, 0x5fb4($t1)"
+      },
+      {
+        "pc": "0x805e5674",
+        "word": "0x304200ff",
+        "instruction": "andi $v0, $v0, 0xff"
+      },
+      {
+        "pc": "0x805e5678",
+        "word": "0x34420020",
+        "instruction": "ori $v0, $v0, 0x20"
+      },
+      {
+        "pc": "0x805e567c",
+        "word": "0xa1225fb4",
+        "instruction": "sb $v0, 0x5fb4($t1)"
+      },
+      {
+        "pc": "0x805e5680",
+        "word": "0x8d656b4c",
+        "instruction": "lw $a1, 0x6b4c($t3)"
+      },
+      {
+        "pc": "0x805e5684",
+        "word": "0x24a45fb4",
+        "instruction": "addiu $a0, $a1, 0x5fb4"
+      },
+      {
+        "pc": "0x805e5688",
+        "word": "0x90820000",
+        "instruction": "lbu $v0, ($a0)"
+      },
+      {
+        "pc": "0x805e568c",
+        "word": "0x24e3ffff",
+        "instruction": "addiu $v1, $a3, -1"
+      },
+      {
+        "pc": "0x805e5690",
+        "word": "0x304200e0",
+        "instruction": "andi $v0, $v0, 0xe0"
+      },
+      {
+        "pc": "0x805e5694",
+        "word": "0x10400003",
+        "instruction": "beqz $v0, 0x805e56a4"
+      },
+      {
+        "pc": "0x805e5698",
+        "word": "0x3067ffff",
+        "instruction": "andi $a3, $v1, 0xffff"
+      },
+      {
+        "pc": "0x805e569c",
+        "word": "0x14e0fffa",
+        "instruction": "bnez $a3, 0x805e5688"
+      },
+      {
+        "pc": "0x805e56a0",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e56a4",
+        "word": "0x90a25e00",
+        "instruction": "lbu $v0, 0x5e00($a1)"
+      },
+      {
+        "pc": "0x805e56a8",
+        "word": "0xa0ac5e00",
+        "instruction": "sb $t4, 0x5e00($a1)"
+      },
+      {
+        "pc": "0x805e56ac",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x805e56b0",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e56b4",
+        "word": "0x1542fff2",
+        "instruction": "bne $t2, $v0, 0x805e5680"
+      },
+      {
+        "pc": "0x805e56b8",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805e56bc",
+        "word": "0x91225fb4",
+        "instruction": "lbu $v0, 0x5fb4($t1)"
+      },
+      {
+        "pc": "0x805e56c0",
+        "word": "0x3042007f",
+        "instruction": "andi $v0, $v0, 0x7f"
+      },
+      {
+        "pc": "0x805e56c4",
+        "word": "0x34420080",
+        "instruction": "ori $v0, $v0, 0x80"
+      },
+      {
+        "pc": "0x805e56c8",
+        "word": "0xa1225fb4",
+        "instruction": "sb $v0, 0x5fb4($t1)"
+      },
+      {
+        "pc": "0x805e56cc",
+        "word": "0x81795a1",
+        "instruction": "j 0x805e5684"
+      },
+      {
+        "pc": "0x805e56d0",
+        "word": "0x8d656b4c",
+        "instruction": "lw $a1, 0x6b4c($t3)"
+      },
+      {
+        "pc": "0x805e56d4",
+        "word": "0x91225fb4",
+        "instruction": "lbu $v0, 0x5fb4($t1)"
+      },
+      {
+        "pc": "0x805e56d8",
+        "word": "0x304200ff",
+        "instruction": "andi $v0, $v0, 0xff"
+      },
+      {
+        "pc": "0x805e56dc",
+        "word": "0x34420040",
+        "instruction": "ori $v0, $v0, 0x40"
+      },
+      {
+        "pc": "0x805e56e0",
+        "word": "0xa1225fb4",
+        "instruction": "sb $v0, 0x5fb4($t1)"
+      },
+      {
+        "pc": "0x805e56e4",
+        "word": "0x81795a1",
+        "instruction": "j 0x805e5684"
+      },
+      {
+        "pc": "0x805e56e8",
+        "word": "0x8d656b4c",
+        "instruction": "lw $a1, 0x6b4c($t3)"
+      }
+    ],
+    "clock_snapshot": [
+      {
+        "pc": "0x805fd3d4",
+        "word": "0x27bdffd0",
+        "instruction": "addiu $sp, $sp, -0x30"
+      },
+      {
+        "pc": "0x805fd3d8",
+        "word": "0xafb30020",
+        "instruction": "sw $s3, 0x20($sp)"
+      },
+      {
+        "pc": "0x805fd3dc",
+        "word": "0x3c13806c",
+        "instruction": "lui $s3, 0x806c"
+      },
+      {
+        "pc": "0x805fd3e0",
+        "word": "0x8e639634",
+        "instruction": "lw $v1, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd3e4",
+        "word": "0x3c020020",
+        "instruction": "lui $v0, 0x20"
+      },
+      {
+        "pc": "0x805fd3e8",
+        "word": "0xafb50028",
+        "instruction": "sw $s5, 0x28($sp)"
+      },
+      {
+        "pc": "0x805fd3ec",
+        "word": "0xafb40024",
+        "instruction": "sw $s4, 0x24($sp)"
+      },
+      {
+        "pc": "0x805fd3f0",
+        "word": "0x34551754",
+        "instruction": "ori $s5, $v0, 0x1754"
+      },
+      {
+        "pc": "0x805fd3f4",
+        "word": "0x34541751",
+        "instruction": "ori $s4, $v0, 0x1751"
+      },
+      {
+        "pc": "0x805fd3f8",
+        "word": "0x34455e00",
+        "instruction": "ori $a1, $v0, 0x5e00"
+      },
+      {
+        "pc": "0x805fd3fc",
+        "word": "0xafb2001c",
+        "instruction": "sw $s2, 0x1c($sp)"
+      },
+      {
+        "pc": "0x805fd400",
+        "word": "0xafb10018",
+        "instruction": "sw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x805fd404",
+        "word": "0xafb00014",
+        "instruction": "sw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x805fd408",
+        "word": "0xafbf002c",
+        "instruction": "sw $ra, 0x2c($sp)"
+      },
+      {
+        "pc": "0x805fd40c",
+        "word": "0x652821",
+        "instruction": "addu $a1, $v1, $a1"
+      },
+      {
+        "pc": "0x805fd410",
+        "word": "0x743021",
+        "instruction": "addu $a2, $v1, $s4"
+      },
+      {
+        "pc": "0x805fd414",
+        "word": "0x753821",
+        "instruction": "addu $a3, $v1, $s5"
+      },
+      {
+        "pc": "0x805fd418",
+        "word": "0x34425e08",
+        "instruction": "ori $v0, $v0, 0x5e08"
+      },
+      {
+        "pc": "0x805fd41c",
+        "word": "0x90c80000",
+        "instruction": "lbu $t0, ($a2)"
+      },
+      {
+        "pc": "0x805fd420",
+        "word": "0x621821",
+        "instruction": "addu $v1, $v1, $v0"
+      },
+      {
+        "pc": "0x805fd424",
+        "word": "0x90e90000",
+        "instruction": "lbu $t1, ($a3)"
+      },
+      {
+        "pc": "0x805fd428",
+        "word": "0xa4a00000",
+        "instruction": "sh $zero, ($a1)"
+      },
+      {
+        "pc": "0x805fd42c",
+        "word": "0x94620000",
+        "instruction": "lhu $v0, ($v1)"
+      },
+      {
+        "pc": "0x805fd430",
+        "word": "0x309000ff",
+        "instruction": "andi $s0, $a0, 0xff"
+      },
+      {
+        "pc": "0x805fd434",
+        "word": "0x24040001",
+        "instruction": "addiu $a0, $zero, 1"
+      },
+      {
+        "pc": "0x805fd438",
+        "word": "0x3042ff00",
+        "instruction": "andi $v0, $v0, 0xff00"
+      },
+      {
+        "pc": "0x805fd43c",
+        "word": "0x501025",
+        "instruction": "or $v0, $v0, $s0"
+      },
+      {
+        "pc": "0x805fd440",
+        "word": "0xa4620000",
+        "instruction": "sh $v0, ($v1)"
+      },
+      {
+        "pc": "0x805fd444",
+        "word": "0x311100ff",
+        "instruction": "andi $s1, $t0, 0xff"
+      },
+      {
+        "pc": "0x805fd448",
+        "word": "0xc172ef6",
+        "instruction": "jal 0x805cbbd8"
+      },
+      {
+        "pc": "0x805fd44c",
+        "word": "0x313200ff",
+        "instruction": "andi $s2, $t1, 0xff"
+      },
+      {
+        "pc": "0x805fd450",
+        "word": "0x24020002",
+        "instruction": "addiu $v0, $zero, 2"
+      },
+      {
+        "pc": "0x805fd454",
+        "word": "0x12020018",
+        "instruction": "beq $s0, $v0, 0x805fd4b8"
+      },
+      {
+        "pc": "0x805fd458",
+        "word": "0x24020004",
+        "instruction": "addiu $v0, $zero, 4"
+      },
+      {
+        "pc": "0x805fd45c",
+        "word": "0x12020025",
+        "instruction": "beq $s0, $v0, 0x805fd4f4"
+      },
+      {
+        "pc": "0x805fd460",
+        "word": "0x24020010",
+        "instruction": "addiu $v0, $zero, 0x10"
+      },
+      {
+        "pc": "0x805fd464",
+        "word": "0x12020032",
+        "instruction": "beq $s0, $v0, 0x805fd530"
+      },
+      {
+        "pc": "0x805fd468",
+        "word": "0x8e659634",
+        "instruction": "lw $a1, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd46c",
+        "word": "0x3c030020",
+        "instruction": "lui $v1, 0x20"
+      },
+      {
+        "pc": "0x805fd470",
+        "word": "0x34625e00",
+        "instruction": "ori $v0, $v1, 0x5e00"
+      },
+      {
+        "pc": "0x805fd474",
+        "word": "0xa21021",
+        "instruction": "addu $v0, $a1, $v0"
+      },
+      {
+        "pc": "0x805fd478",
+        "word": "0x34635e08",
+        "instruction": "ori $v1, $v1, 0x5e08"
+      },
+      {
+        "pc": "0x805fd47c",
+        "word": "0xa4400000",
+        "instruction": "sh $zero, ($v0)"
+      },
+      {
+        "pc": "0x805fd480",
+        "word": "0xa32821",
+        "instruction": "addu $a1, $a1, $v1"
+      },
+      {
+        "pc": "0x805fd484",
+        "word": "0x94a20000",
+        "instruction": "lhu $v0, ($a1)"
+      },
+      {
+        "pc": "0x805fd488",
+        "word": "0x8fbf002c",
+        "instruction": "lw $ra, 0x2c($sp)"
+      },
+      {
+        "pc": "0x805fd48c",
+        "word": "0x8fb50028",
+        "instruction": "lw $s5, 0x28($sp)"
+      },
+      {
+        "pc": "0x805fd490",
+        "word": "0x3042ff00",
+        "instruction": "andi $v0, $v0, 0xff00"
+      },
+      {
+        "pc": "0x805fd494",
+        "word": "0x8fb40024",
+        "instruction": "lw $s4, 0x24($sp)"
+      },
+      {
+        "pc": "0x805fd498",
+        "word": "0x8fb30020",
+        "instruction": "lw $s3, 0x20($sp)"
+      },
+      {
+        "pc": "0x805fd49c",
+        "word": "0x8fb2001c",
+        "instruction": "lw $s2, 0x1c($sp)"
+      },
+      {
+        "pc": "0x805fd4a0",
+        "word": "0x8fb10018",
+        "instruction": "lw $s1, 0x18($sp)"
+      },
+      {
+        "pc": "0x805fd4a4",
+        "word": "0x8fb00014",
+        "instruction": "lw $s0, 0x14($sp)"
+      },
+      {
+        "pc": "0x805fd4a8",
+        "word": "0x24040001",
+        "instruction": "addiu $a0, $zero, 1"
+      },
+      {
+        "pc": "0x805fd4ac",
+        "word": "0xa4a20000",
+        "instruction": "sh $v0, ($a1)"
+      },
+      {
+        "pc": "0x805fd4b0",
+        "word": "0x8172ef6",
+        "instruction": "j 0x805cbbd8"
+      },
+      {
+        "pc": "0x805fd4b4",
+        "word": "0x27bd0030",
+        "instruction": "addiu $sp, $sp, 0x30"
+      },
+      {
+        "pc": "0x805fd4b8",
+        "word": "0x8e649634",
+        "instruction": "lw $a0, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd4bc",
+        "word": "0x3225003c",
+        "instruction": "andi $a1, $s1, 0x3c"
+      },
+      {
+        "pc": "0x805fd4c0",
+        "word": "0x942021",
+        "instruction": "addu $a0, $a0, $s4"
+      },
+      {
+        "pc": "0x805fd4c4",
+        "word": "0x90820000",
+        "instruction": "lbu $v0, ($a0)"
+      },
+      {
+        "pc": "0x805fd4c8",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805fd4cc",
+        "word": "0x34420020",
+        "instruction": "ori $v0, $v0, 0x20"
+      },
+      {
+        "pc": "0x805fd4d0",
+        "word": "0xa0820000",
+        "instruction": "sb $v0, ($a0)"
+      },
+      {
+        "pc": "0x805fd4d4",
+        "word": "0x8e639634",
+        "instruction": "lw $v1, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd4d8",
+        "word": "0x741821",
+        "instruction": "addu $v1, $v1, $s4"
+      },
+      {
+        "pc": "0x805fd4dc",
+        "word": "0x90620000",
+        "instruction": "lbu $v0, ($v1)"
+      },
+      {
+        "pc": "0x805fd4e0",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805fd4e4",
+        "word": "0xa22825",
+        "instruction": "or $a1, $a1, $v0"
+      },
+      {
+        "pc": "0x805fd4e8",
+        "word": "0xa0650000",
+        "instruction": "sb $a1, ($v1)"
+      },
+      {
+        "pc": "0x805fd4ec",
+        "word": "0x817f51b",
+        "instruction": "j 0x805fd46c"
+      },
+      {
+        "pc": "0x805fd4f0",
+        "word": "0x8e659634",
+        "instruction": "lw $a1, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd4f4",
+        "word": "0x8e649634",
+        "instruction": "lw $a0, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd4f8",
+        "word": "0x3245003c",
+        "instruction": "andi $a1, $s2, 0x3c"
+      },
+      {
+        "pc": "0x805fd4fc",
+        "word": "0x952021",
+        "instruction": "addu $a0, $a0, $s5"
+      },
+      {
+        "pc": "0x805fd500",
+        "word": "0x90820000",
+        "instruction": "lbu $v0, ($a0)"
+      },
+      {
+        "pc": "0x805fd504",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805fd508",
+        "word": "0x34420020",
+        "instruction": "ori $v0, $v0, 0x20"
+      },
+      {
+        "pc": "0x805fd50c",
+        "word": "0xa0820000",
+        "instruction": "sb $v0, ($a0)"
+      },
+      {
+        "pc": "0x805fd510",
+        "word": "0x8e639634",
+        "instruction": "lw $v1, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd514",
+        "word": "0x751821",
+        "instruction": "addu $v1, $v1, $s5"
+      },
+      {
+        "pc": "0x805fd518",
+        "word": "0x90620000",
+        "instruction": "lbu $v0, ($v1)"
+      },
+      {
+        "pc": "0x805fd51c",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805fd520",
+        "word": "0xa22825",
+        "instruction": "or $a1, $a1, $v0"
+      },
+      {
+        "pc": "0x805fd524",
+        "word": "0xa0650000",
+        "instruction": "sb $a1, ($v1)"
+      },
+      {
+        "pc": "0x805fd528",
+        "word": "0x817f51b",
+        "instruction": "j 0x805fd46c"
+      },
+      {
+        "pc": "0x805fd52c",
+        "word": "0x8e659634",
+        "instruction": "lw $a1, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd530",
+        "word": "0x8e649634",
+        "instruction": "lw $a0, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd534",
+        "word": "0x3225003c",
+        "instruction": "andi $a1, $s1, 0x3c"
+      },
+      {
+        "pc": "0x805fd538",
+        "word": "0x3246003c",
+        "instruction": "andi $a2, $s2, 0x3c"
+      },
+      {
+        "pc": "0x805fd53c",
+        "word": "0x942021",
+        "instruction": "addu $a0, $a0, $s4"
+      },
+      {
+        "pc": "0x805fd540",
+        "word": "0x90820000",
+        "instruction": "lbu $v0, ($a0)"
+      },
+      {
+        "pc": "0x805fd544",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805fd548",
+        "word": "0x34420020",
+        "instruction": "ori $v0, $v0, 0x20"
+      },
+      {
+        "pc": "0x805fd54c",
+        "word": "0xa0820000",
+        "instruction": "sb $v0, ($a0)"
+      },
+      {
+        "pc": "0x805fd550",
+        "word": "0x8e639634",
+        "instruction": "lw $v1, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd554",
+        "word": "0x741821",
+        "instruction": "addu $v1, $v1, $s4"
+      },
+      {
+        "pc": "0x805fd558",
+        "word": "0x90620000",
+        "instruction": "lbu $v0, ($v1)"
+      },
+      {
+        "pc": "0x805fd55c",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805fd560",
+        "word": "0xa22825",
+        "instruction": "or $a1, $a1, $v0"
+      },
+      {
+        "pc": "0x805fd564",
+        "word": "0xa0650000",
+        "instruction": "sb $a1, ($v1)"
+      },
+      {
+        "pc": "0x805fd568",
+        "word": "0x8e649634",
+        "instruction": "lw $a0, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd56c",
+        "word": "0x952021",
+        "instruction": "addu $a0, $a0, $s5"
+      },
+      {
+        "pc": "0x805fd570",
+        "word": "0x90820000",
+        "instruction": "lbu $v0, ($a0)"
+      },
+      {
+        "pc": "0x805fd574",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805fd578",
+        "word": "0x34420020",
+        "instruction": "ori $v0, $v0, 0x20"
+      },
+      {
+        "pc": "0x805fd57c",
+        "word": "0xa0820000",
+        "instruction": "sb $v0, ($a0)"
+      },
+      {
+        "pc": "0x805fd580",
+        "word": "0x8e639634",
+        "instruction": "lw $v1, -0x69cc($s3)"
+      },
+      {
+        "pc": "0x805fd584",
+        "word": "0x751821",
+        "instruction": "addu $v1, $v1, $s5"
+      },
+      {
+        "pc": "0x805fd588",
+        "word": "0x90620000",
+        "instruction": "lbu $v0, ($v1)"
+      },
+      {
+        "pc": "0x805fd58c",
+        "word": "0x304200c3",
+        "instruction": "andi $v0, $v0, 0xc3"
+      },
+      {
+        "pc": "0x805fd590",
+        "word": "0xc23025",
+        "instruction": "or $a2, $a2, $v0"
+      },
+      {
+        "pc": "0x805fd594",
+        "word": "0xa0660000",
+        "instruction": "sb $a2, ($v1)"
+      },
+      {
+        "pc": "0x805fd598",
+        "word": "0x817f51b",
+        "instruction": "j 0x805fd46c"
+      },
+      {
+        "pc": "0x805fd59c",
+        "word": "0x8e659634",
+        "instruction": "lw $a1, -0x69cc($s3)"
+      }
+    ],
+    "vertical_edge_wait": [
+      {
+        "pc": "0x805f24a4",
+        "word": "0x27bdffd8",
+        "instruction": "addiu $sp, $sp, -0x28"
+      },
+      {
+        "pc": "0x805f24a8",
+        "word": "0xafb40020",
+        "instruction": "sw $s4, 0x20($sp)"
+      },
+      {
+        "pc": "0x805f24ac",
+        "word": "0xafb3001c",
+        "instruction": "sw $s3, 0x1c($sp)"
+      },
+      {
+        "pc": "0x805f24b0",
+        "word": "0xafb20018",
+        "instruction": "sw $s2, 0x18($sp)"
+      },
+      {
+        "pc": "0x805f24b4",
+        "word": "0xafb10014",
+        "instruction": "sw $s1, 0x14($sp)"
+      },
+      {
+        "pc": "0x805f24b8",
+        "word": "0xafb00010",
+        "instruction": "sw $s0, 0x10($sp)"
+      },
+      {
+        "pc": "0x805f24bc",
+        "word": "0xafbf0024",
+        "instruction": "sw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x805f24c0",
+        "word": "0xc0a021",
+        "instruction": "move $s4, $a2"
+      },
+      {
+        "pc": "0x805f24c4",
+        "word": "0x309100ff",
+        "instruction": "andi $s1, $a0, 0xff"
+      },
+      {
+        "pc": "0x805f24c8",
+        "word": "0xc172eea",
+        "instruction": "jal 0x805cbba8"
+      },
+      {
+        "pc": "0x805f24cc",
+        "word": "0x30b3ffff",
+        "instruction": "andi $s3, $a1, 0xffff"
+      },
+      {
+        "pc": "0x805f24d0",
+        "word": "0x24100001",
+        "instruction": "addiu $s0, $zero, 1"
+      },
+      {
+        "pc": "0x805f24d4",
+        "word": "0x409021",
+        "instruction": "move $s2, $v0"
+      },
+      {
+        "pc": "0x805f24d8",
+        "word": "0xc17ef15",
+        "instruction": "jal 0x805fbc54"
+      },
+      {
+        "pc": "0x805f24dc",
+        "word": "0x2802021",
+        "instruction": "move $a0, $s4"
+      },
+      {
+        "pc": "0x805f24e0",
+        "word": "0x14500007",
+        "instruction": "bne $v0, $s0, 0x805f2500"
+      },
+      {
+        "pc": "0x805f24e4",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805f24e8",
+        "word": "0x16000004",
+        "instruction": "bnez $s0, 0x805f24fc"
+      },
+      {
+        "pc": "0x805f24ec",
+        "word": "0x2623ffff",
+        "instruction": "addiu $v1, $s1, -1"
+      },
+      {
+        "pc": "0x805f24f0",
+        "word": "0x307100ff",
+        "instruction": "andi $s1, $v1, 0xff"
+      },
+      {
+        "pc": "0x805f24f4",
+        "word": "0x12200008",
+        "instruction": "beqz $s1, 0x805f2518"
+      },
+      {
+        "pc": "0x805f24f8",
+        "word": "0x8fbf0024",
+        "instruction": "lw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x805f24fc",
+        "word": "0x2c500001",
+        "instruction": "sltiu $s0, $v0, 1"
+      },
+      {
+        "pc": "0x805f2500",
+        "word": "0xc172eea",
+        "instruction": "jal 0x805cbba8"
+      },
+      {
+        "pc": "0x805f2504",
+        "word": "0x0",
+        "instruction": "nop "
+      },
+      {
+        "pc": "0x805f2508",
+        "word": "0x521023",
+        "instruction": "subu $v0, $v0, $s2"
+      },
+      {
+        "pc": "0x805f250c",
+        "word": "0x53102b",
+        "instruction": "sltu $v0, $v0, $s3"
+      },
+      {
+        "pc": "0x805f2510",
+        "word": "0x1440fff1",
+        "instruction": "bnez $v0, 0x805f24d8"
+      },
+      {
+        "pc": "0x805f2514",
+        "word": "0x8fbf0024",
+        "instruction": "lw $ra, 0x24($sp)"
+      },
+      {
+        "pc": "0x805f2518",
+        "word": "0x2201021",
+        "instruction": "move $v0, $s1"
+      },
+      {
+        "pc": "0x805f251c",
+        "word": "0x8fb40020",
+        "instruction": "lw $s4, 0x20($sp)"
+      },
+      {
+        "pc": "0x805f2520",
+        "word": "0x8fb3001c",
+        "instruction": "lw $s3, 0x1c($sp)"
+      },
+      {
+        "pc": "0x805f2524",
+        "word": "0x8fb20018",
+        "instruction": "lw $s2, 0x18($sp)"
+      },
+      {
+        "pc": "0x805f2528",
+        "word": "0x8fb10014",
+        "instruction": "lw $s1, 0x14($sp)"
+      },
+      {
+        "pc": "0x805f252c",
+        "word": "0x8fb00010",
+        "instruction": "lw $s0, 0x10($sp)"
+      },
+      {
+        "pc": "0x805f2530",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x805f2534",
+        "word": "0x27bd0028",
+        "instruction": "addiu $sp, $sp, 0x28"
+      },
+      {
+        "pc": "0x805f2538",
+        "word": "0x51140",
+        "instruction": "sll $v0, $a1, 5"
+      }
+    ],
+    "banked_status_reader": [
+      {
+        "pc": "0x805fbc54",
+        "word": "0x3c07806c",
+        "instruction": "lui $a3, 0x806c"
+      },
+      {
+        "pc": "0x805fbc58",
+        "word": "0x8ce29634",
+        "instruction": "lw $v0, -0x69cc($a3)"
+      },
+      {
+        "pc": "0x805fbc5c",
+        "word": "0x3c060020",
+        "instruction": "lui $a2, 0x20"
+      },
+      {
+        "pc": "0x805fbc60",
+        "word": "0x34c35e00",
+        "instruction": "ori $v1, $a2, 0x5e00"
+      },
+      {
+        "pc": "0x805fbc64",
+        "word": "0x431021",
+        "instruction": "addu $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805fbc68",
+        "word": "0x90450000",
+        "instruction": "lbu $a1, ($v0)"
+      },
+      {
+        "pc": "0x805fbc6c",
+        "word": "0x24030001",
+        "instruction": "addiu $v1, $zero, 1"
+      },
+      {
+        "pc": "0x805fbc70",
+        "word": "0x10800002",
+        "instruction": "beqz $a0, 0x805fbc7c"
+      },
+      {
+        "pc": "0x805fbc74",
+        "word": "0x30a500ff",
+        "instruction": "andi $a1, $a1, 0xff"
+      },
+      {
+        "pc": "0x805fbc78",
+        "word": "0x24030003",
+        "instruction": "addiu $v1, $zero, 3"
+      },
+      {
+        "pc": "0x805fbc7c",
+        "word": "0xa0430000",
+        "instruction": "sb $v1, ($v0)"
+      },
+      {
+        "pc": "0x805fbc80",
+        "word": "0x8ce29634",
+        "instruction": "lw $v0, -0x69cc($a3)"
+      },
+      {
+        "pc": "0x805fbc84",
+        "word": "0x34c35e78",
+        "instruction": "ori $v1, $a2, 0x5e78"
+      },
+      {
+        "pc": "0x805fbc88",
+        "word": "0x431021",
+        "instruction": "addu $v0, $v0, $v1"
+      },
+      {
+        "pc": "0x805fbc8c",
+        "word": "0x90440000",
+        "instruction": "lbu $a0, ($v0)"
+      },
+      {
+        "pc": "0x805fbc90",
+        "word": "0x8ce39634",
+        "instruction": "lw $v1, -0x69cc($a3)"
+      },
+      {
+        "pc": "0x805fbc94",
+        "word": "0x3c020020",
+        "instruction": "lui $v0, 0x20"
+      },
+      {
+        "pc": "0x805fbc98",
+        "word": "0x34425e00",
+        "instruction": "ori $v0, $v0, 0x5e00"
+      },
+      {
+        "pc": "0x805fbc9c",
+        "word": "0x621821",
+        "instruction": "addu $v1, $v1, $v0"
+      },
+      {
+        "pc": "0x805fbca0",
+        "word": "0x308400ff",
+        "instruction": "andi $a0, $a0, 0xff"
+      },
+      {
+        "pc": "0x805fbca4",
+        "word": "0xa0650000",
+        "instruction": "sb $a1, ($v1)"
+      },
+      {
+        "pc": "0x805fbca8",
+        "word": "0x3e00008",
+        "instruction": "jr $ra"
+      },
+      {
+        "pc": "0x805fbcac",
+        "word": "0x30820001",
+        "instruction": "andi $v0, $a0, 1"
+      }
+    ]
+  },
+  "direct_callers": [
+    {
+      "pc": "0x80533670",
+      "target": "0x80539ce4"
+    },
+    {
+      "pc": "0x80536f9c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537130",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537144",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053719c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x805372b8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537300",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x805375fc",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537610",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537624",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537638",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053786c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x805378f8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537a4c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537a84",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537aa0",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537abc",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537af4",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537b18",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537b38",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537b50",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537b7c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537b90",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537c2c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537c64",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537c80",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537c9c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537cd4",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537cf8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537d1c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537d30",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537d84",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80537da0",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80538450",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x805385a8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053864c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053882c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x805388dc",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80538bf4",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x80538c04",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x805392e8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053a240",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053a7ec",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053a7fc",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053a820",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053a910",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053ab6c",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053ac08",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053ac70",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053ad30",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053adc8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053add8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053ade8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053b478",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053b4e8",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053b538",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053b5f4",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053b634",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053b7d4",
+      "target": "0x8053a140"
+    },
+    {
+      "pc": "0x8053c0fc",
+      "target": "0x8053db88"
+    },
+    {
+      "pc": "0x8053dbcc",
+      "target": "0x8053c574"
+    },
+    {
+      "pc": "0x8053dbd8",
+      "target": "0x8053c784"
+    },
+    {
+      "pc": "0x805e52a0",
+      "target": "0x805e5ab8"
+    },
+    {
+      "pc": "0x805e5374",
+      "target": "0x805e5ab8"
+    },
+    {
+      "pc": "0x805e672c",
+      "target": "0x805e55d4"
+    },
+    {
+      "pc": "0x805e6924",
+      "target": "0x805e55d4"
+    },
+    {
+      "pc": "0x805e6958",
+      "target": "0x805e55d4"
+    },
+    {
+      "pc": "0x805ef644",
+      "target": "0x805f24a4"
+    },
+    {
+      "pc": "0x805ef6bc",
+      "target": "0x805f24a4"
+    },
+    {
+      "pc": "0x805f2424",
+      "target": "0x805fbc54"
+    },
+    {
+      "pc": "0x805f244c",
+      "target": "0x805fbc54"
+    },
+    {
+      "pc": "0x805f24d8",
+      "target": "0x805fbc54"
+    },
+    {
+      "pc": "0x805f25c8",
+      "target": "0x805f24a4"
+    },
+    {
+      "pc": "0x805f26a8",
+      "target": "0x805f24a4"
+    },
+    {
+      "pc": "0x805f30ec",
+      "target": "0x805fd3d4"
+    },
+    {
+      "pc": "0x805f3dfc",
+      "target": "0x805f24a4"
+    },
+    {
+      "pc": "0x805f60f8",
+      "target": "0x805f24a4"
+    },
+    {
+      "pc": "0x805f8150",
+      "target": "0x805f24a4"
+    },
+    {
+      "pc": "0x805f8238",
+      "target": "0x805f24a4"
+    }
+  ]
+}

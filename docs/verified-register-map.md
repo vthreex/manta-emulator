@@ -25,7 +25,9 @@
 | `BF221ADC`, `BF221BDC` | Boot writes low-byte phase seed 88, then sweeps low/high nibbles and chooses 77 | Only known low byte consumed; upper unknown bits discarded by original ANDI; PHY phase effects unresolved |
 | `BF200A38`, `BF200A3C` | `80469898/804698AC`: LHU and cache in BSS; later popcount/text conversion | Strict read stops; POR scratch interpretation provisional; diagnostic caches remain invalid |
 
-Prioritized remaining work: current POR/status reset-value and producer dependency; GPIO/I2C open-drain protocol and attached devices; interrupt controller/timers; ISP/SPI controller and guest COW writes; PM51/IR mailbox; GOP/GFX/scaler; audio, tuner/demod/TS, USB/media, PVR and 3D. No register map from MSD309PX or a later MStar SoC was copied wholesale.
+Continuation additions: BF001010 transmits the real CF opcode in trigger mode; BF001030 requests receive clocks; BF001054/58/5C are RD/WR/CMD FIFO readiness. BF203FFC selects banked GOP registers. BF205E00 selects the banked scaler aperture. Bank 10h BF205FB0/B8/BC/C0/B4 carries gamma address/samples/channel strobes and busy. Bank 1 BF205E78 bit 0 is consumed by the original edge-wait routine, but its exact signal/reset behavior remains unresolved. See [evidence and limits](spi-and-display-continuation.md).
+
+Prioritized remaining work: the scaler edge-status/clock-source dependency; POR producer/reset and undocumented CF electrical behavior; GOP output/shadow/MIU/palette semantics; guest flash program/erase; GPIO/I2C attached devices; PM51/IR; board IRQs; audio, tuner/demod/TS, USB/media, PVR and 3D. No register map from MSD309PX or a later MStar SoC was copied wholesale.
 
 The observable bus records PC, width, value, physical address, instruction-dispatch tick, RA and SP. Stop summaries include all general registers, the last 64 PCs, and 16 stack words. A reliable full stack unwind and calibrated cycle timing are unsupported.
 

@@ -25,11 +25,14 @@ The requested complete TV emulator is **not achieved**. No authentic OSD has bee
 | Interrupt masks / ADC configuration RMW | partially implemented | Original guest sets IRQ/FIQ masks and ADC fields; known-bit tracking stops unknown status; board IRQ pending/delivery unsupported; CP0 timer ISR demonstrated |
 | Guarded unknown diagnostic caches | implemented | Optional continuation; four POR-origin RAM bytes stay invalid; first consumption stops |
 | RTC counter/snapshot | partially implemented | Guest divider/reset/load/read strobes; coherent virtual snapshots; alarms/IRQ unsupported |
-| CP0 Count/Compare and guest ISR | demonstrated | Stock vector runs 46 times; guest ticker reaches 46; virtual pacing provisional |
+| CP0 Count/Compare and guest ISR | demonstrated | Stock vector and guest ticker reach 273 in the explicitly exploratory continuation; virtual pacing provisional |
 | UTMI calibration handshake | partially implemented | Guest clock/start/hold/release causes CA_END; analogue data and device transfers unsupported |
-| SPI ISP read control/status | partially implemented | Guest clock/FIFO strobes and idle WIP demonstrated; unresolved CF REMS2 response; no guest writes/settings |
+| SPI NOR and ISP read transactions | partially implemented | CS/command/address/dummy phases, FIFO readiness, W25Q64BV EF4017 and original descriptor selection demonstrated; CF undocumented output remains unknown; no guest program/erase/settings |
+| XIU flash aperture and MIU1 bus aliases | demonstrated | Original guest resource reads and original TLB installation execute; bus 40000000..47FFFFFF shares logical MIU1 RAM |
 | POR/status dependency | unsupported | Stops `80469898 / BF200A38`; next `BF200A3C`; reset meanings/values unavailable from schematic |
-| GOP/graphics/scaler/panel, authentic OSD | unsupported | GOP routines/aperture found statically; initializer has not executed, zero authentic frames |
+| GOP bank storage and descriptor decoding | partially implemented | Original helper semantics and real MIPS fixtures; stock initializer has not executed; no palette/compositor/output path |
+| Scaler banking and gamma RAM | partially implemented | Original guest programs 1080p geometry and commits 768 twelve-bit gamma samples under explicit exploratory initial-state assumptions |
+| Authentic OSD / panel display | unsupported | Zero authentic frames or original framebuffer demonstrated; SC bank-1 edge status remains unresolved |
 | PM51, IR remote, front panel, standby/wake | unsupported | No arbitrary key injection or fabricated power state |
 | Video input, DVB, ATV, USB/media, audio, PVR, 3D | unsupported | No guest device models or authentic menus demonstrated |
 | Menu/settings/hotel/factory behavior | unsupported | Manual contract and original strings are evidence, not observed interaction |
@@ -40,4 +43,4 @@ The requested complete TV emulator is **not achieved**. No authentic OSD has bee
 
 Gate A has useful reproducible checkpoints but the full rendering/call-graph investigation remains partial. Gate B is partial: the unchanged reset bootloader now performs its own second-stage copy, CRC, inflate and application entry with explicit candidate digital MIU/BIST/BDMA models. These are not a timing-exact hardware validation. Gates C, D and E are not reached. Gate F has build/trace/storage/CPU/forensics tests but no full-TV regression suite.
 
-Strict candidate boot still stops at BF200A38 / 80469898. Guarded diagnostic continuation reaches 8053C6EC / BF001030 after 104,577,792 dispatches and 46 stock timer ISR entries, stopping at the unresolved CF REMS2 response. POR reset/producer remains unresolved; all four cached bytes remain invalid. No GOP initialization or original frame has executed. See [investigation](por-timer-spi-investigation.md). No physical TV was modified or accessed.
+Strict candidate boot still stops at BF200A38 / 80469898. Guarded unknown-CF continuation reaches 8053DD14 after independently selecting the documented Winbond descriptor, then stops before cached unknown samples are consumed. Explicitly exploratory SPI input, chip identity, SC selector and gamma-enable configurations advance to 805FBC8C / BF205E78, SC bank 1, after **175,471,842** dispatches, **273** stock timer ISR entries and **768** original gamma commits. The four POR bytes and twenty stale clock-origin stack bytes remain invalid. The exact edge-status signal is unresolved; no arbitrary sync waveform was added. No GOP initializer or original frame has executed. See [current investigation](spi-and-display-continuation.md). Native window creation now exits 0 independently of guest stop code 2. No physical TV was modified or accessed.

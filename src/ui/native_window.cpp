@@ -33,22 +33,27 @@ void nativeWindow(const std::string &, bool smoke) {
   c.hInstance = instance;
   c.lpszClassName = L"MantaGuestDisplay";
   c.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
-  RegisterClassW(&c);
+  if (!RegisterClassW(&c) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
+    throw std::runtime_error("RegisterClassW failed: " + std::to_string(GetLastError()));
   auto w = CreateWindowW(c.lpszClassName,
-                         L"Manta LCD4214 — halted before guest video (see console trace)",
+                         L"Manta LCD4214 — guest display",
                          WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 760, nullptr,
                          nullptr, instance, nullptr);
   if (!w)
-    throw std::runtime_error("Native window creation failed");
+    throw std::runtime_error("CreateWindowW failed: " + std::to_string(GetLastError()));
   ShowWindow(w, SW_SHOW);
   std::cout << "NATIVE_WINDOW_CREATED; guest display not initialized\n";
-  if (smoke)
-    SetTimer(w, 1, 400, nullptr);
+  if (smoke && !SetTimer(w, 1, 400, nullptr)) {
+    auto error = GetLastError(); DestroyWindow(w);
+    throw std::runtime_error("Window smoke timer failed: " + std::to_string(error));
+  }
   MSG msg;
-  while (GetMessageW(&msg, nullptr, 0, 0) > 0) {
+  int result;
+  while ((result = GetMessageW(&msg, nullptr, 0, 0)) > 0) {
     TranslateMessage(&msg);
     DispatchMessageW(&msg);
   }
+  if (result == -1) throw std::runtime_error("GetMessageW failed: " + std::to_string(GetLastError()));
 }
 } // namespace manta
 #else

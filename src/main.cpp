@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <future>
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
@@ -56,8 +57,23 @@ static int appMain(const std::vector<std::string> &args) {
         o.virtualRtc = true;
       else if (a == "--candidate-spi")
         o.candidateSpi = true;
+      else if (a == "--spi-flash") {
+        auto model = value(i);
+        if (model == "w25q64bv") o.flashModel = manta::NorModel::W25Q64BV;
+        else if (model == "mx25l6405d") o.flashModel = manta::NorModel::MX25L6405D;
+        else throw std::runtime_error("Unsupported SPI flash model: " + model);
+      } else if (a == "--defer-spi-probe")
+        o.spiUnknownInput = manta::SpiUnknownInput::Deferred;
+      else if (a == "--exploratory-spi-input") {
+        auto input = value(i);
+        if (input == "pull-up") o.spiUnknownInput = manta::SpiUnknownInput::AssumedPullUp;
+        else if (input == "pull-down") o.spiUnknownInput = manta::SpiUnknownInput::AssumedPullDown;
+        else throw std::runtime_error("Expected pull-up or pull-down electrical hypothesis");
+      }
       else if (a == "--candidate-utmi")
         o.candidateUtmi = true;
+      else if (a == "--candidate-chip-id")
+        o.candidateChipId = true;
       else if (a == "--cp0-timer")
         o.cp0Timer = true;
       else if (a == "--max-instructions")
@@ -66,6 +82,17 @@ static int appMain(const std::vector<std::string> &args) {
         o.trace = utf8Path(value(i));
       else if (a == "--replay-trace")
         o.replay = utf8Path(value(i));
+      else if (a == "--candidate-gamma") o.candidateGamma = true;
+      else if (a == "--exploratory-gamma-enable") {
+        auto state = value(i);
+        if (state != "0" && state != "1") throw std::runtime_error("Gamma enable must be 0 or 1");
+        o.exploratoryGammaEnable = state == "1";
+      }
+      else if (a == "--exploratory-sc-bank") {
+        auto bank = std::stoul(value(i), nullptr, 0);
+        if (bank > 255) throw std::runtime_error("Exploratory SC bank out of range");
+        o.exploratoryScBank = int(bank);
+      }
       else if (a == "--summary")
         o.summary = utf8Path(value(i));
       else if (a == "--coverage")
@@ -83,7 +110,14 @@ static int appMain(const std::vector<std::string> &args) {
                "--virtual-rtc: guest-programmed counter with deterministic virtual clock\n"
                "--cp0-timer: source-built engine Count/Compare and guest interrupt entry\n"
                "--candidate-utmi: calibration handshake; analogue data unknown\n"
+               "--candidate-chip-id: Titania4 identity 18h inferred from stock HAL identity check\n"
                "--candidate-spi: ISP read/status subset; unknown responses stop\n"
+               "--spi-flash w25q64bv|mx25l6405d: separate documented chip models\n"
+               "--defer-spi-probe: cache CF bytes as INVALID; stop before use\n"
+               "--exploratory-spi-input pull-up|pull-down: HYPOTHETICAL undocumented CF output\n"
+               "--exploratory-sc-bank N: HYPOTHETICAL initial SC selector (0..255); banked register state\n"
+               "--candidate-gamma: original address/sample/channel transfers, provisional virtual timing\n"
+               "--exploratory-gamma-enable 0|1: HYPOTHETICAL initial bank-10 gamma enable bit\n"
                "--summary FILE --coverage FILE --max-instructions N\n"
                "--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS\n"
                "Diagnostic: --diagnostic-stage2 --symbolic-init "
@@ -99,6 +133,11 @@ static int appMain(const std::vector<std::string> &args) {
       } else
         throw std::runtime_error("Unsupported option/feature: " + a);
     }
+    if (windowSmoke) {
+      if (headless) throw std::runtime_error("Window smoke test cannot be headless");
+      manta::nativeWindow("", true);
+      return 0; // tests frontend creation, independent of guest stop code 2
+    }
     if (firmware.empty()) {
       if (headless)
         throw std::runtime_error("--firmware required in headless mode");
@@ -112,10 +151,12 @@ static int appMain(const std::vector<std::string> &args) {
     // SPI programming is not connected yet. No pretend guest settings are
     // saved.
     manta::Msd309Machine machine(std::move(flash), o);
-    auto code = machine.run();
-    if (!headless)
-      manta::nativeWindow(machine.summary(), windowSmoke);
-    return code;
+    if (headless) return machine.run();
+    // Create the native display immediately. Guest initialization may run for
+    // many seconds; the OS message loop must remain responsive throughout.
+    auto guest = std::async(std::launch::async, [&machine] { return machine.run(); });
+    manta::nativeWindow("", false);
+    return guest.get();
   } catch (const std::exception &e) {
     std::cerr << "ERROR: " << e.what() << '\n';
     return 1;

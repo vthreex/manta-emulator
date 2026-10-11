@@ -76,12 +76,59 @@ with tempfile.TemporaryDirectory(prefix='manta-regression-') as temp:
  spiTrace=temp/'spi.jsonl'
  spi=run('spi',diagnosticFlags+['--virtual-rtc','--cp0-timer','--candidate-utmi','--candidate-spi','--record-trace',str(spiTrace)])
  spiEvents=[json.loads(line) for line in spiTrace.read_text().splitlines()]
- assert spi['stop_pc']=='0x8053c6ec' and spi['stop_address']=='0x1f001030' and spi['reason']=='unresolved SPI 0xcf REMS2 response'
+ assert spi['stop_pc']=='0x8053c6ec' and spi['stop_address']=='0x1f001030' and spi['reason']=='undocumented SPI opcode 0xcf for w25q64bv; input electrical state unknown'
  assert spi['instruction_dispatches']>104000000 and spi['guest_software_tick']==46
  assert spi['gop_aperture_events']==0 and not spi['gop_initializer_entered'] and not spi['osd_demonstrated']
  assert any(e['kind']=='spi_command' and e['address']=='0x1f001004' and e['value']=='0x5' for e in spiEvents)
  assert any(e['kind']=='read' and e['address']=='0x1f001014' and (int(e['value'],16)&1)==0 for e in spiEvents)
  assert len(spi['invalid_observation_bytes'])==4
+ spiFlags=diagnosticFlags+['--virtual-rtc','--cp0-timer','--candidate-utmi','--candidate-spi']
+ probeTrace=temp/'deferred-spi.jsonl'
+ probe=run('deferred-spi',spiFlags+['--defer-spi-probe','--record-trace',str(probeTrace)])
+ probeEvents=[json.loads(line) for line in probeTrace.read_text().splitlines()]
+ assert probe['stop_pc']=='0x8053dd14' and probe['reason']=='unknown diagnostic observation consumed from guest RAM'
+ assert probe['spi_jedec_read_returned'] and probe['spi_descriptor_selected'] and probe['spi_jedec']==[239,64,23]
+ assert len(probe['invalid_observation_bytes'])==6 and sum(e['origin']=='0x1f001014' for e in probe['invalid_observation_bytes'])==2
+ assert sum(e['kind']=='deferred_spi_input' for e in probeEvents)==2
+ packets=[];packet=[]
+ for e in probeEvents:
+  if e['kind']=='spi_cs' and e['value']=='0x0':packet=[]
+  if e['kind']=='spi_tx':packet.append(int(e['value'],16))
+  if e['kind']=='spi_cs' and e['value']=='0x1':packets.append(packet)
+ assert [0xcf,255,255,0] in packets and [0x9f] in packets
+ assert any(e['kind']=='spi_jedec_return' and e['value']=='0xef4017' for e in probeEvents)
+ miuTrace=temp/'miu-alias.jsonl'
+ miu=run('miu-alias',spiFlags+['--exploratory-spi-input','pull-up','--record-trace',str(miuTrace)])
+ miuEvents=[json.loads(line) for line in miuTrace.read_text().splitlines()]
+ assert miu['stop_pc']=='0x8054cdcc' and miu['stop_address']=='0x1f003d98' and miu['instruction_dispatches']>173000000
+ assert any(e['kind']=='guest_tlb_write' and e['pc']=='0x805cb7e0' for e in miuEvents)
+ assert any(e['kind']=='cp0_mmu_write' and e['address']=='0x2' and e['value']=='0x1000007' for e in miuEvents)
+ assert 'sar input test...' in (temp/'miu-alias.console').read_text()
+ gammaFlags=spiFlags+['--exploratory-spi-input','pull-up','--candidate-chip-id','--exploratory-sc-bank','0','--candidate-gamma','--exploratory-gamma-enable','0']
+ gammaTrace=temp/'gamma.jsonl'
+ gamma=run('gamma',gammaFlags+['--break-pc','0x805fd41c','--record-trace',str(gammaTrace)])
+ gammaEvents=[json.loads(line) for line in gammaTrace.read_text().splitlines()]
+ assert gamma['stop_pc']=='0x805fd41c' and gamma['reason']=='PC breakpoint'
+ assert gamma['guest_exception_vector_entries']==269 and gamma['guest_software_tick']==269 and gamma['gamma_ram_commits']==768
+ assert gamma['instruction_dispatches']>174000000 and not gamma['gop_initializer_entered'] and not gamma['osd_demonstrated']
+ assert len(gamma['invalid_observation_bytes'])==4
+ writes=[e for e in gammaEvents if e['kind']=='gamma_write']
+ assert len(writes)==768 and sum(e['kind']=='gamma_commit' for e in gammaEvents)==768
+ assert set((e['width'],int(e['address'],16)) for e in writes)==set((channel,index) for channel in range(3) for index in range(256))
+ gammaReplay=run('gamma-replay',gammaFlags+['--break-pc','0x805fd41c','--replay-trace',str(gammaTrace)])
+ assert gamma==gammaReplay, 'full original boot/peripheral/IRQ trace must replay exactly'
+ gamma1=run('gamma-enable-1',gammaFlags[:-1]+['1','--break-pc','0x805fd41c'])
+ assert gamma1['stop_pc']==gamma['stop_pc'] and gamma1['gamma_ram_commits']==768 and gamma1['guest_software_tick']==269
+ continuedTrace=temp/'continuation.jsonl'
+ continued=run('continuation',gammaFlags+['--record-trace',str(continuedTrace)])
+ continuedEvents=[json.loads(line) for line in continuedTrace.read_text().splitlines()]
+ assert continued['stop_pc']=='0x805fbc8c' and continued['stop_address']=='0x1f205e78'
+ assert continued['instruction_dispatches']==175471842 and continued['guest_software_tick']==273 and continued['guest_exception_vector_entries']==273
+ assert continued['gamma_ram_commits']==768 and not continued['gop_initializer_entered'] and continued['gop_aperture_events']==0
+ assert sum(e['origin'] in ('0x1f200a38','0x1f200a3c') for e in continued['invalid_observation_bytes'])==4
+ assert sum(e['kind']=='unused_clock_snapshot' for e in continuedEvents)==2
+ continuedReplay=run('continuation-replay',gammaFlags+['--replay-trace',str(continuedTrace)])
+ assert continued==continuedReplay
 assert hashlib.sha256(Path(a.firmware).read_bytes()).hexdigest()==hashlib.sha256(b).hexdigest(),'original SPI image changed'
-Path(a.report).write_text(json.dumps({'result':'PASS','streams_verified':len(streams),'strict_reset':reset,'strict_replay':replay,'cpu_disabled_checkpoint':crippled,'diagnostic_stage2':stage,'without_gpio':noGpio,'firmware_from_reset':cold,'stuck_sda_fixture':fault,'invalid_diagnostic_cache':deferred,'guest_timer':timer,'utmi_init':utmi,'spi_probe':spi,'guest_inflate_sha256':KNOWN[0][3]},indent=2)+'\n')
-print('PASS: guarded POR cache, RTC snapshot, original timer ISR, USB PHY handshake, SPI status/unknown CF stop; twelve streams, reset/replay, CPU dependency, guest inflate, cold boot Hello T4, GPIO dependency and original nine-clock I2C recovery')
+Path(a.report).write_text(json.dumps({'result':'PASS','streams_verified':len(streams),'strict_reset':reset,'strict_replay':replay,'cpu_disabled_checkpoint':crippled,'diagnostic_stage2':stage,'without_gpio':noGpio,'firmware_from_reset':cold,'stuck_sda_fixture':fault,'invalid_diagnostic_cache':deferred,'guest_timer':timer,'utmi_init':utmi,'spi_probe':spi,'guarded_spi_identification':probe,'miu1_alias':miu,'exploratory_gamma':gamma,'exploratory_gamma_replay':gammaReplay,'exploratory_gamma_enable1':gamma1,'clock_table_continuation':continued,'clock_table_continuation_replay':continuedReplay,'guest_inflate_sha256':KNOWN[0][3]},indent=2)+'\n')
+print('PASS: original reset/inflate, POR guard, CF packet/unknown cache, Winbond JEDEC/table selection, XIU/guest TLB/MIU1 alias, 269 original IRQs, 768 original gamma samples, both enable states and full deterministic replay; no authentic GOP frame claimed')
