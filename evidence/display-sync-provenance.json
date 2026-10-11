@@ -1,0 +1,72 @@
+{
+  "trace_uncompressed_bytes": 648084275,
+  "trace_uncompressed_sha256": "d98a76fce56703e3f8bcba2f3f2c7b9634efa93c8b02865e54f9169addb3fce1",
+  "trace_gzip_bytes": 13601132,
+  "trace_gzip_sha256": "bb30498bf6805506b8b097592e296da3ea1b2203c6a006b6e744f5521b54bdd3",
+  "trace_kind_counts": {
+    "write": 1521830,
+    "read": 1529814,
+    "uart_tx": 246,
+    "miu_init": 2,
+    "bist_compare": 322,
+    "checkpoint": 3,
+    "bdma_crc": 2,
+    "guest_inflate_hash": 1,
+    "cp0_mmu_write": 41,
+    "guest_tlb_write": 16,
+    "deferred_read": 2,
+    "rtc_snapshot": 1,
+    "utmi_calibration": 4,
+    "exception_vector": 606,
+    "spi_command": 36,
+    "spi_cs": 10,
+    "spi_tx": 8,
+    "spi_rx_sample": 8,
+    "spi_jedec_return": 1,
+    "spi_descriptor_selected": 1,
+    "discarded_timing_read": 28,
+    "exploratory_panel_timing": 1,
+    "gamma_write": 768,
+    "gamma_commit": 768,
+    "guest_scaler_initializer": 1,
+    "unused_clock_snapshot": 2,
+    "exploratory_output_vsync_edge": 12,
+    "guest_output_vsync_wait_return": 3,
+    "preserved_control_sample": 2,
+    "deferred_scaler_geometry": 4,
+    "preserved_control_write": 1,
+    "guest_scaler_init_return": 1,
+    "dlc_capture_request": 2,
+    "deferred_dlc_statistic": 2,
+    "guest_dlc_init_return": 1,
+    "deferred_dlc_gain": 1,
+    "deferred_comb_high_sample": 1
+  },
+  "emulator_sha256": "ed860f88e7d6330b949c22bad7ed14eb41c6486fc018d6e81d37597f8c91b84f",
+  "reference_files_not_redistributed": [
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/master/Chakra3_017a0d6_20170731/core/drv_bsp/marlon_nos_mips/lib/libapiXC.a",
+      "sha256": "bc43b6df76df4c22ae36d47aa8682857be5b5fcc084fc6f462010ca1558cd73b",
+      "bytes": 2496224,
+      "compatibility": "Marlon reference, except explicit T4 workaround; verified against stock instructions, not assumed register-wide compatibility"
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/master/Chakra3_017a0d6_20170731/core/drv_bsp/marlon_nos_mips/lib/libapiDLC.a",
+      "sha256": "95754e17b3a777526bf6ea167def30530e64229be0e6eb4a61e3cd6e6446b818",
+      "bytes": 207900,
+      "compatibility": "Marlon reference, except explicit T4 workaround; verified against stock instructions, not assumed register-wide compatibility"
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/master/Chakra3_017a0d6_20170731/core/driver/pq/include/drvPQ_Template.h",
+      "sha256": "38db4dedad2a9dc068a54af4628492f6a99f86752c9619eccf8492e28d5972a5",
+      "bytes": 40255,
+      "compatibility": "Marlon reference, except explicit T4 workaround; verified against stock instructions, not assumed register-wide compatibility"
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/master/Chakra3_017a0d6_20170731/core/driver/pq/hal/marlon/include/hwreg_pq.h",
+      "sha256": "b021a17db8aae555e508bb997e882bd04fc6f959c4417fdb6a81833129d24622",
+      "bytes": 1000,
+      "compatibility": "Marlon reference, except explicit T4 workaround; verified against stock instructions, not assumed register-wide compatibility"
+    }
+  ]
+}

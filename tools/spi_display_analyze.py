@@ -15,6 +15,17 @@ RANGES = {
  'clock_snapshot': (0x805fd3d4,0x805fd5a0),
  'vertical_edge_wait': (0x805f24a4,0x805f253c),
  'banked_status_reader': (0x805fbc54,0x805fbcb0),
+ 'input_sync_reader': (0x805fbbf8,0x805fbc54),
+ 'scaler_initializer': (0x805f8300,0x805f87e0),
+ 'panel_timing_getter': (0x805eee4c,0x805eef04),
+ 'extra_request_subwindow_dependency': (0x805fe024,0x805fe150),
+ 'main_prescaling_coefficients': (0x805fe150,0x805fe238),
+ 'DLC_curve_initializer': (0x805e3874,0x805e3e70),
+ 'application_display_init': (0x803e0b94,0x803e0e7c),
+ 'GOP_initializer_caller': (0x805333ac,0x80533920),
+ 'application_GOP_call': (0x80404460,0x80404520),
+ 'DLC_chroma_gain_getter': (0x805e0cec,0x805e0d28),
+ 'COMB_PQ_table_loader': (0x803c68a8,0x803c6ba0),
 }
 def analyze(path):
  flash = validate(Path(path).read_bytes()); end, runtime = inflate_at(flash,KNOWN[0][0])

@@ -1,9 +1,5 @@
-test_bounded_random_inputs (test_forensics.Forensics.test_bounded_random_inputs) ... ok
-test_output_bound (test_forensics.Forensics.test_output_bound) ... ok
-test_round_trip_and_trailer (test_forensics.Forensics.test_round_trip_and_trailer) ... ok
-test_wrong_original_rejected (test_forensics.Forensics.test_wrong_original_rejected) ... ok
-
+....
 ----------------------------------------------------------------------
-Ran 4 tests in 0.008s
+Ran 4 tests in 0.010s
 
 OK

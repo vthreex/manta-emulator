@@ -3,6 +3,7 @@
 #include "peripherals/riu.hpp"
 #include "storage/flash.hpp"
 #include "board/unknown_observations.hpp"
+#include "board/preserved_bits.hpp"
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -12,6 +13,9 @@ namespace manta {
 struct Options {
   int exploratoryScBank = -1;
   int exploratoryGammaEnable = -1;
+  int exploratorySubwindowEnable = -1;
+  int exploratoryDlcPending = -1;
+  int exploratoryCombBank = -1;
   NorModel flashModel = NorModel::W25Q64BV;
   SpiUnknownInput spiUnknownInput = SpiUnknownInput::Stop;
   bool stage2 = false, initPrefix = false, symbolicInit = false, candidateBdma = false,
@@ -19,6 +23,8 @@ struct Options {
        i2cSdaStuck = false, deferDiagnosticReads = false, virtualRtc = false, cp0Timer = false,
        candidateUtmi = false, candidateSpi = false, candidateChipId = false, candidateGamma = false;
   uint64_t limit = 1000000;
+  uint64_t exploratoryDisplayClock = 0;
+  bool exploratoryDlcTimeout=false;
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage;
 };
@@ -46,9 +52,12 @@ class Msd309Machine {
   std::deque<Instruction> recentInstructions_;
   std::deque<std::string> recentMmio_;
   UnknownObservations unknownObservations_;
+  PreservedBits preservedBits_;
   unsigned deferredReads_ = 0;
   uint64_t timerEntries_ = 0, gopEvents_ = 0, geEvents_ = 0;
   bool gopInitializerEntered_ = false;
+  uint64_t gopInitializerEntries_ = 0;
+  uint64_t scalerInitializerEntries_=0, scalerInitializerReturns_=0, dlcInitializerReturns_=0;
   bool spiJedecRead_ = false, spiDescriptorSelected_ = false;
   std::array<uint8_t,3> spiJedec_{};
   std::array<uint8_t,40> spiDescriptor_{};

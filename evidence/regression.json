@@ -208,12 +208,27 @@
     "cp0_epc": "0x0",
     "guest_software_tick": 0,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x400004",
     "invalid_observation_bytes": [],
     "recent_instructions": [],
@@ -559,12 +574,27 @@
     "cp0_epc": "0x0",
     "guest_software_tick": 0,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x400004",
     "invalid_observation_bytes": [],
     "recent_instructions": [],
@@ -811,12 +841,27 @@
     "cp0_epc": "0x0",
     "guest_software_tick": 0,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x400004",
     "invalid_observation_bytes": [],
     "recent_instructions": [],
@@ -1029,12 +1074,27 @@
     "cp0_epc": "0x0",
     "guest_software_tick": 0,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10000000",
     "invalid_observation_bytes": [],
     "recent_instructions": [
@@ -29941,7 +30001,7 @@
         "value": "0xd0d4",
         "ra": "0x81000088",
         "sp": "0x80a7ffb8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 390,
@@ -32737,12 +32797,27 @@
     "cp0_epc": "0x0",
     "guest_software_tick": 0,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10000000",
     "invalid_observation_bytes": [],
     "recent_instructions": [
@@ -64445,12 +64520,27 @@
     "cp0_epc": "0x0",
     "guest_software_tick": 0,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [],
     "recent_instructions": [
@@ -93610,7 +93700,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211178,
@@ -93654,7 +93744,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211227,
@@ -93698,7 +93788,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211276,
@@ -93742,7 +93832,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211325,
@@ -93786,7 +93876,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211374,
@@ -93830,7 +93920,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211423,
@@ -93874,7 +93964,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211472,
@@ -93918,7 +94008,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211521,
@@ -93962,7 +94052,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211570,
@@ -94006,7 +94096,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211619,
@@ -94050,7 +94140,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211668,
@@ -94094,7 +94184,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211717,
@@ -94138,7 +94228,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211766,
@@ -94182,7 +94272,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211815,
@@ -94226,7 +94316,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211864,
@@ -94270,7 +94360,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211913,
@@ -95018,7 +95108,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212814,
@@ -95062,7 +95152,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212867,
@@ -95106,7 +95196,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212920,
@@ -95150,7 +95240,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212973,
@@ -95194,7 +95284,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213026,
@@ -95238,7 +95328,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213079,
@@ -95282,7 +95372,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213132,
@@ -95326,7 +95416,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213185,
@@ -95370,7 +95460,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213238,
@@ -95414,7 +95504,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213291,
@@ -95458,7 +95548,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213344,
@@ -95502,7 +95592,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213397,
@@ -95546,7 +95636,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213450,
@@ -95590,7 +95680,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213503,
@@ -95634,7 +95724,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213556,
@@ -95678,7 +95768,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213609,
@@ -95722,7 +95812,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d9b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90216895,
@@ -95766,7 +95856,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d9b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90216977,
@@ -95832,7 +95922,7 @@
         "value": "0x7c8f",
         "ra": "0x805472f8",
         "sp": "0x8072d8f0",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90219874,
@@ -96153,12 +96243,27 @@
     "cp0_epc": "0x0",
     "guest_software_tick": 0,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [],
     "recent_instructions": [
@@ -125318,7 +125423,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220221,
@@ -125362,7 +125467,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220270,
@@ -125406,7 +125511,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220319,
@@ -125450,7 +125555,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220368,
@@ -125494,7 +125599,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220417,
@@ -125538,7 +125643,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220466,
@@ -125582,7 +125687,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220515,
@@ -125626,7 +125731,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220564,
@@ -125670,7 +125775,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220613,
@@ -125714,7 +125819,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220662,
@@ -125758,7 +125863,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220711,
@@ -125802,7 +125907,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220760,
@@ -125846,7 +125951,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220809,
@@ -125890,7 +125995,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220858,
@@ -125934,7 +126039,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220907,
@@ -125978,7 +126083,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220956,
@@ -126726,7 +126831,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90221857,
@@ -126770,7 +126875,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90221910,
@@ -126814,7 +126919,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90221963,
@@ -126858,7 +126963,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222016,
@@ -126902,7 +127007,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222069,
@@ -126946,7 +127051,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222122,
@@ -126990,7 +127095,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222175,
@@ -127034,7 +127139,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222228,
@@ -127078,7 +127183,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222281,
@@ -127122,7 +127227,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222334,
@@ -127166,7 +127271,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222387,
@@ -127210,7 +127315,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222440,
@@ -127254,7 +127359,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222493,
@@ -127298,7 +127403,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222546,
@@ -127342,7 +127447,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222599,
@@ -127386,7 +127491,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90222652,
@@ -127430,7 +127535,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d9b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90225938,
@@ -127474,7 +127579,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d9b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90226020,
@@ -127540,7 +127645,7 @@
         "value": "0x7c8f",
         "ra": "0x805472f8",
         "sp": "0x8072d8f0",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90228917,
@@ -127861,12 +127966,27 @@
     "cp0_epc": "0x0",
     "guest_software_tick": 0,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -156581,7 +156701,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211325,
@@ -156625,7 +156745,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211374,
@@ -156669,7 +156789,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211423,
@@ -156713,7 +156833,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211472,
@@ -156757,7 +156877,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211521,
@@ -156801,7 +156921,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211570,
@@ -156845,7 +156965,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211619,
@@ -156889,7 +157009,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211668,
@@ -156933,7 +157053,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211717,
@@ -156977,7 +157097,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211766,
@@ -157021,7 +157141,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211815,
@@ -157065,7 +157185,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211864,
@@ -157109,7 +157229,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90211913,
@@ -157857,7 +157977,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212814,
@@ -157901,7 +158021,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212867,
@@ -157945,7 +158065,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212920,
@@ -157989,7 +158109,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212973,
@@ -158033,7 +158153,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213026,
@@ -158077,7 +158197,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213079,
@@ -158121,7 +158241,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213132,
@@ -158165,7 +158285,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213185,
@@ -158209,7 +158329,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213238,
@@ -158253,7 +158373,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213291,
@@ -158297,7 +158417,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213344,
@@ -158341,7 +158461,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213397,
@@ -158385,7 +158505,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213450,
@@ -158429,7 +158549,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213503,
@@ -158473,7 +158593,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213556,
@@ -158517,7 +158637,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213609,
@@ -158561,7 +158681,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d9b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90216895,
@@ -158605,7 +158725,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d9b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90216977,
@@ -158671,7 +158791,7 @@
         "value": "0x7c8f",
         "ra": "0x805472f8",
         "sp": "0x8072d8f0",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90219874,
@@ -159155,7 +159275,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d898",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220654,
@@ -159199,7 +159319,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d898",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220735,
@@ -159243,7 +159363,7 @@
         "value": "0xffff",
         "ra": "0x805cbb58",
         "sp": "0x8072d8b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220809,
@@ -159287,7 +159407,7 @@
         "value": "0xffef",
         "ra": "0x805cbb58",
         "sp": "0x8072d8b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220875,
@@ -159586,12 +159706,27 @@
     "cp0_epc": "0x805cbc00",
     "guest_software_tick": 10,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -188911,7 +189046,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212814,
@@ -188955,7 +189090,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212867,
@@ -188999,7 +189134,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212920,
@@ -189043,7 +189178,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90212973,
@@ -189087,7 +189222,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213026,
@@ -189131,7 +189266,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213079,
@@ -189175,7 +189310,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213132,
@@ -189219,7 +189354,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213185,
@@ -189263,7 +189398,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213238,
@@ -189307,7 +189442,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213291,
@@ -189351,7 +189486,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213344,
@@ -189395,7 +189530,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213397,
@@ -189439,7 +189574,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213450,
@@ -189483,7 +189618,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213503,
@@ -189527,7 +189662,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213556,
@@ -189571,7 +189706,7 @@
         "value": "0xffff",
         "ra": "0x8060ad80",
         "sp": "0x8072d9c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90213609,
@@ -189615,7 +189750,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d9b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90216895,
@@ -189659,7 +189794,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d9b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90216977,
@@ -189725,7 +189860,7 @@
         "value": "0x7c8f",
         "ra": "0x805472f8",
         "sp": "0x8072d8f0",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90219874,
@@ -190209,7 +190344,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d898",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220654,
@@ -190253,7 +190388,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d898",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220735,
@@ -190297,7 +190432,7 @@
         "value": "0xffff",
         "ra": "0x805cbb58",
         "sp": "0x8072d8b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220809,
@@ -190341,7 +190476,7 @@
         "value": "0xffef",
         "ra": "0x805cbb58",
         "sp": "0x8072d8b8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 90220875,
@@ -191311,12 +191446,27 @@
     "cp0_epc": "0x805cbbf8",
     "guest_software_tick": 46,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -221945,7 +222095,7 @@
         "value": "0x0",
         "ra": "0x803bd9b0",
         "sp": "0x8072d8c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 104573695,
@@ -223036,12 +223186,27 @@
     "cp0_epc": "0x805cbbf8",
     "guest_software_tick": 46,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -252691,7 +252856,7 @@
         "value": "0x0",
         "ra": "0x803bd9b0",
         "sp": "0x8072d8c8",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 104573695,
@@ -254761,12 +254926,27 @@
     "cp0_epc": "0x805cbbf8",
     "guest_software_tick": 46,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -286494,12 +286674,27 @@
     "cp0_epc": "0x8045dcd8",
     "guest_software_tick": 266,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 0,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": -1,
     "candidate_gamma": false,
     "exploratory_gamma_initial_enable": -1,
     "gamma_ram_commits": 0,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": null,
+    "current_comb_bank": null,
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -317150,7 +317345,7 @@
         "value": "0xffff",
         "ra": "0x8060ad24",
         "sp": "0x8072d870",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 173423778,
@@ -317194,7 +317389,7 @@
         "value": "0xffff",
         "ra": "0x805cbb58",
         "sp": "0x8072d890",
-        "detail": "write latch only; hardware side effects unverified"
+        "detail": "only known bits consumed by byte-verified immediate destructive ANDI; other bits remain unknown"
       },
       {
         "tick": 173423844,
@@ -318219,12 +318414,36 @@
     "cp0_epc": "0x805cbc00",
     "guest_software_tick": 269,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 1,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": 0,
     "candidate_gamma": true,
     "exploratory_gamma_initial_enable": 0,
     "gamma_ram_commits": 768,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": 0,
+    "current_comb_bank": null,
+    "panel_timing": {
+      "active_width": 1920,
+      "active_height": 1080,
+      "htotal": 2200,
+      "vtotal": 1125,
+      "vsync_start": 1101,
+      "vsync_end": 1109,
+      "invert": false
+    },
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -349944,12 +350163,36 @@
     "cp0_epc": "0x805cbc00",
     "guest_software_tick": 269,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 1,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": 0,
     "candidate_gamma": true,
     "exploratory_gamma_initial_enable": 0,
     "gamma_ram_commits": 768,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": 0,
+    "current_comb_bank": null,
+    "panel_timing": {
+      "active_width": 1920,
+      "active_height": 1080,
+      "htotal": 2200,
+      "vtotal": 1125,
+      "vsync_start": 1101,
+      "vsync_end": 1109,
+      "invert": false
+    },
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -381669,12 +381912,36 @@
     "cp0_epc": "0x805cbc00",
     "guest_software_tick": 269,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 1,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": 0,
     "candidate_gamma": true,
     "exploratory_gamma_initial_enable": 1,
     "gamma_ram_commits": 768,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": 0,
+    "current_comb_bank": null,
+    "panel_timing": {
+      "active_width": 1920,
+      "active_height": 1080,
+      "htotal": 2200,
+      "vtotal": 1125,
+      "vsync_start": 1101,
+      "vsync_end": 1109,
+      "invert": false
+    },
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -413394,12 +413661,36 @@
     "cp0_epc": "0x805cbbf8",
     "guest_software_tick": 273,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 1,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": 0,
     "candidate_gamma": true,
     "exploratory_gamma_initial_enable": 0,
     "gamma_ram_commits": 768,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": 1,
+    "current_comb_bank": null,
+    "panel_timing": {
+      "active_width": 1920,
+      "active_height": 1080,
+      "htotal": 2200,
+      "vtotal": 1125,
+      "vsync_start": 1101,
+      "vsync_end": 1109,
+      "invert": false
+    },
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {
@@ -445199,12 +445490,36 @@
     "cp0_epc": "0x805cbbf8",
     "guest_software_tick": 273,
     "gop_initializer_entered": false,
+    "gop_initializer_entries": 0,
+    "scaler_initializer_entries": 1,
+    "scaler_initializer_returns": 0,
+    "dlc_initializer_returns": 0,
+    "preserved_bit_unknown_ram_bytes": 0,
     "exploratory_sc_initial_bank": 0,
     "candidate_gamma": true,
     "exploratory_gamma_initial_enable": 0,
     "gamma_ram_commits": 768,
+    "exploratory_display_clock_hz": 0,
+    "exploratory_subwindow_initial_enable": -1,
+    "exploratory_dlc_initial_pending": -1,
+    "exploratory_dlc_timeout": false,
+    "exploratory_comb_initial_bank": -1,
+    "virtual_output_frames": 0,
+    "output_sync_reads": 0,
+    "output_sync_observed_transitions": 0,
     "gop_aperture_events": 0,
     "ge_candidate_aperture_events": 0,
+    "current_sc_bank": 1,
+    "current_comb_bank": null,
+    "panel_timing": {
+      "active_width": 1920,
+      "active_height": 1080,
+      "htotal": 2200,
+      "vtotal": 1125,
+      "vsync_start": 1101,
+      "vsync_end": 1109,
+      "invert": false
+    },
     "cp0_status": "0x10008c01",
     "invalid_observation_bytes": [
       {

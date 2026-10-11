@@ -24,6 +24,26 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateChipId = o.candidateChipId;
   riu_.candidateGamma = o.candidateGamma;
   riu_.configureSpi(o.flashModel, o.spiUnknownInput);
+  if(o.exploratoryDlcTimeout && (!o.symbolicInit || !o.deferDiagnosticReads))
+    throw std::runtime_error("DLC timeout experiment requires guarded execution");
+  riu_.exploratoryDlcTimeout=o.exploratoryDlcTimeout;
+  if(o.exploratoryCombBank>=0) {
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("COMB bank experiment requires guarded execution");
+    riu_.configureExploratoryCombBank(unsigned(o.exploratoryCombBank));
+  }
+  if(o.exploratoryDisplayClock) {
+    if(!o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("Exploratory display clock requires guarded diagnostic execution");
+    riu_.configureExploratoryDisplayClock(o.exploratoryDisplayClock);
+  }
+  if(o.exploratorySubwindowEnable>=0) {
+    if(!o.symbolicInit || !o.deferDiagnosticReads) throw std::runtime_error("Subwindow initial-state experiment requires guarded execution");
+    riu_.configureExploratorySubwindowEnable(o.exploratorySubwindowEnable!=0);
+  }
+  if(o.exploratoryDlcPending>=0) {
+    if(!o.symbolicInit || !o.deferDiagnosticReads) throw std::runtime_error("DLC request initial-state experiment requires guarded execution");
+    riu_.configureExploratoryDlcPending(o.exploratoryDlcPending!=0);
+  }
   if (o.exploratoryScBank >= 0) {
     if (!o.deferDiagnosticReads || !o.symbolicInit)
       throw std::runtime_error("Exploratory SC bank requires guarded diagnostic execution");
@@ -175,9 +195,25 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   }
   if (a == 0x80539ce4) {
     m.gopInitializerEntered_ = true;
+    ++m.gopInitializerEntries_;
     m.event("gop_initializer", uint32_t(a), 0, 0,
             "stock MDrv_GOP_Init entry identified by original diagnostic string and disassembly");
   }
+  if(a==0x805f8300) {
+    ++m.scalerInitializerEntries_;
+    m.event("guest_scaler_initializer",uint32_t(a),0,0,"original scaler initialization entry");
+  }
+  if(a==0x805f833c) {
+    ++m.scalerInitializerReturns_;
+    m.event("guest_scaler_init_return",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_2),"original return value: one successful, zero failed");
+  }
+  if(a==0x805e3e58) {
+    ++m.dlcInitializerReturns_;
+    m.event("guest_dlc_init_return",uint32_t(a),0,0,"original curve initializer return; capture completion is not implied");
+  }
+  if(m.options_.exploratoryDisplayClock && a==0x805f2518)
+    m.event("guest_output_vsync_wait_return",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_17),
+      "original wait returns remaining pulse count; zero means completed, nonzero means original timer timeout");
   m.coverage_.insert(uint32_t(a));
   ++m.pcHits_[uint32_t(a)];
   m.history_.push_back(uint32_t(a));
@@ -230,6 +266,14 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       m.stop(why, op >= 32 && op <= 38 ? address : 0);
       return;
     }
+    auto preservedWhy=m.preservedBits_.observe(w,[&](unsigned r){return m.cpu_.reg(UC_MIPS_REG_0+int(r));},
+      [&](uint32_t address){return m.riu_.controlByteKey(address);},
+      [&](uint32_t address,unsigned width,uint32_t unknown){
+        auto full=width==4?0xffffffffu:(1u<<(width*8))-1;
+        m.riu_.prepareRmw(address,full&~unknown);
+        m.event("preserved_control_write",address,width,unknown,"original unknown bits return to the same banked byte/bit identities; no decision or new hardware consumer authorized");
+      });
+    if(!preservedWhy.empty()) {m.stop(preservedWhy);return;}
   }
   auto op = w >> 26;
   if ((op >= 32 && op <= 38) || (op >= 40 && op <= 43) || (op == 46)) {
@@ -302,19 +346,77 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
         m.riu_.prepareRmw(a, defined);
     }
     if (m.options_.symbolicInit) {
-      uint32_t words[4]{};
+      uint32_t words[8]{};
       m.cpu_.read(pc & 0x1fffffff, words, sizeof(words));
       auto op = words[0] >> 26, rt = (words[0] >> 16) & 31;
       if ((op == 36 || op == 37) && rt) {
-        for (unsigned i = 1; i < 4; ++i) {
+        // A plain architectural JR returns after its delay-slot mask. There
+        // is no observation of the sampled bits before ANDI in this path.
+        if(words[1]==0x03e00008 && words[2]>>26==12 &&
+           ((words[2]>>21)&31)==rt && ((words[2]>>16)&31)==rt)
+          m.riu_.prepareMaskedRead(a,words[2]&65535);
+        for (unsigned i = 1; i < 8; ++i) {
           auto nextOp = words[i] >> 26, nextRs = (words[i] >> 21) & 31, nextRt = (words[i] >> 16) & 31;
           if (nextOp == 12 && nextRs == rt && nextRt == rt) {
             m.riu_.prepareMaskedRead(a, words[i] & 65535); break;
           }
-          if (nextOp != 9 || nextRs == rt || nextRt == rt) break;
+            bool independent=(nextOp==9 || nextOp==12 || nextOp==13 || nextOp==15) && nextRt!=rt &&
+            (nextOp==15 || nextRs!=rt);
+          if(nextOp==0 && (words[i]&63)==33)
+            independent=nextRs!=rt && nextRt!=rt && ((words[i]>>11)&31)!=rt;
+          if(nextOp==41 || nextOp==40)independent=nextRs!=rt && nextRt!=rt;
+            // An intervening independent load may stop on its own MMIO
+            // dependency, but cannot expose the first sample's discarded bits.
+            if(nextOp==35 || nextOp==36 || nextOp==37)
+              independent=nextRs!=rt && nextRt!=rt;
+          if(!independent)break;
         }
       }
     }
+    if(m.options_.exploratoryDisplayClock && pc==0x805fbc8c && a==0x1f205e78 && n==1) {
+      constexpr uint32_t expected[]={0x90440000,0x8ce39634,0x3c020020,0x34425e00,
+        0x00621821,0x308400ff,0xa0650000,0x03e00008,0x30820001};
+      uint32_t actual[9]{}; m.cpu_.read(pc&0x1fffffff,actual,sizeof(actual));
+      if(std::equal(std::begin(expected),std::end(expected),std::begin(actual)))
+        m.riu_.prepareMaskedRead(a,1); // full straight-line original reader; only bit 0 returned
+    }
+    if(m.options_.deferDiagnosticReads && m.options_.symbolicInit && n==2 && m.riu_.scBank()==2 &&
+       ((pc==0x805fe1b4 && a==0x1f205e10) || (pc==0x805fe1b8 && a==0x1f205e14))) {
+      constexpr uint32_t expected[]={0x94850000,0x94620000,0x8ee40010,0x3c038073,0x30a5ffff,
+        0x00021400,0x8c689840,0x3c03bfff,0x00451025,0x3473ffff,0x3c124000,0x00521024,
+        0x00932024,0x0044a025};
+      uint32_t actual[14]{};m.cpu_.read(0x005fe1b4,actual,sizeof(actual));
+      if(std::equal(std::begin(expected),std::end(expected),std::begin(actual))) {
+        auto rt=pc==0x805fe1b4?5:2;
+        m.preservedBits_.seed(rt,n,m.riu_.knownBits(a,n),[&](unsigned byte){return m.riu_.controlByteKey(a+byte);});
+        m.riu_.prepareOpaqueRead(a); // one-shot observation; provenance independently prevents use
+        m.event("preserved_control_sample",a,n,m.riu_.knownBits(a,n),"INVALID banked scaler sample; stock operation retains only pre-scaling bit 30 and programs new coefficients");
+      }
+    }
+    if(m.options_.deferDiagnosticReads && m.options_.symbolicInit && n==2 && m.riu_.scBank()==0xf &&
+       ((pc==0x805fe144 && a==0x1f205e1c) || (pc==0x805fe0bc && a==0x1f205e20))) {
+      uint32_t path[3]{};m.cpu_.read(pc&0x1fffffff,path,sizeof(path));
+      if(path[0]==0x94a20000 && path[1]==(pc==0x805fe144?0x0817f811u:0x0817f814u) &&
+         path[2]==(pc==0x805fe144?0x3046ffffu:0x3047ffffu)) {
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned byte){return m.riu_.controlByteKey(a+byte);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_scaler_geometry",a,n,0,"INVALID original geometry observation; first comparison/decision stops unless original feature gate makes value unused");
+      }
+    }
+      if(m.options_.exploratoryDlcTimeout && m.options_.deferDiagnosticReads && m.options_.symbolicInit &&
+         n==1 && m.riu_.scBank()==0x1a &&
+         ((pc==0x805e3ddc && a==0x1f205e1d) || (pc==0x805e3df4 && a==0x1f205e1c))) {
+        constexpr uint32_t expected[]={0x90430000,0x3c06806c,0x34a25e1c,0x306300ff,0xa4c395f4,
+          0x00e21021,0x90440000,0x24020028,0xa3c20054,0x3c02806c,0xa04095f6,0x8fa20010,
+          0x00031a00,0x34a55e00,0x308400ff,0x00641821,0x00e52821,0xa3c00052,0xa3c00053,
+          0xa4c395f4,0xa0a20000};
+        uint32_t actual[21]{};m.cpu_.read(0x005e3ddc,actual,sizeof(actual));
+        if(std::equal(std::begin(expected),std::end(expected),std::begin(actual))) {
+          m.preservedBits_.seed(pc==0x805e3ddc?3:4,n,m.riu_.knownBits(a,n),[&](unsigned byte){return m.riu_.controlByteKey(a+byte);});
+          m.riu_.prepareOpaqueRead(a);
+          m.event("deferred_dlc_statistic",a,n,0,"INVALID byte-pair statistic cache; disjoint concatenation/copies allowed, first arithmetic or decision stops");
+        }
+      }
     if (m.options_.symbolicInit && m.options_.deferDiagnosticReads && a == 0x1f205e00 && n == 1 &&
         m.riu_.knownBits(a, n) != 255 &&
         (pc == 0x805e5b54 || pc == 0x805e5b58 || pc == 0x805e5e28 || pc == 0x805e5e2c)) {
@@ -333,6 +435,28 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
         m.event("opaque_timing_snapshot", a, n, 0xa5,
                 "INVALID saved control byte; exact original restore only, no branch/output may consume it");
         return 0xa5;
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x805e0d14 &&
+       a==0x1f205e50 && n==2 && m.riu_.scBank()==0x1a) {
+      constexpr uint32_t expected[]={0x94a20000,0x306300ff,0xa0830000,0x03e00008,0x7c423a00};
+      uint32_t actual[5]{};m.cpu_.read(pc&0x1fffffff,actual,sizeof(actual));
+      if(std::equal(std::begin(expected),std::end(expected),std::begin(actual))) {
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_dlc_gain",a,n,0,"INVALID gain snapshot; original extract/copies/restore permitted, first unknown decision stops");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x805f87dc && n==1 &&
+       a>=0x1f206c04 && a<0x1f206e00 && (a&1) && m.cpu_.reg(UC_MIPS_REG_31)==0x803c69c8) {
+      constexpr uint32_t expected[]={0x00408821,0x00141827,0x02b42024,0x00431024,0x00441025,
+        0x7c021620,0x3043ffff,0x00031a00,0x00431025,0x3045ffff,0x02002021,
+        0x0c17e204,0x3406ffff};
+      uint32_t actual[13]{};m.cpu_.read(0x003c69c4,actual,sizeof(actual));
+      if(std::equal(std::begin(expected),std::end(expected),std::begin(actual))) {
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_comb_high_sample",a,n,0,"INVALID T4 high-byte workaround sample; masked field tracked, different-byte hardware use remains guarded");
       }
     }
     if (m.options_.symbolicInit && m.options_.deferDiagnosticReads &&
@@ -469,11 +593,19 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
     values[r] = cpu_.reg(UC_MIPS_REG_0 + int(r));
   dependent[sampled] = width == 4 ? 0xffffffff : (uint32_t(1) << (width * 8)) - 1;
   bool changed = false;
+  uint32_t proofPc=pc+4, jumpAfterDelay=0;
   for (unsigned i = 1; i <= 12; ++i) {
-    cpu_.read((pc + 4 * i) & 0x1fffffff, &w, 4);
+    cpu_.read(proofPc & 0x1fffffff, &w, 4);
+    auto instructionPc=proofPc;
+    if(jumpAfterDelay) { proofPc=jumpAfterDelay; jumpAfterDelay=0; }
+    else proofPc+=4;
     op = w >> 26;
     auto rs = (w >> 21) & 31, rt = (w >> 16) & 31;
-    if (op == 12 || op == 13) {
+    if(op==2) {
+      auto target=(instructionPc&0xf0000000)|((w&0x3ffffff)<<2);
+      if(target+0x400<pc || target>pc+0x400 || target==instructionPc) return 0;
+      jumpAfterDelay=target; // analyze original J delay slot then target; CPU still executes both
+    } else if (op == 12 || op == 13) {
       if (rt == 0)
         return 0;
       dependent[rt] = op == 12 ? dependent[rs] & (w & 65535) : dependent[rs] & ~(w & 65535);
@@ -487,6 +619,8 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
     } else if (op == 9 && !dependent[rs] && rt != 0) {
       dependent[rt] = 0;
       values[rt] = values[rs] + uint32_t(int32_t(int16_t(w)));
+    } else if(op==11 && !dependent[rs] && rt!=0) {
+      dependent[rt]=0; values[rt]=values[rs]<uint32_t(int32_t(int16_t(w)));
     } else if (op == 0 && ((w & 63) == 33 || (w & 63) == 35) &&
                !dependent[rs] && !dependent[rt] && ((w >> 11) & 31) != 0) {
       auto rd = (w >> 11) & 31;
@@ -513,7 +647,7 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
       auto loadSize = op == 35 ? 4u : op == 37 ? 2u : 1u;
       if (target >= 0x08000000 - loadSize || (target & (loadSize - 1))) return 0;
       for (unsigned byte = 0; byte < loadSize; ++byte)
-        if (unknownObservations_.bytes().contains(target + byte)) return 0;
+        if (unknownObservations_.bytes().contains(target + byte) || preservedBits_.memoryUnknown(target+byte)) return 0;
       values[rt] = 0;
       cpu_.read(target, &values[rt], loadSize);
       dependent[rt] = 0;
@@ -529,7 +663,10 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
     } else if (op == 40 || op == 41 || op == 43) {
       auto target = (values[rs] + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
       auto n = op == 40 ? 1u : op == 41 ? 2u : 4u;
-      if (target != address || n != width || !changed || dependent[rs] || rs == sampled)
+      // A register may have held the sample, then been overwritten with an
+      // independently known address. Its current dependency, not its name,
+      // determines whether the same-device store has a proven destination.
+      if (target != address || n != width || !changed || dependent[rs])
         return 0;
       auto full = width == 4 ? 0xffffffff : (uint32_t(1) << (width * 8)) - 1;
       return full & ~dependent[rt];
@@ -693,12 +830,33 @@ std::string Msd309Machine::summary() const {
   cpu_.read(0x006e561c, &softwareTick, 4);
   s << ",\n  \"guest_software_tick\": " << softwareTick
     << ",\n  \"gop_initializer_entered\": " << (gopInitializerEntered_ ? "true" : "false")
+    << ",\n  \"gop_initializer_entries\": " << gopInitializerEntries_
+    << ",\n  \"scaler_initializer_entries\": " << scalerInitializerEntries_
+    << ",\n  \"scaler_initializer_returns\": " << scalerInitializerReturns_
+    << ",\n  \"dlc_initializer_returns\": " << dlcInitializerReturns_
+    << ",\n  \"preserved_bit_unknown_ram_bytes\": " << preservedBits_.unknownMemoryBytes()
     << ",\n  \"exploratory_sc_initial_bank\": " << options_.exploratoryScBank
     << ",\n  \"candidate_gamma\": " << (options_.candidateGamma ? "true" : "false")
     << ",\n  \"exploratory_gamma_initial_enable\": " << options_.exploratoryGammaEnable
     << ",\n  \"gamma_ram_commits\": " << riu_.gammaCommits()
+    << ",\n  \"exploratory_display_clock_hz\": " << options_.exploratoryDisplayClock
+    << ",\n  \"exploratory_subwindow_initial_enable\": " << options_.exploratorySubwindowEnable
+    << ",\n  \"exploratory_dlc_initial_pending\": " << options_.exploratoryDlcPending
+    << ",\n  \"exploratory_dlc_timeout\": " << (options_.exploratoryDlcTimeout ? "true":"false")
+    << ",\n  \"exploratory_comb_initial_bank\": " << options_.exploratoryCombBank
+    << ",\n  \"virtual_output_frames\": " << riu_.displayFrames(dispatches_)
+    << ",\n  \"output_sync_reads\": " << riu_.outputSyncReads()
+    << ",\n  \"output_sync_observed_transitions\": " << riu_.outputSyncTransitions()
     << ",\n  \"gop_aperture_events\": " << gopEvents_
     << ",\n  \"ge_candidate_aperture_events\": " << geEvents_;
+  if(auto bank=riu_.scBank()) s << ",\n  \"current_sc_bank\": " << *bank;
+  else s << ",\n  \"current_sc_bank\": null";
+  if(auto bank=riu_.combBank())s << ",\n  \"current_comb_bank\": " << *bank;
+  else s << ",\n  \"current_comb_bank\": null";
+  if(auto t=riu_.panelTiming()) s << ",\n  \"panel_timing\": {\"active_width\":" << t->hend-t->hstart+1
+    << ",\"active_height\":" << t->vend-t->vstart+1 << ",\"htotal\":" << t->htotal
+    << ",\"vtotal\":" << t->vtotal << ",\"vsync_start\":" << t->vsyncStart << ",\"vsync_end\":" << t->vsyncEnd
+    << ",\"invert\":" << (t->invert?"true":"false") << "}";
   s << ",\n  \"cp0_status\":\"" << hex(cpu_.reg(UC_MIPS_REG_CP0_STATUS))
     << "\",\n  \"invalid_observation_bytes\": [";
   first = true;

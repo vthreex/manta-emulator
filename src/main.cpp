@@ -83,6 +83,21 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--replay-trace")
         o.replay = utf8Path(value(i));
       else if (a == "--candidate-gamma") o.candidateGamma = true;
+      else if (a == "--exploratory-display-clock") o.exploratoryDisplayClock=std::stoull(value(i));
+      else if(a=="--exploratory-subwindow-enable") {
+        auto v=value(i);if(v!="0" && v!="1")throw std::runtime_error("Subwindow enable must be 0 or 1");
+        o.exploratorySubwindowEnable=v=="1";
+      }
+      else if(a=="--exploratory-dlc-pending") {
+        auto v=value(i);if(v!="0" && v!="1")throw std::runtime_error("DLC pending must be 0 or 1");
+        o.exploratoryDlcPending=v=="1";
+      }
+      else if(a=="--exploratory-dlc-timeout") o.exploratoryDlcTimeout=true;
+      else if(a=="--exploratory-comb-bank") {
+        auto b=std::stoul(value(i),nullptr,0);
+        if(b>255)throw std::runtime_error("COMB bank out of range");
+        o.exploratoryCombBank=int(b);
+      }
       else if (a == "--exploratory-gamma-enable") {
         auto state = value(i);
         if (state != "0" && state != "1") throw std::runtime_error("Gamma enable must be 0 or 1");
@@ -117,6 +132,11 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-spi-input pull-up|pull-down: HYPOTHETICAL undocumented CF output\n"
                "--exploratory-sc-bank N: HYPOTHETICAL initial SC selector (0..255); banked register state\n"
                "--candidate-gamma: original address/sample/channel transfers, provisional virtual timing\n"
+               "--exploratory-display-clock HZ: HYPOTHETICAL output clock; guest timing drives output VSYNC\n"
+               "--exploratory-subwindow-enable 0|1: HYPOTHETICAL power-on PIP enable bit, other bits remain unknown\n"
+               "--exploratory-dlc-pending 0|1: HYPOTHETICAL pre-existing capture-range request; completion remains unknown\n"
+               "--exploratory-dlc-timeout: HYPOTHETICAL held-low completion to test original timeout path\n"
+               "--exploratory-comb-bank N: HYPOTHETICAL initial comb-filter bank selector\n"
                "--exploratory-gamma-enable 0|1: HYPOTHETICAL initial bank-10 gamma enable bit\n"
                "--summary FILE --coverage FILE --max-instructions N\n"
                "--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS\n"

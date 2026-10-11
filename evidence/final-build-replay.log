@@ -1,1 +1,1 @@
-PASS: final delivery binary re-executed all 175471842 guest dispatches and matched full trace; native exit 2 is the expected honest hardware boundary
+PASS: original reset/inflate/IRQ/MMIO full display trace replay; summary equality; stop 805F883C before unknown COMB bits copied into low byte. Experimental clock/reset assumptions remain unvalidated.

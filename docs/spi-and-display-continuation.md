@@ -1,5 +1,7 @@
 # SPI identification and display continuation from 4cf77a4
 
+Historical milestone retained from `1f79adc`. The newer [display-sync/DLC/COMB investigation](display-sync-and-dlc.md) supersedes the execution boundary and test counts below; strict POR and CF uncertainties remain.
+
 The first authentic TV frame is **not achieved**. The existing Unicorn engine and guest instruction memory are retained. The newest exploratory reset-from-flash run dispatches **175,471,842** original instructions, delivers **273** stock Count/Compare ISR entries and commits **768** original gamma samples. It stops at **805FBC8C / BF205E78**, with SC bank **1** selected. GOP initializer **80539CE4 has not executed**, GOP/GE aperture events are zero, and no original framebuffer or OSD pixels have been demonstrated.
 
 ## What CF actually does

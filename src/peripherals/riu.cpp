@@ -2,6 +2,27 @@
 #include <array>
 #include <stdexcept>
 namespace manta {
+std::optional<PanelTiming> Riu::panelTiming() const {
+  auto word=[&](unsigned off,unsigned mask)->std::optional<unsigned> {
+    auto l=scByte(0x10,off),h=scByte(0x10,off+1);
+    unsigned known=l.known | (unsigned(h.known)<<8);
+    if((known&mask)!=mask) return {};
+    return (l.value | (unsigned(h.value)<<8))&mask;
+  };
+  auto ht=word(0x30,0xfff),vt=word(0x34,0xfff);
+  auto hs=word(0x10,0xfff),he=word(0x14,0xfff),vs=word(0x18,0xfff),ve=word(0x1c,0xfff);
+  auto ss=word(8,0xfff),se=word(12,0xfff),inv=word(0x40,0x8000);
+  if(!ht || !vt || !hs || !he || !vs || !ve || !ss || !se || !inv) return {};
+  return PanelTiming{uint16_t(*ht+1),uint16_t(*vt+1),uint16_t(*hs),uint16_t(*he),uint16_t(*vs),uint16_t(*ve),uint16_t(*ss),uint16_t(*se),bool(*inv)};
+}
+void Riu::updateOutputTiming(uint64_t tick) {
+  if(!exploratoryDisplayClock) return;
+  if(auto t=panelTiming(); t && (knownBits(0x1f20174c,1)&1))
+    { if(scaler_.program(*t,!(get(0x1f20174c,1)&1),tick))
+      event("exploratory_panel_timing",0x1f205e00,0,uint32_t(exploratoryDisplayClock),"HYPOTHETICAL output clock; pulse phase begins on original geometry/clock programming, never on a read");
+    }
+  else scaler_.invalidate();
+}
 bool Riu::gopBankKnown() const {
   auto it = bytes_.find(0x1f203ffc);
   return it != bytes_.end() && (it->second.known & 15) == 15;
@@ -23,6 +44,11 @@ uint32_t Riu::storageKey(uint32_t a) const {
     if (selector == bytes_.end() || selector->second.known != 255)
       throw std::runtime_error("SC access before bank selector is known");
     return 0x81000000u + (uint32_t(selector->second.value) << 10) + a - 0x1f205e00;
+  }
+  if(a>=0x1f206c04 && a<0x1f206e00) {
+    auto bank=combBank();
+    if(!bank)throw std::runtime_error("COMB access before bank selector is known");
+    return 0x82000000u+(uint32_t(*bank)<<10)+a-0x1f206c00;
   }
   return a;
 }
@@ -65,6 +91,35 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   consumedRead_.clear(); // one-shot proof, including peripheral early returns
   if (n != 1 && n != 2 && n != 4)
     throw std::runtime_error("Unsupported RIU access width");
+  bool opaque=opaqueRead_ && *opaqueRead_==a;
+  opaqueRead_.reset();
+  if(opaque && symbolicInit) {
+    auto v=get(a,n);
+    event("read",a,n,v,"INVALID one-shot sample; machine bit-provenance guard rejects first decision/new-device use");
+    return v;
+  }
+  if (exploratoryDisplayClock && a==0x1f205e78 && n==1 && (scBank()==1 || scBank()==3) && masked && provenConsumed==1) {
+    if (scaler_.configured()) {
+      if(auto state=scaler_.outputVsync(tick)) {
+        ++outputSyncReads_;
+        if(lastOutputSync_ && *lastOutputSync_!=*state) {
+          ++outputSyncTransitions_;
+          event("exploratory_output_vsync_edge",a,n,*state,"virtual scan counter edge, not read-driven; exact Titania4 monitor polarity remains unverified");
+        }
+        lastOutputSync_=*state;
+        auto value=(get(a,n)&~1u)|*state;
+        event("read",a,n,value,"EXPLORATORY output-VSYNC bit only; known clock gate, guest-programmed geometry, explicit clock-rate assumption");
+        return value;
+      }
+    }
+    stopReason="exploratory output sync requires complete guest timing and enabled display clock";
+    event("blocked_read",a,n,0xa5,stopReason); return 0xa5;
+  }
+  if(exploratoryDlcTimeout && a==0x1f205e10 && n==1 && scBank()==0x1a && masked && provenConsumed==8) {
+    auto v=get(a,n)&~8u;
+    event("read",a,n,v,"EXPLORATORY DLC completion held low to exercise stock timeout, not hardware completion");
+    return v;
+  }
   if (candidateChipId && a == 0x1f003d98 && n == 2) {
     event("read", a, n, 0x18, "candidate Titania4 immutable chip identity inferred from original HAL check at 8054CDC4; silicon capture unverified");
     return 0x18;
@@ -226,6 +281,13 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(a<=0x1f205e10 && a+n>0x1f205e10 && scBank()==0x1a) {
+    // A command write does not prove the asynchronous capture completion.
+    // Keep status bit 3 invalid until a real producer is established.
+    bytes_[storageKey(0x1f205e10)].known &= uint8_t(~8u);
+    if((knownBits(0x1f205e10,1)&4) && (get(0x1f205e10,1)&4))
+      event("dlc_capture_request",0x1f205e10,1,v,"original capture-range request; completion/latch domain unverified");
+  }
   // Bank-select writes do not manufacture interrupt or hardware write-ack
   // status. These fields have no producer model yet and remain unknown.
   if (a <= 0x1f203ffd && a + n > 0x1f203ffc) {
@@ -234,6 +296,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         bytes_[a+i].known &= 0x0f;
   }
   event("write", a, n, v, "recorded register storage; not a complete device");
+  if(exploratoryDisplayClock && ((a>=0x1f205e04 && a<0x1f205e44) || a==0x1f20174c))
+    updateOutputTiming(tick);
   if (candidateGamma && a == 0x1f205fb4 && n == 1 && get(0x1f205e00, 1) == 0x10) {
     auto command = v & 0xe0;
     if ((knownBits(a, 1) & 0xe0) != 0xe0)

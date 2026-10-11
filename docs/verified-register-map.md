@@ -25,9 +25,20 @@
 | `BF221ADC`, `BF221BDC` | Boot writes low-byte phase seed 88, then sweeps low/high nibbles and chooses 77 | Only known low byte consumed; upper unknown bits discarded by original ANDI; PHY phase effects unresolved |
 | `BF200A38`, `BF200A3C` | `80469898/804698AC`: LHU and cache in BSS; later popcount/text conversion | Strict read stops; POR scratch interpretation provisional; diagnostic caches remain invalid |
 
-Continuation additions: BF001010 transmits the real CF opcode in trigger mode; BF001030 requests receive clocks; BF001054/58/5C are RD/WR/CMD FIFO readiness. BF203FFC selects banked GOP registers. BF205E00 selects the banked scaler aperture. Bank 10h BF205FB0/B8/BC/C0/B4 carries gamma address/samples/channel strobes and busy. Bank 1 BF205E78 bit 0 is consumed by the original edge-wait routine, but its exact signal/reset behavior remains unresolved. See [evidence and limits](spi-and-display-continuation.md).
+Continuation additions: BF001010 transmits the real CF opcode in trigger mode; BF001030 requests receive clocks; BF001054/58/5C are RD/WR/CMD FIFO readiness. BF203FFC selects banked GOP registers. BF205E00 selects the banked scaler aperture. Bank 10h BF205FB0/B8/BC/C0/B4 carries gamma address/samples/channel strobes and busy. See [SPI evidence and limits](spi-and-display-continuation.md).
 
-Prioritized remaining work: the scaler edge-status/clock-source dependency; POR producer/reset and undocumented CF electrical behavior; GOP output/shadow/MIU/palette semantics; guest flash program/erase; GPIO/I2C attached devices; PM51/IR; board IRQs; audio, tuner/demod/TS, USB/media, PVR and 3D. No register map from MSD309PX or a later MStar SoC was copied wholesale.
+| New encountered field | Evidence | Scope |
+|---|---|---|
+| SC bank 1/3 BF205E78 bit 0 | Stock output-edge reader and named reference output-VSYNC reader; input reader instead consumes bit 2 | Signal identity strongly supported; T4 polarity, clock routing, bank coupling and reset state unverified; explicit virtual clock experiment only |
+| SC bank 20 BF205E40 bit 1 | Stock 805FE024 predicate and named reference subwindow enable/disable | Initial enable unknown; exploratory bit selects stock path, unknown geometry comparison still stops |
+| SC bank 1A BF205E10 bits 2/3 | Stock DLC capture-range request and completion polls; matching named reference | Guest request tracked, async completion invalidated on command; optional held-low experiment exercises original timeout only |
+| SC bank 1A BF205E1C/1D, BF205E51 | Stock luminance statistic / chroma gain getters | Unknown samples retained through instruction/RAM bit provenance; no fabricated measured values |
+| BF206C00, BF206C04..6DFF | Original COMB PQ table loader; public T4-specific workaround and base 103600 | Separate banked storage; selector reset unknown; no comb-filter pixel-processing engine |
+| COMB bank 0 BF206D1D bits 4/5 | Stock reg8F high-byte preservation and temporary duplicated-halfword store | Unknown reset bits remain unknown; guard stops 805F883C before foreign low-byte use |
+
+See [current display evidence and limitations](display-sync-and-dlc.md). These fields do not establish complete register semantics or substitute for a matching silicon register manual.
+
+Prioritized remaining work: COMB high-byte reset/side effects, actual scaler clock/polarity and DLC completion; POR producer/reset and undocumented CF electrical behavior; GOP output/shadow/MIU/palette semantics; guest flash program/erase; GPIO/I2C attached devices; PM51/IR; board IRQs; audio, tuner/demod/TS, USB/media, PVR and 3D. No register map from MSD309PX or a later MStar SoC was copied wholesale.
 
 The observable bus records PC, width, value, physical address, instruction-dispatch tick, RA and SP. Stop summaries include all general registers, the last 64 PCs, and 16 stack words. A reliable full stack unwind and calibrated cycle timing are unsupported.
 

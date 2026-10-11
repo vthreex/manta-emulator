@@ -1,1 +1,1 @@
-PASS: original reset/inflate, POR guard, CF packet/unknown cache, Winbond JEDEC/table selection, XIU/guest TLB/MIU1 alias, 269 original IRQs, 768 original gamma samples, both enable states and full deterministic replay; no authentic GOP frame claimed
+PASS: final executable, 18 baseline original-firmware runs and 9 display runs. See regression.json and display-regression.json for assertions and full register/PC/MMIO summaries. No authentic frame.

@@ -3,6 +3,7 @@
 #include "storage/flash.hpp"
 #include "storage/sha256.hpp"
 #include "board/unknown_observations.hpp"
+#include "board/preserved_bits.hpp"
 #include "video/gop.hpp"
 #include <array>
 #include <algorithm>
@@ -512,6 +513,120 @@ void displayHardwareTests() {
   require(g.gammaCommits()==1 && g.knownBits(0x1f205fb4,1)==0xe0,
           "gamma completion leaves unrelated control bits unknown");
 }
+void scalerTimingTests() {
+  manta::ScalerTiming s;
+  manta::PanelTiming t{2200,1125,112,2031,0,1079,1101,1109,false};
+  require(!s.outputVsync(0),"strict timing has no assumed clock/status");
+  rejects([&]{s.clock(1);});
+  s.clock(148500000);
+  require(s.program(t,true,100),"programmed panel timing arms experiment");
+  require(s.outputVsync(100)==false,"sync initially outside guest pulse interval");
+  auto ticks=[&](uint64_t line){return 100+(line*2200*312000000+148499999)/148500000;};
+  require(s.outputVsync(ticks(1101))==true,"sync enters original guest pulse interval");
+  require(s.outputVsync(ticks(1109))==true,"sync interval inclusive end");
+  require(s.outputVsync(ticks(1110))==false,"sync exits on next scanline");
+  require(s.outputVsync(ticks(1101))==true,"same tick returns same level, no read toggling");
+  require(!s.program(t,true,ticks(1110)),"unchanged guest state does not reset phase");
+  require(s.frames(ticks(2250))==2,"frames count virtual pixels rather than reads");
+  s.program(t,false,ticks(2250));
+  require(!s.outputVsync(ticks(2251)),"clock gate stops output with unknown monitor level");
+  t.vsyncEnd=1125;
+  require(!s.program(t,true,0),"out-of-bounds pulse is rejected");
+  require(!s.configured() && !s.outputVsync(100),"invalid geometry cannot leave stale output running");
+  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};
+  r.configureExploratoryDisplayClock(148500000);
+  r.configureExploratoryScBank(0x10);
+  r.write(0x1f20174c,1,0x1c,0,0,0);
+  auto put=[&](unsigned off,unsigned val){r.write(0x1f205e00+off,2,val,0,0,0);};
+  put(0x30,2199); put(0x34,1124); put(0x10,112); put(0x14,2031);
+  put(0x18,0); put(0x1c,1079); put(8,1101); put(12,1109); put(0x40,0);
+  require(r.panelTiming() && *r.panelTiming()==manta::PanelTiming{2200,1125,112,2031,0,1079,1101,1109,false},"RIU geometry decoded from bank 10 only");
+  r.configureExploratoryScBank(1);
+  r.prepareMaskedRead(0x1f205e78,1);
+  auto pulseTick=ticks(1101)-100;
+  require((r.read(0x1f205e78,1,0,0,pulseTick)&1)==1 && r.stopReason.empty(),"RIU original status bit follows configured timing");
+  r.configureExploratoryScBank(3);r.prepareMaskedRead(0x1f205e78,1);
+  require((r.read(0x1f205e78,1,0,0,pulseTick)&1)==1 && r.stopReason.empty(),"bank-3 output monitor uses explicit shared-output-clock experiment");
+  r.read(0x1f205e78,1,0,0,pulseTick);
+  require(!r.stopReason.empty(),"unknown adjacent status bits cannot be consumed");
+  require(r.knownBits(0x1f205e78,1)==0,"experimental monitor does not validate stored register reset bits");
+}
+void preservedBitsTests() {
+  manta::PreservedBits p;
+  std::array<uint32_t,32> regs{};
+  auto reg=[&](unsigned i){return regs[i];};
+  unsigned bank=2, writes=0; uint32_t savedMask=0;
+  auto key=[&](uint32_t a){return 0x81000000u+(bank<<10)+a-0x1f205e00;};
+  auto store=[&](uint32_t,unsigned,uint32_t m){++writes;savedMask=m;};
+  auto step=[&](uint32_t w){return p.observe(w,reg,key,store);};
+  p.seed(2,2,0,[&](unsigned b){return key(0x1f205e14+b);});
+  require(p.mask(2)==65535,"unknown register bits seeded without choosing reset value");
+  regs[2]=0xa5a5;
+  require(step(0x00021400).empty(),"unknown halfword can shift into high half");
+  regs[2]<<=16; regs[18]=0x40000000;
+  require(step(0x00521024).empty() && p.mask(2)==0x40000000,"known AND removes all but preserved bit");
+  regs[2]&=regs[18];
+  require(step(0x00021402).empty() && p.mask(2)==0x4000,"right shift retains exact originating bit");
+  regs[2]>>=16; regs[4]=0xbf205e14;
+  require(step(0xa4820000).empty() && writes==1 && savedMask==0x4000,"same banked byte/bit accepts unchanged unknown bit");
+  bank=3;
+  require(!step(0xa4820000).empty() && writes==1,"different bank cannot receive unknown bit");
+  bank=2;
+  require(!step(0x10400001).empty(),"branch on unknown control bit rejects");
+  regs[4]=0x80701000;
+  require(step(0xac820000).empty(),"interrupt frame can preserve bit provenance");
+  require(step(0x8c890000).empty() && p.mask(9)==0x4000,"RAM reload retains invalid originating bit");
+  regs[10]=0x4000;
+  require(!step(0x012a1021).empty(),"unknown bit cannot enter arithmetic with a possible carry");
+  require(step(0x30420000).empty() && p.mask(2)==0,"destructive mask can discard unknown bits entirely");
+  regs[9]=0x4000;
+  require(step(0x35294000).empty() && p.mask(9)==0,"ORI one defines only its forced bit");
+  p.seed(3,1,0,[&](unsigned b){return key(0x1f205e1d+b);});regs[3]=0xa5;
+  require(step(0x00031a00).empty(),"DLC statistic high byte retains bit origins when shifted");regs[3]<<=8;
+  p.seed(4,1,0,[&](unsigned b){return key(0x1f205e1c+b);});regs[4]=0xa5;
+  require(step(0x00641821).empty() && p.mask(3)==65535,"disjoint byte concatenation remains wholly invalid");
+  p.seed(4,2,0,[&](unsigned b){return key(0x1f205e1c+b);});
+  require(!step(0x00641821).empty(),"possible carry cannot be used to concatenate invalid observations");
+  p.seed(2,2,0,[&](unsigned b){return key(0x1f205e50+b);});regs[2]=0xa5a5;
+  require(step(0x7c423a00).empty() && p.mask(2)==255,"original EXT keeps gain snapshot unknown");
+  step(0x3c044000);regs[4]=0x40001000;regs[2]=0xa5;
+  require(step(0xac820000).empty(),"opaque sample can be saved through documented MIU1 alias");
+  regs[4]=0x1000;
+  require(step(0xac800000).empty(),"MIU0 overwrite does not touch independent MIU1 cache");
+  regs[4]=0x88001000;
+  require(step(0x8c850000).empty() && p.mask(5)==255,"MIU1 cached alias preserves origin despite MIU0 overwrite");
+}
+void dlcStatusTests() {
+  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};
+  r.configureExploratoryScBank(0x1a);
+  require(r.knownBits(0x1f205e10,1)==0,"DLC has no invented power-on request or completion");
+  r.configureExploratoryDlcPending(true);
+  require(r.knownBits(0x1f205e10,1)==4,"DLC pending experiment defines exactly the requested bit");
+  r.prepareMaskedRead(0x1f205e10,4);
+  require((r.read(0x1f205e10,1,0,0,0)&4)!=0,"pending experiment is guest-consumable as declared");
+  r.write(0x1f205e10,1,6,0,0,0);
+  require((r.knownBits(0x1f205e10,1)&8)==0,"DLC command write cannot invent asynchronous completion");
+  r.prepareMaskedRead(0x1f205e10,8);r.read(0x1f205e10,1,0,0,0);
+  require(!r.stopReason.empty(),"unmodeled DLC completion stops even after guest writes control");
+  r.stopReason.clear();r.exploratoryDlcTimeout=true;r.prepareMaskedRead(0x1f205e10,8);
+  require(!(r.read(0x1f205e10,1,0,0,0)&8) && r.stopReason.empty() && !(r.knownBits(0x1f205e10,1)&8),
+    "explicit timeout experiment does not validate completion status");
+  r.symbolicInit=true;r.prepareOpaqueRead(0x1f205e1c);r.read(0x1f205e1c,1,0,0,0);
+  require(r.stopReason.empty() && r.knownBits(0x1f205e1c,1)==0,"one-shot opaque sample does not define register bits");
+  r.read(0x1f205e1c,1,0,0,0);
+  require(!r.stopReason.empty(),"opaque sample permission cannot leak to a later read");
+}
+void combBankTests() {
+  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};
+  require(!r.combBank(),"strict COMB selector starts unknown");
+  rejects([&]{r.write(0x1f206c04,2,0x1234,0,0,0);});
+  r.configureExploratoryCombBank(0);r.write(0x1f206c04,2,0x1234,0,0,0);
+  r.write(0x1f206c00,1,1,0,0,0);r.write(0x1f206c04,2,0xabcd,0,0,0);
+  r.write(0x1f206c00,1,0,0,0,0);
+  require(r.read(0x1f206c04,2,0,0,0)==0x1234,"original COMB selector changes independently stored register banks");
+  r.write(0x1f206c00,1,2,0,0,0);
+  require(r.knownBits(0x1f206c04,2)==0,"untouched COMB bank does not inherit earlier table values");
+}
 int main() {
   try {
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
@@ -532,6 +647,10 @@ int main() {
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();
+    scalerTimingTests();
+    preservedBitsTests();
+    dlcStatusTests();
+    combBankTests();
 #ifdef UC_MIPS_MANTA_TIMER_API
     timerTests();
 #endif

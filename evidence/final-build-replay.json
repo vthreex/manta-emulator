@@ -2,7 +2,9 @@
   "result": "PASS",
   "native_exit_code": 2,
   "summaries_equal": true,
-  "instruction_dispatches": 175471842,
-  "original_timer_ISR_entries": 273,
-  "reason": "unmodeled MMIO read"
+  "full_trace_events_compared": true,
+  "stop_pc": "0x805f883c",
+  "instruction_dispatches": 279469882,
+  "original_timer_ISR_entries": 606,
+  "reason": "unknown preserved register bit affects guest decision/address/device"
 }

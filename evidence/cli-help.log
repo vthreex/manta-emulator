@@ -4,7 +4,19 @@ manta --firmware ORIGINAL.bin [--headless] [--nvram overlay.cow]
 --virtual-rtc: guest-programmed counter with deterministic virtual clock
 --cp0-timer: source-built engine Count/Compare and guest interrupt entry
 --candidate-utmi: calibration handshake; analogue data unknown
+--candidate-chip-id: Titania4 identity 18h inferred from stock HAL identity check
 --candidate-spi: ISP read/status subset; unknown responses stop
+--spi-flash w25q64bv|mx25l6405d: separate documented chip models
+--defer-spi-probe: cache CF bytes as INVALID; stop before use
+--exploratory-spi-input pull-up|pull-down: HYPOTHETICAL undocumented CF output
+--exploratory-sc-bank N: HYPOTHETICAL initial SC selector (0..255); banked register state
+--candidate-gamma: original address/sample/channel transfers, provisional virtual timing
+--exploratory-display-clock HZ: HYPOTHETICAL output clock; guest timing drives output VSYNC
+--exploratory-subwindow-enable 0|1: HYPOTHETICAL power-on PIP enable bit, other bits remain unknown
+--exploratory-dlc-pending 0|1: HYPOTHETICAL pre-existing capture-range request; completion remains unknown
+--exploratory-dlc-timeout: HYPOTHETICAL held-low completion to test original timeout path
+--exploratory-comb-bank N: HYPOTHETICAL initial comb-filter bank selector
+--exploratory-gamma-enable 0|1: HYPOTHETICAL initial bank-10 gamma enable bit
 --summary FILE --coverage FILE --max-instructions N
 --break-pc PC --pause-on-mmio PHYSICAL_ADDRESS
 Diagnostic: --diagnostic-stage2 --symbolic-init --candidate-bdma
