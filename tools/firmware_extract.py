@@ -20,6 +20,7 @@ def inflate_at(b,start,limit=32*1024*1024):
  if end+4>len(b) or struct.unpack_from('<I',b,end)[0]!=len(out): raise ValueError('Missing/mismatching length trailer')
  return end,out
 def extract(path,outdir,scan=False):
+ if Path(path).stat().st_size!=0x800010:raise ValueError('Wrong original firmware size before reading')
  original=Path(path).read_bytes(); b=validate(original); outdir=Path(outdir);outdir.mkdir(parents=True,exist_ok=True)
  (outdir/'spi_8mib_readonly_copy.bin').write_bytes(b)
  (outdir/'programmer-trailer.bin').write_bytes(original[0x800000:])

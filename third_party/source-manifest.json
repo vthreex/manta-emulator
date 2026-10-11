@@ -1,0 +1,8 @@
+{
+  "source_url": "https://files.pythonhosted.org/packages/b2/1b/b4248aa8422e86de690cf8e85cf8feae4c33405a097d1ebe71570bdaa6f5/unicorn-2.1.4.tar.gz",
+  "source_archive": "unicorn-2.1.4.tar.gz",
+  "sha256": "00567a70e323f749b419cd86bee4f9115beab7ebba32194581c090cbb7c59cff",
+  "unicorn_dll_sha256": "010d85dce84b8f6ffaec3d5420f1b5f7768f859eb831be574c7da23e656ee8f1",
+  "version": "2.1.4",
+  "engine_source_unmodified": true
+}

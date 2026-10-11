@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+build/
+.deps/
+*.cow
+*.bin
+*.snapshot
+bin/

@@ -1,0 +1,15 @@
+LIBRARY unicorn.dll
+EXPORTS
+uc_open
+uc_close
+uc_ctl
+uc_strerror
+uc_reg_read
+uc_reg_write
+uc_emu_start
+uc_emu_stop
+uc_mem_map
+uc_mem_read
+uc_mem_write
+uc_hook_add
+uc_mmio_map
