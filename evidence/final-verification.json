@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "gop_mmio_events": 0,
+  "ge_mmio_events": 0,
+  "original_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "core_checks": 51,
+  "cold_summary_matches_regression": true,
+  "fault_summary_matches_regression": true
+}

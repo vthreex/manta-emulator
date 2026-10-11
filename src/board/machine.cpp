@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 namespace manta {
 static std::string hex(uint64_t n) {
   std::ostringstream s;
@@ -12,6 +13,28 @@ static std::string hex(uint64_t n) {
 Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options_(o) {
   riu_.symbolicInit = o.symbolicInit;
   riu_.candidateBdma = o.candidateBdma;
+  riu_.gpioI2c = o.gpioI2c;
+  riu_.candidateMiu = o.candidateMiu;
+  if (o.candidateMiu)
+    riu_.resetMiuModel();
+  if (o.i2cSdaStuck) {
+    if (!o.gpioI2c)
+      throw std::runtime_error("I2C fault fixture requires --gpio-i2c");
+    riu_.holdI2cSda(true);
+  }
+  riu_.dramTest = [this](uint32_t a, size_t n, uint16_t pattern) {
+    std::vector<uint8_t> expected(65536), actual(65536);
+    for (size_t i = 0; i < expected.size(); ++i)
+      expected[i] = uint8_t(pattern >> (8 * (i & 1)));
+    for (size_t i = 0; i < n; i += expected.size()) {
+      auto size = std::min(expected.size(), n - i);
+      cpu_.write(a + uint32_t(i), expected.data(), size);
+      cpu_.read(a + uint32_t(i), actual.data(), size);
+      if (!std::equal(expected.begin(), expected.begin() + size, actual.begin()))
+        return false;
+    }
+    return true;
+  };
   if (o.candidateUart)
     riu_.enableCandidateUart();
   riu_.flashRead = [this](uint32_t a, size_t n) {
@@ -31,7 +54,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if (!replay_)
       throw std::runtime_error("Cannot open replay");
   }
-  cpu_.map(0, 0x08000000);
+  cpu_.map(0, o.candidateMiu ? 0x10000000 : 0x08000000);
   cpu_.map(0x1fc00000, 0x400000, UC_PROT_READ | UC_PROT_EXEC);
   auto aperture = riu_.flashRead(0, 0x400000);
   cpu_.write(0x1fc00000, aperture.data(), aperture.size());
@@ -77,6 +100,22 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
   }
   if (k == "read" || k == "write" || k == "blocked_read")
     ++mmio_;
+  if (k == "write")
+    ++writeEpoch_;
+  if (k == "read") {
+    auto key = (uint64_t(cpu_.reg(UC_MIPS_REG_PC)) << 32) | a;
+    auto &poll = polls_[key];
+    if (poll.epoch != writeEpoch_ || poll.value != v)
+      poll.count = 0;
+    poll.epoch = writeEpoch_;
+    poll.value = v;
+    ++poll.count;
+    maxPoll_ = std::max(maxPoll_, poll.count);
+    if (poll.count >= 1024 && (poll.count & (poll.count - 1)) == 0)
+      event("poll_warning", a, n, v,
+            "unchanged peripheral reads without intervening guest MMIO write: " +
+                std::to_string(poll.count));
+  }
   if (options_.pauseMmio && a == options_.pauseMmio)
     stop("MMIO breakpoint", a);
 }
@@ -84,6 +123,7 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
   m.coverage_.insert(uint32_t(a));
+  ++m.pcHits_[uint32_t(a)];
   m.history_.push_back(uint32_t(a));
   if (m.history_.size() > 64)
     m.history_.pop_front();
@@ -155,16 +195,32 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
   try {
     auto a = 0x1f000000 + uint32_t(off);
     auto pc = m.cpu_.reg(UC_MIPS_REG_PC);
+    // Stock boot switches between cached and uncached ROM aliases. The RMW
+    // proof address is an instruction identity; traces retain the real PC.
+    if ((pc & 0x1fffffff) >= 0x1fc00000 && (pc & 0x1fffffff) < 0x1fc02c60)
+      pc = (pc & 0x1fffffff) | 0xa0000000;
+    if (m.options_.symbolicInit) {
+      auto defined = m.proveImmediateRmw(pc, a, n);
+      if (defined)
+        m.riu_.prepareRmw(a, defined);
+    }
     auto mask = m.cpu_.reg(
         pc == 0x8055b578 || pc == 0x8055b584 || pc == 0x8053bc08 ? UC_MIPS_REG_7 : UC_MIPS_REG_3);
-    if (pc == 0x8053bbdc) {
+    if (pc == 0x8060a780 || pc == 0x8060a784) {
+      auto bit = m.cpu_.reg(UC_MIPS_REG_7) & 31;
+      auto low = m.cpu_.reg(UC_MIPS_REG_9) & 0x1fffffff;
+      mask = (uint32_t(1) << bit) >> (a == low ? 0 : 16);
+    }
+    if (pc == 0x8053bbdc || pc == 0x8053bc84) {
       uint8_t b = 0;
       m.cpu_.read((m.cpu_.reg(UC_MIPS_REG_3) + 4) & 0x1fffffff, &b, 1);
       mask = b;
     }
-    if (pc == 0x8053bd18 || pc == 0x8053bd80 || pc == 0x8053bde4) {
+    if (pc == 0x8053bcb0 || pc == 0x8053bd18 || pc == 0x8053bd80 || pc == 0x8053bde4) {
       uint8_t b = 0;
-      auto base = m.cpu_.reg(pc == 0x8053bd18 ? UC_MIPS_REG_5 : UC_MIPS_REG_6);
+      auto base = m.cpu_.reg(pc == 0x8053bcb0   ? UC_MIPS_REG_8
+                             : pc == 0x8053bd18 ? UC_MIPS_REG_5
+                                                : UC_MIPS_REG_6);
       m.cpu_.read((base + (pc == 0x8053bde4 ? 0x14 : 4)) & 0x1fffffff, &b, 1);
       mask = b;
     }
@@ -177,12 +233,60 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
     return 0xdeadbeef;
   }
 }
+// Prove a straight-line immediate AND/OR RMW before allowing unknown reset
+// bits through it. Reject branches, calls, escaping stores, loads and other
+// uses of the sampled value. This is bit provenance, not a status response.
+uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigned width) {
+  if ((pc < 0x803b0180 || pc >= 0x806b8ce0) && (pc < 0xbfc00000 || pc >= 0xbfc02c60))
+    return 0;
+  uint32_t w;
+  cpu_.read(pc & 0x1fffffff, &w, 4);
+  auto op = w >> 26;
+  if (op != 36 && op != 37 && op != 35)
+    return 0;
+  if ((op == 36 ? 1u : op == 37 ? 2u : 4u) != width)
+    return 0;
+  auto sampled = (w >> 16) & 31;
+  uint32_t dependent[32]{};
+  bool modified[32]{};
+  dependent[sampled] = width == 4 ? 0xffffffff : (uint32_t(1) << (width * 8)) - 1;
+  bool changed = false;
+  for (unsigned i = 1; i <= 8; ++i) {
+    cpu_.read((pc + 4 * i) & 0x1fffffff, &w, 4);
+    op = w >> 26;
+    auto rs = (w >> 21) & 31, rt = (w >> 16) & 31;
+    if (op == 12 || op == 13) {
+      if (rt == 0)
+        return 0;
+      dependent[rt] = op == 12 ? dependent[rs] & (w & 65535) : dependent[rs] & ~(w & 65535);
+      modified[rt] = true;
+      changed = true;
+    } else if (op == 0 && w == 0)
+      continue;
+    else if (op == 15) {
+      return 0;
+    } else if (op == 40 || op == 41 || op == 43) {
+      auto target =
+          (cpu_.reg(UC_MIPS_REG_0 + int(rs)) + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
+      auto n = op == 40 ? 1u : op == 41 ? 2u : 4u;
+      if (target != address || n != width || !changed || dependent[rs] || modified[rs] ||
+          rs == sampled)
+        return 0;
+      auto full = width == 4 ? 0xffffffff : (uint32_t(1) << (width * 8)) - 1;
+      return full & ~dependent[rt];
+    } else
+      return 0;
+  }
+  return 0;
+}
 void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   try {
     auto a = 0x1f000000 + uint32_t(off);
-    m.riu_.write(a, n, uint32_t(v), m.cpu_.reg(UC_MIPS_REG_PC), m.cpu_.reg(UC_MIPS_REG_3),
-                 m.dispatches_);
+    auto pc = m.cpu_.reg(UC_MIPS_REG_PC);
+    if ((pc & 0x1fffffff) >= 0x1fc00000 && (pc & 0x1fffffff) < 0x1fc02c60)
+      pc = (pc & 0x1fffffff) | 0xa0000000;
+    m.riu_.write(a, n, uint32_t(v), pc, m.cpu_.reg(UC_MIPS_REG_3), m.dispatches_);
     if (!m.riu_.stopReason.empty())
       m.stop(m.riu_.stopReason, a);
   } catch (const std::exception &e) {
@@ -238,12 +342,17 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"candidate_bdma\": " << (options_.candidateBdma ? "true" : "false")
     << ",\n  \"diagnostic_init_prefix\": " << (options_.initPrefix ? "true" : "false")
     << ",\n  \"candidate_uart\": " << (options_.candidateUart ? "true" : "false")
-    << ",\n  \"guest_decompressed_sha256\": \"" << guestDecompressedSha_ << "\""
+    << ",\n  \"gpio_i2c\": " << (options_.gpioI2c ? "true" : "false")
+    << ",\n  \"candidate_miu\": " << (options_.candidateMiu ? "true" : "false")
+    << ",\n  \"i2c_sda_stuck_fixture\": " << (options_.i2cSdaStuck ? "true" : "false")
+    << ",\n  \"max_unchanged_mmio_poll\": " << maxPoll_ << ",\n  \"guest_decompressed_sha256\": \""
+    << guestDecompressedSha_ << "\""
     << ",\n  \"instruction_dispatches\": " << dispatches_
     << ",\n  \"unique_pcs\": " << coverage_.size() << ",\n  \"mmio_events\": " << mmio_
-    << ",\n  \"flash_load_dispatches\": " << flashReads_ << ",\n  \"dram_store_dispatches\": " << dramWrites_
-    << ",\n  \"stop_pc\": \"" << hex(blockingPc_) << "\",\n  \"stop_address\": \""
-    << hex(blockingAddress_) << "\",\n  \"reason\": \"" << reason_
+    << ",\n  \"flash_load_dispatches\": " << flashReads_
+    << ",\n  \"dram_store_dispatches\": " << dramWrites_ << ",\n  \"stop_pc\": \""
+    << hex(blockingPc_) << "\",\n  \"stop_address\": \"" << hex(blockingAddress_)
+    << "\",\n  \"reason\": \"" << reason_
     << "\",\n  \"second_stage_reached\": " << (stage2Reached_ ? "true" : "false")
     << ",\n  \"guest_inflate_entered\": " << (decompressReached_ ? "true" : "false")
     << ",\n  \"runtime_entry_reached\": " << (runtimeReached_ ? "true" : "false")
@@ -256,10 +365,32 @@ std::string Msd309Machine::summary() const {
     s << '"' << hex(pc) << '"';
   }
   s << "],\n  \"registers\": [";
-  for (int i = 0; i < 32; ++i) { if(i)s<<','; s<<'"'<<hex(cpu_.reg(UC_MIPS_REG_0+i))<<'"'; }
+  for (int i = 0; i < 32; ++i) {
+    if (i)
+      s << ',';
+    s << '"' << hex(cpu_.reg(UC_MIPS_REG_0 + i)) << '"';
+  }
   s << "],\n  \"stack_words\": [";
   auto sp = cpu_.reg(UC_MIPS_REG_SP) & 0x1fffffff;
-  if (sp < 0x08000000-64) { uint32_t words[16]{};cpu_.read(sp,words,sizeof(words));for(int i=0;i<16;++i){if(i)s<<',';s<<'"'<<hex(words[i])<<'"';} }
+  if (sp < 0x08000000 - 64) {
+    uint32_t words[16]{};
+    cpu_.read(sp, words, sizeof(words));
+    for (int i = 0; i < 16; ++i) {
+      if (i)
+        s << ',';
+      s << '"' << hex(words[i]) << '"';
+    }
+  }
+  s << "],\n  \"hot_pcs\": [";
+  std::vector<std::pair<uint32_t, uint64_t>> hot(pcHits_.begin(), pcHits_.end());
+  std::sort(hot.begin(), hot.end(), [](auto &a, auto &b) {
+    return a.second != b.second ? a.second > b.second : a.first < b.first;
+  });
+  for (size_t i = 0; i < std::min(size_t(10), hot.size()); ++i) {
+    if (i)
+      s << ',';
+    s << "{\"pc\":\"" << hex(hot[i].first) << "\",\"dispatches\":" << hot[i].second << '}';
+  }
   s << "]\n}";
   return s.str();
 }

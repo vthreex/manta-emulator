@@ -3,11 +3,12 @@
 | Boundary | Exact observation | Next research/model method |
 |---|---|---|
 | PM reset bits | Strict read `BFC00C60 / BF001C74` | Trace initialization table masks and identify reset-defined bits from matching chip docs; do not assume all zero |
-| MIU readiness | `BFC01A78`, `BF202400` bit `8000` | Decode full initialization sequence and derive when readiness follows clock/config state; verify MIU variant |
-| BIST | `BF2025C0..25D0` | Recover programmed range, command, fail flags and completion semantics before modeling tested DRAM |
+| MIU readiness | Guest 0/8/C/E/1F sequence modeled, cold path passes | Digital completion is implemented; verify exact PLL/DDR prerequisites, PHY behavior and real timing |
+| BIST | Programmed address/length/pattern drive real guest DRAM comparisons; both banks tested | Bank-select reset=MIU0 is inferred from stock BIST0 before any selector write and explicit BIST1 selection; exact five calibration generators and physical memory capacity still need verification |
 | CPU/core | LE MIPS32 instructions execute; 24Kc selected provisionally | Recover guest PRId probing, obtain exact chip suffix or authorized serial CPU identification; cross-check 34Kc architecture reference |
-| GPIO bus | `8053BDE4 / BF203D05` bit `04`, GPIO 66; pair 65/66 at `806563F8` | Decode output-enable polarity, START/STOP/ACK loops, enumerate slave addresses and read requirements; implement open-drain lines and actual attached-device state |
-| I2C board wiring | Paired pins, probable bus recovery; `IIC init fail SDA:%x SCL:%x` | Match exact board schematic if available. Otherwise an authorized noninvasive logic-analyzer capture of the verified I2C bus during boot can establish transactions; no pins have been probed here |
+| GPIO bus | Original init and nine-clock recovery demonstrated; pair 65/66, bit04 SDA | Line model is functional; identify actual attached slave addresses and register semantics from subsequent guest transactions |
+| I2C board wiring | Supplied reference pages14/16 show pulled-up DDCR and tuner buses | Reference is MSD309 V7.0-A; enum65/66-to-pad and exact Manta wiring are not established. Obtain matching HAL mapping or verified bus capture; no pins were probed |
+| Current POR/status read | `80469898 / BF200A38`, next BF200A3C; no prior guest writes | Recover hardware producer/reset semantics. Supplied schematic has no register map; a matching datasheet or trusted read-only register dump is needed |
 | Runtime scheduler/IRQ | Main entry reached, device initialization stops before dispatch established | Follow vector setup/dispatch code and timer programming; use exact guest mask/status conventions |
 | GOP/scaler | Original menu strings and resources extracted; no original pixels | Find resource loads and renderer callers, trace descriptor/palette/plane writes, decode buffer formats; use MSD309PX references only as hypotheses |
 | Persistent sectors | 7E/7F blocks differ by one byte | Follow real SPI accesses and checksum/generation routines; do not invent a settings format |

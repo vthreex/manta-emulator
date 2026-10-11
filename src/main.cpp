@@ -42,6 +42,12 @@ static int appMain(const std::vector<std::string> &args) {
         o.candidateBdma = true;
       else if (a == "--candidate-uart")
         o.candidateUart = true;
+      else if (a == "--gpio-i2c")
+        o.gpioI2c = true;
+      else if (a == "--candidate-miu")
+        o.candidateMiu = true;
+      else if (a == "--i2c-sda-stuck")
+        o.i2cSdaStuck = true;
       else if (a == "--trace-instructions")
         o.traceInstructions = true;
       else if (a == "--max-instructions")
@@ -68,6 +74,8 @@ static int appMain(const std::vector<std::string> &args) {
                      "--candidate-bdma\n"
                      "Optional diagnostic: --diagnostic-init-prefix "
                      "--candidate-uart\n"
+                     "Research peripherals: --candidate-miu --gpio-i2c\n"
+                     "Electrical fault fixture: --i2c-sda-stuck (first bus SDA held low)\n"
                      "--window-smoke-test opens the native blank window briefly\n"
                      "Unimplemented features/options fail explicitly; see "
                      "docs/STATUS.md.\n";

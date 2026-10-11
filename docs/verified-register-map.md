@@ -9,18 +9,22 @@
 | `BF206700` | Sequential stage markers from reset | Logged progress writes; not a substitute for hardware |
 | RIU `BF000000`, `BF200000` | Table routines `BFC00C00`, `BFC00C90`, `803BD654` | Byte formula `base + 2*index - (index&1)`; word/halfword accesses retain width; no collapsed generic stride |
 | `BF001C74` | Masked initialization read at `BFC00C60` | Unknown reset bits stop strict mode; diagnostic known-bit masks preserve uncertainty |
-| `BF202400`, `BF200C00` | Program sequence `0,8,C,E,1F`; polls bit `8000` at `BFC01A78/1A98` | MIU init completion unsupported; no fabricated ready bit |
-| `BF2025C0..25D0` | BIST label emitted by stock code; command and result masks at `BFC023EC..2408` | BIST command/range interpretation and completion unsupported |
+| `BF202400`, `BF200C00` | Program sequence `0,8,C,E,1F`; polls bit `8000` at `BFC01A78/1A98` | Candidate digital MIU accepts full observed sequence and schedules ready after 64 dispatch ticks; invalid sequence cancels; no analog PHY model |
+| `BF2025C0..25D0` | BIST label emitted by stock code; command and result masks at `BFC023EC..2408` | Candidate bounded guest DRAM write/read comparisons derive done/failure; start in 4 KiB units, length in 16-byte units, bank select 25E0 bit 15; five calibration patterns approximated |
 | `BF201200..1234` | Second-stage programs command `0335`, source, length, polynomial, seed; polls `1204` bits 0/3 | Candidate CRC engine computes actual bounded flash data; done follows command after provisional 64 dispatch ticks; other BDMA operations stop |
 | `BF201300` | Boot and stage-two literal writes; runtime transmitter | Candidate UART TX; DLAB changes divisor-vs-TX meaning; ordinary mode captures raw candidate writes only |
 | `BF201318` | Runtime `8054AB84..ABC8` accesses LCR/DLAB; direct early writes | UART layout corroborates eight-byte register stride; IRQ/RX/error modes unsupported |
 | `BF201328` | Runtime `8054B430` reads LSR, tests TX readiness | Candidate UART models THRE/TEMT after actual TX writes with provisional 16 dispatch-tick latency |
 | `BF20164D` | Runtime `8054AB34` extracts clock selector bits 2..4 | Real early guest write `BF20164C=C01` supplies selector in prefix diagnostic; no guessed zero clock |
 | GPIO table `80631F88` | 24-byte descriptor stride, 207 valid IDs, RMW/input functions `8053BB7C..BDF8` | Firmware-consumed output/OEN bit writes tracked symbolically; pin mapping to connectors unverified |
-| GPIO 65/66 input `BF203D05` | Descriptor `101E83`, masks 02/04; read at `8053BDE4` | External input/bitbang bus semantics unsupported; consumed unknown bits stop |
+| GPIO 65/66 input `BF203D05` | Descriptor `101E83`, masks 02/04; read at `8053BDE4` | Modeled input bits from guest direction/output, pulled-up release and external low driver; unrelated bits remain unresolved |
 | GPIO 65/66 output `BF203D09` | Descriptor `101E85`, masks 02/04 | Logged guest-written bits |
-| GPIO 65/66 direction `BF203D0D` | Descriptor `101E87`, masks 02/04 | Known-bit masks; polarity needs continued bus analysis |
+| GPIO 65/66 direction `BF203D0D` | Descriptor `101E87`, masks 02/04 | OEN=1 releases the line, confirmed by init/recovery disassembly and fault trace |
+| `BF2033D0/D4/D8/DC`, `BF203390/94/98/9C` | `8060A744`, `8060AD4C`: 128 IRQ/FIQ mask bits, 16-bit halves at four-byte stride | Symbolic RMW only; guest progressively defines every mask bit; IRQ delivery/pending status unsupported |
+| `BF204B10` | `80469844`: AND 80C0 / OR 7F20 / SH | Bounded straight-line immediate RMW proof preserves unknown unused bits |
+| `BF221ADC`, `BF221BDC` | Boot writes low-byte phase seed 88, then sweeps low/high nibbles and chooses 77 | Only known low byte consumed; upper unknown bits discarded by original ANDI; PHY phase effects unresolved |
+| `BF200A38`, `BF200A3C` | `80469898/804698AC`: LHU and cache in BSS; later popcount/text conversion | First read stops; bank name POR_STATUS provisional; schematic supplies no register definition |
 
-Prioritized remaining work: MIU/BIST and cache-related transitions for cold boot; GPIO/I2C open-drain protocol and attached devices; interrupt controller/timers; ISP/SPI controller and guest COW writes; PM51/IR mailbox; GOP/GFX/scaler; audio, tuner/demod/TS, USB/media, PVR and 3D. No register map from MSD309PX or a later MStar SoC was copied wholesale.
+Prioritized remaining work: current POR/status reset-value and producer dependency; GPIO/I2C open-drain protocol and attached devices; interrupt controller/timers; ISP/SPI controller and guest COW writes; PM51/IR mailbox; GOP/GFX/scaler; audio, tuner/demod/TS, USB/media, PVR and 3D. No register map from MSD309PX or a later MStar SoC was copied wholesale.
 
 The observable bus records PC, width, value, physical address, instruction-dispatch tick, RA and SP. Stop summaries include all general registers, the last 64 PCs, and 16 stack words. A reliable full stack unwind and calibrated cycle timing are unsupported.

@@ -7,6 +7,10 @@
     "candidate_bdma": false,
     "diagnostic_init_prefix": false,
     "candidate_uart": false,
+    "gpio_i2c": false,
+    "candidate_miu": false,
+    "i2c_sda_stuck_fixture": false,
+    "max_unchanged_mmio_poll": 0,
     "guest_decompressed_sha256": "",
     "instruction_dispatches": 116,
     "unique_pcs": 108,
@@ -137,6 +141,48 @@
       "0x0",
       "0x0",
       "0x0"
+    ],
+    "hot_pcs": [
+      {
+        "pc": "0xbfc00c0c",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c10",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c14",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c18",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c1c",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c20",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c24",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c28",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00000",
+        "dispatches": 1
+      },
+      {
+        "pc": "0xbfc00004",
+        "dispatches": 1
+      }
     ]
   },
   "strict_replay": {
@@ -145,6 +191,10 @@
     "candidate_bdma": false,
     "diagnostic_init_prefix": false,
     "candidate_uart": false,
+    "gpio_i2c": false,
+    "candidate_miu": false,
+    "i2c_sda_stuck_fixture": false,
+    "max_unchanged_mmio_poll": 0,
     "guest_decompressed_sha256": "",
     "instruction_dispatches": 116,
     "unique_pcs": 108,
@@ -275,6 +325,48 @@
       "0x0",
       "0x0",
       "0x0"
+    ],
+    "hot_pcs": [
+      {
+        "pc": "0xbfc00c0c",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c10",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c14",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c18",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c1c",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c20",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c24",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00c28",
+        "dispatches": 2
+      },
+      {
+        "pc": "0xbfc00000",
+        "dispatches": 1
+      },
+      {
+        "pc": "0xbfc00004",
+        "dispatches": 1
+      }
     ]
   },
   "cpu_disabled_checkpoint": {
@@ -283,6 +375,10 @@
     "candidate_bdma": false,
     "diagnostic_init_prefix": false,
     "candidate_uart": false,
+    "gpio_i2c": false,
+    "candidate_miu": false,
+    "i2c_sda_stuck_fixture": false,
+    "max_unchanged_mmio_poll": 0,
     "guest_decompressed_sha256": "",
     "instruction_dispatches": 1,
     "unique_pcs": 1,
@@ -350,6 +446,12 @@
       "0x0",
       "0x0",
       "0x0"
+    ],
+    "hot_pcs": [
+      {
+        "pc": "0xbfc00000",
+        "dispatches": 1
+      }
     ]
   },
   "diagnostic_stage2": {
@@ -358,6 +460,10 @@
     "candidate_bdma": true,
     "diagnostic_init_prefix": false,
     "candidate_uart": false,
+    "gpio_i2c": false,
+    "candidate_miu": false,
+    "i2c_sda_stuck_fixture": false,
+    "max_unchanged_mmio_poll": 13,
     "guest_decompressed_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
     "instruction_dispatches": 90030942,
     "unique_pcs": 2985,
@@ -488,6 +594,600 @@
       "0x803bd31c",
       "0xdeadbeef",
       "0xdeadbeef"
+    ],
+    "hot_pcs": [
+      {
+        "pc": "0x810029a0",
+        "dispatches": 3167383
+      },
+      {
+        "pc": "0x810029a4",
+        "dispatches": 3167383
+      },
+      {
+        "pc": "0x8100298c",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002990",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002994",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002998",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x8100299c",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81003a50",
+        "dispatches": 2135431
+      },
+      {
+        "pc": "0x81003a54",
+        "dispatches": 2135431
+      },
+      {
+        "pc": "0x81003ba8",
+        "dispatches": 1990908
+      }
+    ]
+  },
+  "without_gpio": {
+    "mode": "firmware from reset flash",
+    "symbolic_init": true,
+    "candidate_bdma": true,
+    "diagnostic_init_prefix": false,
+    "candidate_uart": true,
+    "gpio_i2c": false,
+    "candidate_miu": true,
+    "i2c_sda_stuck_fixture": false,
+    "max_unchanged_mmio_poll": 13,
+    "guest_decompressed_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+    "instruction_dispatches": 90206965,
+    "unique_pcs": 5197,
+    "mmio_events": 2654,
+    "flash_load_dispatches": 335925,
+    "dram_store_dispatches": 7504542,
+    "stop_pc": "0x8053bde4",
+    "stop_address": "0x1f203d05",
+    "reason": "unmodeled MMIO read",
+    "second_stage_reached": true,
+    "guest_inflate_entered": true,
+    "runtime_entry_reached": true,
+    "osd_demonstrated": false,
+    "last_pcs": [
+      "0x803bcf98",
+      "0x803bcf84",
+      "0x803bcf88",
+      "0x803bcf8c",
+      "0x803bcf90",
+      "0x803bcf94",
+      "0x803bcf98",
+      "0x803bcf84",
+      "0x803bcf88",
+      "0x803bcf8c",
+      "0x803bcf90",
+      "0x803bcf94",
+      "0x803bcf98",
+      "0x803bcf84",
+      "0x803bcf88",
+      "0x803bcf8c",
+      "0x803bcf90",
+      "0x803bcf94",
+      "0x803bcf98",
+      "0x803bcf84",
+      "0x803bcf88",
+      "0x803bcf8c",
+      "0x803bcf90",
+      "0x803bcf94",
+      "0x803bcf98",
+      "0x803bcf84",
+      "0x803bcf88",
+      "0x803bcf8c",
+      "0x803bcf90",
+      "0x803bcf94",
+      "0x803bcf98",
+      "0x803bcf9c",
+      "0x803bcfa0",
+      "0x803bcfa4",
+      "0x803bcfa8",
+      "0x803bcfac",
+      "0x803bcfb0",
+      "0x8053bab4",
+      "0x8053bab8",
+      "0x8053babc",
+      "0x8053bac0",
+      "0x8053bac4",
+      "0x8053bac8",
+      "0x8053bacc",
+      "0x8053bd98",
+      "0x8053bd9c",
+      "0x8053bda0",
+      "0x8053bda4",
+      "0x8053bda8",
+      "0x8053bdac",
+      "0x8053bdb0",
+      "0x8053bdb4",
+      "0x8053bdb8",
+      "0x8053bdbc",
+      "0x8053bdc0",
+      "0x8053bdc4",
+      "0x8053bdc8",
+      "0x8053bdcc",
+      "0x8053bdd0",
+      "0x8053bdd4",
+      "0x8053bdd8",
+      "0x8053bddc",
+      "0x8053bde0",
+      "0x8053bde4"
+    ],
+    "registers": [
+      "0x0",
+      "0x0",
+      "0x806e0000",
+      "0xbf203d05",
+      "0x1",
+      "0xbf000000",
+      "0x806325b8",
+      "0xfffffffd",
+      "0x2",
+      "0xbf000000",
+      "0x1e6f",
+      "0xbf200000",
+      "0x0",
+      "0x806c0000",
+      "0xffff",
+      "0x200000",
+      "0x806c0000",
+      "0x80650000",
+      "0x806563f8",
+      "0x806c0000",
+      "0x78",
+      "0x10",
+      "0xbfc01b2c",
+      "0xbf20672c",
+      "0x8123d9d0",
+      "0x8053bd98",
+      "0x10000000",
+      "0xffbffffd",
+      "0x0",
+      "0x8072d9d8",
+      "0x8072da30",
+      "0x803bcfb4"
+    ],
+    "stack_words": [
+      "0xa0657000",
+      "0x8060b8fd",
+      "0x0",
+      "0x0",
+      "0x28",
+      "0x80602260",
+      "0x806c0000",
+      "0x0",
+      "0x0",
+      "0x77",
+      "0x78",
+      "0x803bd384",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef"
+    ],
+    "hot_pcs": [
+      {
+        "pc": "0x810029a0",
+        "dispatches": 3167383
+      },
+      {
+        "pc": "0x810029a4",
+        "dispatches": 3167383
+      },
+      {
+        "pc": "0x8100298c",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002990",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002994",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002998",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x8100299c",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81003a50",
+        "dispatches": 2135431
+      },
+      {
+        "pc": "0x81003a54",
+        "dispatches": 2135431
+      },
+      {
+        "pc": "0x81003ba8",
+        "dispatches": 1990908
+      }
+    ]
+  },
+  "firmware_from_reset": {
+    "mode": "firmware from reset flash",
+    "symbolic_init": true,
+    "candidate_bdma": true,
+    "diagnostic_init_prefix": false,
+    "candidate_uart": true,
+    "gpio_i2c": true,
+    "candidate_miu": true,
+    "i2c_sda_stuck_fixture": false,
+    "max_unchanged_mmio_poll": 13,
+    "guest_decompressed_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+    "instruction_dispatches": 90220219,
+    "unique_pcs": 6716,
+    "mmio_events": 3190,
+    "flash_load_dispatches": 335925,
+    "dram_store_dispatches": 7505221,
+    "stop_pc": "0x80469898",
+    "stop_address": "0x1f200a38",
+    "reason": "unmodeled MMIO read",
+    "second_stage_reached": true,
+    "guest_inflate_entered": true,
+    "runtime_entry_reached": true,
+    "osd_demonstrated": false,
+    "last_pcs": [
+      "0x8053ba2c",
+      "0x8053ba30",
+      "0x8053ba34",
+      "0x8053ba38",
+      "0x8053ba3c",
+      "0x8053bb7c",
+      "0x8053bb80",
+      "0x8053bb84",
+      "0x8053bb88",
+      "0x8053bb8c",
+      "0x8053bb90",
+      "0x8053bb94",
+      "0x8053bb98",
+      "0x8053bb9c",
+      "0x8053bba0",
+      "0x8053bba4",
+      "0x8053bba8",
+      "0x8053bbac",
+      "0x8053bbb0",
+      "0x8053bbb4",
+      "0x8053bbb8",
+      "0x8053bbbc",
+      "0x8053bbc0",
+      "0x8053bbc4",
+      "0x8053bbc8",
+      "0x8053bbcc",
+      "0x8053bbd0",
+      "0x8053bbd4",
+      "0x8053bbd8",
+      "0x8053bbdc",
+      "0x8053bbe0",
+      "0x8053bbe4",
+      "0x8053bbe8",
+      "0x8053bbec",
+      "0x8053bbf0",
+      "0x8053bbf4",
+      "0x8053bbf8",
+      "0x8053bbfc",
+      "0x8053bc00",
+      "0x8053bc04",
+      "0x8053bc08",
+      "0x8053bc0c",
+      "0x8053bc10",
+      "0x8053bc14",
+      "0x8053bc18",
+      "0x8053bc1c",
+      "0x8053bc20",
+      "0x804f5bd0",
+      "0x804f5bd4",
+      "0x804f5bd8",
+      "0x80469864",
+      "0x80469868",
+      "0x8046986c",
+      "0x80469870",
+      "0x80469874",
+      "0x80469878",
+      "0x8046987c",
+      "0x80469880",
+      "0x80469884",
+      "0x80469888",
+      "0x8046988c",
+      "0x80469890",
+      "0x80469894",
+      "0x80469898"
+    ],
+    "registers": [
+      "0x0",
+      "0xfffffffe",
+      "0xbf200a38",
+      "0x806c0000",
+      "0xbf000000",
+      "0xffff",
+      "0xffff",
+      "0xfffffffb",
+      "0x15",
+      "0xbf000000",
+      "0x30303030",
+      "0x30303030",
+      "0x30303030",
+      "0x30303030",
+      "0x38463830",
+      "0x30303831",
+      "0x200000",
+      "0x806c0000",
+      "0x806c0000",
+      "0x77",
+      "0x806c0000",
+      "0x80700000",
+      "0xbfc01b2c",
+      "0xbf20672c",
+      "0x806fc7e4",
+      "0x8053bb7c",
+      "0x10000000",
+      "0xffbffffd",
+      "0x0",
+      "0x8072d948",
+      "0x8072da30",
+      "0x80469864"
+    ],
+    "stack_words": [
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xa"
+    ],
+    "hot_pcs": [
+      {
+        "pc": "0x810029a0",
+        "dispatches": 3167383
+      },
+      {
+        "pc": "0x810029a4",
+        "dispatches": 3167383
+      },
+      {
+        "pc": "0x8100298c",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002990",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002994",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002998",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x8100299c",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81003a50",
+        "dispatches": 2135431
+      },
+      {
+        "pc": "0x81003a54",
+        "dispatches": 2135431
+      },
+      {
+        "pc": "0x81003ba8",
+        "dispatches": 1990908
+      }
+    ]
+  },
+  "stuck_sda_fixture": {
+    "mode": "firmware from reset flash",
+    "symbolic_init": true,
+    "candidate_bdma": true,
+    "diagnostic_init_prefix": false,
+    "candidate_uart": true,
+    "gpio_i2c": true,
+    "candidate_miu": true,
+    "i2c_sda_stuck_fixture": true,
+    "max_unchanged_mmio_poll": 13,
+    "guest_decompressed_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+    "instruction_dispatches": 90229262,
+    "unique_pcs": 6984,
+    "mmio_events": 3312,
+    "flash_load_dispatches": 335925,
+    "dram_store_dispatches": 7506585,
+    "stop_pc": "0x80469898",
+    "stop_address": "0x1f200a38",
+    "reason": "unmodeled MMIO read",
+    "second_stage_reached": true,
+    "guest_inflate_entered": true,
+    "runtime_entry_reached": true,
+    "osd_demonstrated": false,
+    "last_pcs": [
+      "0x8053ba2c",
+      "0x8053ba30",
+      "0x8053ba34",
+      "0x8053ba38",
+      "0x8053ba3c",
+      "0x8053bb7c",
+      "0x8053bb80",
+      "0x8053bb84",
+      "0x8053bb88",
+      "0x8053bb8c",
+      "0x8053bb90",
+      "0x8053bb94",
+      "0x8053bb98",
+      "0x8053bb9c",
+      "0x8053bba0",
+      "0x8053bba4",
+      "0x8053bba8",
+      "0x8053bbac",
+      "0x8053bbb0",
+      "0x8053bbb4",
+      "0x8053bbb8",
+      "0x8053bbbc",
+      "0x8053bbc0",
+      "0x8053bbc4",
+      "0x8053bbc8",
+      "0x8053bbcc",
+      "0x8053bbd0",
+      "0x8053bbd4",
+      "0x8053bbd8",
+      "0x8053bbdc",
+      "0x8053bbe0",
+      "0x8053bbe4",
+      "0x8053bbe8",
+      "0x8053bbec",
+      "0x8053bbf0",
+      "0x8053bbf4",
+      "0x8053bbf8",
+      "0x8053bbfc",
+      "0x8053bc00",
+      "0x8053bc04",
+      "0x8053bc08",
+      "0x8053bc0c",
+      "0x8053bc10",
+      "0x8053bc14",
+      "0x8053bc18",
+      "0x8053bc1c",
+      "0x8053bc20",
+      "0x804f5bd0",
+      "0x804f5bd4",
+      "0x804f5bd8",
+      "0x80469864",
+      "0x80469868",
+      "0x8046986c",
+      "0x80469870",
+      "0x80469874",
+      "0x80469878",
+      "0x8046987c",
+      "0x80469880",
+      "0x80469884",
+      "0x80469888",
+      "0x8046988c",
+      "0x80469890",
+      "0x80469894",
+      "0x80469898"
+    ],
+    "registers": [
+      "0x0",
+      "0xfffffffe",
+      "0xbf200a38",
+      "0x806c0000",
+      "0xbf000000",
+      "0xffff",
+      "0xffff",
+      "0xfffffffb",
+      "0x15",
+      "0xbf000000",
+      "0x30303030",
+      "0x30303030",
+      "0x30303030",
+      "0x30303030",
+      "0x38463830",
+      "0x30303831",
+      "0x200000",
+      "0x806c0000",
+      "0x806c0000",
+      "0x77",
+      "0x806c0000",
+      "0x80700000",
+      "0xbfc01b2c",
+      "0xbf20672c",
+      "0x806fc7e4",
+      "0x8053bb7c",
+      "0x10000000",
+      "0xffbffffd",
+      "0x0",
+      "0x8072d948",
+      "0x8072da30",
+      "0x80469864"
+    ],
+    "stack_words": [
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xdeadbeef",
+      "0xa"
+    ],
+    "hot_pcs": [
+      {
+        "pc": "0x810029a0",
+        "dispatches": 3167383
+      },
+      {
+        "pc": "0x810029a4",
+        "dispatches": 3167383
+      },
+      {
+        "pc": "0x8100298c",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002990",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002994",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81002998",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x8100299c",
+        "dispatches": 3167072
+      },
+      {
+        "pc": "0x81003a50",
+        "dispatches": 2135431
+      },
+      {
+        "pc": "0x81003a54",
+        "dispatches": 2135431
+      },
+      {
+        "pc": "0x81003ba8",
+        "dispatches": 1990908
+      }
     ]
   },
   "guest_inflate_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236"

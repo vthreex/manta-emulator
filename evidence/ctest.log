@@ -1,1 +1,7 @@
-31 checks passed
+Test project <repo-root>/work/build
+    Start 1: core_semantics
+1/1 Test #1: core_semantics ...................   Passed    0.18 sec
+
+100% tests passed out of 1
+
+Total Test time (real) =   0.18 sec

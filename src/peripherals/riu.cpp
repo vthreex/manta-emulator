@@ -2,6 +2,15 @@
 #include <array>
 #include <stdexcept>
 namespace manta {
+uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  uint32_t v = 0;
+  for (unsigned i = 0; i < n; ++i) {
+    auto it = bytes_.find(a + i);
+    if (it != bytes_.end())
+      v |= uint32_t(it->second.known) << (8 * i);
+  }
+  return v;
+}
 uint32_t Riu::get(uint32_t a, unsigned n) const {
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
@@ -29,6 +38,34 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
   if (n != 1 && n != 2 && n != 4)
     throw std::runtime_error("Unsupported RIU access width");
+  if (candidateMiu && (a == 0x1f202400 || a == 0x1f200c00) && miuArmed_[a == 0x1f200c00]) {
+    auto index = unsigned(a == 0x1f200c00);
+    auto v = get(a, n) & ~0x8000u;
+    if (tick >= miuReady_[index])
+      v |= 0x8000;
+    event("read", a, n, v,
+          "MIU initialization completion after observed 0/8/C/E/1F sequence; provisional timing");
+    return v;
+  }
+  if (candidateMiu && a == 0x1f2025c0 && bistPending_) {
+    auto v = get(a, n) & ~0xe000u;
+    if (tick >= bistReady_)
+      v |= bistResult_;
+    event("read", a, n, v,
+          "BIST completion and failure derived from bounded guest DRAM write/read comparison");
+    return v;
+  }
+  if (gpioI2c && n == 1) {
+    uint8_t known;
+    auto levels = gpio_.input(a, known);
+    if (known && mask && (known & mask) == mask) {
+      auto v = (get(a, 1) & ~uint32_t(known)) | levels;
+      event("read", a, n, v,
+            "GPIO input resolved from guest OEN/output, pull-ups and external low driver; no "
+            "attached I2C slave");
+      return v;
+    }
+  }
   if (uartEnabled_ && a == 0x1f201328 && n == 1) {
     uint32_t status = tick >= uartReady_ ? 0x60 : 0;
     event("read", a, n, status,
@@ -50,19 +87,30 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
       known = false;
   const bool runtimeRmw = pc == 0x8055b578 || pc == 0x8055b584 || pc == 0x803bd6f4 ||
                           pc == 0x803bd754 || pc == 0x803bd2e4 || pc == 0x8053bbdc ||
-                          pc == 0x8053bc08 || pc == 0x8053bd18;
+                          pc == 0x8053bc08 || pc == 0x8053bd18 || pc == 0x8053bc84 ||
+                          pc == 0x8053bcb0 || pc == 0x8060a780 || pc == 0x8060a784;
   const bool rmw = pc == 0xbfc00c60 || pc == 0xbfc02804 || pc == 0xbfc02818 || pc == 0xbfc0282c ||
                    pc == 0xbfc02858 || pc == 0x81000408 || runtimeRmw;
   auto v = get(a, n);
+  if (candidateMiu && symbolicInit && (pc == 0xbfc01bc4 || pc == 0xbfc01b70) && n == 4 &&
+      (a == 0x1f221adc || a == 0x1f221bdc) && (knownBits(a, n) & 255) == 255) {
+    event("read", a, n, v,
+          "only guest-programmed low byte of DDR phase seed is consumed; BFC01C3C/1C74 masks "
+          "discard unknown upper bits");
+    return v;
+  }
   if ((pc == 0x8053bd80 || pc == 0x8053bde4) && n == 1 && bytes_.contains(a) &&
       (bytes_.at(a).known & mask) == mask) {
     event("read", a, n, v, "only guest-masked GPIO bits are consumed and all are known");
     return v;
   }
   if (symbolicInit && runtimeRmw)
-    pendingRmw_[a] = pc == 0x803bd2e4 ? 0x800 : mask & 255;
-  if (symbolicInit && pc == 0xbfc00c60) pendingRmw_[a] = mask & 255;
-  if (!known && symbolicInit && rmw) {
+    pendingRmw_[a] = pc == 0x803bd2e4                         ? 0x800
+                     : (pc == 0x8060a780 || pc == 0x8060a784) ? mask & 65535
+                                                              : mask & 255;
+  if (symbolicInit && pc == 0xbfc00c60)
+    pendingRmw_[a] = mask & 255;
+  if (!known && symbolicInit && (rmw || pendingRmw_.contains(a))) {
     event("read", a, n, v,
           "SYMBOLIC unknown bits preserved by verified configuration RMW; mask=" +
               std::to_string(mask));
@@ -108,6 +156,74 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   } else
     put(a, n, v);
   event("write", a, n, v, "recorded register storage; not a complete device");
+  if (candidateMiu && (a == 0x1f202400 || a == 0x1f200c00)) {
+    auto index = unsigned(a == 0x1f200c00);
+    constexpr uint32_t sequence[] = {0, 8, 12, 14, 31};
+    if (v == 0) {
+      miuSequence_[index] = 1;
+      miuArmed_[index] = false;
+    } else if (miuSequence_[index] < 5 && v == sequence[miuSequence_[index]]) {
+      if (++miuSequence_[index] == 5) {
+        miuArmed_[index] = true;
+        miuReady_[index] = tick + 64;
+        event("miu_init", a, n, v,
+              "stock DRAM initialization command sequence accepted; ideal digital DRAM, no analog "
+              "PHY timing model");
+      }
+    } else {
+      miuArmed_[index] = false;
+      miuSequence_[index] = 0;
+    }
+  }
+  if (candidateMiu && a == 0x1f2025c0) {
+    bistPending_ = false;
+    if (v & 1) {
+      auto mode = v & 0x1fff;
+      if (mode != 3 && mode != 0x93 && mode != 0x95 && mode != 0x9b && mode != 0x99 &&
+          mode != 0x97) {
+        stopReason = "unsupported MIU BIST pattern command " + std::to_string(v);
+        return;
+      }
+      for (auto field : {0x1f2025c4u, 0x1f2025c8u, 0x1f2025ccu, 0x1f2025d0u})
+        if (knownBits(field, 2) != 0xffff) {
+          stopReason = "MIU BIST requires guest-programmed address, length and pattern";
+          return;
+        }
+      if (!(knownBits(0x1f2025e0, 2) & 0x8000)) {
+        stopReason = "MIU BIST bank selection unknown";
+        return;
+      }
+      uint64_t start = uint64_t(get(0x1f2025c4, 2)) * 4096;
+      uint64_t length = (uint64_t(get(0x1f2025c8, 2)) | (uint64_t(get(0x1f2025cc, 2)) << 16)) * 16;
+      bool second = (get(0x1f2025e0, 2) & 0x8000) != 0;
+      if (start >= 0x08000000 || !length || length > 0x08000000 - start || !miuArmed_[second]) {
+        stopReason = "MIU BIST range or initialized bank invalid";
+        return;
+      }
+      auto address = uint32_t(start) + (second ? 0x08000000 : 0);
+      auto pattern = uint16_t(get(0x1f2025d0, 2));
+      // All five calibration commands perform destructive write/read tests.
+      // This functional digital-memory model tests the programmed pattern and
+      // its complement; exact silicon pattern generators/PHY eye are unresolved.
+      bool pass = dramTest(address, size_t(length), pattern);
+      if (mode != 3)
+        pass = dramTest(address, size_t(length), uint16_t(~pattern)) && pass;
+      bistResult_ = 0x8000 | (pass ? 0 : 0x2000);
+      bistReady_ = tick + 64;
+      bistPending_ = true;
+      event("bist_compare", address, unsigned(length), pattern,
+            pass ? "guest DRAM write/read passed; calibration uses functional pattern/complement "
+                   "approximation, analog PHY not modeled"
+                 : "guest DRAM comparison failed");
+    }
+  }
+  if (gpioI2c) {
+    gpio_.event = [this](auto &kind, auto address, auto value, auto &detail) {
+      event(kind, address, 1, value, detail);
+    };
+    for (unsigned i = 0; i < n; ++i)
+      gpio_.write(a + i, bytes_[a + i].value, bytes_[a + i].known);
+  }
   if (a == 0x1f201300 && (n == 1 || n == 4)) {
     if (!uartEnabled_)
       uart.push_back(char(v & 255)); // raw candidate UART write capture only
