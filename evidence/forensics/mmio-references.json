@@ -1,0 +1,2627 @@
+[
+  {
+    "pc": 3217031180,
+    "address": 3204455548,
+    "physical": 520100988,
+    "instruction": "sw $t1, 0x1c7c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217031200,
+    "address": 3204472848,
+    "physical": 520118288,
+    "instruction": "sw $t1, 0x6010($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217031212,
+    "address": 3204472852,
+    "physical": 520118292,
+    "instruction": "sw $t1, 0x6014($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217031232,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217031244,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217031256,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217032072,
+    "address": 3206560988,
+    "physical": 522206428,
+    "instruction": "lw $k1, ($k0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035552,
+    "address": 3206558084,
+    "physical": 522203524,
+    "instruction": "sw $t1, 0x3184($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035564,
+    "address": 3206558088,
+    "physical": 522203528,
+    "instruction": "sw $t1, 0x3188($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035576,
+    "address": 3206558092,
+    "physical": 522203532,
+    "instruction": "sw $t1, 0x318c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035588,
+    "address": 3206558096,
+    "physical": 522203536,
+    "instruction": "sw $t1, 0x3190($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035600,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035624,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035644,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035664,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035684,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035724,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035744,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035784,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035804,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035860,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035880,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035900,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035924,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035948,
+    "address": 3204452804,
+    "physical": 520098244,
+    "instruction": "sb $t1, 0x11c4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035960,
+    "address": 3204452805,
+    "physical": 520098245,
+    "instruction": "sb $t1, 0x11c5($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035972,
+    "address": 3204452808,
+    "physical": 520098248,
+    "instruction": "sb $t1, 0x11c8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035984,
+    "address": 3204455553,
+    "physical": 520100993,
+    "instruction": "sb $t1, 0x1c81($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217035996,
+    "address": 3204455553,
+    "physical": 520100993,
+    "instruction": "sb $t1, 0x1c81($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036016,
+    "address": 3206560316,
+    "physical": 522205756,
+    "instruction": "sb $t1, 0x3a3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036048,
+    "address": 3206560316,
+    "physical": 522205756,
+    "instruction": "sb $t1, 0x3a3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036080,
+    "address": 3206560316,
+    "physical": 522205756,
+    "instruction": "sb $t1, 0x3a3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036112,
+    "address": 3206560316,
+    "physical": 522205756,
+    "instruction": "sb $t1, 0x3a3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036144,
+    "address": 3206551108,
+    "physical": 522196548,
+    "instruction": "sb $t1, 0x1644($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036156,
+    "address": 3206551109,
+    "physical": 522196549,
+    "instruction": "sb $t1, 0x1645($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036168,
+    "address": 3206551109,
+    "physical": 522196549,
+    "instruction": "sb $t1, 0x1645($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036188,
+    "address": 3206551040,
+    "physical": 522196480,
+    "instruction": "sb $t1, 0x1600($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036200,
+    "address": 3206551044,
+    "physical": 522196484,
+    "instruction": "sb $t1, 0x1604($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036212,
+    "address": 3204455552,
+    "physical": 520100992,
+    "instruction": "sb $t1, 0x1c80($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036224,
+    "address": 3204455552,
+    "physical": 520100992,
+    "instruction": "sb $t1, 0x1c80($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036236,
+    "address": 3206551106,
+    "physical": 522196546,
+    "instruction": "sb $t1, 0x1642($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036248,
+    "address": 3206551108,
+    "physical": 522196548,
+    "instruction": "sw $t1, 0x1644($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036260,
+    "address": 3206551108,
+    "physical": 522196548,
+    "instruction": "sw $t1, 0x1644($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036272,
+    "address": 3206551112,
+    "physical": 522196552,
+    "instruction": "sb $t1, 0x1648($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036284,
+    "address": 3206551112,
+    "physical": 522196552,
+    "instruction": "sb $t1, 0x1648($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036296,
+    "address": 3206551116,
+    "physical": 522196556,
+    "instruction": "sb $t1, 0x164c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036308,
+    "address": 3206551144,
+    "physical": 522196584,
+    "instruction": "sw $t1, 0x1668($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036320,
+    "address": 3206551161,
+    "physical": 522196601,
+    "instruction": "sb $t1, 0x1679($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036332,
+    "address": 3206551164,
+    "physical": 522196604,
+    "instruction": "sw $t1, 0x167c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036344,
+    "address": 3206551168,
+    "physical": 522196608,
+    "instruction": "sw $t1, 0x1680($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036356,
+    "address": 3206551172,
+    "physical": 522196612,
+    "instruction": "sw $t1, 0x1684($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036368,
+    "address": 3206551176,
+    "physical": 522196616,
+    "instruction": "sw $t1, 0x1688($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036380,
+    "address": 3206551180,
+    "physical": 522196620,
+    "instruction": "sw $t1, 0x168c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036392,
+    "address": 3206551184,
+    "physical": 522196624,
+    "instruction": "sw $t1, 0x1690($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036404,
+    "address": 3206551188,
+    "physical": 522196628,
+    "instruction": "sb $t1, 0x1694($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036416,
+    "address": 3206551192,
+    "physical": 522196632,
+    "instruction": "sw $t1, 0x1698($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036428,
+    "address": 3206551200,
+    "physical": 522196640,
+    "instruction": "sb $t1, 0x16a0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036440,
+    "address": 3206551208,
+    "physical": 522196648,
+    "instruction": "sb $t1, 0x16a8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036452,
+    "address": 3206551209,
+    "physical": 522196649,
+    "instruction": "sb $t1, 0x16a9($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036464,
+    "address": 3206551232,
+    "physical": 522196672,
+    "instruction": "sb $t1, 0x16c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036476,
+    "address": 3206551236,
+    "physical": 522196676,
+    "instruction": "sb $t1, 0x16c4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036488,
+    "address": 3206551252,
+    "physical": 522196692,
+    "instruction": "sb $t1, 0x16d4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036500,
+    "address": 3206551264,
+    "physical": 522196704,
+    "instruction": "sb $t1, 0x16e0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036512,
+    "address": 3206551265,
+    "physical": 522196705,
+    "instruction": "sb $t1, 0x16e1($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036524,
+    "address": 3206551268,
+    "physical": 522196708,
+    "instruction": "sb $t1, 0x16e4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036536,
+    "address": 3206551269,
+    "physical": 522196709,
+    "instruction": "sb $t1, 0x16e5($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036548,
+    "address": 3206551272,
+    "physical": 522196712,
+    "instruction": "sb $t1, 0x16e8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036560,
+    "address": 3206551273,
+    "physical": 522196713,
+    "instruction": "sb $t1, 0x16e9($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036572,
+    "address": 3206551276,
+    "physical": 522196716,
+    "instruction": "sb $t1, 0x16ec($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036584,
+    "address": 3206551277,
+    "physical": 522196717,
+    "instruction": "sb $t1, 0x16ed($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036596,
+    "address": 3206551280,
+    "physical": 522196720,
+    "instruction": "sb $t1, 0x16f0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036608,
+    "address": 3206551281,
+    "physical": 522196721,
+    "instruction": "sb $t1, 0x16f1($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036620,
+    "address": 3206551296,
+    "physical": 522196736,
+    "instruction": "sb $t1, 0x1700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036632,
+    "address": 3206551297,
+    "physical": 522196737,
+    "instruction": "sb $t1, 0x1701($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036644,
+    "address": 3206551301,
+    "physical": 522196741,
+    "instruction": "sb $t1, 0x1705($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036656,
+    "address": 3206551308,
+    "physical": 522196748,
+    "instruction": "sb $t1, 0x170c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036668,
+    "address": 3206551309,
+    "physical": 522196749,
+    "instruction": "sb $t1, 0x170d($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036680,
+    "address": 3206551328,
+    "physical": 522196768,
+    "instruction": "sb $t1, 0x1720($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036692,
+    "address": 3206551344,
+    "physical": 522196784,
+    "instruction": "sb $t1, 0x1730($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036704,
+    "address": 3206551345,
+    "physical": 522196785,
+    "instruction": "sb $t1, 0x1731($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036716,
+    "address": 3206551365,
+    "physical": 522196805,
+    "instruction": "sb $t1, 0x1745($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036728,
+    "address": 3206551369,
+    "physical": 522196809,
+    "instruction": "sb $t1, 0x1749($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036740,
+    "address": 3206551372,
+    "physical": 522196812,
+    "instruction": "sb $t1, 0x174c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036752,
+    "address": 3206571008,
+    "physical": 522216448,
+    "instruction": "sb $t1, 0x6400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036764,
+    "address": 3206571137,
+    "physical": 522216577,
+    "instruction": "sb $t1, 0x6481($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036776,
+    "address": 3206551388,
+    "physical": 522196828,
+    "instruction": "sb $t1, 0x175c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036788,
+    "address": 3206551440,
+    "physical": 522196880,
+    "instruction": "sb $t1, 0x1790($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036800,
+    "address": 3206551544,
+    "physical": 522196984,
+    "instruction": "sb $t1, 0x17f8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036812,
+    "address": 3206551105,
+    "physical": 522196545,
+    "instruction": "sb $t1, 0x1641($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036824,
+    "address": 3206551104,
+    "physical": 522196544,
+    "instruction": "sb $t1, 0x1640($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036836,
+    "address": 3206551128,
+    "physical": 522196568,
+    "instruction": "sb $t1, 0x1658($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036848,
+    "address": 3206551128,
+    "physical": 522196568,
+    "instruction": "sb $t1, 0x1658($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036860,
+    "address": 3206551172,
+    "physical": 522196612,
+    "instruction": "sb $t1, 0x1684($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036872,
+    "address": 3206551173,
+    "physical": 522196613,
+    "instruction": "sb $t1, 0x1685($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036884,
+    "address": 3206571560,
+    "physical": 522217000,
+    "instruction": "sb $t1, 0x6628($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036896,
+    "address": 3206571561,
+    "physical": 522217001,
+    "instruction": "sb $t1, 0x6629($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036908,
+    "address": 3206571540,
+    "physical": 522216980,
+    "instruction": "sb $t1, 0x6614($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036920,
+    "address": 3206571541,
+    "physical": 522216981,
+    "instruction": "sb $t1, 0x6615($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036932,
+    "address": 3206571544,
+    "physical": 522216984,
+    "instruction": "sb $t1, 0x6618($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036944,
+    "address": 3206571545,
+    "physical": 522216985,
+    "instruction": "sb $t1, 0x6619($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036956,
+    "address": 3206571548,
+    "physical": 522216988,
+    "instruction": "sb $t1, 0x661c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036968,
+    "address": 3206571549,
+    "physical": 522216989,
+    "instruction": "sb $t1, 0x661d($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036980,
+    "address": 3206571552,
+    "physical": 522216992,
+    "instruction": "sb $t1, 0x6620($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217036992,
+    "address": 3206571553,
+    "physical": 522216993,
+    "instruction": "sb $t1, 0x6621($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037004,
+    "address": 3206571556,
+    "physical": 522216996,
+    "instruction": "sb $t1, 0x6624($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037016,
+    "address": 3206571557,
+    "physical": 522216997,
+    "instruction": "sb $t1, 0x6625($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037028,
+    "address": 3206571560,
+    "physical": 522217000,
+    "instruction": "sb $t1, 0x6628($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037040,
+    "address": 3206571561,
+    "physical": 522217001,
+    "instruction": "sb $t1, 0x6629($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037052,
+    "address": 3206571564,
+    "physical": 522217004,
+    "instruction": "sb $t1, 0x662c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037064,
+    "address": 3206571565,
+    "physical": 522217005,
+    "instruction": "sb $t1, 0x662d($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037076,
+    "address": 3206571568,
+    "physical": 522217008,
+    "instruction": "sb $t1, 0x6630($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037088,
+    "address": 3206571569,
+    "physical": 522217009,
+    "instruction": "sb $t1, 0x6631($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037100,
+    "address": 3206571536,
+    "physical": 522216976,
+    "instruction": "sb $t1, 0x6610($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037112,
+    "address": 3206571537,
+    "physical": 522216977,
+    "instruction": "sb $t1, 0x6611($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037124,
+    "address": 3206571520,
+    "physical": 522216960,
+    "instruction": "sb $t1, 0x6600($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037136,
+    "address": 3206571521,
+    "physical": 522216961,
+    "instruction": "sb $t1, 0x6601($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037148,
+    "address": 3206560836,
+    "physical": 522206276,
+    "instruction": "sb $t1, 0x3c44($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037160,
+    "address": 3206560837,
+    "physical": 522206277,
+    "instruction": "sb $t1, 0x3c45($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037172,
+    "address": 3206551200,
+    "physical": 522196640,
+    "instruction": "sb $t1, 0x16a0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037184,
+    "address": 3206551201,
+    "physical": 522196641,
+    "instruction": "sb $t1, 0x16a1($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037196,
+    "address": 3206560776,
+    "physical": 522206216,
+    "instruction": "sb $t1, 0x3c08($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037208,
+    "address": 3206560776,
+    "physical": 522206216,
+    "instruction": "sb $t1, 0x3c08($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037228,
+    "address": 3206554684,
+    "physical": 522200124,
+    "instruction": "sw $t1, 0x243c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037240,
+    "address": 3206554684,
+    "physical": 522200124,
+    "instruction": "sw $t1, 0x243c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037252,
+    "address": 3206554684,
+    "physical": 522200124,
+    "instruction": "sw $t1, 0x243c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037264,
+    "address": 3206554628,
+    "physical": 522200068,
+    "instruction": "sw $t1, 0x2404($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037276,
+    "address": 3206555120,
+    "physical": 522200560,
+    "instruction": "sw $t1, 0x25f0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037288,
+    "address": 3206554764,
+    "physical": 522200204,
+    "instruction": "sw $t1, 0x248c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037300,
+    "address": 3206554828,
+    "physical": 522200268,
+    "instruction": "sw $t1, 0x24cc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037312,
+    "address": 3206554892,
+    "physical": 522200332,
+    "instruction": "sw $t1, 0x250c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037332,
+    "address": 3206554764,
+    "physical": 522200204,
+    "instruction": "sw $t1, 0x248c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037344,
+    "address": 3206554828,
+    "physical": 522200268,
+    "instruction": "sw $t1, 0x24cc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037356,
+    "address": 3206554892,
+    "physical": 522200332,
+    "instruction": "sw $t1, 0x250c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037376,
+    "address": 3206554624,
+    "physical": 522200064,
+    "instruction": "sw $t1, 0x2400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037388,
+    "address": 3206548480,
+    "physical": 522193920,
+    "instruction": "sw $t1, 0xc00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037420,
+    "address": 3206554624,
+    "physical": 522200064,
+    "instruction": "sw $t1, 0x2400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037432,
+    "address": 3206548480,
+    "physical": 522193920,
+    "instruction": "sw $t1, 0xc00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037444,
+    "address": 3206554624,
+    "physical": 522200064,
+    "instruction": "sw $t1, 0x2400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037456,
+    "address": 3206548480,
+    "physical": 522193920,
+    "instruction": "sw $t1, 0xc00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037488,
+    "address": 3206554624,
+    "physical": 522200064,
+    "instruction": "sw $t1, 0x2400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037500,
+    "address": 3206548480,
+    "physical": 522193920,
+    "instruction": "sw $t1, 0xc00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037532,
+    "address": 3206554624,
+    "physical": 522200064,
+    "instruction": "sw $t1, 0x2400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037544,
+    "address": 3206548480,
+    "physical": 522193920,
+    "instruction": "sw $t1, 0xc00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037564,
+    "address": 3206548540,
+    "physical": 522193980,
+    "instruction": "sw $t1, 0xc3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037576,
+    "address": 3206548540,
+    "physical": 522193980,
+    "instruction": "sw $t1, 0xc3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037588,
+    "address": 3206548540,
+    "physical": 522193980,
+    "instruction": "sw $t1, 0xc3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037600,
+    "address": 3206548484,
+    "physical": 522193924,
+    "instruction": "sw $t1, 0xc04($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037612,
+    "address": 3206548976,
+    "physical": 522194416,
+    "instruction": "sw $t1, 0xdf0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037624,
+    "address": 3206548620,
+    "physical": 522194060,
+    "instruction": "sw $t1, 0xc8c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037636,
+    "address": 3206548684,
+    "physical": 522194124,
+    "instruction": "sw $t1, 0xccc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037648,
+    "address": 3206548748,
+    "physical": 522194188,
+    "instruction": "sw $t1, 0xd0c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037668,
+    "address": 3206548620,
+    "physical": 522194060,
+    "instruction": "sw $t1, 0xc8c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037680,
+    "address": 3206548684,
+    "physical": 522194124,
+    "instruction": "sw $t1, 0xccc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037692,
+    "address": 3206548748,
+    "physical": 522194188,
+    "instruction": "sw $t1, 0xd0c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037716,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037756,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037768,
+    "address": 3206554684,
+    "physical": 522200124,
+    "instruction": "sw $t1, 0x243c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037780,
+    "address": 3206554684,
+    "physical": 522200124,
+    "instruction": "sw $t1, 0x243c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037812,
+    "address": 3206683140,
+    "physical": 522328580,
+    "instruction": "sw $t1, 0x1a04($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037824,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037848,
+    "address": 3206548540,
+    "physical": 522193980,
+    "instruction": "sw $t1, 0xc3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037860,
+    "address": 3206548540,
+    "physical": 522193980,
+    "instruction": "sw $t1, 0xc3c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037892,
+    "address": 3206683396,
+    "physical": 522328836,
+    "instruction": "sw $t1, 0x1b04($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037904,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037916,
+    "address": 3206683152,
+    "physical": 522328592,
+    "instruction": "sw $t1, 0x1a10($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037936,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037944,
+    "address": 3206554624,
+    "physical": 522200064,
+    "instruction": "lw $t1, 0x2400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037968,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217037976,
+    "address": 3206548480,
+    "physical": 522193920,
+    "instruction": "lw $t1, 0xc00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038000,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038028,
+    "address": 3206548960,
+    "physical": 522194400,
+    "instruction": "sw $t1, 0xde0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038040,
+    "address": 3206548964,
+    "physical": 522194404,
+    "instruction": "sw $t1, 0xde4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038052,
+    "address": 3206548968,
+    "physical": 522194408,
+    "instruction": "sw $t1, 0xde8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038064,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038092,
+    "address": 3206571776,
+    "physical": 522217216,
+    "instruction": "sw $t1, 0x6700($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038104,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038172,
+    "address": 3206555104,
+    "physical": 522200544,
+    "instruction": "sw $t1, 0x25e0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038192,
+    "address": 3206683612,
+    "physical": 522329052,
+    "instruction": "lw $t1, 0x1bdc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038232,
+    "address": 3206555104,
+    "physical": 522200544,
+    "instruction": "sw $t1, 0x25e0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038244,
+    "address": 3206560888,
+    "physical": 522206328,
+    "instruction": "sw $t1, 0x3c78($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038256,
+    "address": 3206560892,
+    "physical": 522206332,
+    "instruction": "sw $t1, 0x3c7c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038276,
+    "address": 3206683356,
+    "physical": 522328796,
+    "instruction": "lw $t1, 0x1adc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038312,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038324,
+    "address": 3206555076,
+    "physical": 522200516,
+    "instruction": "sw $t1, 0x25c4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038336,
+    "address": 3206555080,
+    "physical": 522200520,
+    "instruction": "sw $t1, 0x25c8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038348,
+    "address": 3206555084,
+    "physical": 522200524,
+    "instruction": "sw $t1, 0x25cc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038360,
+    "address": 3206555088,
+    "physical": 522200528,
+    "instruction": "sw $t1, 0x25d0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038384,
+    "address": 3206555086,
+    "physical": 522200526,
+    "instruction": "sb $t1, ($t2)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038404,
+    "address": 3206683356,
+    "physical": 522328796,
+    "instruction": "sw $t1, ($t3)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038472,
+    "address": 3206548928,
+    "physical": 522194368,
+    "instruction": "sw $t1, 0xdc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038488,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038548,
+    "address": 3206548928,
+    "physical": 522194368,
+    "instruction": "sw $t1, 0xdc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038564,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038624,
+    "address": 3206548928,
+    "physical": 522194368,
+    "instruction": "sw $t1, 0xdc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038640,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038700,
+    "address": 3206548928,
+    "physical": 522194368,
+    "instruction": "sw $t1, 0xdc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038716,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038776,
+    "address": 3206548928,
+    "physical": 522194368,
+    "instruction": "sw $t1, 0xdc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038792,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038844,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217038868,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "lw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039104,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039120,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039260,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039276,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039324,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039348,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039364,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039408,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039424,
+    "address": 3206554752,
+    "physical": 522200192,
+    "instruction": "lw $t3, 0x2480($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039440,
+    "address": 3206554752,
+    "physical": 522200192,
+    "instruction": "lw $t3, 0x2480($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039452,
+    "address": 3206554752,
+    "physical": 522200192,
+    "instruction": "sw $t3, 0x2480($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039460,
+    "address": 3206554752,
+    "physical": 522200192,
+    "instruction": "lw $t3, 0x2480($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039472,
+    "address": 3206554752,
+    "physical": 522200192,
+    "instruction": "sw $t3, 0x2480($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039480,
+    "address": 3206554816,
+    "physical": 522200256,
+    "instruction": "lw $t3, 0x24c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039496,
+    "address": 3206554816,
+    "physical": 522200256,
+    "instruction": "lw $t3, 0x24c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039508,
+    "address": 3206554816,
+    "physical": 522200256,
+    "instruction": "sw $t3, 0x24c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039516,
+    "address": 3206554816,
+    "physical": 522200256,
+    "instruction": "lw $t3, 0x24c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039528,
+    "address": 3206554816,
+    "physical": 522200256,
+    "instruction": "sw $t3, 0x24c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039536,
+    "address": 3206554880,
+    "physical": 522200320,
+    "instruction": "lw $t3, 0x2500($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039552,
+    "address": 3206554880,
+    "physical": 522200320,
+    "instruction": "lw $t3, 0x2500($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039564,
+    "address": 3206554880,
+    "physical": 522200320,
+    "instruction": "sw $t3, 0x2500($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039572,
+    "address": 3206554880,
+    "physical": 522200320,
+    "instruction": "lw $t3, 0x2500($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039584,
+    "address": 3206554880,
+    "physical": 522200320,
+    "instruction": "sw $t3, 0x2500($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039592,
+    "address": 3206554944,
+    "physical": 522200384,
+    "instruction": "lw $t3, 0x2540($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039608,
+    "address": 3206554944,
+    "physical": 522200384,
+    "instruction": "lw $t3, 0x2540($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039620,
+    "address": 3206554944,
+    "physical": 522200384,
+    "instruction": "sw $t3, 0x2540($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039628,
+    "address": 3206554944,
+    "physical": 522200384,
+    "instruction": "lw $t3, 0x2540($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039640,
+    "address": 3206554944,
+    "physical": 522200384,
+    "instruction": "sw $t3, 0x2540($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039648,
+    "address": 3206548608,
+    "physical": 522194048,
+    "instruction": "lw $t3, 0xc80($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039664,
+    "address": 3206548608,
+    "physical": 522194048,
+    "instruction": "lw $t3, 0xc80($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039676,
+    "address": 3206548608,
+    "physical": 522194048,
+    "instruction": "sw $t3, 0xc80($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039684,
+    "address": 3206548608,
+    "physical": 522194048,
+    "instruction": "lw $t3, 0xc80($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039696,
+    "address": 3206548608,
+    "physical": 522194048,
+    "instruction": "sw $t3, 0xc80($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039704,
+    "address": 3206548672,
+    "physical": 522194112,
+    "instruction": "lw $t3, 0xcc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039720,
+    "address": 3206548672,
+    "physical": 522194112,
+    "instruction": "lw $t3, 0xcc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039732,
+    "address": 3206548672,
+    "physical": 522194112,
+    "instruction": "sw $t3, 0xcc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039740,
+    "address": 3206548672,
+    "physical": 522194112,
+    "instruction": "lw $t3, 0xcc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039752,
+    "address": 3206548672,
+    "physical": 522194112,
+    "instruction": "sw $t3, 0xcc0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039760,
+    "address": 3206548736,
+    "physical": 522194176,
+    "instruction": "lw $t3, 0xd00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039776,
+    "address": 3206548736,
+    "physical": 522194176,
+    "instruction": "lw $t3, 0xd00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039788,
+    "address": 3206548736,
+    "physical": 522194176,
+    "instruction": "sw $t3, 0xd00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039796,
+    "address": 3206548736,
+    "physical": 522194176,
+    "instruction": "lw $t3, 0xd00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039808,
+    "address": 3206548736,
+    "physical": 522194176,
+    "instruction": "sw $t3, 0xd00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039816,
+    "address": 3206548800,
+    "physical": 522194240,
+    "instruction": "lw $t3, 0xd40($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039832,
+    "address": 3206548800,
+    "physical": 522194240,
+    "instruction": "lw $t3, 0xd40($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039844,
+    "address": 3206548800,
+    "physical": 522194240,
+    "instruction": "sw $t3, 0xd40($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039852,
+    "address": 3206548800,
+    "physical": 522194240,
+    "instruction": "lw $t3, 0xd40($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039864,
+    "address": 3206548800,
+    "physical": 522194240,
+    "instruction": "sw $t3, 0xd40($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039880,
+    "address": 3206555064,
+    "physical": 522200504,
+    "instruction": "lw $t3, 0x25b8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039892,
+    "address": 3206555064,
+    "physical": 522200504,
+    "instruction": "sw $t3, 0x25b8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039900,
+    "address": 3206555064,
+    "physical": 522200504,
+    "instruction": "lw $t3, 0x25b8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039916,
+    "address": 3206555064,
+    "physical": 522200504,
+    "instruction": "sw $t3, 0x25b8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039924,
+    "address": 3206555064,
+    "physical": 522200504,
+    "instruction": "lw $t3, 0x25b8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039936,
+    "address": 3206555064,
+    "physical": 522200504,
+    "instruction": "sw $t3, 0x25b8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039944,
+    "address": 3206548920,
+    "physical": 522194360,
+    "instruction": "lw $t3, 0xdb8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039956,
+    "address": 3206548920,
+    "physical": 522194360,
+    "instruction": "sw $t3, 0xdb8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039964,
+    "address": 3206548920,
+    "physical": 522194360,
+    "instruction": "lw $t3, 0xdb8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039980,
+    "address": 3206548920,
+    "physical": 522194360,
+    "instruction": "sw $t3, 0xdb8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217039988,
+    "address": 3206548920,
+    "physical": 522194360,
+    "instruction": "lw $t3, 0xdb8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040000,
+    "address": 3206548920,
+    "physical": 522194360,
+    "instruction": "sw $t3, 0xdb8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040020,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040032,
+    "address": 3206555104,
+    "physical": 522200544,
+    "instruction": "sw $t1, 0x25e0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040044,
+    "address": 3206555076,
+    "physical": 522200516,
+    "instruction": "sw $t1, 0x25c4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040056,
+    "address": 3206555084,
+    "physical": 522200524,
+    "instruction": "sw $t1, 0x25cc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040064,
+    "address": 3206555080,
+    "physical": 522200520,
+    "instruction": "sw $t1, 0x25c8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040080,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040096,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040112,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040128,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040144,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040160,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040184,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040200,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040216,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040232,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040248,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040264,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040280,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040296,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040308,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040320,
+    "address": 3206555076,
+    "physical": 522200516,
+    "instruction": "sw $t1, 0x25c4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040332,
+    "address": 3206555084,
+    "physical": 522200524,
+    "instruction": "sw $t1, 0x25cc($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040340,
+    "address": 3206555080,
+    "physical": 522200520,
+    "instruction": "sw $t1, 0x25c8($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040352,
+    "address": 3206555088,
+    "physical": 522200528,
+    "instruction": "sw $t1, 0x25d0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040364,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "sw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040372,
+    "address": 3206555072,
+    "physical": 522200512,
+    "instruction": "lw $t1, 0x25c0($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040412,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040428,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040444,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040460,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040484,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040500,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040516,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040532,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040552,
+    "address": 3206557829,
+    "physical": 522203269,
+    "instruction": "sb $t1, 0x3085($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040564,
+    "address": 3206557893,
+    "physical": 522203333,
+    "instruction": "sb $t1, 0x30c5($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040584,
+    "address": 3206564380,
+    "physical": 522209820,
+    "instruction": "sb $t1, 0x4a1c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040596,
+    "address": 3206564380,
+    "physical": 522209820,
+    "instruction": "sb $t1, 0x4a1c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040608,
+    "address": 3206564368,
+    "physical": 522209808,
+    "instruction": "sw $t1, 0x4a10($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040620,
+    "address": 3206564372,
+    "physical": 522209812,
+    "instruction": "sw $t1, 0x4a14($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040632,
+    "address": 3206564376,
+    "physical": 522209816,
+    "instruction": "sw $t1, 0x4a18($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040644,
+    "address": 3206681112,
+    "physical": 522326552,
+    "instruction": "sw $t1, 0x1218($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040656,
+    "address": 3206681472,
+    "physical": 522326912,
+    "instruction": "sw $t1, 0x1380($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040668,
+    "address": 3206681508,
+    "physical": 522326948,
+    "instruction": "sw $t1, 0x13a4($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040680,
+    "address": 3204455720,
+    "physical": 520101160,
+    "instruction": "sb $t1, 0x1d28($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040692,
+    "address": 3204455728,
+    "physical": 520101168,
+    "instruction": "sb $t1, 0x1d30($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040704,
+    "address": 3204455725,
+    "physical": 520101165,
+    "instruction": "sb $t1, 0x1d2d($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040716,
+    "address": 3206682736,
+    "physical": 522328176,
+    "instruction": "sw $t1, 0x1870($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040728,
+    "address": 3206560880,
+    "physical": 522206320,
+    "instruction": "sw $t1, 0x3c70($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040740,
+    "address": 3206682656,
+    "physical": 522328096,
+    "instruction": "sw $t1, 0x1820($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040752,
+    "address": 3206682656,
+    "physical": 522328096,
+    "instruction": "sw $t1, 0x1820($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040764,
+    "address": 3206682656,
+    "physical": 522328096,
+    "instruction": "sw $t1, 0x1820($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040776,
+    "address": 3206682656,
+    "physical": 522328096,
+    "instruction": "sw $t1, 0x1820($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040788,
+    "address": 3206682668,
+    "physical": 522328108,
+    "instruction": "sw $t1, 0x182c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040800,
+    "address": 3206682720,
+    "physical": 522328160,
+    "instruction": "sw $t1, 0x1860($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040812,
+    "address": 3206682720,
+    "physical": 522328160,
+    "instruction": "sw $t1, 0x1860($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040824,
+    "address": 3206682720,
+    "physical": 522328160,
+    "instruction": "sw $t1, 0x1860($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040836,
+    "address": 3206682720,
+    "physical": 522328160,
+    "instruction": "sw $t1, 0x1860($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040848,
+    "address": 3206682724,
+    "physical": 522328164,
+    "instruction": "sb $t1, 0x1864($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040860,
+    "address": 3206682728,
+    "physical": 522328168,
+    "instruction": "sb $t1, 0x1868($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040872,
+    "address": 3206682732,
+    "physical": 522328172,
+    "instruction": "sw $t1, 0x186c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040884,
+    "address": 3206548992,
+    "physical": 522194432,
+    "instruction": "sb $t1, 0xe00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040896,
+    "address": 3206548992,
+    "physical": 522194432,
+    "instruction": "sb $t1, 0xe00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040908,
+    "address": 3206575428,
+    "physical": 522220868,
+    "instruction": "sb $t1, 0x7544($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040920,
+    "address": 3206575424,
+    "physical": 522220864,
+    "instruction": "sb $t1, 0x7540($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040932,
+    "address": 3206575364,
+    "physical": 522220804,
+    "instruction": "sw $t1, 0x7504($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040944,
+    "address": 3206575376,
+    "physical": 522220816,
+    "instruction": "sw $t1, 0x7510($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040956,
+    "address": 3206575360,
+    "physical": 522220800,
+    "instruction": "sw $t1, 0x7500($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217040988,
+    "address": 3206575360,
+    "physical": 522220800,
+    "instruction": "sw $t1, 0x7500($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041020,
+    "address": 3206575360,
+    "physical": 522220800,
+    "instruction": "sw $t1, 0x7500($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041032,
+    "address": 3206549248,
+    "physical": 522194688,
+    "instruction": "sb $t1, 0xf00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041044,
+    "address": 3206549248,
+    "physical": 522194688,
+    "instruction": "sb $t1, 0xf00($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041056,
+    "address": 3206575172,
+    "physical": 522220612,
+    "instruction": "sb $t1, 0x7444($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041068,
+    "address": 3206575168,
+    "physical": 522220608,
+    "instruction": "sb $t1, 0x7440($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041080,
+    "address": 3206575108,
+    "physical": 522220548,
+    "instruction": "sw $t1, 0x7404($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041092,
+    "address": 3206575120,
+    "physical": 522220560,
+    "instruction": "sw $t1, 0x7410($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041104,
+    "address": 3206575104,
+    "physical": 522220544,
+    "instruction": "sw $t1, 0x7400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041136,
+    "address": 3206575104,
+    "physical": 522220544,
+    "instruction": "sw $t1, 0x7400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041168,
+    "address": 3206575104,
+    "physical": 522220544,
+    "instruction": "sw $t1, 0x7400($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041312,
+    "address": 3204470664,
+    "physical": 520116104,
+    "instruction": "sw $t1, 0x5788($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041324,
+    "address": 3204470668,
+    "physical": 520116108,
+    "instruction": "sw $t1, 0x578c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041336,
+    "address": 3204470672,
+    "physical": 520116112,
+    "instruction": "sw $t1, 0x5790($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041348,
+    "address": 3204470676,
+    "physical": 520116116,
+    "instruction": "sw $t1, 0x5794($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041360,
+    "address": 3204470680,
+    "physical": 520116120,
+    "instruction": "sw $t1, 0x5798($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041380,
+    "address": 3206551116,
+    "physical": 522196556,
+    "instruction": "sw $t1, 0x164c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041392,
+    "address": 3206561100,
+    "physical": 522206540,
+    "instruction": "sw $t1, 0x3d4c($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041404,
+    "address": 3206561104,
+    "physical": 522206544,
+    "instruction": "sw $t1, 0x3d50($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041412,
+    "address": 3206560776,
+    "physical": 522206216,
+    "instruction": "lw $t3, 0x3c08($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041424,
+    "address": 3206560776,
+    "physical": 522206216,
+    "instruction": "sw $t3, 0x3c08($at)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041432,
+    "address": 3206560776,
+    "physical": 522206216,
+    "instruction": "lw $t3, 0x3c08($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041444,
+    "address": 3206560776,
+    "physical": 522206216,
+    "instruction": "sw $t3, 0x3c08($at)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041452,
+    "address": 3206550296,
+    "physical": 522195736,
+    "instruction": "lw $t3, 0x1318($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041464,
+    "address": 3206550296,
+    "physical": 522195736,
+    "instruction": "sw $t3, 0x1318($at)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041476,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041488,
+    "address": 3206550280,
+    "physical": 522195720,
+    "instruction": "sw $t1, 0x1308($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041496,
+    "address": 3206550296,
+    "physical": 522195736,
+    "instruction": "lw $t3, 0x1318($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041508,
+    "address": 3206550296,
+    "physical": 522195736,
+    "instruction": "sw $t3, 0x1318($at)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041520,
+    "address": 3206550288,
+    "physical": 522195728,
+    "instruction": "sw $t1, 0x1310($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041532,
+    "address": 3206550288,
+    "physical": 522195728,
+    "instruction": "sw $t1, 0x1310($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041544,
+    "address": 3206550296,
+    "physical": 522195736,
+    "instruction": "sw $t1, 0x1318($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041556,
+    "address": 3206550296,
+    "physical": 522195736,
+    "instruction": "sw $t1, 0x1318($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041568,
+    "address": 3206550304,
+    "physical": 522195744,
+    "instruction": "sw $t1, 0x1320($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041580,
+    "address": 3206550280,
+    "physical": 522195720,
+    "instruction": "sw $t1, 0x1308($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041596,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041612,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041628,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041644,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041660,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041676,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041692,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041708,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041724,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041740,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  },
+  {
+    "pc": 3217041756,
+    "address": 3206550272,
+    "physical": 522195712,
+    "instruction": "sw $t1, 0x1300($t0)",
+    "meaning": "unclassified direct MMIO reference"
+  }
+]

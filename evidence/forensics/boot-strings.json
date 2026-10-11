@@ -1,0 +1,586 @@
+[
+  {
+    "offset": 10776,
+    "text": "MIU_S7LDVer:1_1_0"
+  },
+  {
+    "offset": 14339,
+    "text": "'MSVC0000S3"
+  },
+  {
+    "offset": 14351,
+    "text": "SBT_YYMMDD00284712000"
+  },
+  {
+    "offset": 23943,
+    "text": "<LYh$!  "
+  },
+  {
+    "offset": 27235,
+    "text": "<LVc$!"
+  },
+  {
+    "offset": 30722,
+    "text": "c$@!B|!Pb"
+  },
+  {
+    "offset": 32924,
+    "text": "oversubscribed literal/length tree"
+  },
+  {
+    "offset": 32960,
+    "text": "incomplete literal/length tree"
+  },
+  {
+    "offset": 32992,
+    "text": "oversubscribed dynamic bit lengths tree"
+  },
+  {
+    "offset": 33032,
+    "text": "incomplete dynamic bit lengths tree"
+  },
+  {
+    "offset": 33068,
+    "text": "invalid distance code"
+  },
+  {
+    "offset": 33092,
+    "text": "invalid literal/length code"
+  },
+  {
+    "offset": 33120,
+    "text": "invalid block type"
+  },
+  {
+    "offset": 33140,
+    "text": "invalid stored block lengths"
+  },
+  {
+    "offset": 33172,
+    "text": "too many length or distance symbols"
+  },
+  {
+    "offset": 33208,
+    "text": "invalid bit length repeat"
+  },
+  {
+    "offset": 33236,
+    "text": "unknown compression method"
+  },
+  {
+    "offset": 33264,
+    "text": "invalid window size"
+  },
+  {
+    "offset": 33284,
+    "text": "invalid reserved bit"
+  },
+  {
+    "offset": 33308,
+    "text": "incorrect header check"
+  },
+  {
+    "offset": 33332,
+    "text": "incorrect data check"
+  },
+  {
+    "offset": 33364,
+    "text": "stream end"
+  },
+  {
+    "offset": 33376,
+    "text": "file error"
+  },
+  {
+    "offset": 33388,
+    "text": "stream error"
+  },
+  {
+    "offset": 33404,
+    "text": "data error"
+  },
+  {
+    "offset": 33416,
+    "text": "insufficient memory"
+  },
+  {
+    "offset": 33436,
+    "text": "buffer error"
+  },
+  {
+    "offset": 65504,
+    "text": "MSVC0000S3"
+  },
+  {
+    "offset": 65515,
+    "text": "SBT_YYMMDD00284712000"
+  },
+  {
+    "offset": 65710,
+    "text": "MSVC00SR010001SAR67890A0ABLEGNOT"
+  },
+  {
+    "offset": 68865,
+    "text": "[IR] GetInitData u32SrcAddr= 0x%lX"
+  },
+  {
+    "offset": 68901,
+    "text": "[IR] GetConfigData u32SrcAddr= 0x%lX"
+  },
+  {
+    "offset": 68939,
+    "text": "[IR] NotifyMessage Params[0]= %bx"
+  },
+  {
+    "offset": 68974,
+    "text": "[IR] NotifyKeyCod Params[0]= %bx"
+  },
+  {
+    "offset": 69008,
+    "text": "[IR] NotifyKeyCod Params[1]= %bx"
+  },
+  {
+    "offset": 69042,
+    "text": "[IR] Get_LibVer FAIL"
+  },
+  {
+    "offset": 69064,
+    "text": "[IR] Get_LibVer OK"
+  },
+  {
+    "offset": 69084,
+    "text": "[IR] GetLibVersion Params[0]= %bx"
+  },
+  {
+    "offset": 69119,
+    "text": "[IR] GetStatus Params[0]= %bx"
+  },
+  {
+    "offset": 69150,
+    "text": "[IR] GetStatus Params[1]= %bx"
+  },
+  {
+    "offset": 69181,
+    "text": "[IR] Enable Params[0]= %bx"
+  },
+  {
+    "offset": 69209,
+    "text": "[IR] GetInfo FAIL"
+  },
+  {
+    "offset": 69228,
+    "text": "[IR] GetInfo OK"
+  },
+  {
+    "offset": 69245,
+    "text": "[IR] KeyCallback NULL(0x%02bX)"
+  },
+  {
+    "offset": 69277,
+    "text": "[IR] KeyCallback Params[0]= %bx"
+  },
+  {
+    "offset": 69310,
+    "text": "[IR] KeyCallback Params[1]= %bx"
+  },
+  {
+    "offset": 69343,
+    "text": "[IR] MBX command null pointer!!!"
+  },
+  {
+    "offset": 69377,
+    "text": "[IR] [MCU51_CmdCB]: MsgClass = 0x%02bX"
+  },
+  {
+    "offset": 69417,
+    "text": "[IR] [MCU51_CmdCB]: MsgIndex = 0x%02bX"
+  },
+  {
+    "offset": 69457,
+    "text": "[IR] [MCU51_CmdCB]: MsgType  = 0x%02bX"
+  },
+  {
+    "offset": 69497,
+    "text": "[IR] [MCU51_CmdCB]: IR_CPUTo51_CMD_INIT"
+  },
+  {
+    "offset": 69538,
+    "text": "[IR] [MCU51_CmdCB]: IR_CPUTo51_CMD_CONFIG"
+  },
+  {
+    "offset": 69581,
+    "text": "[IR] [MCU51_CmdCB]: IR_CPUTo51_CMD_KEYCODE"
+  },
+  {
+    "offset": 69625,
+    "text": "[IR] [MCU51_CmdCB]: IR_CPUTo51_CMD_SETCLBK"
+  },
+  {
+    "offset": 69669,
+    "text": "[IR] [MCU51_CmdCB]: IR_CPUTo51_CMD_STATUS"
+  },
+  {
+    "offset": 69712,
+    "text": "[IR] [MCU51_CmdCB]: IR_CPUTo51_CMD_LIBVER"
+  },
+  {
+    "offset": 69755,
+    "text": "[IR] [MCU51_CmdCB]: IR_CPUTo51_CMD_ENABLE"
+  },
+  {
+    "offset": 69798,
+    "text": "[IR] [MCU51_CmdCB]: IR_CPUTo51_CMD_INFO"
+  },
+  {
+    "offset": 69839,
+    "text": "[IR] [MCU51]: Leave MApi_IR_CommandCB"
+  },
+  {
+    "offset": 69878,
+    "text": "[IR] [MCU51]: IR_TaskEntry_Init: Register Cmd Class"
+  },
+  {
+    "offset": 69931,
+    "text": "E_MBX_CLASS_IRKEY_NOWAIT"
+  },
+  {
+    "offset": 69956,
+    "text": "[IR] [MCU51]: IR_TaskEntry_Init: Clear Cmd Queue."
+  },
+  {
+    "offset": 70558,
+    "text": "MNOx {"
+  },
+  {
+    "offset": 70813,
+    "text": "(null)"
+  },
+  {
+    "offset": 70839,
+    "text": "&-PCIX"
+  },
+  {
+    "offset": 70876,
+    "text": "HAL_PM_EnablePmSleepInt"
+  },
+  {
+    "offset": 70900,
+    "text": "HAL_PM_EnableWkEventGPIO0"
+  },
+  {
+    "offset": 70926,
+    "text": "HAL_PM_DisableWkEventGPIO0"
+  },
+  {
+    "offset": 70953,
+    "text": "HAL_PM_EnableWkEventGPIO1"
+  },
+  {
+    "offset": 70979,
+    "text": "HAL_PM_DisableWkEventGPIO1"
+  },
+  {
+    "offset": 71006,
+    "text": "HAL_PM_EnableWkEventUart1"
+  },
+  {
+    "offset": 71032,
+    "text": "HAL_PM_DisableWkEventUart1"
+  },
+  {
+    "offset": 71059,
+    "text": "HAL_PM_EnableWkEventSync"
+  },
+  {
+    "offset": 71084,
+    "text": "HAL_PM_DisableWkEventSync"
+  },
+  {
+    "offset": 71110,
+    "text": "HAL_PM_EnableWkEventEasySync"
+  },
+  {
+    "offset": 71139,
+    "text": "HAL_PM_DisableWkEventEasySync"
+  },
+  {
+    "offset": 71169,
+    "text": "HAL_PM_EnableWkEventCEC"
+  },
+  {
+    "offset": 71193,
+    "text": "HAL_PM_DisableWkEventCEC"
+  },
+  {
+    "offset": 71218,
+    "text": "HAL_PM_EnableWkEventDVI0"
+  },
+  {
+    "offset": 71243,
+    "text": "HAL_PM_DisableWkEventDVI0"
+  },
+  {
+    "offset": 71269,
+    "text": "HAL_PM_EnableWkEventDVI2"
+  },
+  {
+    "offset": 71294,
+    "text": "HAL_PM_DisableWkEventDVI2"
+  },
+  {
+    "offset": 71320,
+    "text": "HAL_PM_EnableWkEventSAR"
+  },
+  {
+    "offset": 71344,
+    "text": "HAL_PM_DisableWkEventSAR"
+  },
+  {
+    "offset": 71369,
+    "text": "HAL_PM_EnableWkEventRtc0"
+  },
+  {
+    "offset": 71394,
+    "text": "HAL_PM_DisableWkEventRtc0"
+  },
+  {
+    "offset": 71420,
+    "text": "HAL_PM_EnableWkEventRtc1"
+  },
+  {
+    "offset": 71445,
+    "text": "HAL_PM_DisableWkEventRtc1"
+  },
+  {
+    "offset": 71471,
+    "text": "HAL_PM_EnableWkEventIr"
+  },
+  {
+    "offset": 71494,
+    "text": "HAL_PM_DisableWkEventIr"
+  },
+  {
+    "offset": 71518,
+    "text": "HAL_PM_EnableWkEventAvlink"
+  },
+  {
+    "offset": 71545,
+    "text": "HAL_PM_DisableWkEventAvlink"
+  },
+  {
+    "offset": 71573,
+    "text": "HAL_PM_WakeupFromLast"
+  },
+  {
+    "offset": 71595,
+    "text": "HAL_PM_WakeupFromZero"
+  },
+  {
+    "offset": 71617,
+    "text": "RTC init"
+  },
+  {
+    "offset": 71626,
+    "text": "PM_RTCIDX_0"
+  },
+  {
+    "offset": 71638,
+    "text": "PM_RTCIDX_1"
+  },
+  {
+    "offset": 71650,
+    "text": "ERROR RTC Index Number"
+  },
+  {
+    "offset": 71673,
+    "text": "RTC SetCounter"
+  },
+  {
+    "offset": 71694,
+    "text": "Power Up"
+  },
+  {
+    "offset": 73919,
+    "text": "[HW_FULL]: GetKeyData() = 0x%02bX"
+  },
+  {
+    "offset": 73954,
+    "text": "[HW_FULL]: FIFO Empty!"
+  },
+  {
+    "offset": 73978,
+    "text": "[HW_FULL]: Timeout"
+  },
+  {
+    "offset": 73999,
+    "text": " MSRET_ERROR"
+  },
+  {
+    "offset": 74013,
+    "text": "[HW_FULL]: (NORM) Key=%x, Repeat=%x"
+  },
+  {
+    "offset": 74050,
+    "text": "[HW_FULL]: (REPET) Key=%X, Repeat=%X"
+  },
+  {
+    "offset": 74087,
+    "text": "[RC] Sete Clock Divisor"
+  },
+  {
+    "offset": 74112,
+    "text": "#MDrv_IR_Init: u8Ctrl0 = 0x%02bX"
+  },
+  {
+    "offset": 74146,
+    "text": "#MDrv_IR_Init: u8Ctrl1 = 0x%02bX"
+  },
+  {
+    "offset": 74180,
+    "text": "#MDrv_IR_Init: u8Clk_mhz = 0x%02bX"
+  },
+  {
+    "offset": 74216,
+    "text": "#MDrv_IR_Init: u8HdrCode0 = 0x%02bX"
+  },
+  {
+    "offset": 74253,
+    "text": "#MDrv_IR_Init: u8HdrCode1 = 0x%02bX"
+  },
+  {
+    "offset": 74290,
+    "text": "#MDrv_IR_Init: u8CCodeBytes = 0x%02bX"
+  },
+  {
+    "offset": 74329,
+    "text": "#MDrv_IR_Init: u8CodeBits = 0x%02bX"
+  },
+  {
+    "offset": 74366,
+    "text": "MDrv_IR_Init() Completes"
+  },
+  {
+    "offset": 74392,
+    "text": "#MDrv_IR_Config: tHdr.s16Time = 0x%04X"
+  },
+  {
+    "offset": 74432,
+    "text": "#MDrv_IR_Config: tLg0.s16Time = 0x%04X"
+  },
+  {
+    "offset": 74472,
+    "text": "MDrv_IR_Config() Completes"
+  },
+  {
+    "offset": 74500,
+    "text": "u32SrcAddr = %lx"
+  },
+  {
+    "offset": 74518,
+    "text": "pu8InitData = %x"
+  },
+  {
+    "offset": 74536,
+    "text": "pIRDrvInfo = %lx"
+  },
+  {
+    "offset": 74554,
+    "text": "MSVC00IR010001IR-12345A0ABLEGNOT"
+  },
+  {
+    "offset": 88688,
+    "text": "\"_MDrv_PM_PowerDown2Standby"
+  },
+  {
+    "offset": 88716,
+    "text": "_MDrv_PM_PowerDown2Sleep"
+  },
+  {
+    "offset": 88741,
+    "text": "_MDrv_PM_PowerDown2DeepSleep"
+  },
+  {
+    "offset": 88770,
+    "text": " key = 0x%x "
+  },
+  {
+    "offset": 88789,
+    "text": "@@MDRV_PM:[%02bx] = %02bx"
+  },
+  {
+    "offset": 88822,
+    "text": "Config_PowerDown"
+  },
+  {
+    "offset": 88843,
+    "text": "MSVC000002000100000000A0ABLEGNOT"
+  },
+  {
+    "offset": 88876,
+    "text": "0123456789abcdef"
+  },
+  {
+    "offset": 97244,
+    "text": "PIU Timer 0 Interrupt in EX2"
+  },
+  {
+    "offset": 97273,
+    "text": "PIU Timer 1 Interrupt in EX3"
+  },
+  {
+    "offset": 97302,
+    "text": "WDT Interrupt in EX4"
+  },
+  {
+    "offset": 97478,
+    "text": "\"HAL_MB_Unmask_Cpu1_2_Cpu0"
+  },
+  {
+    "offset": 97505,
+    "text": "HAL_MB_Unmask_Cpu2_2_Cpu0"
+  },
+  {
+    "offset": 97531,
+    "text": "HAL_MB_Unmask_Cpu3_2_Cpu0"
+  },
+  {
+    "offset": 99795,
+    "text": "rNError: Push xdata window fail!"
+  },
+  {
+    "offset": 99829,
+    "text": "Error: Pop xdata window fail!"
+  },
+  {
+    "offset": 104493,
+    "text": "\"E_MBX_CLASS_SAR_NOWAIT"
+  },
+  {
+    "offset": 104561,
+    "text": "r\"E_MBX_CLASS_PM_NOWAIT"
+  },
+  {
+    "offset": 105257,
+    "text": "\"avlink_init done"
+  },
+  {
+    "offset": 105571,
+    "text": "rNHello PM51..."
+  },
+  {
+    "offset": 105726,
+    "text": "\"Hello Main "
+  },
+  {
+    "offset": 106170,
+    "text": "\"\"22222222222{"
+  },
+  {
+    "offset": 135198,
+    "text": "DVBT-----"
+  },
+  {
+    "offset": 135218,
+    "text": "PANEL_NAME"
+  }
+]

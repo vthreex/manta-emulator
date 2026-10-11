@@ -1,0 +1,636 @@
+[
+  {
+    "file": "stream-023880.bin",
+    "length": 3167072,
+    "prefix_hex": "82004010212000024adf0e0c212020027e0040102120000250df0e0c21200002",
+    "ascii_strings": 3511,
+    "keyword_hits": [
+      {
+        "offset": 2456380,
+        "text": "USB SW Update!"
+      },
+      {
+        "offset": 2456396,
+        "text": "Error> Unknown USB port"
+      },
+      {
+        "offset": 2457612,
+        "text": "Poll USB port1 CA_END timeout"
+      },
+      {
+        "offset": 2457644,
+        "text": "USB port 0 enter power save "
+      },
+      {
+        "offset": 2457676,
+        "text": "USB port 0 exit power save "
+      },
+      {
+        "offset": 2457704,
+        "text": "Poll USB port0 CA_END timeout"
+      },
+      {
+        "offset": 2487160,
+        "text": "Copying image from USB to DRAM"
+      },
+      {
+        "offset": 2488728,
+        "text": "CRC32Result(OSD) = %8lx"
+      },
+      {
+        "offset": 2488940,
+        "text": "DTV_MPEG2"
+      },
+      {
+        "offset": 2488952,
+        "text": "DTV_H264"
+      },
+      {
+        "offset": 2493317,
+        "text": "OSD Test Command List:"
+      },
+      {
+        "offset": 2493340,
+        "text": "01: Get OSD info"
+      },
+      {
+        "offset": 2493360,
+        "text": "20: Get GOP info"
+      },
+      {
+        "offset": 2493380,
+        "text": "ZuiState=%u, ActiveOsd=%lu"
+      },
+      {
+        "offset": 2493409,
+        "text": "u8MaxGOPNum=%d, u8MaxGwinNum=%d"
+      },
+      {
+        "offset": 2493441,
+        "text": "SupportGOPDst:"
+      },
+      {
+        "offset": 2493465,
+        "text": "MApi_GOP_GWIN_GetMaxGOPNum()=%d"
+      },
+      {
+        "offset": 2493500,
+        "text": "  MApi_GOP_GWIN_GetGwinNum(%d)=%d"
+      },
+      {
+        "offset": 2493536,
+        "text": "MApi_GOP_GWIN_GetTotalGwinNum()=%d"
+      },
+      {
+        "offset": 2493797,
+        "text": "MApi_GOP_GWIN_GetCurrentGOP()=%d"
+      },
+      {
+        "offset": 2497744,
+        "text": "*                    Welcome to MStar Menu Mode System 1.0                       * "
+      },
+      {
+        "offset": 2498312,
+        "text": "    USB - usb update"
+      },
+      {
+        "offset": 2498548,
+        "text": "* Exit MStar Uart Debug Menu Mode System *"
+      },
+      {
+        "offset": 2503736,
+        "text": "Enter USB page"
+      },
+      {
+        "offset": 2503752,
+        "text": "Execute USB update"
+      },
+      {
+        "offset": 2503772,
+        "text": "USB SW Update(Menu mode) ..."
+      },
+      {
+        "offset": 2504152,
+        "text": "Execute osd action"
+      },
+      {
+        "offset": 2504172,
+        "text": "do someting(OSD)...."
+      },
+      {
+        "offset": 2507372,
+        "text": "91_KEY_MENU"
+      },
+      {
+        "offset": 2507592,
+        "text": " open screen save osd .. "
+      },
+      {
+        "offset": 2511397,
+        "text": " init USB__fail"
+      },
+      {
+        "offset": 2511840,
+        "text": "DTV_SCAN"
+      },
+      {
+        "offset": 2511904,
+        "text": "DTV_MANUAL_TUNING"
+      },
+      {
+        "offset": 2512000,
+        "text": "USB_DOWNLOAD"
+      },
+      {
+        "offset": 2514352,
+        "text": "71_OSD_Change_Language"
+      },
+      {
+        "offset": 2515804,
+        "text": "31_DTV_FE_Locked"
+      },
+      {
+        "offset": 2515824,
+        "text": "31_DTV_Tuning_End_%d"
+      },
+      {
+        "offset": 2518312,
+        "text": "[CI][DEBUG] Connecte socket [ OK ] at line %d."
+      },
+      {
+        "offset": 2518360,
+        "text": "[CI][DEBUG] MSRV_DTV_LSC_EVENT_DISCONNECT received."
+      },
+      {
+        "offset": 2518412,
+        "text": "[CI][DEBUG] MSRV_DTV_LSC_EVENT_SET_PARAM %d received."
+      },
+      {
+        "offset": 2538228,
+        "text": " menu key source state "
+      },
+      {
+        "offset": 2539532,
+        "text": "EN_EXE_GOTO_HOTEL_MENU "
+      },
+      {
+        "offset": 2539556,
+        "text": "set OSD hotel menu page "
+      },
+      {
+        "offset": 2539648,
+        "text": " factory menu "
+      },
+      {
+        "offset": 2544276,
+        "text": "51_SoundMenuTreble"
+      },
+      {
+        "offset": 2544296,
+        "text": "51_SoundMenuBass"
+      },
+      {
+        "offset": 2544360,
+        "text": "51_SoundMenu"
+      },
+      {
+        "offset": 2544600,
+        "text": "71_OSD_Language"
+      },
+      {
+        "offset": 2562614,
+        "text": " USB_Init_Configure"
+      },
+      {
+        "offset": 2562636,
+        "text": "USB_Init_Configure done..."
+      },
+      {
+        "offset": 2609768,
+        "text": "fonttable.fmt =%d"
+      },
+      {
+        "offset": 2610788,
+        "text": "Fatal Error 1 create GOP Mutex fail"
+      },
+      {
+        "offset": 2610824,
+        "text": "Fatal Error 1 about GOP Mutex"
+      },
+      {
+        "offset": 2610856,
+        "text": "Fatal Error 2 about GOP Mutex"
+      },
+      {
+        "offset": 2610888,
+        "text": "Fatal Error 3 about GOP Mutex"
+      },
+      {
+        "offset": 2611089,
+        "text": " %s, E_GOP_DST_IP_MAIN is going to be removed, please choose E_GOP_DST_IP0!! "
+      },
+      {
+        "offset": 2611169,
+        "text": " MAP GOP Dst plane error!! "
+      },
+      {
+        "offset": 2611325,
+        "text": "Invaild gop num!!"
+      },
+      {
+        "offset": 2611345,
+        "text": "%s,Warning!!! The GOP has been powered off, please turn on it if you want to use"
+      },
+      {
+        "offset": 2611473,
+        "text": "%s, The GOP has been powered on!!!"
+      },
+      {
+        "offset": 2611693,
+        "text": "[%s] unknow gop fade type"
+      },
+      {
+        "offset": 2611720,
+        "text": "GOP_Mutex"
+      },
+      {
+        "offset": 2611732,
+        "text": "%screate gop mutex fail"
+      },
+      {
+        "offset": 2611809,
+        "text": "[%s] not support gop%d in this chip version!!"
+      },
+      {
+        "offset": 2611856,
+        "text": "Arrange GOP pool %d"
+      },
+      {
+        "offset": 2611913,
+        "text": "GOP_FAIL"
+      },
+      {
+        "offset": 2611925,
+        "text": "GOP_NON_ALIGN_ADDRESS"
+      },
+      {
+        "offset": 2611949,
+        "text": "GOP_NON_ALIGN_PITCH"
+      },
+      {
+        "offset": 2611973,
+        "text": "GOP_DEPEND_NOAVAIL"
+      },
+      {
+        "offset": 2611993,
+        "text": "GOP_MUTEX_OBTAIN_FAIL"
+      },
+      {
+        "offset": 2612017,
+        "text": "GOP_MUTEX_OBTAINED"
+      },
+      {
+        "offset": 2612037,
+        "text": "GOP_INVALID_BUFF_INFO"
+      },
+      {
+        "offset": 2612061,
+        "text": "GOP_INVALID_PARAMETERS"
+      },
+      {
+        "offset": 2612085,
+        "text": "GOP_FUN_NOT_SUPPORTED"
+      },
+      {
+        "offset": 2612109,
+        "text": "GOP_ENUM_NOT_SUPPORTED"
+      },
+      {
+        "offset": 2612133,
+        "text": "GOP_CRT_GWIN_FAIL"
+      },
+      {
+        "offset": 2612153,
+        "text": "GOP_CRT_GWIN_NOAVAIL"
+      },
+      {
+        "offset": 2612205,
+        "text": "do not support this GOP dst type"
+      },
+      {
+        "offset": 2612241,
+        "text": "the GOP_MuxConfig struct mismatch in drivr"
+      },
+      {
+        "offset": 2612353,
+        "text": " Get GOP destination fail!"
+      },
+      {
+        "offset": 2612402,
+        "text": "First GOP driver instance, flush GWIN HW"
+      },
+      {
+        "offset": 2612468,
+        "text": "failed to init GOP context"
+      },
+      {
+        "offset": 2612517,
+        "text": "should call MApi_GOP_Init first"
+      },
+      {
+        "offset": 2612748,
+        "text": "GOP_Map_Dst_Enum_1"
+      },
+      {
+        "offset": 2612768,
+        "text": "MApi_GOP_GWIN_SwapOverlapWin"
+      },
+      {
+        "offset": 2612800,
+        "text": "MApi_GOP_GWIN_MapFB2Win"
+      },
+      {
+        "offset": 2612824,
+        "text": "MApi_GOP_GWIN_Switch2FB"
+      },
+      {
+        "offset": 2612848,
+        "text": "_GOP_GWIN_FB_AddrAlignChecker"
+      },
+      {
+        "offset": 2612880,
+        "text": "_GOP_GWIN_AlignChecker"
+      },
+      {
+        "offset": 2612904,
+        "text": "MApi_GOP_GWIN_GetWinAttr"
+      },
+      {
+        "offset": 2612932,
+        "text": "MApi_GOP_GWIN_DestroyWin"
+      },
+      {
+        "offset": 2612960,
+        "text": "MApi_GOP_GWIN_SetWinDispPosition"
+      },
+      {
+        "offset": 2612996,
+        "text": "MApi_GOP_GWIN_SetHDisplaySize"
+      },
+      {
+        "offset": 2613028,
+        "text": "_MApi_GOP_Init_Ctx"
+      },
+      {
+        "offset": 2613048,
+        "text": "GOP_Map_Dst_Enum"
+      },
+      {
+        "offset": 2613068,
+        "text": "MApi_GOP_Initialize_StretchWindow"
+      },
+      {
+        "offset": 2613104,
+        "text": "MApi_GOP_GWIN_Set_STRETCHWIN"
+      },
+      {
+        "offset": 2613136,
+        "text": "GOP_AdjustHSPD"
+      },
+      {
+        "offset": 2613152,
+        "text": "MApi_GOP_GWIN_GetFBfromGWIN"
+      },
+      {
+        "offset": 2613180,
+        "text": "MApi_GOP_GWIN_GetGwinNum"
+      },
+      {
+        "offset": 2613208,
+        "text": "MApi_GOP_GWIN_SetBlending"
+      },
+      {
+        "offset": 2613236,
+        "text": "MApi_GOP_GWIN_GetFreeWinID"
+      },
+      {
+        "offset": 2613264,
+        "text": "MApi_GOP_GWIN_SetGOPDst"
+      },
+      {
+        "offset": 2613288,
+        "text": "MApi_GOP_GWIN_SwitchGOP"
+      },
+      {
+        "offset": 2613312,
+        "text": "MApi_GOP_GWIN_OutputLayerSwitch"
+      },
+      {
+        "offset": 2613344,
+        "text": "MApi_GOP_GWIN_Switch2Gwin"
+      },
+      {
+        "offset": 2613372,
+        "text": "MApi_GOP_GWIN_SetWinPosition"
+      },
+      {
+        "offset": 2613404,
+        "text": "MApi_GOP_GWIN_DeleteWin"
+      },
+      {
+        "offset": 2613428,
+        "text": "MApi_GOP_GWIN_IsGWINEnabled"
+      },
+      {
+        "offset": 2613456,
+        "text": "MApi_GOP_GWIN_Enable"
+      },
+      {
+        "offset": 2613480,
+        "text": "GOP_GWIN_CreateWin_Impl2"
+      },
+      {
+        "offset": 2613508,
+        "text": "GOP_GWIN_CreateWin_Impl"
+      },
+      {
+        "offset": 2613532,
+        "text": "MApi_GOP_GWIN_GetWinInfo"
+      },
+      {
+        "offset": 2613560,
+        "text": "MApi_GOP_GWIN_SetWinInfo"
+      },
+      {
+        "offset": 2613588,
+        "text": "GOP_GWIN_SetHVMirrorWinPos"
+      },
+      {
+        "offset": 2613616,
+        "text": "GOP_SetGop23WinInfo"
+      },
+      {
+        "offset": 2613636,
+        "text": "MApi_GOP_DWIN_SetWinProperty"
+      },
+      {
+        "offset": 2613669,
+        "text": "[%s] not support gop id:%d in this chip version"
+      },
+      {
+        "offset": 2613721,
+        "text": " %s, Wrong MIU setting! Your FB address is across MIU0, but GOP%d MIU setting is still MIU0"
+      },
+      {
+        "offset": 2613856,
+        "text": "GOP Miu sel wrong"
+      }
+    ]
+  },
+  {
+    "file": "stream-161258.bin",
+    "length": 731981,
+    "prefix_hex": "3f08181f000a1f000a1f000a30000cdf14181f000a1f000a30000cef15181f00",
+    "ascii_strings": 74,
+    "keyword_hits": []
+  },
+  {
+    "file": "stream-1bd548.bin",
+    "length": 357005,
+    "prefix_hex": "4f06181f000a1f000a1f000a30000c1f37181f000a1f000a30000c5f09181f00",
+    "ascii_strings": 38,
+    "keyword_hits": []
+  },
+  {
+    "file": "stream-1e65c0.bin",
+    "length": 8448,
+    "prefix_hex": "22c7a0aadf320a00400a8b925080070a404afa8b925a80070ad0431a8c920980",
+    "ascii_strings": 4,
+    "keyword_hits": []
+  },
+  {
+    "file": "stream-1ebc40.bin",
+    "length": 946752,
+    "prefix_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+    "ascii_strings": 552,
+    "keyword_hits": [
+      {
+        "offset": 746960,
+        "text": "AncillaryConnections"
+      },
+      {
+        "offset": 747157,
+        "text": "SceneCoordinateSystem("
+      },
+      {
+        "offset": 749455,
+        "text": "rec://font/uk1"
+      },
+      {
+        "offset": 749470,
+        "text": "rec://font/nz1"
+      },
+      {
+        "offset": 762149,
+        "text": "Network dropped connection on reset"
+      },
+      {
+        "offset": 762185,
+        "text": "Software caused connection abort"
+      },
+      {
+        "offset": 762218,
+        "text": "Connection reset by peer"
+      },
+      {
+        "offset": 762269,
+        "text": "Socket is already connected"
+      },
+      {
+        "offset": 762297,
+        "text": "Socket is not connected"
+      },
+      {
+        "offset": 762408,
+        "text": "Connection refused"
+      }
+    ]
+  },
+  {
+    "file": "stream-23c0c8.bin",
+    "length": 82240,
+    "prefix_hex": "75a000901018740af0902ba0e4f075a010900b42741cf075a000900e537480f0",
+    "ascii_strings": 91,
+    "keyword_hits": [
+      {
+        "offset": 79664,
+        "text": "MSVC00F000000000045179A70000000T"
+      }
+    ]
+  },
+  {
+    "file": "stream-242910.bin",
+    "length": 1253416,
+    "prefix_hex": "75a000901018740af0902ba0e4f075a010900b42741cf075a000900e537480f0",
+    "ascii_strings": 1791,
+    "keyword_hits": [
+      {
+        "offset": 868236,
+        "text": "MSVC00H200098700130047AD0000000:"
+      },
+      {
+        "offset": 998684,
+        "text": "MSVC00H21500"
+      },
+      {
+        "offset": 1193942,
+        "text": "AVI MENU RIFF"
+      }
+    ]
+  },
+  {
+    "file": "stream-2b92c8.bin",
+    "length": 277022,
+    "prefix_hex": "10070171840220000000f3000606a703a1fd000021000a0003001d0000000000",
+    "ascii_strings": 412,
+    "keyword_hits": []
+  },
+  {
+    "file": "stream-2e3c58.bin",
+    "length": 2310744,
+    "prefix_hex": "4d5354000000071800233b4000000001000000233b4000000000000000000000",
+    "ascii_strings": 4591,
+    "keyword_hits": []
+  },
+  {
+    "file": "stream-31bf58.bin",
+    "length": 467106,
+    "prefix_hex": "4d5354000001f040000530620000000200000005306200030000000000000000",
+    "ascii_strings": 1,
+    "keyword_hits": []
+  },
+  {
+    "file": "stream-342180.bin",
+    "length": 130608,
+    "prefix_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+    "ascii_strings": 13,
+    "keyword_hits": [
+      {
+        "offset": 160,
+        "text": "MSVC00H200098700130047AD0000000:"
+      }
+    ]
+  },
+  {
+    "file": "stream-350c88.bin",
+    "length": 145888,
+    "prefix_hex": "4d535643303048323135303000003032323632333932414330303030303030a2",
+    "ascii_strings": 4,
+    "keyword_hits": [
+      {
+        "offset": 0,
+        "text": "MSVC00H21500"
+      }
+    ]
+  }
+]

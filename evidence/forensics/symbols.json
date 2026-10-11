@@ -1,0 +1,8 @@
+{
+  "0xbfc00000": "reset_candidate",
+  "0xbfc0006c": "cp0_initialize",
+  "0xbfc00c00": "riu_masked_table_apply",
+  "0xbfc00c90": "riu_byte_table_apply",
+  "0xbfc01118": "early_board_initialize",
+  "0xbfc0271c": "copy_second_stage_to_81000000"
+}

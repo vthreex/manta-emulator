@@ -1,0 +1,105 @@
+{
+  "original_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "original_bytes": 8388624,
+  "flash_sha256": "471e1f1c284e3c0fc9af68be0d8a79d0d635e0a1cca31066cd1e6df91e406d83",
+  "flash_bytes": 8388608,
+  "metadata_hex": "bc000000000000000000000000000000",
+  "streams": [
+    {
+      "start": 145536,
+      "end": 1446478,
+      "length": 3167072,
+      "sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+      "file": "stream-023880.bin",
+      "classification": "MIPS code"
+    },
+    {
+      "start": 1446488,
+      "end": 1824056,
+      "length": 731981,
+      "sha256": "57d6a9f0b909616105e99b8b447325621b0e8dfc63a7fe27aab64d2d10e65e49",
+      "file": "stream-161258.bin",
+      "classification": "unclassified payload"
+    },
+    {
+      "start": 1824072,
+      "end": 1992119,
+      "length": 357005,
+      "sha256": "95dad91784af417a38223dc19a0a33f0793b616933acf72782f955a0ca131343",
+      "file": "stream-1bd548.bin",
+      "classification": "unclassified payload"
+    },
+    {
+      "start": 1992128,
+      "end": 1996843,
+      "length": 8448,
+      "sha256": "f6766d55f073349026047373d17a2b6ca520a128557e2afed0a938169728ca84",
+      "file": "stream-1e65c0.bin",
+      "classification": "unclassified payload"
+    },
+    {
+      "start": 2014272,
+      "end": 2343101,
+      "length": 946752,
+      "sha256": "6f64d6edc9306c7aae88483efdd25edd4c7d2b326ccba39cc9961da71f4298ee",
+      "file": "stream-1ebc40.bin",
+      "classification": "trailer-validated payload; loader provenance pending"
+    },
+    {
+      "start": 2343112,
+      "end": 2369794,
+      "length": 82240,
+      "sha256": "85581cbeeabd4d1526cadba3dda0ad61dabf3bca6ebeef9f4e72211244a3ecf2",
+      "file": "stream-23c0c8.bin",
+      "classification": "trailer-validated payload; loader provenance pending"
+    },
+    {
+      "start": 2369808,
+      "end": 2855609,
+      "length": 1253416,
+      "sha256": "bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1",
+      "file": "stream-242910.bin",
+      "classification": "trailer-validated payload; loader provenance pending"
+    },
+    {
+      "start": 2855624,
+      "end": 2984393,
+      "length": 277022,
+      "sha256": "e68943984fae73e8f21bf82067429a27493f5f4b71ecfbccb132f74fc6702743",
+      "file": "stream-2b92c8.bin",
+      "classification": "trailer-validated payload; loader provenance pending"
+    },
+    {
+      "start": 3030104,
+      "end": 3260235,
+      "length": 2310744,
+      "sha256": "67811a4bd3b115e8221a8d233646f4f036be76e0d3cc585353fd92bed675f0aa",
+      "file": "stream-2e3c58.bin",
+      "classification": "trailer-validated payload; loader provenance pending"
+    },
+    {
+      "start": 3260248,
+      "end": 3416434,
+      "length": 467106,
+      "sha256": "769bb8b6fc9eda743de6cefc8b3bc10c60d9ddb867b4cc37fef1ef3badf54f4f",
+      "file": "stream-31bf58.bin",
+      "classification": "trailer-validated payload; loader provenance pending"
+    },
+    {
+      "start": 3416448,
+      "end": 3476604,
+      "length": 130608,
+      "sha256": "484aa3a2d209b429d282bde2abd0fe8aea01862f0c16b2e98e48411bf7718163",
+      "file": "stream-342180.bin",
+      "classification": "trailer-validated payload; loader provenance pending"
+    },
+    {
+      "start": 3476616,
+      "end": 3542286,
+      "length": 145888,
+      "sha256": "f46f3fab8a62bb01042eb4d3975e82584ef03bde1965c3c7c650933a88ea6f85",
+      "file": "stream-350c88.bin",
+      "classification": "trailer-validated payload; loader provenance pending"
+    }
+  ]
+}

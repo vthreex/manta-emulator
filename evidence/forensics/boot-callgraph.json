@@ -1,0 +1,437 @@
+[
+  {
+    "pc": 3217031216,
+    "target": "0xbfc0006c",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217031268,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217031420,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217033892,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217034376,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217034512,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217034888,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217034904,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217034940,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217034956,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035008,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035024,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035056,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035072,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035116,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035204,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035324,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035344,
+    "target": "0xbfc00e90",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035356,
+    "target": "0xbfc00ec4",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035372,
+    "target": "0xbfc00f08",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035384,
+    "target": "0xbfc00f38",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035424,
+    "target": "0xbfc00f74",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035440,
+    "target": "0xbfc00fcc",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035488,
+    "target": "$t4",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035536,
+    "target": "$t4",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035608,
+    "target": "0xbfc00c00",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035628,
+    "target": "0xbfc02798",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035648,
+    "target": "0xbfc011b8",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035668,
+    "target": "0xbfc0271c",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035696,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035708,
+    "target": "0xbfc024c0",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035728,
+    "target": "0xbfc01394",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035768,
+    "target": "0xbfc027dc",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035788,
+    "target": "0xbfc01988",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035808,
+    "target": "0xbfc01044",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035844,
+    "target": "$t0",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217035864,
+    "target": "0xbfc012e8",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035884,
+    "target": "0xbfc012a4",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035908,
+    "target": "0xbfc00c00",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217035932,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217036000,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217036172,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217037212,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217037316,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217037360,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217037548,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217037652,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217037696,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217037720,
+    "target": "0xbfc017a4",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217037728,
+    "target": "0xbfc018f4",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217037740,
+    "target": "0xbfc00d18",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217037832,
+    "target": "0xbfc00d18",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217037920,
+    "target": "0xbfc01838",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217038004,
+    "target": "0xbfc0180c",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217038012,
+    "target": "0xbfc0195c",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217038068,
+    "target": "0xbfc0232c",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217038076,
+    "target": "0xbfc0228c",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217038108,
+    "target": "0xbfc01b90",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217038116,
+    "target": "0xbfc01b54",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217038128,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217038156,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217038852,
+    "target": "0xbfc01b38",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217038944,
+    "target": "0xbfc02010",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217039292,
+    "target": "0xbfc02010",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217039304,
+    "target": "0xbfc02010",
+    "instruction": "bal"
+  },
+  {
+    "pc": 3217039368,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217039412,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217039868,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217040004,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217040536,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217040568,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217041172,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217041296,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217041364,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217041760,
+    "target": "$ra",
+    "instruction": "jr"
+  },
+  {
+    "pc": 3217041784,
+    "target": "0xb4c50010",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217041864,
+    "target": "0xb4c60004",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217041884,
+    "target": "0xb4c48000",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217041904,
+    "target": "0xb4c40220",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217041924,
+    "target": "0xb4c5555c",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217041972,
+    "target": "0xb4c50014",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217042052,
+    "target": "0xb4c60004",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217042072,
+    "target": "0xb4c48000",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217042092,
+    "target": "0xb4c40220",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217042112,
+    "target": "0xb4c5555c",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217042288,
+    "target": "0xbc323578",
+    "instruction": "jal"
+  },
+  {
+    "pc": 3217042396,
+    "target": "0xbc03fc10",
+    "instruction": "jal"
+  }
+]
