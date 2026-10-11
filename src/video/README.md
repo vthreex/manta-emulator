@@ -1,0 +1,1 @@
+Guest video is unsupported. No host menu, screenshot, or synthetic OSD is rendered. Implement the GOP/scaler path only after original guest register and framebuffer semantics are established; see ../../docs/STATUS.md.

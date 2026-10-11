@@ -1,0 +1,18 @@
+{
+  "mode": "diagnostic second-stage; reset initialization bypassed",
+  "symbolic_init": true,
+  "candidate_bdma": true,
+  "instruction_dispatches": 90030942,
+  "unique_pcs": 2985,
+  "mmio_events": 300,
+  "flash_data_reads": 329091,
+  "dram_writes": 7498455,
+  "stop_pc": "0x8054ab34",
+  "stop_address": "0x1f20164d",
+  "reason": "unmodeled MMIO read",
+  "second_stage_reached": true,
+  "guest_inflate_entered": true,
+  "runtime_entry_reached": true,
+  "osd_demonstrated": false,
+  "last_pcs": ["0x8054a3d0","0x8054a3d4","0x8054a3d8","0x8054a3dc","0x8054afe8","0x8054afec","0x8054aff0","0x8054aff4","0x8054aff8","0x8054affc","0x8054b000","0x8054b004","0x8054b008","0x8054b00c","0x8054b010","0x8054b014","0x8054b018","0x8054b01c","0x8054b020","0x8054b024","0x8054b028","0x8054b02c","0x8054b030","0x8054b034","0x8054b038","0x8054b03c","0x8054b040","0x8054b044","0x8054b048","0x8054b04c","0x8054b050","0x8054a6a0","0x8054a6a4","0x8054a6a8","0x8054a6ac","0x8054a6b0","0x8054a440","0x8054a444","0x8054a448","0x8054a44c","0x8054a450","0x8054a454","0x8054a458","0x8054a45c","0x8054a460","0x8054a464","0x8054a468","0x8054a46c","0x8054a470","0x8054a474","0x8054b284","0x8054b288","0x8054b28c","0x8054b290","0x8054b294","0x8054b298","0x8054b29c","0x8054b2a0","0x8054b2a4","0x8054ab24","0x8054ab28","0x8054ab2c","0x8054ab30","0x8054ab34"]
+}

@@ -14,12 +14,22 @@
     {
       "start": 11360,
       "end": 34240,
-      "kind": "second-stage loader; copied to 0x81000000 by guest"
+      "kind": "second-stage loader; stock copy targets 0x81000000"
     },
     {
       "start": 34240,
+      "end": 131072,
+      "kind": "unclassified gap"
+    },
+    {
+      "start": 131072,
+      "end": 131200,
+      "kind": "runtime loader header and padding"
+    },
+    {
+      "start": 131200,
       "end": 145536,
-      "kind": "uncompressed runtime prefix; relocation pending"
+      "kind": "uncompressed runtime prefix; guest loader copies to 0xA03B0180"
     },
     {
       "start": 3542300,
@@ -58,6 +68,62 @@
       "kind": "DEFLATE + length trailer",
       "decompressed_bytes": 8448,
       "sha256": "f6766d55f073349026047373d17a2b6ca520a128557e2afed0a938169728ca84"
+    },
+    {
+      "start": 2014272,
+      "end": 2343105,
+      "kind": "additional trailer-validated DEFLATE; provenance pending",
+      "decompressed_bytes": 946752,
+      "sha256": "6f64d6edc9306c7aae88483efdd25edd4c7d2b326ccba39cc9961da71f4298ee"
+    },
+    {
+      "start": 2343112,
+      "end": 2369798,
+      "kind": "additional trailer-validated DEFLATE; provenance pending",
+      "decompressed_bytes": 82240,
+      "sha256": "85581cbeeabd4d1526cadba3dda0ad61dabf3bca6ebeef9f4e72211244a3ecf2"
+    },
+    {
+      "start": 2369808,
+      "end": 2855613,
+      "kind": "additional trailer-validated DEFLATE; provenance pending",
+      "decompressed_bytes": 1253416,
+      "sha256": "bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1"
+    },
+    {
+      "start": 2855624,
+      "end": 2984397,
+      "kind": "additional trailer-validated DEFLATE; provenance pending",
+      "decompressed_bytes": 277022,
+      "sha256": "e68943984fae73e8f21bf82067429a27493f5f4b71ecfbccb132f74fc6702743"
+    },
+    {
+      "start": 3030104,
+      "end": 3260239,
+      "kind": "additional trailer-validated DEFLATE; provenance pending",
+      "decompressed_bytes": 2310744,
+      "sha256": "67811a4bd3b115e8221a8d233646f4f036be76e0d3cc585353fd92bed675f0aa"
+    },
+    {
+      "start": 3260248,
+      "end": 3416438,
+      "kind": "additional trailer-validated DEFLATE; provenance pending",
+      "decompressed_bytes": 467106,
+      "sha256": "769bb8b6fc9eda743de6cefc8b3bc10c60d9ddb867b4cc37fef1ef3badf54f4f"
+    },
+    {
+      "start": 3416448,
+      "end": 3476608,
+      "kind": "additional trailer-validated DEFLATE; provenance pending",
+      "decompressed_bytes": 130608,
+      "sha256": "484aa3a2d209b429d282bde2abd0fe8aea01862f0c16b2e98e48411bf7718163"
+    },
+    {
+      "start": 3476616,
+      "end": 3542290,
+      "kind": "additional trailer-validated DEFLATE; provenance pending",
+      "decompressed_bytes": 145888,
+      "sha256": "f46f3fab8a62bb01042eb4d3975e82584ef03bde1965c3c7c650933a88ea6f85"
     }
   ],
   "nvram_differences": [
@@ -66,5 +132,15 @@
       "a": 31,
       "b": 30
     }
-  ]
+  ],
+  "runtime_header": {
+    "offset": 131072,
+    "source": "0xbfc20080",
+    "destination": "0xa03b0180",
+    "compressed_ram_end": "0xa04f1354",
+    "rom_end": "0xbfd61254",
+    "entry": "0x803b0600",
+    "crc_msb_seed_zero": "0x5f65d0d4"
+  },
+  "decompressed_main_load_address": "0x803B3980 (loader destination + 0x3800 prefix)"
 }

@@ -1,0 +1,296 @@
+{
+  "sha256": "769bb8b6fc9eda743de6cefc8b3bc10c60d9ddb867b4cc37fef1ef3badf54f4f",
+  "data_offset": 127040,
+  "data_bytes": 340066,
+  "languages": 26,
+  "strings_per_language": 1214,
+  "top_menu_strings_by_language": [
+    {
+      "language_index": 0,
+      "strings": [
+        "PICTURE",
+        "CHANNEL",
+        "SOUND",
+        "TIME",
+        "OPTION",
+        "LOCK"
+      ]
+    },
+    {
+      "language_index": 1,
+      "strings": [
+        "IMAGE",
+        "CANAL",
+        "SON",
+        "TEMPS",
+        "\b",
+        "VERROU"
+      ]
+    },
+    {
+      "language_index": 2,
+      "strings": [
+        "BILD",
+        "KANAL",
+        "TON",
+        "ZEIT",
+        "OPTIONEN",
+        "SPERRE"
+      ]
+    },
+    {
+      "language_index": 3,
+      "strings": [
+        "IMMAGINE",
+        "CANALE",
+        "AUDIO",
+        "OROLOGIO",
+        "OPZIONI",
+        "BLOCCO"
+      ]
+    },
+    {
+      "language_index": 4,
+      "strings": [
+        "IMAGEN",
+        "CANALES",
+        "SONIDO",
+        "TEMPORIZADOR",
+        "OPCIONES",
+        "RESTRICCIONES"
+      ]
+    },
+    {
+      "language_index": 5,
+      "strings": [
+        "IMAGEM",
+        "Canal",
+        "SOM",
+        "Tempo",
+        "OPÇÕES",
+        "Bloqueio"
+      ]
+    },
+    {
+      "language_index": 6,
+      "strings": [
+        "OBRAZ",
+        "KANAŁ",
+        "DŹWIĘK",
+        "CZAS",
+        "USTAWIENIA",
+        "BLOKADA"
+      ]
+    },
+    {
+      "language_index": 7,
+      "strings": [
+        "BEELD",
+        "KANAAL",
+        "GELUID",
+        "TIJD",
+        "OPTIE",
+        "KLOK"
+      ]
+    },
+    {
+      "language_index": 8,
+      "strings": [
+        "Изображение",
+        "Канал",
+        "Звук",
+        "Время",
+        "Опции",
+        "Замок"
+      ]
+    },
+    {
+      "language_index": 9,
+      "strings": [
+        "Slika",
+        "Kanal",
+        "Zvuk",
+        "Vrijeme",
+        "Postavke",
+        "Zaključaj"
+      ]
+    },
+    {
+      "language_index": 10,
+      "strings": [
+        "الصورة",
+        "القناة",
+        "الصوت",
+        "الوقت",
+        "الخيار",
+        "تأمين"
+      ]
+    },
+    {
+      "language_index": 11,
+      "strings": [
+        "Зображення",
+        "\b\b\b\bЧас",
+        "\b\bЧас",
+        "Час",
+        "Опції",
+        "\b\bВихід"
+      ]
+    },
+    {
+      "language_index": 12,
+      "strings": [
+        "SLIKA",
+        "\b\u0002ZVUK",
+        "ZVUK",
+        "VREME",
+        "OPCIJA",
+        "ZAKLJUČ"
+      ]
+    },
+    {
+      "language_index": 13,
+      "strings": [
+        "\b\u0006Kanál",
+        "Kanál",
+        "\b\fČas",
+        "Čas",
+        "MOŽNOSTI",
+        "Zámek"
+      ]
+    },
+    {
+      "language_index": 14,
+      "strings": [
+        "BILLEDE",
+        "Kanalindtastning",
+        "LYD",
+        "Tid",
+        "VALG",
+        "Lås"
+      ]
+    },
+    {
+      "language_index": 15,
+      "strings": [
+        "ΕΙΚΟΝΑ",
+        "Κανάλι",
+        "ΉΧΟΣ",
+        "Ώρας",
+        "ΕΠΙΛΟΓΕΣ",
+        "Κλείδωμα"
+      ]
+    },
+    {
+      "language_index": 16,
+      "strings": [
+        "KEP",
+        "Csatorna",
+        "HANG",
+        "Idő",
+        "VÁLASZTÁSOK",
+        "Zárolás"
+      ]
+    },
+    {
+      "language_index": 17,
+      "strings": [
+        "BILDE",
+        "Kanalinnlegging",
+        "\b\u000eTime",
+        "Time",
+        "ALTERNATIVER",
+        "\b\u000eAvslutte"
+      ]
+    },
+    {
+      "language_index": 18,
+      "strings": [
+        "IMAGINE",
+        "\b\u0005SUNET",
+        "SUNET",
+        "Oră",
+        "OPŢIUNI",
+        "Blocare"
+      ]
+    },
+    {
+      "language_index": 19,
+      "strings": [
+        "\b\f\b\tZVOK",
+        "\b\tZVOK",
+        "ZVOK",
+        "\b\r\b\rZakleni",
+        "\b\rZakleni",
+        "Zakleni"
+      ]
+    },
+    {
+      "language_index": 20,
+      "strings": [
+        "KUVA",
+        "Kanavasyöttö",
+        "ÄÄNI",
+        "Kerta",
+        "VAIHTOEHDOT",
+        "Lukko"
+      ]
+    },
+    {
+      "language_index": 21,
+      "strings": [
+        "\b\u0002Kanalimatning",
+        "Kanalimatning",
+        "LJUD",
+        "\b\u000eALTERNATIV",
+        "ALTERNATIV",
+        "\b\u000eAvsluta"
+      ]
+    },
+    {
+      "language_index": 22,
+      "strings": [
+        "КАРТИНА",
+        "\b\bЗВУК",
+        "ЗВУК",
+        "Време",
+        "ОПЦИИ",
+        "Заключване"
+      ]
+    },
+    {
+      "language_index": 23,
+      "strings": [
+        "\b\f\b\r\b\f\b\r\b\rUzamknúť",
+        "\b\r\b\f\b\r\b\rUzamknúť",
+        "\b\f\b\r\b\rUzamknúť",
+        "\b\r\b\rUzamknúť",
+        "\b\rUzamknúť",
+        "Uzamknúť"
+      ]
+    },
+    {
+      "language_index": 24,
+      "strings": [
+        "تصویر",
+        "کانال",
+        "صدا",
+        "ساعت",
+        "\b",
+        "\b"
+      ]
+    },
+    {
+      "language_index": 25,
+      "strings": [
+        "影像",
+        "频道",
+        "声音",
+        "时间",
+        "设定",
+        "控管"
+      ]
+    }
+  ],
+  "notes": "Language names and ordering not assigned without guest selector table; excerpts from verified indexed UTF16LE resource, not rendered UI."
+}

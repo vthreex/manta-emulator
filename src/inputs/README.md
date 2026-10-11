@@ -1,0 +1,1 @@
+Guest IR/PM51, front-panel and signal-source input devices are unsupported. No fabricated key events are injected. Recover the original mailbox/protocol and driver tables before implementing; see ../../docs/STATUS.md.

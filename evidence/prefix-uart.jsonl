@@ -1,0 +1,924 @@
+{"tick":4,"pc":"0xbfc0000c","kind":"write","address":"0x1f001c7c","width":4,"value":"0x4f","ra":"0x0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":9,"pc":"0xbfc00020","kind":"write","address":"0x1f006010","width":4,"value":"0x0","ra":"0x0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":12,"pc":"0xbfc0002c","kind":"write","address":"0x1f006014","width":4,"value":"0x0","ra":"0x0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":55,"pc":"0xbfc00040","kind":"write","address":"0x1f206700","width":4,"value":"0x1","ra":"0xbfc00038","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":58,"pc":"0xbfc0004c","kind":"write","address":"0x1f206700","width":4,"value":"0x2","ra":"0xbfc00038","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":61,"pc":"0xbfc00058","kind":"write","address":"0x1f206700","width":4,"value":"0x3","ra":"0xbfc00038","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":68,"pc":"0xbfc01120","kind":"write","address":"0x1f203184","width":4,"value":"0x8","ra":"0xbfc01118","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":71,"pc":"0xbfc0112c","kind":"write","address":"0x1f203188","width":4,"value":"0x8","ra":"0xbfc01118","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":74,"pc":"0xbfc01138","kind":"write","address":"0x1f20318c","width":4,"value":"0x0","ra":"0xbfc01118","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":77,"pc":"0xbfc01144","kind":"write","address":"0x1f203190","width":4,"value":"0x80","ra":"0xbfc01118","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":80,"pc":"0xbfc01150","kind":"write","address":"0x1f206700","width":4,"value":"0x4","ra":"0xbfc01118","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":116,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c74","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":123,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c74","width":1,"value":"0xa4","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":141,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c78","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":148,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c78","width":1,"value":"0xa4","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":166,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c70","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=16"}
+{"tick":173,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c70","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":191,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c74","width":1,"value":"0xa4","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=4"}
+{"tick":198,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c74","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":216,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c78","width":1,"value":"0xa4","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=4"}
+{"tick":223,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c78","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":241,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c70","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=64"}
+{"tick":248,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c70","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":266,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c40","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=191"}
+{"tick":273,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c40","width":1,"value":"0x13","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":282,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c41","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=27"}
+{"tick":289,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c41","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":307,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c3c","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=191"}
+{"tick":314,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c3c","width":1,"value":"0x20","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":323,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c3d","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=27"}
+{"tick":330,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c3d","width":1,"value":"0xac","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":348,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c9c","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=112"}
+{"tick":355,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c9c","width":1,"value":"0xf5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":373,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c9c","width":1,"value":"0xf5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":380,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c9c","width":1,"value":"0xf0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":398,"pc":"0xbfc00c60","kind":"read","address":"0x1f00092c","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=68"}
+{"tick":405,"pc":"0xbfc00c7c","kind":"write","address":"0x1f00092c","width":1,"value":"0xa1","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":423,"pc":"0xbfc00c60","kind":"read","address":"0x1f00092c","width":1,"value":"0xa1","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=34"}
+{"tick":430,"pc":"0xbfc00c7c","kind":"write","address":"0x1f00092c","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":448,"pc":"0xbfc00c60","kind":"read","address":"0x1f00092c","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":455,"pc":"0xbfc00c7c","kind":"write","address":"0x1f00092c","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":473,"pc":"0xbfc00c60","kind":"read","address":"0x1f00092d","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=68"}
+{"tick":480,"pc":"0xbfc00c7c","kind":"write","address":"0x1f00092d","width":1,"value":"0xa1","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":498,"pc":"0xbfc00c60","kind":"read","address":"0x1f00092d","width":1,"value":"0xa1","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=34"}
+{"tick":505,"pc":"0xbfc00c7c","kind":"write","address":"0x1f00092d","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":523,"pc":"0xbfc00c60","kind":"read","address":"0x1f00092d","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":530,"pc":"0xbfc00c7c","kind":"write","address":"0x1f00092d","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":548,"pc":"0xbfc00c60","kind":"read","address":"0x1f000930","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=68"}
+{"tick":555,"pc":"0xbfc00c7c","kind":"write","address":"0x1f000930","width":1,"value":"0xa1","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":573,"pc":"0xbfc00c60","kind":"read","address":"0x1f000930","width":1,"value":"0xa1","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=34"}
+{"tick":580,"pc":"0xbfc00c7c","kind":"write","address":"0x1f000930","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":598,"pc":"0xbfc00c60","kind":"read","address":"0x1f000930","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":605,"pc":"0xbfc00c7c","kind":"write","address":"0x1f000930","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":623,"pc":"0xbfc00c60","kind":"read","address":"0x1f002848","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":630,"pc":"0xbfc00c7c","kind":"write","address":"0x1f002848","width":1,"value":"0xa4","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":648,"pc":"0xbfc00c60","kind":"read","address":"0x1f002845","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":655,"pc":"0xbfc00c7c","kind":"write","address":"0x1f002845","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":685,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cac","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":692,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cac","width":1,"value":"0x15","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":701,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cad","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":708,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cad","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":726,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cb0","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":733,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cb0","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":742,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cb1","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":749,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cb1","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":767,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cb8","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":774,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cb8","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":783,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cb9","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":790,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cb9","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":808,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cbc","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":815,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cbc","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":824,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cbd","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":831,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cbd","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":849,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d09","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=240"}
+{"tick":856,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d09","width":1,"value":"0x5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":874,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d0d","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=240"}
+{"tick":881,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d0d","width":1,"value":"0x5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":899,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d90","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":906,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d90","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":924,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d09","width":1,"value":"0x5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=6"}
+{"tick":931,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d09","width":1,"value":"0x1","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":949,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d0d","width":1,"value":"0x5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=6"}
+{"tick":956,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":974,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d15","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":981,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d15","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":990,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d18","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=0"}
+{"tick":997,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d18","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1015,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d19","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":1022,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d19","width":1,"value":"0xac","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1031,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d1c","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=0"}
+{"tick":1038,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d1c","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1056,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cc8","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1063,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cc8","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1072,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cc9","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":1079,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cc9","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1097,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cd0","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1104,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cd0","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1113,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cd1","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":1120,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cd1","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1138,"pc":"0xbfc00c60","kind":"read","address":"0x1f203c98","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1145,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203c98","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1154,"pc":"0xbfc00c60","kind":"read","address":"0x1f203c99","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":1161,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203c99","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1179,"pc":"0xbfc00c60","kind":"read","address":"0x1f203c9c","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1186,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203c9c","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1195,"pc":"0xbfc00c60","kind":"read","address":"0x1f203c9d","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":1202,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203c9d","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1220,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cec","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1227,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cec","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1236,"pc":"0xbfc00c60","kind":"read","address":"0x1f203ced","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1243,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203ced","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1261,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cf0","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1268,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cf0","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1277,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cf1","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1284,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cf1","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1302,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cf8","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1309,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cf8","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1318,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cf9","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1325,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cf9","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1343,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cfc","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1350,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cfc","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1359,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cfd","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1366,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cfd","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1384,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cf4","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":1391,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cf4","width":1,"value":"0xa4","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1409,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d00","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":1416,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d00","width":1,"value":"0xa4","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1434,"pc":"0xbfc00c60","kind":"read","address":"0x1f203dc0","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":1441,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203dc0","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1459,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cf5","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=31"}
+{"tick":1466,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cf5","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1484,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d01","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=31"}
+{"tick":1491,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d01","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1509,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d14","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=127"}
+{"tick":1516,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d14","width":1,"value":"0x80","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1534,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d15","width":1,"value":"0xa3","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=127"}
+{"tick":1541,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d15","width":1,"value":"0x80","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1559,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d90","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=64"}
+{"tick":1566,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d90","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1584,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d30","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1591,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d30","width":1,"value":"0x58","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1600,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d31","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1607,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d31","width":1,"value":"0x0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1625,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d34","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=63"}
+{"tick":1632,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d34","width":1,"value":"0x80","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1650,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d38","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1657,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d38","width":1,"value":"0x81","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1666,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d39","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1673,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d39","width":1,"value":"0x86","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1691,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d35","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=63"}
+{"tick":1698,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d35","width":1,"value":"0x80","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1716,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cd8","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1723,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cd8","width":1,"value":"0x4","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1732,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cd9","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":1739,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cd9","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1757,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cdc","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":1764,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cdc","width":1,"value":"0x2","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1773,"pc":"0xbfc00c60","kind":"read","address":"0x1f203cdd","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":1780,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203cdd","width":1,"value":"0xa0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1798,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d40","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=64"}
+{"tick":1805,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d40","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1823,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d5d","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=3"}
+{"tick":1830,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d5d","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1848,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d5d","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=56"}
+{"tick":1855,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d5d","width":1,"value":"0x9d","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1873,"pc":"0xbfc00c60","kind":"read","address":"0x1f203c09","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=192"}
+{"tick":1880,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203c09","width":1,"value":"0x25","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1898,"pc":"0xbfc00c60","kind":"read","address":"0x1f203dbc","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=16"}
+{"tick":1905,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203dbc","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1923,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d90","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=59"}
+{"tick":1930,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d90","width":1,"value":"0xb4","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1948,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d5c","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=28"}
+{"tick":1955,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d5c","width":1,"value":"0xb1","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1973,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d5c","width":1,"value":"0xb1","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=224"}
+{"tick":1980,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d5c","width":1,"value":"0xd1","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":1998,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d5c","width":1,"value":"0xd1","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=3"}
+{"tick":2005,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d5c","width":1,"value":"0xd0","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2023,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d91","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=14"}
+{"tick":2030,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d91","width":1,"value":"0xa1","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2060,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c25","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=8"}
+{"tick":2067,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c25","width":1,"value":"0xad","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2085,"pc":"0xbfc00c60","kind":"read","address":"0x1f001c25","width":1,"value":"0xad","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=16"}
+{"tick":2092,"pc":"0xbfc00c7c","kind":"write","address":"0x1f001c25","width":1,"value":"0xad","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2122,"pc":"0xbfc00c60","kind":"read","address":"0x1f203d41","width":1,"value":"0xa5","ra":"0xbfc01160","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":2129,"pc":"0xbfc00c7c","kind":"write","address":"0x1f203d41","width":1,"value":"0x25","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2140,"pc":"0xbfc01168","kind":"write","address":"0x1f206700","width":4,"value":"0x5","ra":"0xbfc01160","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2145,"pc":"0xbfc027a0","kind":"write","address":"0x1f005788","width":4,"value":"0x4","ra":"0xbfc01174","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2148,"pc":"0xbfc027ac","kind":"write","address":"0x1f00578c","width":4,"value":"0x3c11","ra":"0xbfc01174","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2151,"pc":"0xbfc027b8","kind":"write","address":"0x1f005790","width":4,"value":"0x10","ra":"0xbfc01174","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2154,"pc":"0xbfc027c4","kind":"write","address":"0x1f005794","width":4,"value":"0x403c","ra":"0xbfc01174","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2157,"pc":"0xbfc027d0","kind":"write","address":"0x1f005798","width":4,"value":"0x101","ra":"0xbfc01174","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2162,"pc":"0xbfc0117c","kind":"write","address":"0x1f206700","width":4,"value":"0x6","ra":"0xbfc01174","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2170,"pc":"0xbfc024c8","kind":"write","address":"0x1f204a1c","width":1,"value":"0x1f","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2173,"pc":"0xbfc024d4","kind":"write","address":"0x1f204a1c","width":1,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2176,"pc":"0xbfc024e0","kind":"write","address":"0x1f204a10","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2179,"pc":"0xbfc024ec","kind":"write","address":"0x1f204a14","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2182,"pc":"0xbfc024f8","kind":"write","address":"0x1f204a18","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2185,"pc":"0xbfc02504","kind":"write","address":"0x1f221218","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2188,"pc":"0xbfc02510","kind":"write","address":"0x1f221380","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2191,"pc":"0xbfc0251c","kind":"write","address":"0x1f2213a4","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2194,"pc":"0xbfc02528","kind":"write","address":"0x1f001d28","width":1,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2197,"pc":"0xbfc02534","kind":"write","address":"0x1f001d30","width":1,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2200,"pc":"0xbfc02540","kind":"write","address":"0x1f001d2d","width":1,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2203,"pc":"0xbfc0254c","kind":"write","address":"0x1f221870","width":4,"value":"0x20","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2206,"pc":"0xbfc02558","kind":"write","address":"0x1f203c70","width":4,"value":"0x4","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2209,"pc":"0xbfc02564","kind":"write","address":"0x1f221820","width":4,"value":"0xf4","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2212,"pc":"0xbfc02570","kind":"write","address":"0x1f221820","width":4,"value":"0xd4","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2215,"pc":"0xbfc0257c","kind":"write","address":"0x1f221820","width":4,"value":"0x94","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2218,"pc":"0xbfc02588","kind":"write","address":"0x1f221820","width":4,"value":"0x84","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2221,"pc":"0xbfc02594","kind":"write","address":"0x1f22182c","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2224,"pc":"0xbfc025a0","kind":"write","address":"0x1f221860","width":4,"value":"0x74","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2227,"pc":"0xbfc025ac","kind":"write","address":"0x1f221860","width":4,"value":"0x54","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2230,"pc":"0xbfc025b8","kind":"write","address":"0x1f221860","width":4,"value":"0x44","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2233,"pc":"0xbfc025c4","kind":"write","address":"0x1f221860","width":4,"value":"0x4","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2236,"pc":"0xbfc025d0","kind":"write","address":"0x1f221864","width":1,"value":"0x14","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2239,"pc":"0xbfc025dc","kind":"write","address":"0x1f221868","width":1,"value":"0xd","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2242,"pc":"0xbfc025e8","kind":"write","address":"0x1f22186c","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2245,"pc":"0xbfc025f4","kind":"write","address":"0x1f200e00","width":1,"value":"0xa","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2248,"pc":"0xbfc02600","kind":"write","address":"0x1f200e00","width":1,"value":"0x28","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2251,"pc":"0xbfc0260c","kind":"write","address":"0x1f207544","width":1,"value":"0xe0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2254,"pc":"0xbfc02618","kind":"write","address":"0x1f207540","width":1,"value":"0x3","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2257,"pc":"0xbfc02624","kind":"write","address":"0x1f207504","width":4,"value":"0x2084","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2260,"pc":"0xbfc02630","kind":"write","address":"0x1f207510","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2263,"pc":"0xbfc0263c","kind":"write","address":"0x1f207500","width":4,"value":"0x6bc3","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2298,"pc":"0xbfc0265c","kind":"write","address":"0x1f207500","width":4,"value":"0x69c3","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2363,"pc":"0xbfc0267c","kind":"write","address":"0x1f207500","width":4,"value":"0x1","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2366,"pc":"0xbfc02688","kind":"write","address":"0x1f200f00","width":1,"value":"0xa","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2369,"pc":"0xbfc02694","kind":"write","address":"0x1f200f00","width":1,"value":"0x68","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2372,"pc":"0xbfc026a0","kind":"write","address":"0x1f207444","width":1,"value":"0xe0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2375,"pc":"0xbfc026ac","kind":"write","address":"0x1f207440","width":1,"value":"0x3","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2378,"pc":"0xbfc026b8","kind":"write","address":"0x1f207404","width":4,"value":"0x2084","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2381,"pc":"0xbfc026c4","kind":"write","address":"0x1f207410","width":4,"value":"0x0","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2384,"pc":"0xbfc026d0","kind":"write","address":"0x1f207400","width":4,"value":"0x6bc3","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2419,"pc":"0xbfc026f0","kind":"write","address":"0x1f207400","width":4,"value":"0x69c3","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2484,"pc":"0xbfc02710","kind":"write","address":"0x1f207400","width":4,"value":"0x1","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2489,"pc":"0xbfc011cc","kind":"write","address":"0x1f206700","width":4,"value":"0x10","ra":"0xbfc011c4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2494,"pc":"0xbfc0139c","kind":"write","address":"0x1f201600","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2497,"pc":"0xbfc013a8","kind":"write","address":"0x1f201604","width":1,"value":"0x7","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2500,"pc":"0xbfc013b4","kind":"write","address":"0x1f001c80","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2503,"pc":"0xbfc013c0","kind":"write","address":"0x1f001c80","width":1,"value":"0x80","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2506,"pc":"0xbfc013cc","kind":"write","address":"0x1f201642","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2509,"pc":"0xbfc013d8","kind":"write","address":"0x1f201644","width":4,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2512,"pc":"0xbfc013e4","kind":"write","address":"0x1f201644","width":4,"value":"0x8000","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2515,"pc":"0xbfc013f0","kind":"write","address":"0x1f201648","width":1,"value":"0x4","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2518,"pc":"0xbfc013fc","kind":"write","address":"0x1f201648","width":1,"value":"0x84","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2521,"pc":"0xbfc01408","kind":"write","address":"0x1f20164c","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2524,"pc":"0xbfc01414","kind":"write","address":"0x1f201668","width":4,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2527,"pc":"0xbfc01420","kind":"write","address":"0x1f201679","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2530,"pc":"0xbfc0142c","kind":"write","address":"0x1f20167c","width":4,"value":"0xc0c","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2533,"pc":"0xbfc01438","kind":"write","address":"0x1f201680","width":4,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2536,"pc":"0xbfc01444","kind":"write","address":"0x1f201684","width":4,"value":"0x410","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2539,"pc":"0xbfc01450","kind":"write","address":"0x1f201688","width":4,"value":"0xc0c","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2542,"pc":"0xbfc0145c","kind":"write","address":"0x1f20168c","width":4,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2545,"pc":"0xbfc01468","kind":"write","address":"0x1f201690","width":4,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2548,"pc":"0xbfc01474","kind":"write","address":"0x1f201694","width":1,"value":"0xc","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2551,"pc":"0xbfc01480","kind":"write","address":"0x1f201698","width":4,"value":"0x404","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2554,"pc":"0xbfc0148c","kind":"write","address":"0x1f2016a0","width":1,"value":"0x8","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2557,"pc":"0xbfc01498","kind":"write","address":"0x1f2016a8","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2560,"pc":"0xbfc014a4","kind":"write","address":"0x1f2016a9","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2563,"pc":"0xbfc014b0","kind":"write","address":"0x1f2016c0","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2566,"pc":"0xbfc014bc","kind":"write","address":"0x1f2016c4","width":1,"value":"0x4","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2569,"pc":"0xbfc014c8","kind":"write","address":"0x1f2016d4","width":1,"value":"0x8","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2572,"pc":"0xbfc014d4","kind":"write","address":"0x1f2016e0","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2575,"pc":"0xbfc014e0","kind":"write","address":"0x1f2016e1","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2578,"pc":"0xbfc014ec","kind":"write","address":"0x1f2016e4","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2581,"pc":"0xbfc014f8","kind":"write","address":"0x1f2016e5","width":1,"value":"0x4","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2584,"pc":"0xbfc01504","kind":"write","address":"0x1f2016e8","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2587,"pc":"0xbfc01510","kind":"write","address":"0x1f2016e9","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2590,"pc":"0xbfc0151c","kind":"write","address":"0x1f2016ec","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2593,"pc":"0xbfc01528","kind":"write","address":"0x1f2016ed","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2596,"pc":"0xbfc01534","kind":"write","address":"0x1f2016f0","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2599,"pc":"0xbfc01540","kind":"write","address":"0x1f2016f1","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2602,"pc":"0xbfc0154c","kind":"write","address":"0x1f201700","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2605,"pc":"0xbfc01558","kind":"write","address":"0x1f201701","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2608,"pc":"0xbfc01564","kind":"write","address":"0x1f201705","width":1,"value":"0x1","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2611,"pc":"0xbfc01570","kind":"write","address":"0x1f20170c","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2614,"pc":"0xbfc0157c","kind":"write","address":"0x1f20170d","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2617,"pc":"0xbfc01588","kind":"write","address":"0x1f201720","width":1,"value":"0xc","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2620,"pc":"0xbfc01594","kind":"write","address":"0x1f201730","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2623,"pc":"0xbfc015a0","kind":"write","address":"0x1f201731","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2626,"pc":"0xbfc015ac","kind":"write","address":"0x1f201745","width":1,"value":"0x4","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2629,"pc":"0xbfc015b8","kind":"write","address":"0x1f201749","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2632,"pc":"0xbfc015c4","kind":"write","address":"0x1f20174c","width":1,"value":"0x1c","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2635,"pc":"0xbfc015d0","kind":"write","address":"0x1f206400","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2638,"pc":"0xbfc015dc","kind":"write","address":"0x1f206481","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2641,"pc":"0xbfc015e8","kind":"write","address":"0x1f20175c","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2644,"pc":"0xbfc015f4","kind":"write","address":"0x1f201790","width":1,"value":"0x24","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2647,"pc":"0xbfc01600","kind":"write","address":"0x1f2017f8","width":1,"value":"0x1","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2650,"pc":"0xbfc0160c","kind":"write","address":"0x1f201641","width":1,"value":"0x4","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2653,"pc":"0xbfc01618","kind":"write","address":"0x1f201640","width":1,"value":"0x1","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2656,"pc":"0xbfc01624","kind":"write","address":"0x1f201658","width":1,"value":"0x10","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2659,"pc":"0xbfc01630","kind":"write","address":"0x1f201658","width":1,"value":"0x30","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2662,"pc":"0xbfc0163c","kind":"write","address":"0x1f201684","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2665,"pc":"0xbfc01648","kind":"write","address":"0x1f201685","width":1,"value":"0x1","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2668,"pc":"0xbfc01654","kind":"write","address":"0x1f206628","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2671,"pc":"0xbfc01660","kind":"write","address":"0x1f206629","width":1,"value":"0x1","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2674,"pc":"0xbfc0166c","kind":"write","address":"0x1f206614","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2677,"pc":"0xbfc01678","kind":"write","address":"0x1f206615","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2680,"pc":"0xbfc01684","kind":"write","address":"0x1f206618","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2683,"pc":"0xbfc01690","kind":"write","address":"0x1f206619","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2686,"pc":"0xbfc0169c","kind":"write","address":"0x1f20661c","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2689,"pc":"0xbfc016a8","kind":"write","address":"0x1f20661d","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2692,"pc":"0xbfc016b4","kind":"write","address":"0x1f206620","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2695,"pc":"0xbfc016c0","kind":"write","address":"0x1f206621","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2698,"pc":"0xbfc016cc","kind":"write","address":"0x1f206624","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2701,"pc":"0xbfc016d8","kind":"write","address":"0x1f206625","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2704,"pc":"0xbfc016e4","kind":"write","address":"0x1f206628","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2707,"pc":"0xbfc016f0","kind":"write","address":"0x1f206629","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2710,"pc":"0xbfc016fc","kind":"write","address":"0x1f20662c","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2713,"pc":"0xbfc01708","kind":"write","address":"0x1f20662d","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2716,"pc":"0xbfc01714","kind":"write","address":"0x1f206630","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2719,"pc":"0xbfc01720","kind":"write","address":"0x1f206631","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2722,"pc":"0xbfc0172c","kind":"write","address":"0x1f206610","width":1,"value":"0x1","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2725,"pc":"0xbfc01738","kind":"write","address":"0x1f206611","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2728,"pc":"0xbfc01744","kind":"write","address":"0x1f206600","width":1,"value":"0x11","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2731,"pc":"0xbfc01750","kind":"write","address":"0x1f206601","width":1,"value":"0x5","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2734,"pc":"0xbfc0175c","kind":"write","address":"0x1f203c44","width":1,"value":"0x2","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2737,"pc":"0xbfc01768","kind":"write","address":"0x1f203c45","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2740,"pc":"0xbfc01774","kind":"write","address":"0x1f2016a0","width":1,"value":"0x8","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2743,"pc":"0xbfc01780","kind":"write","address":"0x1f2016a1","width":1,"value":"0x1","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2746,"pc":"0xbfc0178c","kind":"write","address":"0x1f203c08","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2749,"pc":"0xbfc01798","kind":"write","address":"0x1f203c08","width":1,"value":"0x0","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2754,"pc":"0xbfc011e0","kind":"write","address":"0x1f206700","width":4,"value":"0x11","ra":"0xbfc011d8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2764,"pc":"0xbfc027e4","kind":"write","address":"0x1f20164c","width":4,"value":"0xc01","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2767,"pc":"0xbfc027f0","kind":"write","address":"0x1f203d4c","width":4,"value":"0x400","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2770,"pc":"0xbfc027fc","kind":"write","address":"0x1f203d50","width":4,"value":"0x0","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2772,"pc":"0xbfc02804","kind":"read","address":"0x1f203c08","width":4,"value":"0xa5a52500","ra":"0xbfc01200","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":2775,"pc":"0xbfc02810","kind":"write","address":"0x1f203c08","width":4,"value":"0xa5a52d00","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2777,"pc":"0xbfc02818","kind":"read","address":"0x1f203c08","width":4,"value":"0xa5a52d00","ra":"0xbfc01200","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":2780,"pc":"0xbfc02824","kind":"write","address":"0x1f203c08","width":4,"value":"0x2900","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2782,"pc":"0xbfc0282c","kind":"read","address":"0x1f201318","width":4,"value":"0xa5a5a500","ra":"0xbfc01200","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":2785,"pc":"0xbfc02838","kind":"write","address":"0x1f201318","width":4,"value":"0xa5a5a580","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2788,"pc":"0xbfc02844","kind":"write","address":"0x1f201300","width":4,"value":"0x42","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2791,"pc":"0xbfc02850","kind":"write","address":"0x1f201308","width":4,"value":"0x0","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2793,"pc":"0xbfc02858","kind":"read","address":"0x1f201318","width":4,"value":"0xa5a5a580","ra":"0xbfc01200","sp":"0x0","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=255"}
+{"tick":2796,"pc":"0xbfc02864","kind":"write","address":"0x1f201318","width":4,"value":"0xa500","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2799,"pc":"0xbfc02870","kind":"write","address":"0x1f201310","width":4,"value":"0x0","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2802,"pc":"0xbfc0287c","kind":"write","address":"0x1f201310","width":4,"value":"0x7","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2805,"pc":"0xbfc02888","kind":"write","address":"0x1f201318","width":4,"value":"0x0","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2808,"pc":"0xbfc02894","kind":"write","address":"0x1f201318","width":4,"value":"0x3","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2811,"pc":"0xbfc028a0","kind":"write","address":"0x1f201320","width":4,"value":"0x0","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2814,"pc":"0xbfc028ac","kind":"write","address":"0x1f201308","width":4,"value":"0x0","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2818,"pc":"0xbfc028bc","kind":"write","address":"0x1f201300","width":4,"value":"0x55","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2818,"pc":"0xbfc028bc","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x55","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2822,"pc":"0xbfc028cc","kind":"write","address":"0x1f201300","width":4,"value":"0x41","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2822,"pc":"0xbfc028cc","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x41","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2826,"pc":"0xbfc028dc","kind":"write","address":"0x1f201300","width":4,"value":"0x52","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2826,"pc":"0xbfc028dc","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x52","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2830,"pc":"0xbfc028ec","kind":"write","address":"0x1f201300","width":4,"value":"0x54","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2830,"pc":"0xbfc028ec","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x54","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2834,"pc":"0xbfc028fc","kind":"write","address":"0x1f201300","width":4,"value":"0x5f","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2834,"pc":"0xbfc028fc","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x5f","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2838,"pc":"0xbfc0290c","kind":"write","address":"0x1f201300","width":4,"value":"0x31","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2838,"pc":"0xbfc0290c","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x31","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2842,"pc":"0xbfc0291c","kind":"write","address":"0x1f201300","width":4,"value":"0x31","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2842,"pc":"0xbfc0291c","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x31","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2846,"pc":"0xbfc0292c","kind":"write","address":"0x1f201300","width":4,"value":"0x35","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2846,"pc":"0xbfc0292c","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x35","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2850,"pc":"0xbfc0293c","kind":"write","address":"0x1f201300","width":4,"value":"0x32","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2850,"pc":"0xbfc0293c","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x32","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2854,"pc":"0xbfc0294c","kind":"write","address":"0x1f201300","width":4,"value":"0x30","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2854,"pc":"0xbfc0294c","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x30","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2858,"pc":"0xbfc0295c","kind":"write","address":"0x1f201300","width":4,"value":"0x30","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2858,"pc":"0xbfc0295c","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x30","ra":"0xbfc01200","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":2863,"pc":"0xbfc01208","kind":"write","address":"0x1f206700","width":4,"value":"0x12","ra":"0xbfc01200","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2869,"pc":"0xbfc01994","kind":"write","address":"0x1f206700","width":4,"value":"0x20","ra":"0xbfc01214","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2874,"pc":"0xbfc017ac","kind":"write","address":"0x1f20243c","width":4,"value":"0x0","ra":"0xbfc019a0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2877,"pc":"0xbfc017b8","kind":"write","address":"0x1f20243c","width":4,"value":"0xc01","ra":"0xbfc019a0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2880,"pc":"0xbfc017c4","kind":"write","address":"0x1f20243c","width":4,"value":"0xe00","ra":"0xbfc019a0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2883,"pc":"0xbfc017d0","kind":"write","address":"0x1f202404","width":4,"value":"0x0","ra":"0xbfc019a0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2886,"pc":"0xbfc017dc","kind":"write","address":"0x1f2025f0","width":4,"value":"0x8000","ra":"0xbfc019a0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2889,"pc":"0xbfc017e8","kind":"write","address":"0x1f20248c","width":4,"value":"0xfffe","ra":"0xbfc019a0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2892,"pc":"0xbfc017f4","kind":"write","address":"0x1f2024cc","width":4,"value":"0xffff","ra":"0xbfc019a0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2895,"pc":"0xbfc01800","kind":"write","address":"0x1f20250c","width":4,"value":"0xffff","ra":"0xbfc019a0","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2902,"pc":"0xbfc018fc","kind":"write","address":"0x1f200c3c","width":4,"value":"0x0","ra":"0xbfc019a8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2905,"pc":"0xbfc01908","kind":"write","address":"0x1f200c3c","width":4,"value":"0xc01","ra":"0xbfc019a8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2908,"pc":"0xbfc01914","kind":"write","address":"0x1f200c3c","width":4,"value":"0xe00","ra":"0xbfc019a8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2911,"pc":"0xbfc01920","kind":"write","address":"0x1f200c04","width":4,"value":"0x0","ra":"0xbfc019a8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2914,"pc":"0xbfc0192c","kind":"write","address":"0x1f200df0","width":4,"value":"0x8000","ra":"0xbfc019a8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2917,"pc":"0xbfc01938","kind":"write","address":"0x1f200c8c","width":4,"value":"0xfffe","ra":"0xbfc019a8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2920,"pc":"0xbfc01944","kind":"write","address":"0x1f200ccc","width":4,"value":"0xffff","ra":"0xbfc019a8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2923,"pc":"0xbfc01950","kind":"write","address":"0x1f200d0c","width":4,"value":"0xffff","ra":"0xbfc019a8","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2958,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a74","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2967,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a75","width":1,"value":"0x5","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":2993,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a6c","width":1,"value":"0x4","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3002,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a6d","width":1,"value":"0x40","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3028,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a68","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3037,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a69","width":1,"value":"0x5","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3063,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a68","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3072,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a69","width":1,"value":"0x3","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3098,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a60","width":1,"value":"0xa","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3107,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a61","width":1,"value":"0xd7","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3133,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a64","width":1,"value":"0x33","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3142,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a65","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3168,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202404","width":1,"value":"0x92","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3177,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202405","width":1,"value":"0x2","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3203,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202408","width":1,"value":"0x8b","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3212,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202409","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3238,"pc":"0xbfc00cfc","kind":"write","address":"0x1f20240c","width":1,"value":"0x20","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3247,"pc":"0xbfc00cfc","kind":"write","address":"0x1f20240d","width":1,"value":"0x34","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3273,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202410","width":1,"value":"0x66","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3282,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202411","width":1,"value":"0x16","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3308,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202414","width":1,"value":"0x56","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3317,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202415","width":1,"value":"0x1c","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3343,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202418","width":1,"value":"0x85","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3352,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202419","width":1,"value":"0x54","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3378,"pc":"0xbfc00cfc","kind":"write","address":"0x1f20241c","width":1,"value":"0x44","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3387,"pc":"0xbfc00cfc","kind":"write","address":"0x1f20241d","width":1,"value":"0x20","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3413,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202420","width":1,"value":"0x62","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3422,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202421","width":1,"value":"0xa","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3448,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202424","width":1,"value":"0x40","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3457,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202425","width":1,"value":"0x40","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3483,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202428","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3492,"pc":"0xbfc00cfc","kind":"write","address":"0x1f202429","width":1,"value":"0x80","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3518,"pc":"0xbfc00cfc","kind":"write","address":"0x1f20242c","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3527,"pc":"0xbfc00cfc","kind":"write","address":"0x1f20242d","width":1,"value":"0xc0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3553,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a00","width":1,"value":"0x1","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3562,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a01","width":1,"value":"0x80","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3588,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a70","width":1,"value":"0x33","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3597,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a71","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3623,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a04","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3632,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a05","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3658,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a74","width":1,"value":"0x40","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3667,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a75","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3693,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a78","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3702,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a79","width":1,"value":"0x20","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3728,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a7c","width":1,"value":"0x22","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3737,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a7d","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3763,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a1c","width":1,"value":"0xe7","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3772,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a1d","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3798,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a1c","width":1,"value":"0xa7","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3807,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a1d","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3833,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221adc","width":1,"value":"0x88","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3842,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221add","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3868,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ad4","width":1,"value":"0xc2","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3877,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ad5","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3903,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ad0","width":1,"value":"0xc2","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3912,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ad1","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3938,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ae4","width":1,"value":"0x7","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3947,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ae5","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3973,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ab8","width":1,"value":"0x57","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":3982,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ab9","width":1,"value":"0x55","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4008,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221abc","width":1,"value":"0x57","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4017,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221abd","width":1,"value":"0x55","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4043,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ac0","width":1,"value":"0x38","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4052,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221ac1","width":1,"value":"0x23","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4078,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a20","width":1,"value":"0x0","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4087,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221a21","width":1,"value":"0x3","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4105,"pc":"0xbfc019bc","kind":"write","address":"0x1f206700","width":4,"value":"0x22","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4108,"pc":"0xbfc019c8","kind":"write","address":"0x1f20243c","width":4,"value":"0xc01","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4111,"pc":"0xbfc019d4","kind":"write","address":"0x1f20243c","width":4,"value":"0xc08","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4119,"pc":"0xbfc019f4","kind":"write","address":"0x1f221a04","width":4,"value":"0xaaaa","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4122,"pc":"0xbfc01a00","kind":"write","address":"0x1f206700","width":4,"value":"0x23","ra":"0xbfc019b4","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4155,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b74","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4164,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b75","width":1,"value":"0x5","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4190,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b6c","width":1,"value":"0x5","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4199,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b6d","width":1,"value":"0x40","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4225,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b68","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4234,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b69","width":1,"value":"0x5","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4260,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b68","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4269,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b69","width":1,"value":"0x3","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4295,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b60","width":1,"value":"0xa","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4304,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b61","width":1,"value":"0xd7","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4330,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b64","width":1,"value":"0x33","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4339,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b65","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4365,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c04","width":1,"value":"0x92","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4374,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c05","width":1,"value":"0x2","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4400,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c08","width":1,"value":"0x8b","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4409,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c09","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4435,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c0c","width":1,"value":"0x20","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4444,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c0d","width":1,"value":"0x34","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4470,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c10","width":1,"value":"0x66","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4479,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c11","width":1,"value":"0x16","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4505,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c14","width":1,"value":"0x56","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4514,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c15","width":1,"value":"0x1c","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4540,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c18","width":1,"value":"0x85","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4549,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c19","width":1,"value":"0x54","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4575,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c1c","width":1,"value":"0x44","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4584,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c1d","width":1,"value":"0x20","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4610,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c20","width":1,"value":"0x62","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4619,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c21","width":1,"value":"0xa","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4645,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c24","width":1,"value":"0x40","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4654,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c25","width":1,"value":"0x40","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4680,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c28","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4689,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c29","width":1,"value":"0x80","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4715,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c2c","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4724,"pc":"0xbfc00cfc","kind":"write","address":"0x1f200c2d","width":1,"value":"0xc0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4750,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b00","width":1,"value":"0x1","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4759,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b01","width":1,"value":"0x80","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4785,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b70","width":1,"value":"0x33","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4794,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b71","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4820,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b04","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4829,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b05","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4855,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b74","width":1,"value":"0x40","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4864,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b75","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4890,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b78","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4899,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b79","width":1,"value":"0x20","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4925,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b7c","width":1,"value":"0x22","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4934,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b7d","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4960,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b1c","width":1,"value":"0xe7","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4969,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b1d","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":4995,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b1c","width":1,"value":"0xa7","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5004,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b1d","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5030,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bdc","width":1,"value":"0x88","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5039,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bdd","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5065,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bd4","width":1,"value":"0xc2","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5074,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bd5","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5100,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bd0","width":1,"value":"0xc2","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5109,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bd1","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5135,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bb8","width":1,"value":"0x57","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5144,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bb9","width":1,"value":"0x55","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5170,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bbc","width":1,"value":"0x57","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5179,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bbd","width":1,"value":"0x55","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5205,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bc0","width":1,"value":"0x38","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5214,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221bc1","width":1,"value":"0x23","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5240,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221be4","width":1,"value":"0x7","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5249,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221be5","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5275,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b20","width":1,"value":"0x0","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5284,"pc":"0xbfc00cfc","kind":"write","address":"0x1f221b21","width":1,"value":"0x3","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5302,"pc":"0xbfc01a18","kind":"write","address":"0x1f200c3c","width":4,"value":"0xc01","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5305,"pc":"0xbfc01a24","kind":"write","address":"0x1f200c3c","width":4,"value":"0xc08","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5313,"pc":"0xbfc01a44","kind":"write","address":"0x1f221b04","width":4,"value":"0xaaaa","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5316,"pc":"0xbfc01a50","kind":"write","address":"0x1f206700","width":4,"value":"0x24","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5319,"pc":"0xbfc01a5c","kind":"write","address":"0x1f221a10","width":4,"value":"0xffff","ra":"0xbfc01a10","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5324,"pc":"0xbfc01840","kind":"write","address":"0x1f202400","width":4,"value":"0x0","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5327,"pc":"0xbfc0184c","kind":"write","address":"0x1f200c00","width":4,"value":"0x0","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5338,"pc":"0xbfc0186c","kind":"write","address":"0x1f202400","width":4,"value":"0x8","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5341,"pc":"0xbfc01878","kind":"write","address":"0x1f200c00","width":4,"value":"0x8","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5344,"pc":"0xbfc01884","kind":"write","address":"0x1f202400","width":4,"value":"0xc","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5347,"pc":"0xbfc01890","kind":"write","address":"0x1f200c00","width":4,"value":"0xc","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5367,"pc":"0xbfc018b0","kind":"write","address":"0x1f202400","width":4,"value":"0xe","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5370,"pc":"0xbfc018bc","kind":"write","address":"0x1f200c00","width":4,"value":"0xe","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5387,"pc":"0xbfc018dc","kind":"write","address":"0x1f202400","width":4,"value":"0x1f","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5390,"pc":"0xbfc018e8","kind":"write","address":"0x1f200c00","width":4,"value":"0x1f","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5395,"pc":"0xbfc01a70","kind":"write","address":"0x1f206700","width":4,"value":"0x25","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5396,"pc":"0xbfc01a74","kind":"checkpoint","address":"0x81000000","width":0,"value":"0x0","ra":"0xbfc01a68","sp":"0x0","detail":"DIAGNOSTIC host entry transfer after real early register writes; MIU completion and stage copy bypassed"}
+{"tick":5397,"pc":"0x81000000","kind":"checkpoint","address":"0x81000000","width":0,"value":"0x0","ra":"0xbfc01a68","sp":"0x0","detail":"guest execution entered milestone address"}
+{"tick":5400,"pc":"0x8100000c","kind":"write","address":"0x1f201300","width":4,"value":"0x5f","ra":"0xbfc01a68","sp":"0x0","detail":"recorded register storage; not a complete device"}
+{"tick":5400,"pc":"0x8100000c","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x5f","ra":"0xbfc01a68","sp":"0x0","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":5414,"pc":"0x81000044","kind":"write","address":"0x1f201300","width":4,"value":"0x73","ra":"0xbfc01a68","sp":"0x80a80000","detail":"recorded register storage; not a complete device"}
+{"tick":5414,"pc":"0x81000044","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x73","ra":"0xbfc01a68","sp":"0x80a80000","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":5418,"pc":"0x81000054","kind":"write","address":"0x1f201300","width":4,"value":"0x6e","ra":"0xbfc01a68","sp":"0x80a80000","detail":"recorded register storage; not a complete device"}
+{"tick":5418,"pc":"0x81000054","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x6e","ra":"0xbfc01a68","sp":"0x80a80000","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":5425,"pc":"0x81000408","kind":"read","address":"0x1f001ca4","width":2,"value":"0xa5a5","ra":"0x81000068","sp":"0x80a80000","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=3204455588"}
+{"tick":5427,"pc":"0x81000410","kind":"write","address":"0x1f001ca4","width":2,"value":"0xa5a5","ra":"0x81000068","sp":"0x80a80000","detail":"recorded register storage; not a complete device"}
+{"tick":5433,"pc":"0x81000074","kind":"write","address":"0x1f201300","width":4,"value":"0x50","ra":"0x81000068","sp":"0x80a80000","detail":"recorded register storage; not a complete device"}
+{"tick":5433,"pc":"0x81000074","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x50","ra":"0x81000068","sp":"0x80a80000","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":5500,"pc":"0x810007ac","kind":"read","address":"0x1f201204","width":1,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5507,"pc":"0x810007c8","kind":"write","address":"0x1f201210","width":2,"value":"0x80","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5512,"pc":"0x810007dc","kind":"write","address":"0x1f201214","width":2,"value":"0x2","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5518,"pc":"0x810007f4","kind":"write","address":"0x1f201218","width":2,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5520,"pc":"0x810007fc","kind":"write","address":"0x1f20121c","width":2,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5525,"pc":"0x81000810","kind":"write","address":"0x1f201220","width":2,"value":"0x11d4","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5531,"pc":"0x81000828","kind":"write","address":"0x1f201224","width":2,"value":"0x14","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5533,"pc":"0x81000830","kind":"write","address":"0x1f201228","width":2,"value":"0x1db7","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5537,"pc":"0x81000840","kind":"write","address":"0x1f20122c","width":2,"value":"0x4c1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5542,"pc":"0x81000854","kind":"write","address":"0x1f201230","width":2,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5544,"pc":"0x8100085c","kind":"write","address":"0x1f201234","width":2,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5545,"pc":"0x81000860","kind":"write","address":"0x1f20120c","width":1,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5546,"pc":"0x81000864","kind":"write","address":"0x1f201208","width":2,"value":"0x335","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5548,"pc":"0x8100086c","kind":"write","address":"0x1f201200","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5548,"pc":"0x8100086c","kind":"bdma_crc","address":"0x20080","width":1315284,"value":"0x5f65d0d4","ra":"0x81000088","sp":"0x80a7ffb8","detail":"stock programmed polynomial/seed and bounded flash source; candidate completion latency 64 dispatch ticks"}
+{"tick":5551,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5556,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5561,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5566,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5571,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5576,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5581,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5586,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5591,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5596,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5601,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5606,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5611,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5616,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x8","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5622,"pc":"0x81000890","kind":"read","address":"0x1f201230","width":2,"value":"0xd0d4","ra":"0x81000088","sp":"0x80a7ffb8","detail":"write latch only; hardware side effects unverified"}
+{"tick":5623,"pc":"0x81000894","kind":"read","address":"0x1f201234","width":2,"value":"0x5f65","ra":"0x81000088","sp":"0x80a7ffb8","detail":"write latch only; hardware side effects unverified"}
+{"tick":5663,"pc":"0x810007ac","kind":"read","address":"0x1f201204","width":1,"value":"0x8","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5670,"pc":"0x810007c8","kind":"write","address":"0x1f201210","width":2,"value":"0x80","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5675,"pc":"0x810007dc","kind":"write","address":"0x1f201214","width":2,"value":"0x2","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5681,"pc":"0x810007f4","kind":"write","address":"0x1f201218","width":2,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5683,"pc":"0x810007fc","kind":"write","address":"0x1f20121c","width":2,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5688,"pc":"0x81000810","kind":"write","address":"0x1f201220","width":2,"value":"0x11d4","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5694,"pc":"0x81000828","kind":"write","address":"0x1f201224","width":2,"value":"0x14","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5696,"pc":"0x81000830","kind":"write","address":"0x1f201228","width":2,"value":"0x1db7","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5700,"pc":"0x81000840","kind":"write","address":"0x1f20122c","width":2,"value":"0x4c1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5705,"pc":"0x81000854","kind":"write","address":"0x1f201230","width":2,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5707,"pc":"0x8100085c","kind":"write","address":"0x1f201234","width":2,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5708,"pc":"0x81000860","kind":"write","address":"0x1f20120c","width":1,"value":"0x0","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5709,"pc":"0x81000864","kind":"write","address":"0x1f201208","width":2,"value":"0x335","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5711,"pc":"0x8100086c","kind":"write","address":"0x1f201200","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"recorded register storage; not a complete device"}
+{"tick":5711,"pc":"0x8100086c","kind":"bdma_crc","address":"0x20080","width":1315284,"value":"0x5f65d0d4","ra":"0x81000088","sp":"0x80a7ffb8","detail":"stock programmed polynomial/seed and bounded flash source; candidate completion latency 64 dispatch ticks"}
+{"tick":5714,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5719,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5724,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5729,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5734,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5739,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5744,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5749,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5754,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5759,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5764,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5769,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5774,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x1","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5779,"pc":"0x81000878","kind":"read","address":"0x1f201204","width":1,"value":"0x8","ra":"0x81000088","sp":"0x80a7ffb8","detail":"candidate BDMA busy/done status"}
+{"tick":5785,"pc":"0x81000890","kind":"read","address":"0x1f201230","width":2,"value":"0xd0d4","ra":"0x81000088","sp":"0x80a7ffb8","detail":"write latch only; hardware side effects unverified"}
+{"tick":5786,"pc":"0x81000894","kind":"read","address":"0x1f201234","width":2,"value":"0x5f65","ra":"0x81000088","sp":"0x80a7ffb8","detail":"write latch only; hardware side effects unverified"}
+{"tick":2304230,"pc":"0x81004f08","kind":"checkpoint","address":"0x81004f08","width":0,"value":"0x0","ra":"0x810005c0","sp":"0x80a7ff70","detail":"guest execution entered milestone address"}
+{"tick":89857000,"pc":"0x810000a4","kind":"write","address":"0x1f201300","width":4,"value":"0x44","ra":"0x81000098","sp":"0x80a80000","detail":"recorded register storage; not a complete device"}
+{"tick":89857000,"pc":"0x810000a4","kind":"uart_tx","address":"0x1f201300","width":4,"value":"0x44","ra":"0x81000098","sp":"0x80a80000","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":89857005,"pc":"0x803b0600","kind":"checkpoint","address":"0x803b0600","width":0,"value":"0x0","ra":"0x81000098","sp":"0x80a80000","detail":"guest execution entered milestone address"}
+{"tick":89857005,"pc":"0x803b0600","kind":"guest_inflate_hash","address":"0x3b3980","width":3167072,"value":"0x0","ra":"0x81000098","sp":"0x80a80000","detail":"sha256=149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236"}
+{"tick":90032752,"pc":"0x8055b578","kind":"read","address":"0x1f202580","width":1,"value":"0xa5","ra":"0x8055b7b4","sp":"0x8072d9b8","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90032755,"pc":"0x8055b584","kind":"read","address":"0x1f202580","width":1,"value":"0xa5","ra":"0x8055b7b4","sp":"0x8072d9b8","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90032775,"pc":"0x8055b518","kind":"write","address":"0x1f202580","width":1,"value":"0xa4","ra":"0x8055b59c","sp":"0x8072d9a0","detail":"recorded register storage; not a complete device"}
+{"tick":90032842,"pc":"0x8055b518","kind":"write","address":"0x1f202584","width":1,"value":"0x0","ra":"0x8055b7d4","sp":"0x8072d9b8","detail":"recorded register storage; not a complete device"}
+{"tick":90032901,"pc":"0x8055b518","kind":"write","address":"0x1f202585","width":1,"value":"0x0","ra":"0x8055b7e4","sp":"0x8072d9b8","detail":"recorded register storage; not a complete device"}
+{"tick":90032962,"pc":"0x8055b518","kind":"write","address":"0x1f202588","width":1,"value":"0x0","ra":"0x8055b85c","sp":"0x8072d9b8","detail":"recorded register storage; not a complete device"}
+{"tick":90033021,"pc":"0x8055b518","kind":"write","address":"0x1f202589","width":1,"value":"0x0","ra":"0x8055b86c","sp":"0x8072d9b8","detail":"recorded register storage; not a complete device"}
+{"tick":90033042,"pc":"0x8055b47c","kind":"write","address":"0x1f20258c","width":2,"value":"0x3b1","ra":"0x8055b7f8","sp":"0x8072d9b8","detail":"recorded register storage; not a complete device"}
+{"tick":90033059,"pc":"0x8055b47c","kind":"write","address":"0x1f202590","width":2,"value":"0x655","ra":"0x8055b804","sp":"0x8072d9b8","detail":"recorded register storage; not a complete device"}
+{"tick":90033076,"pc":"0x8055b578","kind":"read","address":"0x1f202580","width":1,"value":"0xa4","ra":"0x8055b814","sp":"0x8072d9b8","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90033079,"pc":"0x8055b584","kind":"read","address":"0x1f202580","width":1,"value":"0xa4","ra":"0x8055b814","sp":"0x8072d9b8","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90033096,"pc":"0x8055b518","kind":"write","address":"0x1f202580","width":1,"value":"0xa5","ra":"0x8055b59c","sp":"0x8072d9a0","detail":"recorded register storage; not a complete device"}
+{"tick":90033180,"pc":"0x803bd2ac","kind":"write","address":"0x1f2025e0","width":2,"value":"0x900","ra":"0x803bd26c","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033181,"pc":"0x803bd2b0","kind":"write","address":"0x1f2025e4","width":2,"value":"0x8","ra":"0x803bd26c","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033184,"pc":"0x803bd2bc","kind":"write","address":"0x1f2025e8","width":2,"value":"0x38","ra":"0x803bd26c","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033185,"pc":"0x803bd2c0","kind":"write","address":"0x1f200de0","width":2,"value":"0x0","ra":"0x803bd26c","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033186,"pc":"0x803bd2c4","kind":"write","address":"0x1f200de4","width":2,"value":"0x0","ra":"0x803bd26c","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033187,"pc":"0x803bd2c8","kind":"write","address":"0x1f200de8","width":2,"value":"0x400","ra":"0x803bd26c","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033230,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c74","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90033238,"pc":"0x803bd714","kind":"write","address":"0x1f001c74","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033256,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c78","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90033264,"pc":"0x803bd714","kind":"write","address":"0x1f001c78","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033282,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c70","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=16"}
+{"tick":90033290,"pc":"0x803bd714","kind":"write","address":"0x1f001c70","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033308,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c74","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=4"}
+{"tick":90033316,"pc":"0x803bd714","kind":"write","address":"0x1f001c74","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033334,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c78","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=4"}
+{"tick":90033342,"pc":"0x803bd714","kind":"write","address":"0x1f001c78","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033360,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c70","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=64"}
+{"tick":90033368,"pc":"0x803bd714","kind":"write","address":"0x1f001c70","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033386,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c40","width":1,"value":"0x13","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=191"}
+{"tick":90033394,"pc":"0x803bd714","kind":"write","address":"0x1f001c40","width":1,"value":"0x2","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033410,"pc":"0x803bd754","kind":"read","address":"0x1f001c41","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=27"}
+{"tick":90033417,"pc":"0x803bd770","kind":"write","address":"0x1f001c41","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033439,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c3c","width":1,"value":"0x20","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=191"}
+{"tick":90033447,"pc":"0x803bd714","kind":"write","address":"0x1f001c3c","width":1,"value":"0x20","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033463,"pc":"0x803bd754","kind":"read","address":"0x1f001c3d","width":1,"value":"0xac","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=27"}
+{"tick":90033470,"pc":"0x803bd770","kind":"write","address":"0x1f001c3d","width":1,"value":"0xac","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033492,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c9c","width":1,"value":"0xf0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=112"}
+{"tick":90033500,"pc":"0x803bd714","kind":"write","address":"0x1f001c9c","width":1,"value":"0xf0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033518,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c9c","width":1,"value":"0xf0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":90033526,"pc":"0x803bd714","kind":"write","address":"0x1f001c9c","width":1,"value":"0xf0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033544,"pc":"0x803bd6f4","kind":"read","address":"0x1f00092c","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=68"}
+{"tick":90033552,"pc":"0x803bd714","kind":"write","address":"0x1f00092c","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033570,"pc":"0x803bd6f4","kind":"read","address":"0x1f00092c","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=34"}
+{"tick":90033578,"pc":"0x803bd714","kind":"write","address":"0x1f00092c","width":1,"value":"0x81","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033596,"pc":"0x803bd6f4","kind":"read","address":"0x1f00092c","width":1,"value":"0x81","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":90033604,"pc":"0x803bd714","kind":"write","address":"0x1f00092c","width":1,"value":"0x1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033622,"pc":"0x803bd6f4","kind":"read","address":"0x1f00092d","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=68"}
+{"tick":90033630,"pc":"0x803bd714","kind":"write","address":"0x1f00092d","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033648,"pc":"0x803bd6f4","kind":"read","address":"0x1f00092d","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=34"}
+{"tick":90033656,"pc":"0x803bd714","kind":"write","address":"0x1f00092d","width":1,"value":"0x81","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033674,"pc":"0x803bd6f4","kind":"read","address":"0x1f00092d","width":1,"value":"0x81","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":90033682,"pc":"0x803bd714","kind":"write","address":"0x1f00092d","width":1,"value":"0x1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033700,"pc":"0x803bd6f4","kind":"read","address":"0x1f000930","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=68"}
+{"tick":90033708,"pc":"0x803bd714","kind":"write","address":"0x1f000930","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033726,"pc":"0x803bd6f4","kind":"read","address":"0x1f000930","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=34"}
+{"tick":90033734,"pc":"0x803bd714","kind":"write","address":"0x1f000930","width":1,"value":"0x81","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033752,"pc":"0x803bd6f4","kind":"read","address":"0x1f000930","width":1,"value":"0x81","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":90033760,"pc":"0x803bd714","kind":"write","address":"0x1f000930","width":1,"value":"0x1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033778,"pc":"0x803bd6f4","kind":"read","address":"0x1f002848","width":1,"value":"0xa4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90033786,"pc":"0x803bd714","kind":"write","address":"0x1f002848","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033804,"pc":"0x803bd6f4","kind":"read","address":"0x1f002845","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90033812,"pc":"0x803bd714","kind":"write","address":"0x1f002845","width":1,"value":"0xa1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033830,"pc":"0x803bd6f4","kind":"read","address":"0x1f002844","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90033838,"pc":"0x803bd714","kind":"write","address":"0x1f002844","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033856,"pc":"0x803bd6f4","kind":"read","address":"0x1f002848","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=2"}
+{"tick":90033864,"pc":"0x803bd714","kind":"write","address":"0x1f002848","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033882,"pc":"0x803bd6f4","kind":"read","address":"0x1f002845","width":1,"value":"0xa1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=2"}
+{"tick":90033890,"pc":"0x803bd714","kind":"write","address":"0x1f002845","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033908,"pc":"0x803bd6f4","kind":"read","address":"0x1f002844","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=2"}
+{"tick":90033916,"pc":"0x803bd714","kind":"write","address":"0x1f002844","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033934,"pc":"0x803bd6f4","kind":"read","address":"0x1f002848","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=4"}
+{"tick":90033942,"pc":"0x803bd714","kind":"write","address":"0x1f002848","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033960,"pc":"0x803bd6f4","kind":"read","address":"0x1f002845","width":1,"value":"0xa3","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=4"}
+{"tick":90033968,"pc":"0x803bd714","kind":"write","address":"0x1f002845","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90033986,"pc":"0x803bd6f4","kind":"read","address":"0x1f002844","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=4"}
+{"tick":90033994,"pc":"0x803bd714","kind":"write","address":"0x1f002844","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034012,"pc":"0x803bd6f4","kind":"read","address":"0x1f002848","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=8"}
+{"tick":90034020,"pc":"0x803bd714","kind":"write","address":"0x1f002848","width":1,"value":"0xaf","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034038,"pc":"0x803bd6f4","kind":"read","address":"0x1f002845","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=8"}
+{"tick":90034046,"pc":"0x803bd714","kind":"write","address":"0x1f002845","width":1,"value":"0xaf","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034064,"pc":"0x803bd6f4","kind":"read","address":"0x1f002844","width":1,"value":"0xa7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=8"}
+{"tick":90034072,"pc":"0x803bd714","kind":"write","address":"0x1f002844","width":1,"value":"0xaf","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034108,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cac","width":1,"value":"0x15","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034116,"pc":"0x803bd714","kind":"write","address":"0x1f203cac","width":1,"value":"0x15","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034132,"pc":"0x803bd754","kind":"read","address":"0x1f203cad","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034139,"pc":"0x803bd770","kind":"write","address":"0x1f203cad","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034161,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cb0","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034169,"pc":"0x803bd714","kind":"write","address":"0x1f203cb0","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034185,"pc":"0x803bd754","kind":"read","address":"0x1f203cb1","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":90034192,"pc":"0x803bd770","kind":"write","address":"0x1f203cb1","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034214,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cb8","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034222,"pc":"0x803bd714","kind":"write","address":"0x1f203cb8","width":1,"value":"0x20","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034238,"pc":"0x803bd754","kind":"read","address":"0x1f203cb9","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034245,"pc":"0x803bd770","kind":"write","address":"0x1f203cb9","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034267,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cbc","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034275,"pc":"0x803bd714","kind":"write","address":"0x1f203cbc","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034291,"pc":"0x803bd754","kind":"read","address":"0x1f203cbd","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":90034298,"pc":"0x803bd770","kind":"write","address":"0x1f203cbd","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034320,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d09","width":1,"value":"0x1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=240"}
+{"tick":90034328,"pc":"0x803bd714","kind":"write","address":"0x1f203d09","width":1,"value":"0x1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034346,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=240"}
+{"tick":90034354,"pc":"0x803bd714","kind":"write","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034372,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d90","width":1,"value":"0xb4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":90034380,"pc":"0x803bd714","kind":"write","address":"0x1f203d90","width":1,"value":"0xb4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034398,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d09","width":1,"value":"0x1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=6"}
+{"tick":90034406,"pc":"0x803bd714","kind":"write","address":"0x1f203d09","width":1,"value":"0x1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034424,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=6"}
+{"tick":90034432,"pc":"0x803bd714","kind":"write","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034450,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d15","width":1,"value":"0x80","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":90034458,"pc":"0x803bd714","kind":"write","address":"0x1f203d15","width":1,"value":"0x83","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034474,"pc":"0x803bd754","kind":"read","address":"0x1f203d18","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=0"}
+{"tick":90034481,"pc":"0x803bd770","kind":"write","address":"0x1f203d18","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034503,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d19","width":1,"value":"0xac","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":90034511,"pc":"0x803bd714","kind":"write","address":"0x1f203d19","width":1,"value":"0xac","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034527,"pc":"0x803bd754","kind":"read","address":"0x1f203d1c","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=0"}
+{"tick":90034534,"pc":"0x803bd770","kind":"write","address":"0x1f203d1c","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034556,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cc8","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034564,"pc":"0x803bd714","kind":"write","address":"0x1f203cc8","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034580,"pc":"0x803bd754","kind":"read","address":"0x1f203cc9","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":90034587,"pc":"0x803bd770","kind":"write","address":"0x1f203cc9","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034609,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cd0","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034617,"pc":"0x803bd714","kind":"write","address":"0x1f203cd0","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034633,"pc":"0x803bd754","kind":"read","address":"0x1f203cd1","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":90034640,"pc":"0x803bd770","kind":"write","address":"0x1f203cd1","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034662,"pc":"0x803bd6f4","kind":"read","address":"0x1f203c98","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034670,"pc":"0x803bd714","kind":"write","address":"0x1f203c98","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034686,"pc":"0x803bd754","kind":"read","address":"0x1f203c99","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":90034693,"pc":"0x803bd770","kind":"write","address":"0x1f203c99","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034715,"pc":"0x803bd6f4","kind":"read","address":"0x1f203c9c","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034723,"pc":"0x803bd714","kind":"write","address":"0x1f203c9c","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034739,"pc":"0x803bd754","kind":"read","address":"0x1f203c9d","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=7"}
+{"tick":90034746,"pc":"0x803bd770","kind":"write","address":"0x1f203c9d","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034768,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cec","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034776,"pc":"0x803bd714","kind":"write","address":"0x1f203cec","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034792,"pc":"0x803bd754","kind":"read","address":"0x1f203ced","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034799,"pc":"0x803bd770","kind":"write","address":"0x1f203ced","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034821,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cf0","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034829,"pc":"0x803bd714","kind":"write","address":"0x1f203cf0","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034845,"pc":"0x803bd754","kind":"read","address":"0x1f203cf1","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034852,"pc":"0x803bd770","kind":"write","address":"0x1f203cf1","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034874,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cf8","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034882,"pc":"0x803bd714","kind":"write","address":"0x1f203cf8","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034898,"pc":"0x803bd754","kind":"read","address":"0x1f203cf9","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034905,"pc":"0x803bd770","kind":"write","address":"0x1f203cf9","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034927,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cfc","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034935,"pc":"0x803bd714","kind":"write","address":"0x1f203cfc","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034951,"pc":"0x803bd754","kind":"read","address":"0x1f203cfd","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90034958,"pc":"0x803bd770","kind":"write","address":"0x1f203cfd","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90034980,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cf4","width":1,"value":"0xa4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90034988,"pc":"0x803bd714","kind":"write","address":"0x1f203cf4","width":1,"value":"0xa4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035006,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d00","width":1,"value":"0xa4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90035014,"pc":"0x803bd714","kind":"write","address":"0x1f203d00","width":1,"value":"0xa4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035032,"pc":"0x803bd6f4","kind":"read","address":"0x1f203dc0","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=1"}
+{"tick":90035040,"pc":"0x803bd714","kind":"write","address":"0x1f203dc0","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035058,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cf5","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=31"}
+{"tick":90035066,"pc":"0x803bd714","kind":"write","address":"0x1f203cf5","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035084,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d01","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=31"}
+{"tick":90035092,"pc":"0x803bd714","kind":"write","address":"0x1f203d01","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035110,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d14","width":1,"value":"0x80","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=127"}
+{"tick":90035118,"pc":"0x803bd714","kind":"write","address":"0x1f203d14","width":1,"value":"0x80","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035136,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d15","width":1,"value":"0x83","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=127"}
+{"tick":90035144,"pc":"0x803bd714","kind":"write","address":"0x1f203d15","width":1,"value":"0x80","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035162,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d90","width":1,"value":"0xb4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=64"}
+{"tick":90035170,"pc":"0x803bd714","kind":"write","address":"0x1f203d90","width":1,"value":"0xb4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035188,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d30","width":1,"value":"0x58","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035196,"pc":"0x803bd714","kind":"write","address":"0x1f203d30","width":1,"value":"0x58","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035212,"pc":"0x803bd754","kind":"read","address":"0x1f203d31","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035219,"pc":"0x803bd770","kind":"write","address":"0x1f203d31","width":1,"value":"0x2","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035241,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d34","width":1,"value":"0x80","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=63"}
+{"tick":90035249,"pc":"0x803bd714","kind":"write","address":"0x1f203d34","width":1,"value":"0x80","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035267,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d38","width":1,"value":"0x81","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035275,"pc":"0x803bd714","kind":"write","address":"0x1f203d38","width":1,"value":"0x81","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035291,"pc":"0x803bd754","kind":"read","address":"0x1f203d39","width":1,"value":"0x86","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035298,"pc":"0x803bd770","kind":"write","address":"0x1f203d39","width":1,"value":"0x4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035320,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d35","width":1,"value":"0x80","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=63"}
+{"tick":90035328,"pc":"0x803bd714","kind":"write","address":"0x1f203d35","width":1,"value":"0x80","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035346,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cd8","width":1,"value":"0x4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035354,"pc":"0x803bd714","kind":"write","address":"0x1f203cd8","width":1,"value":"0x4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035370,"pc":"0x803bd754","kind":"read","address":"0x1f203cd9","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":90035377,"pc":"0x803bd770","kind":"write","address":"0x1f203cd9","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035399,"pc":"0x803bd6f4","kind":"read","address":"0x1f203cdc","width":1,"value":"0x2","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035407,"pc":"0x803bd714","kind":"write","address":"0x1f203cdc","width":1,"value":"0x2","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035423,"pc":"0x803bd754","kind":"read","address":"0x1f203cdd","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":90035430,"pc":"0x803bd770","kind":"write","address":"0x1f203cdd","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035452,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d40","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=64"}
+{"tick":90035460,"pc":"0x803bd714","kind":"write","address":"0x1f203d40","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035478,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d5d","width":1,"value":"0x9d","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=3"}
+{"tick":90035486,"pc":"0x803bd714","kind":"write","address":"0x1f203d5d","width":1,"value":"0x9d","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035504,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d5d","width":1,"value":"0x9d","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=56"}
+{"tick":90035512,"pc":"0x803bd714","kind":"write","address":"0x1f203d5d","width":1,"value":"0x9d","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035530,"pc":"0x803bd6f4","kind":"read","address":"0x1f203c09","width":1,"value":"0x29","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=15"}
+{"tick":90035538,"pc":"0x803bd714","kind":"write","address":"0x1f203c09","width":1,"value":"0x20","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035556,"pc":"0x803bd6f4","kind":"read","address":"0x1f203c08","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035564,"pc":"0x803bd714","kind":"write","address":"0x1f203c08","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035582,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d55","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=31"}
+{"tick":90035590,"pc":"0x803bd714","kind":"write","address":"0x1f203d55","width":1,"value":"0xa0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035608,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d4c","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035616,"pc":"0x803bd714","kind":"write","address":"0x1f203d4c","width":1,"value":"0x21","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035634,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d4d","width":1,"value":"0x4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035642,"pc":"0x803bd714","kind":"write","address":"0x1f203d4d","width":1,"value":"0x43","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035660,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d50","width":1,"value":"0x0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035668,"pc":"0x803bd714","kind":"write","address":"0x1f203d50","width":1,"value":"0x5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035686,"pc":"0x803bd6f4","kind":"read","address":"0x1f203c09","width":1,"value":"0x20","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=192"}
+{"tick":90035694,"pc":"0x803bd714","kind":"write","address":"0x1f203c09","width":1,"value":"0x20","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035712,"pc":"0x803bd6f4","kind":"read","address":"0x1f203dbc","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=16"}
+{"tick":90035720,"pc":"0x803bd714","kind":"write","address":"0x1f203dbc","width":1,"value":"0xa5","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035738,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d90","width":1,"value":"0xb4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=59"}
+{"tick":90035746,"pc":"0x803bd714","kind":"write","address":"0x1f203d90","width":1,"value":"0xb4","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035764,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d5c","width":1,"value":"0xd0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035772,"pc":"0x803bd714","kind":"write","address":"0x1f203d5c","width":1,"value":"0xd0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035790,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d5c","width":1,"value":"0xd0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035798,"pc":"0x803bd714","kind":"write","address":"0x1f203d5c","width":1,"value":"0xd0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035816,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d5c","width":1,"value":"0xd0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"write latch only; hardware side effects unverified"}
+{"tick":90035824,"pc":"0x803bd714","kind":"write","address":"0x1f203d5c","width":1,"value":"0xd0","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035842,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d91","width":1,"value":"0xa1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=14"}
+{"tick":90035850,"pc":"0x803bd714","kind":"write","address":"0x1f203d91","width":1,"value":"0xa1","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035885,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c25","width":1,"value":"0xad","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=8"}
+{"tick":90035893,"pc":"0x803bd714","kind":"write","address":"0x1f001c25","width":1,"value":"0xad","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035911,"pc":"0x803bd6f4","kind":"read","address":"0x1f001c25","width":1,"value":"0xad","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=16"}
+{"tick":90035919,"pc":"0x803bd714","kind":"write","address":"0x1f001c25","width":1,"value":"0xad","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90035955,"pc":"0x803bd6f4","kind":"read","address":"0x1f203d41","width":1,"value":"0x25","ra":"0x803bd2d4","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=128"}
+{"tick":90035963,"pc":"0x803bd714","kind":"write","address":"0x1f203d41","width":1,"value":"0x25","ra":"0x803bd2d4","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90036135,"pc":"0x803bd2e4","kind":"read","address":"0x1f001c24","width":4,"value":"0xa5a5ada5","ra":"0x803bd2dc","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=3204455460"}
+{"tick":90036139,"pc":"0x803bd2f4","kind":"write","address":"0x1f001c24","width":4,"value":"0xa5a5ada5","ra":"0x803bd2dc","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90036144,"pc":"0x803bd308","kind":"write","address":"0x1f203d4c","width":4,"value":"0xffff","ra":"0x803bd2dc","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90036146,"pc":"0x803bd310","kind":"write","address":"0x1f203d50","width":4,"value":"0xf","ra":"0x803bd2dc","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90036288,"pc":"0x8054b00c","kind":"write","address":"0x1f201308","width":1,"value":"0x0","ra":"0x8054a6a0","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036292,"pc":"0x8054b01c","kind":"write","address":"0x1f201340","width":1,"value":"0x10","ra":"0x8054a6a0","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036296,"pc":"0x8054b02c","kind":"write","address":"0x1f201310","width":1,"value":"0x17","ra":"0x8054a6a0","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036300,"pc":"0x8054b03c","kind":"write","address":"0x1f201318","width":1,"value":"0x3","ra":"0x8054a6a0","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036338,"pc":"0x8054ab34","kind":"read","address":"0x1f20164d","width":1,"value":"0xc","ra":"0x8054a478","sp":"0x8072d9d0","detail":"write latch only; hardware side effects unverified"}
+{"tick":90036358,"pc":"0x8054ab84","kind":"read","address":"0x1f201318","width":1,"value":"0x3","ra":"0x8054a478","sp":"0x8072d9d0","detail":"write latch only; hardware side effects unverified"}
+{"tick":90036361,"pc":"0x8054ab90","kind":"write","address":"0x1f201318","width":1,"value":"0x83","ra":"0x8054a478","sp":"0x8072d9d0","detail":"recorded register storage; not a complete device"}
+{"tick":90036366,"pc":"0x8054aba4","kind":"write","address":"0x1f201300","width":1,"value":"0x42","ra":"0x8054a478","sp":"0x8072d9d0","detail":"recorded register storage; not a complete device"}
+{"tick":90036370,"pc":"0x8054abb4","kind":"write","address":"0x1f201308","width":1,"value":"0x0","ra":"0x8054a478","sp":"0x8072d9d0","detail":"recorded register storage; not a complete device"}
+{"tick":90036373,"pc":"0x8054abc0","kind":"read","address":"0x1f201318","width":1,"value":"0x83","ra":"0x8054a478","sp":"0x8072d9d0","detail":"write latch only; hardware side effects unverified"}
+{"tick":90036375,"pc":"0x8054abc8","kind":"write","address":"0x1f201318","width":1,"value":"0x3","ra":"0x8054a478","sp":"0x8072d9d0","detail":"recorded register storage; not a complete device"}
+{"tick":90036439,"pc":"0x8054a704","kind":"read","address":"0x1f203d4c","width":1,"value":"0xff","ra":"0x8054a918","sp":"0x8072d9d8","detail":"write latch only; hardware side effects unverified"}
+{"tick":90036445,"pc":"0x8054a71c","kind":"write","address":"0x1f203d4c","width":1,"value":"0xf3","ra":"0x8054a918","sp":"0x8072d9d8","detail":"recorded register storage; not a complete device"}
+{"tick":90036651,"pc":"0x8053b94c","kind":"write","address":"0x1f203018","width":2,"value":"0x3","ra":"0x80547c90","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036652,"pc":"0x8053b950","kind":"read","address":"0x1f203018","width":2,"value":"0x3","ra":"0x80547c90","sp":"0x8072d9e8","detail":"write latch only; hardware side effects unverified"}
+{"tick":90036670,"pc":"0x80548300","kind":"write","address":"0x1f002400","width":1,"value":"0x21","ra":"0x80547ca4","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036672,"pc":"0x80548308","kind":"write","address":"0x1f002404","width":1,"value":"0x0","ra":"0x80547ca4","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036674,"pc":"0x80548310","kind":"write","address":"0x1f002405","width":1,"value":"0x1b","ra":"0x80547ca4","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036676,"pc":"0x80548318","kind":"write","address":"0x1f002408","width":1,"value":"0xb7","ra":"0x80547ca4","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036679,"pc":"0x80548324","kind":"write","address":"0x1f002409","width":1,"value":"0x0","ra":"0x80547ca4","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036680,"pc":"0x80548328","kind":"write","address":"0x1f002400","width":1,"value":"0xa3","ra":"0x80547ca4","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036698,"pc":"0x8053b98c","kind":"read","address":"0x1f203018","width":2,"value":"0x3","ra":"0x80547cb0","sp":"0x8072d9e8","detail":"write latch only; hardware side effects unverified"}
+{"tick":90036702,"pc":"0x8053b9a4","kind":"write","address":"0x1f203018","width":2,"value":"0x0","ra":"0x80547cb0","sp":"0x8072d9e8","detail":"recorded register storage; not a complete device"}
+{"tick":90036703,"pc":"0x8053b9a8","kind":"read","address":"0x1f203018","width":2,"value":"0x0","ra":"0x80547cb0","sp":"0x8072d9e8","detail":"write latch only; hardware side effects unverified"}
+{"tick":90036781,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90036787,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x20","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90036787,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x20","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90036878,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90036884,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x40","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90036884,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x40","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90036975,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90036981,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x40","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90036981,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x40","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037072,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037078,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x40","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037078,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x40","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037169,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037175,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x20","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037175,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x20","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037266,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037272,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x48","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037272,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x48","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037363,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037369,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x65","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037369,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x65","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037460,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037466,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x6c","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037466,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x6c","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037557,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037563,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x6c","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037563,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x6c","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037654,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037660,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x6f","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037660,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x6f","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037751,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037757,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x20","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037757,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x20","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037848,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037854,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x54","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037854,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x54","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90037945,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90037951,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0x34","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90037951,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0x34","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90038043,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90038049,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0xd","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90038049,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0xd","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90038111,"pc":"0x8054b430","kind":"read","address":"0x1f201328","width":1,"value":"0x60","ra":"0x8054a430","sp":"0x8072d970","detail":"candidate UART LSR: THRE/TEMT follows guest TX writes; no RX source"}
+{"tick":90038117,"pc":"0x8054b448","kind":"write","address":"0x1f201300","width":1,"value":"0xa","ra":"0x8054a430","sp":"0x8072d970","detail":"recorded register storage; not a complete device"}
+{"tick":90038117,"pc":"0x8054b448","kind":"uart_tx","address":"0x1f201300","width":1,"value":"0xa","ra":"0x8054a430","sp":"0x8072d970","detail":"guest byte emitted; 16 dispatch ticks provisional TX latency"}
+{"tick":90038183,"pc":"0x8053bbdc","kind":"read","address":"0x1f001c40","width":1,"value":"0x2","ra":"0x803bd350","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=2"}
+{"tick":90038192,"pc":"0x8053bc00","kind":"write","address":"0x1f001c40","width":1,"value":"0x2","ra":"0x803bd350","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90038194,"pc":"0x8053bc08","kind":"read","address":"0x1f001c3c","width":1,"value":"0x20","ra":"0x803bd350","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=2"}
+{"tick":90038198,"pc":"0x8053bc18","kind":"write","address":"0x1f001c3c","width":1,"value":"0x20","ra":"0x803bd350","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90038234,"pc":"0x8053bbdc","kind":"read","address":"0x1f001c40","width":1,"value":"0x2","ra":"0x803bd358","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=2"}
+{"tick":90038243,"pc":"0x8053bc00","kind":"write","address":"0x1f001c40","width":1,"value":"0x2","ra":"0x803bd358","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90038245,"pc":"0x8053bc08","kind":"read","address":"0x1f001c3c","width":1,"value":"0x20","ra":"0x803bd358","sp":"0x8072da08","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=2"}
+{"tick":90038249,"pc":"0x8053bc18","kind":"write","address":"0x1f001c3c","width":1,"value":"0x20","ra":"0x803bd358","sp":"0x8072da08","detail":"recorded register storage; not a complete device"}
+{"tick":90038310,"pc":"0x8053bd18","kind":"read","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0x803bcf58","sp":"0x8072d9d8","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=2"}
+{"tick":90038314,"pc":"0x8053bd28","kind":"write","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0x803bcf58","sp":"0x8072d9d8","detail":"recorded register storage; not a complete device"}
+{"tick":90038349,"pc":"0x8053bd18","kind":"read","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0x803bcf74","sp":"0x8072d9d8","detail":"SYMBOLIC unknown bits preserved by verified configuration RMW; mask=4"}
+{"tick":90038353,"pc":"0x8053bd28","kind":"write","address":"0x1f203d0d","width":1,"value":"0x7","ra":"0x803bcf74","sp":"0x8072d9d8","detail":"recorded register storage; not a complete device"}
+{"tick":90038632,"pc":"0x8053bde4","kind":"blocked_read","address":"0x1f203d05","width":1,"value":"0xa5","ra":"0x803bcfb4","sp":"0x8072d9d8","detail":"unknown reset/status bits; value is poison, execution stops"}
