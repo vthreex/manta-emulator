@@ -1,0 +1,9 @@
+Test project <repo-root>/work/build-comb
+    Start 1: core_semantics
+1/2 Test #1: core_semantics ...................   Passed    0.11 sec
+    Start 2: native_window_startup
+2/2 Test #2: native_window_startup ............   Passed    0.51 sec
+
+100% tests passed out of 2
+
+Total Test time (real) =   0.62 sec

@@ -95,6 +95,9 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-dlc-timeout") o.exploratoryDlcTimeout=true;
       else if(a=="--exploratory-comb-paired-restore") o.exploratoryCombRestore=true;
       else if(a=="--candidate-semaphore") o.candidateSemaphore=true;
+      else if(a=="--candidate-ge") o.candidateGe=true;
+      else if(a=="--candidate-gop-palette") o.candidateGopPalette=true;
+      else if(a=="--exploratory-ge-reset") o.exploratoryGeReset=true;
       else if(a=="--exploratory-semaphore-idle") o.exploratorySemaphoreIdle=true;
       else if(a=="--exploratory-gop-bank") {
         auto b=std::stoul(value(i),nullptr,0);
@@ -129,7 +132,7 @@ static int appMain(const std::vector<std::string> &args) {
             << "manta --firmware ORIGINAL.bin [--headless] [--nvram "
                "overlay.cow]\n"
                "--record-trace FILE --replay-trace FILE --trace-instructions\n"
-               "--defer-diagnostic-reads: unknown diagnostic caches stay invalid; halt at use\n"
+               "--defer-diagnostic-reads: unknown register observations stay invalid; halt at unsafe use\n"
                "--virtual-rtc: guest-programmed counter with deterministic virtual clock\n"
                "--cp0-timer: source-built engine Count/Compare and guest interrupt entry\n"
                "--candidate-utmi: calibration handshake; analogue data unknown\n"
@@ -148,6 +151,9 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-comb-paired-restore: HYPOTHETICAL quarantined T4 duplicate/restore transaction, no invented status values\n"
                "--exploratory-gop-bank N: HYPOTHETICAL initial selector only (0..15); no IRQ/ACK reset assumption\n"
                "--candidate-semaphore: stateful resource-ID acquire/release; reset owners stay unknown\n"
+               "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
+               "--candidate-gop-palette: guest color/index and original write-pulse palette uploads; no invented reset colors\n"
+               "--exploratory-ge-reset: HYPOTHETICAL disabled engine/virtual queue, initially empty 16-entry stages with provisional clocks/latency\n"
                "--exploratory-semaphore-idle: HYPOTHETICAL initially unowned resources; no PM51/AEON ownership asserted\n"
                "--exploratory-gamma-enable 0|1: HYPOTHETICAL initial bank-10 gamma enable bit\n"
                "--summary FILE --coverage FILE --max-instructions N\n"

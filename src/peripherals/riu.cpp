@@ -69,6 +69,8 @@ uint32_t Riu::storageKey(uint32_t a) const {
   return a;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(candidateGe && ge_.initialized() && a==0x1f20501c && n==2)return GeQueue::statusKnown;
+  if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag()?0xffff:0;
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
     auto it = bytes_.find(storageKey(a + i));
@@ -78,6 +80,9 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   return v;
 }
 uint32_t Riu::get(uint32_t a, unsigned n) const {
+  if(candidateGe && ge_.initialized() && a==0x1f20501c && n==2)
+    return (0xa5a5u&~GeQueue::statusKnown)|ge_.status();
+  if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag().value_or(0xa5a5);
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
     auto it = bytes_.find(storageKey(a + i));
@@ -102,6 +107,7 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
   return crc;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(candidateGe)ge_.advance(tick);
   bool masked = consumedRead_.contains(a);
   auto provenConsumed = masked ? consumedRead_.at(a) : 0;
   consumedRead_.clear(); // one-shot proof, including peripheral early returns
@@ -337,6 +343,23 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(candidateGe && GeQueue::aperture(a)) {
+    if(n!=2 || (a&3))throw std::runtime_error("GE controller requires corroborated halfword register lanes");
+    if(a==0x1f20501c)throw std::runtime_error("GE queue status is hardware-owned, not a writable latch");
+    if(a==0x1f205004 && (knownBits(a,2)&2) && (v&2))
+      throw std::runtime_error("GE virtual command memory transport unsupported; no fabricated VCmd completion");
+    if(!ge_.submit(uint16_t((a-0x1f205000)/4),uint16_t(v),tick)) {
+      stopReason="GE submission requires known initial occupancy and available queue capacity";
+      event("blocked_write",a,n,v,stopReason);return;
+    }
+    event("ge_queue_submit",a,n,v,"guest parameter register submission; two experimental timed stages; no raster operation retired");
+  }
+  if(candidateGopPalette && a==0x1f203e14 && n==2 && (gopBank()==0 || gopBank()==3)) {
+    auto color=get(0x1f203e0c,2)|(get(0x1f203e10,2)<<16);
+    auto known=knownBits(0x1f203e0c,2)|(knownBits(0x1f203e10,2)<<16);
+    if(palette_.pulse(gopBank(),uint16_t(v),uint16_t(knownBits(a,2)),color,known))
+      event("gop_palette_commit",gopBank()*256+(v&255),4,color,"original guest color/index and full register5 write pulse; no invented palette reset values");
+  }
   if(a<=0x1f205e10 && a+n>0x1f205e10 && scBank()==0x1a) {
     // A command write does not prove the asynchronous capture completion.
     // Keep status bit 3 invalid until a real producer is established.

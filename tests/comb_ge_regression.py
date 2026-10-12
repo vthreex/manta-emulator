@@ -54,7 +54,15 @@ with tempfile.TemporaryDirectory(prefix='manta-comb-replay-') as tmp:
  tmp=Path(tmp);out=tmp/'summary.json'
  r=subprocess.run([a.emulator]+flags+['--replay-trace',a.reference_trace,'--summary',str(out)],capture_output=True,text=True)
  assert r.returncode==2,(r.returncode,r.stderr)
- replay=json.loads(out.read_text());assert replay==ref,'original boot/IRQ/MMIO sequence must replay identically'
+ replay=json.loads(out.read_text())
+ # Older golden summaries predate these optional diagnostic counters. Their
+ # default values must be inert; every original checkpoint field still matches.
+ extra={'candidate_ge':False,'exploratory_ge_reset':False,'ge_parameter_submissions':0,
+        'ge_parameter_transfers':0,'ge_parameter_retirements':0,
+        'candidate_gop_palette':False,'gop_palette_commits':0,'gop_palette_defined_entries':[0,0]}
+ assert set(replay)-set(ref)<=set(extra),'unexpected golden-summary schema change'
+ assert all(replay[k]==extra[k] for k in set(replay)-set(ref))
+ assert {k:replay[k] for k in ref}==ref,'original boot/IRQ/MMIO sequence must replay identically'
  assert '@@@ Hello T4' in r.stdout and 'USB_Init_Configure done...' in r.stdout
 assert hashlib.sha256(Path(a.firmware).read_bytes()).hexdigest()==stock
 Path(a.report).write_text(json.dumps({'result':'PASS','original_sha256':stock,

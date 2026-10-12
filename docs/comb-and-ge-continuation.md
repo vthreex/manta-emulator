@@ -1,5 +1,7 @@
 # COMB continuation and the graphics-engine boundary
 
+This is the historical **dfc8505** checkpoint. The [GE/GOP continuation](ge-and-gop-continuation.md) records the newer two GOP initializer entries; its new tests and evidence are stored separately below `evidence/ge-*`.
+
 The original firmware reaches **8052624C / BF205004**, after **656,427,765** MIPS instruction dispatches and **1,813** original timer ISR entries. This is explicitly exploratory execution. **No authentic frame, configured framebuffer, GOP initializer entry or OSD is demonstrated.** The native black window still represents an uninitialized display.
 
 ## What stopped the previous run
@@ -35,7 +37,7 @@ The GE context reader next samples `BF205000` bit 0. Its exact original read/mas
 
 At **8052624C**, `LHU v0,5004(t0)` reads **BF205004**. The original routine masks bit 1 and branches on whether virtual command queues are enabled. This meaning is corroborated by the matching `GE_WaitCmdQAvail` body in the [GFX reference archive](https://github.com/Toysoft/mstar/blob/master/Chakra3_017a0d6_20170731/core/drv_bsp/marlon_nos_mips/lib/libapiGFX.a). No earlier guest write established this field. Its reset value and any producer before this call are missing. The run stops before the original branch consumes it; this is a rejected unknown read, not an observed FIFO polling stall.
 
-If virtual queues are enabled, the function reads configuration at `BF2050A8`, queue capacity at `BF20501C` bits 11..15, and virtual-queue status. The disabled branch still needs real queue-space status at `BF20501C` bits 3..7. Original `GE_WaitIdle` compares that field with 16 and separately tests busy bit 0. Returning 16/idle without a supported reset and command-processing model would fabricate readiness, so no such response is supplied.
+If virtual queues are enabled, the function reads configuration at `BF2050A8`, queue capacity at `BF20501C` bits 11..15, and virtual-queue status. The disabled branch also needs queue-space status at `BF20501C` bits 11..15 (`EXT` at `805263AC`). Original `GE_WaitIdle` separately compares bits 3..7 with 16 and tests busy bit 0. Returning 16/idle without a supported reset and command-processing model would fabricate readiness, so no such response is supplied in this checkpoint.
 
 The verified control-flow dependency is:
 
@@ -100,6 +102,6 @@ Final acceptance remains unmet: GOP window setup, framebuffer allocation/drawing
 | Strict uncertainty | POR `80469898 / BF200A38`; default strict path `BFC00C60 / BF001C74`; Winbond `CF` response unresolved |
 | Exploratory uncertainty | All reproduction flags above remain explicit; COMB temporary effects, initial GOP bank and semaphore ownership are unverified |
 
-The versioned source and evidence belong to the commit recorded in the [delivery manifest](../../Manta_LCD4214_build_manifest.json). The archive excludes the original firmware and private vendor reference archives.
+The historical source and evidence were preserved in commit `dfc8505`. The [delivery manifest](../../Manta_LCD4214_build_manifest.json) identifies the latest packaged continuation. The archive excludes the original firmware and private vendor reference archives.
 
 Final Windows validation against the same delivery executable passed: 228 native checks, CTest 2/2 (including native window startup), four Python forensics tests, eighteen baseline firmware regression runs, nine display regression runs, and full replay of the 656,427,765-dispatch continuation. The [provenance record](../evidence/comb-ge-provenance.json) records source/executable/engine/firmware hashes. These passes demonstrate the stated checkpoints and guards, not completion of TV boot or validation of exploratory assumptions. Linux and sanitizer builds were not verified.

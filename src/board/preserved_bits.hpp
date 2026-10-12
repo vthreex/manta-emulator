@@ -54,6 +54,17 @@ public:
       for(unsigned i=0;i<32;++i)result[i]=registers_[rt][i<16?i:15];
       assign(rd,result);return {};
     }
+    if(op==0 && (fn==4 || fn==6 || fn==7)) {
+      if(use(rs))return reject();
+      shift=reg(rs)&31;
+      fn=fn==4?0:fn==6?2:3;
+      for(unsigned i=0;i<32;++i) {
+        if(fn==0) { if(i>=shift)result[i]=registers_[rt][i-shift]; }
+        else if(i+shift<32)result[i]=registers_[rt][i+shift];
+        else if(fn==3)result[i]=registers_[rt][31];
+      }
+      assign(rd,result);return {};
+    }
     if(op==0 && (fn==0 || fn==2 || fn==3)) {
       for(unsigned i=0;i<32;++i) {
         if(fn==0) { if(i>=shift) result[i]=registers_[rt][i-shift]; }

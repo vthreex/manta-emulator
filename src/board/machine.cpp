@@ -1,4 +1,5 @@
 #include "board/machine.hpp"
+#include "board/mmio_read_mask.hpp"
 #include "storage/sha256.hpp"
 #include "video/gop.hpp"
 #include <iomanip>
@@ -24,6 +25,13 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateChipId = o.candidateChipId;
   riu_.candidateGamma = o.candidateGamma;
   riu_.candidateSemaphore=o.candidateSemaphore;
+  riu_.candidateGe=o.candidateGe;
+  riu_.candidateGopPalette=o.candidateGopPalette;
+  if(o.exploratoryGeReset) {
+    if(!o.candidateGe || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("GE reset experiment requires candidate GE and guarded execution");
+    riu_.configureExploratoryGeReset();
+  }
   if(o.exploratorySemaphoreIdle) {
     if(!o.candidateSemaphore || !o.symbolicInit || !o.deferDiagnosticReads)
       throw std::runtime_error("Semaphore idle experiment requires candidate hardware and guarded execution");
@@ -370,30 +378,7 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
     if (m.options_.symbolicInit) {
       uint32_t words[8]{};
       m.cpu_.read(pc & 0x1fffffff, words, sizeof(words));
-      auto op = words[0] >> 26, rt = (words[0] >> 16) & 31;
-      if ((op == 36 || op == 37) && rt) {
-        // A plain architectural JR returns after its delay-slot mask. There
-        // is no observation of the sampled bits before ANDI in this path.
-        if(words[1]==0x03e00008 && words[2]>>26==12 &&
-           ((words[2]>>21)&31)==rt && ((words[2]>>16)&31)==rt)
-          m.riu_.prepareMaskedRead(a,words[2]&65535);
-        for (unsigned i = 1; i < 8; ++i) {
-          auto nextOp = words[i] >> 26, nextRs = (words[i] >> 21) & 31, nextRt = (words[i] >> 16) & 31;
-          if (nextOp == 12 && nextRs == rt && nextRt == rt) {
-            m.riu_.prepareMaskedRead(a, words[i] & 65535); break;
-          }
-            bool independent=(nextOp==9 || nextOp==12 || nextOp==13 || nextOp==15) && nextRt!=rt &&
-            (nextOp==15 || nextRs!=rt);
-          if(nextOp==0 && (words[i]&63)==33)
-            independent=nextRs!=rt && nextRt!=rt && ((words[i]>>11)&31)!=rt;
-          if(nextOp==41 || nextOp==40)independent=nextRs!=rt && nextRt!=rt;
-            // An intervening independent load may stop on its own MMIO
-            // dependency, but cannot expose the first sample's discarded bits.
-            if(nextOp==35 || nextOp==36 || nextOp==37)
-              independent=nextRs!=rt && nextRt!=rt;
-          if(!independent)break;
-        }
-      }
+      if(auto consumed=immediateReadMask(words))m.riu_.prepareMaskedRead(a,*consumed);
     }
     if(m.options_.exploratoryDisplayClock && pc==0x805fbc8c && a==0x1f205e78 && n==1) {
       constexpr uint32_t expected[]={0x90440000,0x8ce39634,0x3c020020,0x34425e00,
@@ -493,15 +478,125 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
         m.event("deferred_gop_selector_mask",a,n,0,"INVALID upper IRQ flags discarded by original caller ANDI; unknown low bank still rejects BEQ");
       }
     }
+    auto geCaller=m.cpu_.reg(UC_MIPS_REG_31);
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==2 &&
+       pc>=0x805d6b68 && pc<0x805d6d1c && a>=0x1f202a00 && a<0x1f202e00) {
+      // Stock filter-route configuration retains unspecified fields from the
+      // strided high/low register pairs. Observations remain INVALID: this is
+      // provenance, not a TSP reset/status/firmware-ready model.
+      constexpr uint32_t route[]={
+        0x000418c0,0x000439c0,0x3c02806e,0x8c486e84,0x00e33823,0x00e43821,0x000738c0,0x01073821,
+        0x94e301ec,0x94e201e8,0x2404ffec,0x00031c00,0x3042ffff,0x00621825,0x00641824,0x00651825,
+        0x3063ffff,0xa4e301e8,0x94e201ec,0x94e301e8,0x30a900ff,0x00021400,0x3063ffff,0x00431025,
+        0x00441024,0x00451025,0x00021402,0xa4e201ec,0x950201fc,0x950301f8,0x31240010,0x3063ffff,
+        0xa50301f8,0x950201fc,0x950301f8,0x3042fff7,0xa50201fc,0x10800019,0x00000000,0x950200b4,
+        0x950200b0,0x3042fffe,0xa50200b0,0x950300b4,0x950200b0,0x3063ffff,0xa50300b4,0x950201fc,
+        0x950201f8,0x3042ffff,0xa50201f8,0x950301fc,0x950201f8,0x3c022000,0x00031c00,0x00431025,
+        0x00021402,0xa50201fc,0x2cc20002,0x14400016,0x00000000,0x03e00008,0x00000000,0x950200b4,
+        0x950200b0,0x3042fffe,0xa50200b0,0x950300b4,0x950200b0,0x3063ffff,0xa50300b4,0x950201fc,
+        0x950201f8,0x3042ffff,0xa50201f8,0x950301fc,0x950201f8,0x2cc20002,0x3063dfff,0xa50301fc,
+        0x1040001a,0x00000000,0x38c20001,0x2c420001,0x01221024,0x1440000c,0x00000000,0x95020114,
+        0x95020110,0x3042feff,0x34420100,0xa5020110,0x95030114,0x95020110,0x3063ffff,0xa5030114,
+        0x03e00008,0x00000000,0x95020114,0x95020110,0x3042fff7,0x34420008,0xa5020110,0x95030114,
+        0x95020110,0x3063ffff,0xa5030114,0x03e00008,0x00000000};
+      uint32_t actual[109]{};m.cpu_.read(0x005d6b68,actual,sizeof(actual));
+      auto instruction=actual[(pc-0x805d6b68)/4];
+      if(std::equal(std::begin(route),std::end(route),std::begin(actual)) && instruction>>26==37) {
+        m.preservedBits_.seed((instruction>>16)&31,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_tsp_route_configuration",a,n,0,"INVALID stock strided filter-route RMW snapshot; only unchanged origin/bit restoration allowed; no live TSP input inferred");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==2 &&
+       ((a==0x1f202bfc && (pc==0x805d7a14 || pc==0x805d7a28)) ||
+        (a==0x1f202bf8 && (pc==0x805d7a18 || pc==0x805d7a2c)))) {
+      constexpr uint32_t disable[]={0x3c02806e,0x8c456e84,0x00042202,0x00042027,
+        0x94a201fc,0x94a301f8,0x3063ffff,0x00641824,0xa4a301f8,0x94a201fc,
+        0x94a301f8,0x00021400,0x00441024,0x00021402,0xa4a201fc,0x03e00008,0};
+      uint32_t actual[17]{};m.cpu_.read(0x005d7a04,actual,sizeof(actual));
+      if(std::equal(std::begin(disable),std::end(disable),std::begin(actual))) {
+        unsigned target=a==0x1f202bfc?2:3;
+        m.preservedBits_.seed(target,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_tsp_irq_mask",a,n,0,"INVALID original strided IRQ-mask configuration snapshot; ignored high pre-reads and same-halfword restore only; no TSP interrupt/ready response supplied");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==2 && a==0x1f203ffc &&
+       (pc==0x8053a4b8 || pc==0x8053a4c8 || pc==0x8053a500)) {
+      constexpr uint32_t writer32[]={0x94e23ffc,0x3049000f,0x11240015,0x30a2ffff,
+        0x94e23ffc,0x30a3ffff,0x00031840,0x3042fff0,0x3084000f,0x24e50004,
+        0x00822025,0x00a32821,0x3102ffff,0x00063402,0x00671821,0xa4e43ffc,
+        0xa4620000,0xa4a60000,0x94e23ffc,0x3042fff0,0x01221025,0xa4e23ffc,
+        0x03e00008,0x00000000};
+      uint32_t actual[24]{};m.cpu_.read(0x0053a4b8,actual,sizeof(actual));
+      if(std::equal(std::begin(writer32),std::end(writer32),std::begin(actual))) {
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_gop_write32_selector",a,n,0,"INVALID IRQ/ACK flags retained by original 32-bit banked writer; only known selector nibble reaches comparison");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x8053a198 &&
+       ((geCaller==0x8053a248 && a>=0x1f201600 && a<0x1f206000) ||
+        (a==0x1f205e18 && m.riu_.scBank()==0) ||
+        (a==0x1f205e14 && m.riu_.scBank()==0x10 && geCaller==0x8053adf0)) && n==2 &&
+       (geCaller==0x8053a828 || geCaller==0x8053a248 || geCaller==0x8053adf0)) {
+      constexpr uint32_t leaf[]={0x94640000,0x03e00008,0xa4c40000};
+      uint32_t actual[3]{};m.cpu_.read(0x0053a198,actual,sizeof(actual));
+      if(std::equal(std::begin(leaf),std::end(leaf),std::begin(actual))) {
+        m.preservedBits_.seed(4,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_gop_scaler_control",a,n,0,"INVALID original GOP scaler snapshot; original masks retain known fields only for decisions, unchanged unknown fields may restore to the same origin");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==2 && a==0x1f203ffc &&
+       (pc==0x8053a2ec || pc==0x8053a2fc || pc==0x8053a320)) {
+      constexpr uint32_t writer[]={0x94a23ffc,0x3046000f,0x10c40015,0x3242ffff,
+        0x94a23ffc,0x3243ffff,0x3084000f,0x3042fff0,0x00031840,0x00822025,
+        0x00651821,0xa4a43ffc,0xa4710000,0x94a23ffc,0x8fbf002c,0x8fb30028,
+        0x3042fff0,0x00c21025,0x8fb20024,0x8fb10020,0x8fb0001c,0xa4a23ffc,
+        0x03e00008,0x27bd0030};
+      uint32_t actual[24]{};m.cpu_.read(0x0053a2ec,actual,sizeof(actual));
+      if(std::equal(std::begin(writer),std::end(writer),std::begin(actual))) {
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_gop_selector_restore",a,n,0,"INVALID IRQ/ACK fields preserved by original masked bank write; only known low nibble reaches bank comparison");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==2 &&
+       a>=0x1f203e00 && a<0x1f204000 &&
+       (pc==0x8053a1ac || pc==0x8053a1bc || pc==0x8053a1e4 || pc==0x8053a1dc || pc==0x8053a204)) {
+      constexpr uint32_t selector[]={0x94a23ffc,0x3047000f,0x10870011,0x3062ffff,
+        0x94a23ffc,0x3084000f,0x3063ffff,0x3042fff0,0x00822025,0x00031840,
+        0xa4a43ffc,0x00651821,0x94640000,0xa4c40000,0x94a23ffc,0x3042fff0,0x00e21025,0xa4a23ffc};
+      constexpr uint32_t tail[]={0x94430000,0x03e00008,0xa4c30000};
+      uint32_t actualSelector[18]{},actualTail[3]{};
+      m.cpu_.read(0x0053a1ac,actualSelector,sizeof(actualSelector));
+      m.cpu_.read(0x0053a204,actualTail,sizeof(actualTail));
+      if(std::equal(std::begin(selector),std::end(selector),std::begin(actualSelector)) &&
+         std::equal(std::begin(tail),std::end(tail),std::begin(actualTail))) {
+        unsigned target=(pc==0x8053a1dc)?4:(pc==0x8053a204)?3:2;
+        m.preservedBits_.seed(target,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_gop_halfword_rmw",a,n,0,"INVALID original HAL bank/read sample; unused IRQ fields stay unknown; first unknown decision/address/new-device use remains guarded");
+      }
+    }
+    bool geInitCheck=false;
+    if(m.options_.candidateGe && geCaller==0x805271e8 && a==0x1f205004) {
+      constexpr uint32_t caller[]={0x30420002,0x1440001f,0x3c048063};
+      uint32_t actualCaller[3]{};m.cpu_.read(geCaller&0x1fffffff,actualCaller,sizeof(actualCaller));
+      geInitCheck=std::equal(std::begin(caller),std::end(caller),std::begin(actualCaller));
+    }
     if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x805268dc &&
-       a>=0x1f205000 && a<0x1f205200 && n==2 && m.cpu_.reg(UC_MIPS_REG_31)==0x80526988) {
+       a>=0x1f205000 && a<0x1f205200 && n==2 && (geCaller==0x80526988 || geInitCheck)) {
       constexpr uint32_t expected[]={0x94640000,0x8fbf001c,0x8fb10018,0x00c42024,
         0x00a42025,0x3082ffff,0x8fb00014,0x03e00008,0x27bd0020};
       uint32_t actual[9]{};m.cpu_.read(pc&0x1fffffff,actual,sizeof(actual));
       if(std::equal(std::begin(expected),std::end(expected),std::begin(actual))) {
         m.preservedBits_.seed(4,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
         m.riu_.prepareOpaqueRead(a);
-        m.event("deferred_ge_context_sample",a,n,0,"INVALID original GE_ReadReg context sample; only unchanged origin/bit restore permitted, no enable/queue/draw state inferred");
+        m.event(geInitCheck?"deferred_ge_init_check":"deferred_ge_context_sample",a,n,0,
+          geInitCheck?"INVALID unused live control fields retained through original GE_ReadReg; verified caller ANDI keeps only independently known VCmd enable bit":
+          "INVALID original GE_ReadReg context sample; only unchanged origin/bit restore permitted, no enable/queue/draw state inferred");
       }
     }
     if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x805f87dc && n==1 &&
@@ -917,6 +1012,14 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"gop_aperture_events\": " << gopEvents_
     << ",\n  \"ge_candidate_aperture_events\": " << geEvents_
     << ",\n  \"ge_blocked_aperture_events\": " << geBlockedEvents_;
+  s << ",\n  \"candidate_ge\": " << (options_.candidateGe?"true":"false")
+    << ",\n  \"exploratory_ge_reset\": " << (options_.exploratoryGeReset?"true":"false")
+    << ",\n  \"ge_parameter_submissions\": " << riu_.geSubmitted()
+    << ",\n  \"ge_parameter_transfers\": " << riu_.geTransferred()
+    << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
+  s << ",\n  \"candidate_gop_palette\": " << (options_.candidateGopPalette?"true":"false")
+    << ",\n  \"gop_palette_commits\": " << riu_.paletteCommits()
+    << ",\n  \"gop_palette_defined_entries\": [" << riu_.paletteDefined(0) << ',' << riu_.paletteDefined(1) << ']';
   if(auto bank=riu_.scBank()) s << ",\n  \"current_sc_bank\": " << *bank;
   else s << ",\n  \"current_sc_bank\": null";
   if(auto bank=riu_.combBank())s << ",\n  \"current_comb_bank\": " << *bank;

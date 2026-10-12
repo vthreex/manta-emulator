@@ -3,3 +3,4 @@
 *.cpp text eol=lf
 *.hpp text eol=lf
 *.md text eol=lf
+evidence/ge-gop-uart.raw binary

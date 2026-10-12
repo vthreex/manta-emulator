@@ -12,6 +12,8 @@
 #include "peripherals/semaphore.hpp"
 #include "video/gamma.hpp"
 #include "video/scaler_timing.hpp"
+#include "video/ge_queue.hpp"
+#include "video/gop_palette.hpp"
 namespace manta {
 struct RiuByte {
   uint8_t value = 0xa5, known = 0;
@@ -32,6 +34,8 @@ class Riu {
   HardwareSemaphore semaphore_;
   GammaRam gamma_;
   ScalerTiming scaler_;
+  GeQueue ge_;
+  GopPalette palette_;
   std::optional<bool> lastOutputSync_;
   uint64_t outputSyncReads_=0, outputSyncTransitions_=0;
   struct CombRestore { uint32_t address; uint8_t bank, low; uint32_t unknown; bool written=false; };
@@ -52,6 +56,21 @@ class Riu {
   void updateOutputTiming(uint64_t tick);
 
 public:
+  bool candidateGopPalette=false;
+  uint64_t paletteCommits() const { return palette_.commits(); }
+  unsigned paletteDefined(unsigned plane) const { return palette_.defined(plane); }
+  std::optional<uint32_t> paletteColor(unsigned plane,unsigned index) const { return palette_.color(plane,index); }
+  bool candidateGe=false;
+  void configureExploratoryGeReset() {
+    ge_.exploratoryReset();
+    // Only original engine enable and virtual-queue selector bits. All other
+    // controls remain invalid. This does not assert Titania4 silicon defaults.
+    bytes_[0x1f205000]={0xa4,1};
+    bytes_[0x1f205004]={0xa5,2};
+  }
+  uint64_t geSubmitted() const { return ge_.submitted(); }
+  uint64_t geCompleted() const { return ge_.completed(); }
+  uint64_t geTransferred() const { return ge_.transferred(); }
   bool candidateSemaphore=false;
   void configureExploratorySemaphoreIdle() { semaphore_.exploratoryIdle(); }
   uint64_t semaphoreAcquisitions() const { return semaphore_.acquisitions(); }

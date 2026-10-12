@@ -28,6 +28,8 @@ struct Options {
   bool exploratoryDlcTimeout=false;
   bool exploratoryCombRestore=false;
   bool candidateSemaphore=false, exploratorySemaphoreIdle=false;
+  bool candidateGe=false, exploratoryGeReset=false;
+  bool candidateGopPalette=false;
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage;
 };

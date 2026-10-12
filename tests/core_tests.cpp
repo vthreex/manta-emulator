@@ -4,6 +4,7 @@
 #include "storage/sha256.hpp"
 #include "board/unknown_observations.hpp"
 #include "board/preserved_bits.hpp"
+#include "board/mmio_read_mask.hpp"
 #include "video/gop.hpp"
 #include <array>
 #include <algorithm>
@@ -696,6 +697,116 @@ void semaphoreTests() {
   rejects([&]{r.read(0x1f203008,1,0,0,0);});
   rejects([&]{r.write(0x1f203009,2,1,0,0,0);});
 }
+void geQueueTests() {
+  manta::GeQueue unknown;
+  rejects([&]{unknown.status();});
+  require(!unknown.submit(0,0,0),"GE unknown initial occupancy cannot accept submissions");
+  manta::GeQueue q; q.exploratoryReset();
+  require(q.status()==0x8080,"GE empty experimental stages expose both original count fields");
+  for(unsigned i=0;i<16;++i)require(q.submit(uint16_t(i),uint16_t(i+1),0),"GE real bounded submission");
+  require(!q.submit(17,1,0),"GE full FIFO rejects overflow");
+  require(((q.status()>>11)&31)==0 && ((q.status()>>3)&31)==16,"GE submission occupancy differs from execution occupancy");
+  q.advance(7);require(q.transferred()==0,"GE time before deadline cannot drain queue");
+  q.advance(8);require(q.transferred()==1 && q.completed()==0 && (q.status()&1),"GE timed transfer enters busy stage");
+  require(((q.status()>>11)&31)==1 && ((q.status()>>3)&31)==15,"GE causal independent stage space");
+  q.advance(1000);require(q.status()==0x8080 && q.completed()==16,"GE eventual drain follows submissions, not status reads");
+  require(q.submitted()==16 && q.transferred()==16,"GE no invented completion without submission");
+  rejects([&]{q.advance(999);});
+  rejects([&]{q.submit(0x60,1,1000);});
+  require(q.submitted()==16,"GE unsupported drawing command never accepted/retired");
+  require(!q.completedTag(),"GE tag reset value remains unknown");
+  require(q.submit(0x32,0x2345,1000),"GE original tag write enters queue");
+  q.advance(1023);require(!q.completedTag(),"GE tag is not completed on write or FIFO transfer");
+  q.advance(1024);require(q.completedTag()==0x2345,"GE tag commits at execution retirement");
+  manta::Riu bus;bus.candidateGe=true;bus.symbolicInit=true;bus.configureExploratoryGeReset();
+  bus.event=[](const auto&,auto,auto,auto,const auto&){};
+  require(bus.knownBits(0x1f205004,2)==2 && bus.knownBits(0x1f205000,2)==1,"GE experiment defines only enable bits");
+  bus.prepareMaskedRead(0x1f20501c,0xf800);
+  require((bus.read(0x1f20501c,2,0,0,0)&0xf800)==0x8000 && bus.stopReason.empty(),"GE queue-space masked read");
+  bus.read(0x1f20501c,2,0,0,0);
+  require(!bus.stopReason.empty(),"GE unrelated status bits remain invalid");
+}
+void readMaskTests() {
+  std::array<uint32_t,8> ctrl={0x95025004,0xafbf002c,0xafb50028,0x30420002,
+      0xafb30020,0xafb2001c,0xafb10018,0xafb00014};
+  require(manta::immediateReadMask(ctrl)==2,"stock GE control read masks bit1 after independent SWs");
+  auto leaked=ctrl;leaked[1]=0xafa2002c;
+  require(!manta::immediateReadMask(leaked),"read mask rejects earlier sampled-value store");
+  leaked=ctrl;leaked[1]=0x10400001;
+  require(!manta::immediateReadMask(leaked),"read mask rejects earlier decision");
+  leaked=ctrl;leaked[1]=0x24420001;
+  require(!manta::immediateReadMask(leaked),"read mask rejects earlier modification");
+  std::array<uint32_t,8> fifo={0x9503501c,0x24110010,0x2ca20010,0x00a2880a,
+      0x7c6322c0,0x0071182b,0x1060fff0,0x2506501c};
+  require(manta::immediateReadMask(fifo)==0xf800,"stock GE EXT reads actual high queue field");
+  auto copied=fifo;copied[1]=0x00608821;
+  require(!manta::immediateReadMask(copied),"read mask rejects earlier register copy");
+  std::array<uint32_t,3> leaf={0x90620000,0x03e00008,0x30420001};
+  require(manta::immediateReadMask(leaf)==1,"original JR delay-slot mask remains supported");
+}
+void gopSelectorProvenanceTests() {
+  manta::PreservedBits p;
+  std::array<uint32_t,32> regs{};regs[2]=0xa5a0;regs[3]=0x1ffc;regs[4]=0;
+  p.seed(2,2,15,[](unsigned b){return 0x1f203ffc+b;});
+  auto step=[&](uint32_t word) { return p.observe(word,[&](unsigned r){return regs[r];},
+      [](uint32_t a){return a;},[](uint32_t,unsigned,uint32_t){}); };
+  require(step(0x3047000f).empty() && p.mask(7)==0,"GOP original bank ANDI discards unknown IRQ/ACK bits into different destination");
+  regs[7]=0;
+  require(step(0x10870011).empty(),"GOP bank comparison consumes only known selector nibble");
+  require(step(0x3062ffff).empty() && p.mask(2)==0,"GOP branch delay slot replaces unused unknown selector value");
+  p.seed(2,2,15,[](unsigned b){return 0x1f203ffc+b;});
+  require(step(0x3042fff0).empty() && p.mask(2)==0xfff0,"GOP original selector restore retains unknown high fields");
+  require(!step(0x10400001).empty(),"GOP unknown IRQ/ACK decision remains blocked");
+  p.seed(2,2,255,[](unsigned b){return 0x800001f8+b;});regs[16]=0;
+  require(step(0x02021007).empty() && p.mask(2)==0xff00,"GOP original SRAV retains exact unknown bit identities with a known shift");
+  require(step(0x30420003).empty() && p.mask(2)==0,"GOP original MIU selector mask discards unused fields");
+  p.seed(2,2,255,[](unsigned b){return 0x800001f8+b;});regs[16]=8;
+  require(step(0x02021007).empty() && p.mask(2)==255,"GOP different plane cannot consume unknown selector bits as known");
+  p.seed(16,1,0,[](unsigned b){return 0x9000+b;});
+  require(!step(0x02021007).empty(),"GOP unknown shift count remains a decision blocker");
+}
+void gopPaletteTests() {
+  manta::GopPalette p;
+  require(!p.color(0,7) && p.defined(0)==0,"GOP palette reset colors stay unknown");
+  require(!p.pulse(0,0x3007,0xffff,0xff112233,0xffffffffu),"GOP color data without command cannot populate palette");
+  require(!p.pulse(0,0x3107,0xffff,0xff112233,0xffffffffu),"GOP starts original palette pulse");
+  require(!p.color(0,7),"GOP palette remains undefined before complete pulse");
+  require(p.pulse(0,0x3007,0xffff,0xff112233,0xffffffffu),"GOP completes original write pulse");
+  require(p.color(0,7)==0xff112233 && p.commits()==1 && p.defined(0)==1,"GOP retains exact guest packed color");
+  require(!p.color(1,7),"GOP palettes retain independent bank state");
+  p.pulse(3,0x3107,0xffff,0x80445566,0xffffffffu);
+  require(p.pulse(3,0x3007,0xffff,0x80445566,0xffffffffu) && p.color(1,7)==0x80445566,"GOP second plane original pulse");
+  rejects([&]{p.pulse(0,0x3101,0xffff,0,0xffff);});
+  rejects([&]{p.pulse(0,0x3101,0xff00,0,0xffffffffu);});
+  p.pulse(0,0x3101,0xffff,0x12345678,0xffffffffu);
+  rejects([&]{p.pulse(0,0x3002,0xffff,0x12345678,0xffffffffu);});
+  require(p.commits()==2,"GOP rejected malformed pulses cannot manufacture entries");
+  p.pulse(0,0x2109,0xffff,0x76543210,0xffffffffu);
+  require(p.pulse(0,0x2009,0xffff,0x76543210,0xffffffffu) && p.mode(0,9)==0x2000,
+      "GOP observed mode2 raw color remains separate from mode3; no pixel format conversion invented");
+}
+void tspProvenanceTests() {
+  manta::PreservedBits p;std::array<uint32_t,32> regs{};
+  regs[8]=0x1f202a00;regs[2]=0xa5a5;unsigned restores=0;uint32_t retained=0;
+  auto step=[&](uint32_t word) {return p.observe(word,[&](unsigned r){return regs[r];},
+      [](uint32_t a){return a;},[&](uint32_t,unsigned,uint32_t mask){++restores;retained=mask;});};
+  p.seed(2,2,0,[](unsigned b){return 0x1f202bfc+b;});
+  require(step(0x3042fff7).empty() && p.mask(2)==0xfff7,
+      "stock TSP route clears only its explicit configuration bit; untouched mask fields remain unknown");
+  regs[2]&=0xfff7;
+  require(step(0xa50201fc).empty() && restores==1 && retained==0xfff7,
+      "stock TSP high-halfword restore preserves the exact original byte/bit identities");
+  require(!step(0xa50200fc).empty(),"TSP unknown IRQ-mask bits cannot be copied into command-queue status");
+  p.seed(2,2,0,[](unsigned b){return 0x1f202afc+b;});regs[2]=0xa5a5;
+  require(step(0x3042001f).empty() && p.mask(2)==31,
+      "original TSP CmdQ_CmdCount mask does not manufacture known occupancy");
+  require(!step(0x14400001).empty(),"original TSP nonempty-queue poll still rejects unknown occupancy");
+  p.seed(2,2,31,[](unsigned b){return 0x1f202afc+b;});regs[2]=0xa5a0;
+  require(step(0x3042001f).empty() && p.mask(2)==0,
+      "known queue-count bits may discard unrelated unknown status fields");
+  regs[2]=0;
+  require(step(0x14400001).empty(),"TSP branch can consume only independently known queue-count bits");
+}
 int main() {
   try {
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
@@ -721,6 +832,11 @@ int main() {
     combRestoreTests();
     preservedRegisterRestoreTests();
     semaphoreTests();
+    geQueueTests();
+    readMaskTests();
+    gopSelectorProvenanceTests();
+    gopPaletteTests();
+    tspProvenanceTests();
     dlcStatusTests();
     combBankTests();
 #ifdef UC_MIPS_MANTA_TIMER_API
