@@ -43,3 +43,11 @@ Prioritized remaining work: COMB high-byte reset/side effects, actual scaler clo
 The observable bus records PC, width, value, physical address, instruction-dispatch tick, RA and SP. Stop summaries include all general registers, the last 64 PCs, and 16 stack words. A reliable full stack unwind and calibrated cycle timing are unsupported.
 
 New encountered subsets: RTC BF002400/2600; UTMI CA_START/CA_END BF207578/7478; SPI ISP BF001000..10FC. Actual sequences, source corroboration and limitations are in [investigation](por-timer-spi-investigation.md). Summaries now include 4096 runtime dispatches, 256 bus accesses, Count/Compare/Cause/EPC and guest software tick. No full stack unwind is claimed.
+
+## COMB/GOP-table/GE continuation
+
+COMB bank0 logical10368F / BF206D1D bits4/5 remain unclassified preserved fields. The original table's mask CF does not establish their reset values. The paired duplicate/restore is an explicit quarantined experiment, not a validated analog model. BF203FFC low nibble is corroborated as GOP bank selection; IRQ/ACK reset states remain unknown. Original table writes BF203E65 in banks0/3 before GOP initialization.
+
+BF203000 + slot*4 is a 16-bit semaphore resource-ID aperture, independently identified from the original acquire/release/reset/query functions and matching named reference bodies. Candidate ownership retains contention; reset ownership is unknown by default. No PM51/AEON owner is fabricated.
+
+BF205000 bit0 is preserved by original GE_ReadReg context logic without assigning it. BF205004 bit1 selects virtual command queues in original GE_WaitCmdQAvail; first encountered before any establishing guest write. BF20501C bits3..7 and11..15 are queue-space fields in the matching functions; bit0 is busy. Queue depth16 is a stock wait predicate, **not an implemented ready constant**. No GE command processing/status producer is claimed. See [current evidence](comb-and-ge-continuation.md).

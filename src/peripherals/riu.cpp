@@ -2,6 +2,22 @@
 #include <array>
 #include <stdexcept>
 namespace manta {
+bool Riu::beginCombRestore(uint32_t a,uint32_t unknown) {
+  if(!exploratoryCombRestore || !symbolicInit || combRestore_ || !combBank() ||
+      (unknown&255)!=(unknown>>8) || !unknown || unknown>0xffff ||
+      knownBits(a,1)!=255) return false;
+  auto off=a-0x1f206c00;
+  if(off!=0x8c && off!=0xbc && off!=0x11c && off!=0x1ac && off!=0x1bc)return false;
+  combRestore_=CombRestore{a,uint8_t(*combBank()),uint8_t(get(a,1)),unknown};
+  event("exploratory_comb_restore_begin",a,2,unknown,
+    "HYPOTHETICAL side-effect-free T4 paired write; unknown high bits stay invalid, temporary low bits quarantined until original restore");
+  return true;
+}
+uint32_t Riu::preservedStoreKey(uint32_t a) const {
+  if(combRestore_ && !combRestore_->written && a==combRestore_->address)
+    return storageKey(a+1);
+  return storageKey(a);
+}
 std::optional<PanelTiming> Riu::panelTiming() const {
   auto word=[&](unsigned off,unsigned mask)->std::optional<unsigned> {
     auto l=scByte(0x10,off),h=scByte(0x10,off+1);
@@ -93,6 +109,18 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     throw std::runtime_error("Unsupported RIU access width");
   bool opaque=opaqueRead_ && *opaqueRead_==a;
   opaqueRead_.reset();
+  if(combRestore_ && !(combRestore_->written && a==combRestore_->address && n==1 &&
+      pc==0x805f8860 && pendingRmw_.contains(a) && pendingRmw_.at(a)==255)) {
+    stopReason="COMB temporary unknown bits quarantined before original low-byte restore";
+    event("blocked_read",a,n,0,stopReason);return 0;
+  }
+  if(candidateSemaphore && HardwareSemaphore::aperture(a)) {
+    if(auto v=semaphore_.owner(a,n)) {
+      event("semaphore_read",a,n,*v,"hardware resource owner, not ordinary writable storage");return *v;
+    }
+    stopReason="semaphore initial resource ownership unknown";
+    event("blocked_read",a,n,0xa5a5,stopReason);return 0xa5a5;
+  }
   if(opaque && symbolicInit) {
     auto v=get(a,n);
     event("read",a,n,v,"INVALID one-shot sample; machine bit-provenance guard rejects first decision/new-device use");
@@ -253,8 +281,36 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   if (n != 1 && n != 2 && n != 4)
     throw std::runtime_error("Unsupported RIU access width");
+  bool closingComb=false;
+  if(combRestore_) {
+    auto &c=*combRestore_;
+    if(combBank()!=c.bank || a!=c.address ||
+       (!c.written && (n!=2 || pc!=0x805f883c || (v&255)!=((v>>8)&255))) ||
+       (c.written && (n!=1 || pc!=0x805f887c || uint8_t(v)!=c.low))) {
+      stopReason="COMB paired-write experiment requires original duplicate then exact low-byte restore";
+      event("blocked_write",a,n,v,stopReason);return;
+    }
+    if(!c.written) {
+      // Unlike a same-origin RMW, this transfers unknown bits into previously
+      // known low bits. They must become invalid, never poison marked known.
+      bytes_[storageKey(a)].known &= uint8_t(~c.unknown);
+      c.written=true;
+    } else closingComb=true;
+  }
+  if(candidateSemaphore && HardwareSemaphore::aperture(a)) {
+    if(!semaphore_.write(a,n,uint16_t(v))) {
+      stopReason="semaphore acquire cannot decide unknown initial ownership";
+      event("blocked_write",a,n,v,stopReason);return;
+    }
+    event("semaphore_write",a,n,v,"zero releases; acquire retains occupied owner; original guest must read back resource ID");
+    return;
+  }
   // Straight-line RMW updates retain unknown-bit masks. No status poll is
   // guessed.
+  if(auto it=preservedUnknownWrite_.find(a);it!=preservedUnknownWrite_.end()) {
+    for(unsigned i=0;i<n;++i)bytes_[storageKey(a+i)].known &= uint8_t(~(it->second>>(i*8)));
+    preservedUnknownWrite_.erase(it);
+  }
   if (symbolicInit && pendingRmw_.contains(a)) {
     auto forced = pendingRmw_.at(a);
     for (unsigned i = 0; i < n; ++i) {
@@ -296,6 +352,12 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         bytes_[a+i].known &= 0x0f;
   }
   event("write", a, n, v, "recorded register storage; not a complete device");
+  if(closingComb) {
+    ++combRestoreCount_;
+    event("exploratory_comb_restore_end",a,1,v,
+      "original low snapshot restored; high preserved bits remain unknown; analogue side effects of intermediate write not validated");
+    combRestore_.reset();
+  }
   if(exploratoryDisplayClock && ((a>=0x1f205e04 && a<0x1f205e44) || a==0x1f20174c))
     updateOutputTiming(tick);
   if (candidateGamma && a == 0x1f205fb4 && n == 1 && get(0x1f205e00, 1) == 0x10) {

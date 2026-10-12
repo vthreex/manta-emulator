@@ -15,11 +15,13 @@ class PreservedBits {
   std::array<Value,32> registers_{};
   std::map<uint32_t,std::array<Bit,8>> memory_;
   bool started_=false;
+public:
   static uint32_t backingAddress(uint32_t a) {
     if(a>=0x40000000 && a<0x48000000)return 0x08000000+a-0x40000000;
     if(a>=0x80000000 && a<0xc0000000)return a&0x1fffffff;
     return a;
   }
+private:
   static bool unknown(const Value &v) { for(auto b:v) if(b.byte) return true; return false; }
 public:
   void seed(unsigned rt,unsigned width,uint32_t known,const std::function<uint32_t(unsigned)> &key) {
@@ -31,7 +33,7 @@ public:
     uint32_t m=0; for(unsigned i=0;i<32;++i) if(registers_.at(rt)[i].byte) m|=uint32_t(1)<<i;
     return m;
   }
-  bool memoryUnknown(uint32_t address) const { return memory_.contains(address); }
+  bool memoryUnknown(uint32_t address) const { return memory_.contains(backingAddress(address)); }
   auto unknownMemoryBytes() const { return memory_.size(); }
   std::string observe(uint32_t w,const std::function<uint32_t(unsigned)> &reg,
       const std::function<uint32_t(uint32_t)> &deviceKey,

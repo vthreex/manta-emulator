@@ -16,6 +16,7 @@ struct Options {
   int exploratorySubwindowEnable = -1;
   int exploratoryDlcPending = -1;
   int exploratoryCombBank = -1;
+  int exploratoryGopBank = -1;
   NorModel flashModel = NorModel::W25Q64BV;
   SpiUnknownInput spiUnknownInput = SpiUnknownInput::Stop;
   bool stage2 = false, initPrefix = false, symbolicInit = false, candidateBdma = false,
@@ -25,6 +26,8 @@ struct Options {
   uint64_t limit = 1000000;
   uint64_t exploratoryDisplayClock = 0;
   bool exploratoryDlcTimeout=false;
+  bool exploratoryCombRestore=false;
+  bool candidateSemaphore=false, exploratorySemaphoreIdle=false;
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage;
 };
@@ -54,7 +57,7 @@ class Msd309Machine {
   UnknownObservations unknownObservations_;
   PreservedBits preservedBits_;
   unsigned deferredReads_ = 0;
-  uint64_t timerEntries_ = 0, gopEvents_ = 0, geEvents_ = 0;
+  uint64_t timerEntries_ = 0, gopEvents_ = 0, geEvents_ = 0, geBlockedEvents_=0;
   bool gopInitializerEntered_ = false;
   uint64_t gopInitializerEntries_ = 0;
   uint64_t scalerInitializerEntries_=0, scalerInitializerReturns_=0, dlcInitializerReturns_=0;

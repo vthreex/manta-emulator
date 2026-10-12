@@ -6,7 +6,7 @@ The latest candidate reset-from-flash run executes 90,220,219 instruction dispat
 
 `T4` is best identified as MStar's **Titania4** platform label, inferred from the original strings and independent MSD309PX hardware research. It does not identify an exact silicon revision or mean the TV finished booting. See [T4 evidence](docs/platform-t4.md).
 
-The guarded unknown-CF run demonstrates **EF4017** identification and descriptor selection, then stops at `8053DD14` before using invalid cached CF samples. Further explicitly exploratory display-clock, DLC timeout and COMB-bank experiments reach `805F883C`, with **279,469,882** original dispatches, **606** stock timer ISR entries and **768** original gamma RAM commits. Original scaler initialization returns; GOP has not executed. POR observations stay invalid; strict candidate boot at `80469898 / BF200A38` remains unresolved. See [current investigation and exact reproduction](docs/display-sync-and-dlc.md).
+The guarded unknown-CF path remains unresolved at its first cached-data use. The newest explicit COMB/GOP-bank/semaphore experiments reach **8052624C / BF205004**, after **656,427,765** original dispatches and **1,813** timer ISR entries. The original scaler/PQ initializer returns, the guest writes a GOP-associated table in banks 0/3, and GFX context initialization begins. **GOP initializer 80539CE4 has not executed; no framebuffer or authentic pixels are demonstrated.** Strict POR and undocumented CF behavior remain unresolved. See [current code, exact reproduction and limitations](docs/comb-and-ge-continuation.md).
 
 ## Run the Windows build
 
@@ -41,7 +41,7 @@ The two byte-verified cache paths remain invalid and stop at first use. RTC/UTMI
 
 `--defer-spi-probe` demonstrates original **9F / EF4017** identification and descriptor selection while preserving unknown CF samples, stopping at their first use. CF is an actual transmitted opcode, but the previous REMS2 label was wrong; see [SPI/display continuation](docs/spi-and-display-continuation.md).
 
-Without the new experimental display clock, the earlier exploratory boundary remains `805FBC8C / BF205E78`. The output-VSYNC counter requires original complete scan geometry and a guest-enabled clock gate. Frequency, monitor polarity and subwindow coupling are explicit hypotheses. Later options expose unknown subwindow/DLC/COMB initial states separately; they do not make strict mode boot. The furthest path stops before unknown COMB bits move into another register byte. No GOP initializer or authentic frame has executed.
+Without the new experimental display clock, the earlier exploratory boundary remains `805FBC8C / BF205E78`. The output-VSYNC counter requires original complete scan geometry and a guest-enabled clock gate. Frequency, monitor polarity and subwindow coupling are explicit hypotheses. Later options expose unknown subwindow/DLC/COMB initial states separately; they do not make strict mode boot. The older path stops before unknown COMB bits move into another register byte. The optional paired-restore experiment quarantines those bits without defining reset values; subsequent execution stops before an unknown GE queue-enable decision. No GOP initializer or authentic frame has executed.
 
 The native window now opens immediately while the guest executes. `--window-smoke-test` needs no firmware and exits 0 after creating a blank native window. Guest stop code 2 means incomplete emulation and is independent of window initialization.
 
@@ -81,6 +81,9 @@ python tools/gpio_analyze.py --firmware ORIGINAL.bin --schematic REFERENCE.pdf -
 python tests/test_forensics.py
 python tests/firmware_regression.py --firmware ORIGINAL.bin --emulator build/manta.exe --report regression.json
 python tests/display_regression.py --firmware ORIGINAL.bin --emulator build/manta.exe --report display-regression.json
+python tools/comb_ge_analyze.py --firmware ORIGINAL.bin --output comb-ge-disassembly.json
+# Full-path replay: supply traces/summaries from the reproduction in docs/comb-and-ge-continuation.md
+python tests/comb_ge_regression.py --help
 ```
 
 Extraction outputs contain your firmware; keep them private. The distribution contains no original or decompressed `.bin` files. The original `0x800010` input is accepted only at the verified SHA-256. Only the first `0x800000` bytes are flash; the last 16 bytes are never mapped. No physical TV was accessed or flashed.
@@ -91,4 +94,4 @@ The Unicorn 2.1.4 generic MIPS memory-hook defect is documented in [engine limit
 
 License: GPL-2.0-or-later for this project; see [LICENSE](LICENSE). Bundled Unicorn contains the documented timer and Windows/alignment fixes; matching source, upstream source, licenses and provenance are in `third_party/`. Reference source was used to research conventions, not assumed to match this board.
 
-194 native checks pass, including real guest MMIO bank switching, shared MIU aliases, gamma commits, deterministic output timing, DLC status invalidation, banked COMB storage and unknown-bit provenance. Original-firmware regressions cover reset/replay, twelve streams, CPU/GPIO dependency, POR/CF guards, Winbond descriptor selection, original MMU setup, gamma upload, three original output waits and continued original ISR execution. The delivered Windows build was tested using equivalent CMake commands; the bootstrap recipe has not been run end-to-end. No Linux build or sanitizer verification is claimed.
+228 native checks pass, including real guest MMIO bank switching, shared MIU aliases, gamma commits, deterministic output timing, DLC status invalidation, banked COMB storage, quarantined duplicate/restore, semaphore contention, and unknown-bit provenance. Original-firmware regressions cover reset/replay, twelve streams, CPU/GPIO dependency, POR/CF guards, Winbond descriptor selection, original MMU setup, gamma upload, three original output waits and continued original ISR execution. The delivered Windows build was tested using equivalent CMake commands; the bootstrap recipe has not been run end-to-end. No Linux build or sanitizer verification is claimed.

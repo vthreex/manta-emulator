@@ -591,10 +591,24 @@ void preservedBitsTests() {
   require(step(0x7c423a00).empty() && p.mask(2)==255,"original EXT keeps gain snapshot unknown");
   step(0x3c044000);regs[4]=0x40001000;regs[2]=0xa5;
   require(step(0xac820000).empty(),"opaque sample can be saved through documented MIU1 alias");
+  require(p.memoryUnknown(0x40001000) && p.memoryUnknown(0x88001000) && p.memoryUnknown(0x08001000),"unknown-byte queries canonicalize all documented MIU1 aliases");
+  require(manta::PreservedBits::backingAddress(0x40001000)==0x08001000,"RMW lookahead must not read MIU0 for raw MIU1 bus alias");
   regs[4]=0x1000;
   require(step(0xac800000).empty(),"MIU0 overwrite does not touch independent MIU1 cache");
   regs[4]=0x88001000;
   require(step(0x8c850000).empty() && p.mask(5)==255,"MIU1 cached alias preserves origin despite MIU0 overwrite");
+  p.seed(2,1,15,[&](unsigned b){return key(0x1f203ffc+b);});regs[31]=0x803c1f60;
+  require(step(0x03e00008).empty() && p.mask(2)==0xf0,"known leaf return cannot discard unknown GOP IRQ flags");
+  require(step(0x304200ff).empty() && p.mask(2)==0xf0,"original byte-reader delay slot retains status provenance");
+  require(step(0x3042000f).empty() && p.mask(2)==0,"original caller masks IRQ flags before comparing a known selector");
+  require(step(0x1051ffd8).empty(),"known selector comparison is allowed after actual guest mask");
+  p.seed(2,1,0,[&](unsigned b){return key(0x1f203ffc+b);});step(0x3042000f);
+  require(!step(0x1051ffd8).empty(),"the same original comparison rejects an unknown power-on GOP bank");
+  step(0x24050000); // known cached context field, independent of prior MIU fixture
+  p.seed(4,2,0,[&](unsigned b){return key(0x1f205000+b);});regs[6]=1;regs[5]=0;
+  require(step(0x00c42024).empty() && p.mask(4)==1,"original GE context mask preserves exactly unknown enable bit zero");
+  require(step(0x00a42025).empty() && p.mask(4)==1,"known cached GE fields do not validate the hardware enable bit");
+  require(step(0x3082ffff).empty() && p.mask(2)==1,"GE_ReadReg return retains invalid enable provenance");
 }
 void dlcStatusTests() {
   manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};
@@ -627,6 +641,61 @@ void combBankTests() {
   r.write(0x1f206c00,1,2,0,0,0);
   require(r.knownBits(0x1f206c04,2)==0,"untouched COMB bank does not inherit earlier table values");
 }
+void combRestoreTests() {
+  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){}; r.symbolicInit=true;
+  r.configureExploratoryCombBank(0); r.write(0x1f206d1c,1,0xc3,0,0,0);
+  r.prepareRmw(0x1f206d1d,0xcf); r.write(0x1f206d1d,1,0xc3,0,0,0);
+  require(!r.beginCombRestore(0x1f206d1c,0x3030),"strict mode never permits foreign-byte opaque transfer");
+  r.exploratoryCombRestore=true;
+  require(!r.beginCombRestore(0x1f206d1c,0x3020),"paired-write rejects mismatched source masks");
+  require(r.beginCombRestore(0x1f206d1c,0x3030),"explicit experiment opens only original special-register transaction");
+  require(r.preservedStoreKey(0x1f206d1c)==r.controlByteKey(0x1f206d1d),"duplicated low sample retains original high bit identity");
+  r.prepareRmw(0x1f206d1c,0xcfcf); r.write(0x1f206d1c,2,0xe3e3,0x805f883c,0,1);
+  require(r.knownBits(0x1f206d1c,2)==0xcfcf,"temporary foreign unknowns invalidate previously known low bits");
+  r.read(0x1f206d1c,1,0,0,2);
+  require(!r.stopReason.empty(),"ordinary read cannot consume quarantined COMB bits");
+  r.stopReason.clear(); r.prepareRmw(0x1f206d1c,255);
+  r.read(0x1f206d1c,1,0x805f8860,0,3);
+  require(r.stopReason.empty(),"original restore RMW discards every quarantined bit");
+  r.write(0x1f206d1c,1,0xc3,0x805f887c,0,4);
+  require(!r.combRestorePending() && r.combRestoreCount()==1,"only original exact saved-byte restore closes transaction");
+  require(r.knownBits(0x1f206d1c,2)==0xcfff,"high unknown status/configuration bits remain invalid after restore");
+  require(r.beginCombRestore(0x1f206d1c,0x3030),"new transaction may follow a completed restore");
+  r.write(0x1f206d1c,2,0xe3e3,0x805f883c,0,5);
+  r.write(0x1f206d1c,1,0xc2,0x805f887c,0,6);
+  require(!r.stopReason.empty() && r.combRestorePending(),"incorrect restore cannot release unknown bits");
+}
+void preservedRegisterRestoreTests() {
+  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;
+  r.write(0x1f205e00,1,0x1a,0,0,0);r.write(0x1f205e51,1,255,0,0,0);
+  r.preparePreservedWrite(0x1f205e51,1,255);r.write(0x1f205e51,1,0xa5,0,0,1);
+  require(r.knownBits(0x1f205e51,1)==0,"restoring invalid gain must invalidate a previously defined FF register");
+  r.write(0x1f203ffc,1,5,0,0,2);require(r.gopBankKnown(),"explicit guest bank write defines selector");
+  r.preparePreservedWrite(0x1f203ffc,1,15);r.write(0x1f203ffc,1,0xa5,0,0,3);
+  require(!r.gopBankKnown() && r.knownBits(0x1f203ffc,1)==0,"opaque bank restore cannot make poison a usable bank");
+  r.write(0x1f205e14,1,0xff,0,0,4);r.preparePreservedWrite(0x1f205e14,1,0x30);
+  r.write(0x1f205e14,1,0xc3,0,0,5);
+  require(r.knownBits(0x1f205e14,1)==0xcf,"preserved writes invalidate only original unknown bits");
+  r.configureExploratoryGopBank(1);
+  require(r.gopBankKnown() && r.gopBank()==1 && r.knownBits(0x1f203ffc,2)==15,"GOP experiment defines only low selector nibble, never IRQ or ACK");
+}
+void semaphoreTests() {
+  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};r.candidateSemaphore=true;
+  r.read(0x1f203008,2,0,0,0);
+  require(!r.stopReason.empty(),"resource ID reset is unknown, never universal zero");r.stopReason.clear();
+  r.write(0x1f203004,2,2,0,0,0);
+  require(!r.stopReason.empty() && r.semaphoreAcquisitions()==0,"unknown owner cannot be claimed by overwriting storage");r.stopReason.clear();
+  r.write(0x1f203004,2,0,0,0,0);r.write(0x1f203004,2,2,0,0,0);
+  require(r.read(0x1f203004,2,0,0,0)==2 && r.semaphoreAcquisitions()==1,"original reset then acquire defines an owner causally");
+  r.write(0x1f203004,2,3,0,0,0);
+  require(r.read(0x1f203004,2,0,0,0)==2 && r.semaphoreContentions()==1,"competing ID cannot steal an acquired semaphore");
+  r.write(0x1f203004,2,2,0,0,0);
+  require(r.semaphoreAcquisitions()==1,"same-owner reacquire is idempotent");
+  r.configureExploratorySemaphoreIdle();
+  require(r.read(0x1f203008,2,0,0,0)==0,"explicit initially-idle fixture leaves another resource unowned");
+  rejects([&]{r.read(0x1f203008,1,0,0,0);});
+  rejects([&]{r.write(0x1f203009,2,1,0,0,0);});
+}
 int main() {
   try {
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
@@ -649,6 +718,9 @@ int main() {
     gopGuestBankTests();
     scalerTimingTests();
     preservedBitsTests();
+    combRestoreTests();
+    preservedRegisterRestoreTests();
+    semaphoreTests();
     dlcStatusTests();
     combBankTests();
 #ifdef UC_MIPS_MANTA_TIMER_API

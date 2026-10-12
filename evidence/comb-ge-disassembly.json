@@ -1,0 +1,6383 @@
+{
+  "original_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "runtime_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+  "isa": "MIPS32 little endian",
+  "signatures": {
+    "comb_duplicate_restore": {
+      "pc": "0x803c69c4",
+      "words": [
+        "0x408821",
+        "0x141827",
+        "0x2b42024",
+        "0x431024",
+        "0x441025",
+        "0x7c021620",
+        "0x3043ffff",
+        "0x31a00",
+        "0x431025",
+        "0x3045ffff",
+        "0x2002021",
+        "0xc17e204",
+        "0x3406ffff"
+      ]
+    },
+    "gop_selector_mask": {
+      "pc": "0x803c1f60",
+      "words": [
+        "0x3042000f",
+        "0x3c040010",
+        "0x2202821",
+        "0x34841ffe",
+        "0x1051ffd8",
+        "0x2406000f"
+      ]
+    },
+    "ge_context_reader": {
+      "pc": "0x805268dc",
+      "words": [
+        "0x94640000",
+        "0x8fbf001c",
+        "0x8fb10018",
+        "0xc42024",
+        "0xa42025",
+        "0x3082ffff",
+        "0x8fb00014",
+        "0x3e00008",
+        "0x27bd0020"
+      ]
+    }
+  },
+  "regions": {
+    "pq_table_loader": {
+      "start": "0x803c6418",
+      "end_exclusive": "0x803c6b80",
+      "aligned_jal_candidates_not_reachability_proof": [
+        "0x803c6c40",
+        "0x803c6d30",
+        "0x803c6d9c"
+      ],
+      "instructions": [
+        {
+          "pc": "0x803c6418",
+          "word": "0x8c860000",
+          "asm": "lw $a2, ($a0)"
+        },
+        {
+          "pc": "0x803c641c",
+          "word": "0x27bdffb8",
+          "asm": "addiu $sp, $sp, -0x48"
+        },
+        {
+          "pc": "0x803c6420",
+          "word": "0xafb3002c",
+          "asm": "sw $s3, 0x2c($sp)"
+        },
+        {
+          "pc": "0x803c6424",
+          "word": "0xafbf0044",
+          "asm": "sw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6428",
+          "word": "0xafbe0040",
+          "asm": "sw $fp, 0x40($sp)"
+        },
+        {
+          "pc": "0x803c642c",
+          "word": "0xafb7003c",
+          "asm": "sw $s7, 0x3c($sp)"
+        },
+        {
+          "pc": "0x803c6430",
+          "word": "0xafb60038",
+          "asm": "sw $s6, 0x38($sp)"
+        },
+        {
+          "pc": "0x803c6434",
+          "word": "0xafb50034",
+          "asm": "sw $s5, 0x34($sp)"
+        },
+        {
+          "pc": "0x803c6438",
+          "word": "0xafb40030",
+          "asm": "sw $s4, 0x30($sp)"
+        },
+        {
+          "pc": "0x803c643c",
+          "word": "0xafb20028",
+          "asm": "sw $s2, 0x28($sp)"
+        },
+        {
+          "pc": "0x803c6440",
+          "word": "0xafb10024",
+          "asm": "sw $s1, 0x24($sp)"
+        },
+        {
+          "pc": "0x803c6444",
+          "word": "0xafb00020",
+          "asm": "sw $s0, 0x20($sp)"
+        },
+        {
+          "pc": "0x803c6448",
+          "word": "0x10c00005",
+          "asm": "beqz $a2, 0x803c6460"
+        },
+        {
+          "pc": "0x803c644c",
+          "word": "0x809821",
+          "asm": "move $s3, $a0"
+        },
+        {
+          "pc": "0x803c6450",
+          "word": "0x90830005",
+          "asm": "lbu $v1, 5($a0)"
+        },
+        {
+          "pc": "0x803c6454",
+          "word": "0x2c620011",
+          "asm": "sltiu $v0, $v1, 0x11"
+        },
+        {
+          "pc": "0x803c6458",
+          "word": "0x1440000d",
+          "asm": "bnez $v0, 0x803c6490"
+        },
+        {
+          "pc": "0x803c645c",
+          "word": "0x31080",
+          "asm": "sll $v0, $v1, 2"
+        },
+        {
+          "pc": "0x803c6460",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6464",
+          "word": "0x8fbe0040",
+          "asm": "lw $fp, 0x40($sp)"
+        },
+        {
+          "pc": "0x803c6468",
+          "word": "0x8fb7003c",
+          "asm": "lw $s7, 0x3c($sp)"
+        },
+        {
+          "pc": "0x803c646c",
+          "word": "0x8fb60038",
+          "asm": "lw $s6, 0x38($sp)"
+        },
+        {
+          "pc": "0x803c6470",
+          "word": "0x8fb50034",
+          "asm": "lw $s5, 0x34($sp)"
+        },
+        {
+          "pc": "0x803c6474",
+          "word": "0x8fb40030",
+          "asm": "lw $s4, 0x30($sp)"
+        },
+        {
+          "pc": "0x803c6478",
+          "word": "0x8fb3002c",
+          "asm": "lw $s3, 0x2c($sp)"
+        },
+        {
+          "pc": "0x803c647c",
+          "word": "0x8fb20028",
+          "asm": "lw $s2, 0x28($sp)"
+        },
+        {
+          "pc": "0x803c6480",
+          "word": "0x8fb10024",
+          "asm": "lw $s1, 0x24($sp)"
+        },
+        {
+          "pc": "0x803c6484",
+          "word": "0x8fb00020",
+          "asm": "lw $s0, 0x20($sp)"
+        },
+        {
+          "pc": "0x803c6488",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x803c648c",
+          "word": "0x27bd0048",
+          "asm": "addiu $sp, $sp, 0x48"
+        },
+        {
+          "pc": "0x803c6490",
+          "word": "0x3c038061",
+          "asm": "lui $v1, 0x8061"
+        },
+        {
+          "pc": "0x803c6494",
+          "word": "0x2463bc84",
+          "asm": "addiu $v1, $v1, -0x437c"
+        },
+        {
+          "pc": "0x803c6498",
+          "word": "0x621821",
+          "asm": "addu $v1, $v1, $v0"
+        },
+        {
+          "pc": "0x803c649c",
+          "word": "0x8c640000",
+          "asm": "lw $a0, ($v1)"
+        },
+        {
+          "pc": "0x803c64a0",
+          "word": "0x800008",
+          "asm": "jr $a0"
+        },
+        {
+          "pc": "0x803c64a4",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803c64a8",
+          "word": "0x3c178066",
+          "asm": "lui $s7, 0x8066"
+        },
+        {
+          "pc": "0x803c64ac",
+          "word": "0x8ee48020",
+          "asm": "lw $a0, -0x7fe0($s7)"
+        },
+        {
+          "pc": "0x803c64b0",
+          "word": "0x2405ff00",
+          "asm": "addiu $a1, $zero, -0x100"
+        },
+        {
+          "pc": "0x803c64b4",
+          "word": "0xc172e11",
+          "asm": "jal 0x805cb844"
+        },
+        {
+          "pc": "0x803c64b8",
+          "word": "0x3c100010",
+          "asm": "lui $s0, 0x10"
+        },
+        {
+          "pc": "0x803c64bc",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c64c0",
+          "word": "0x36042f00",
+          "asm": "ori $a0, $s0, 0x2f00"
+        },
+        {
+          "pc": "0x803c64c4",
+          "word": "0xafa20010",
+          "asm": "sw $v0, 0x10($sp)"
+        },
+        {
+          "pc": "0x803c64c8",
+          "word": "0x92650006",
+          "asm": "lbu $a1, 6($s3)"
+        },
+        {
+          "pc": "0x803c64cc",
+          "word": "0x92620004",
+          "asm": "lbu $v0, 4($s3)"
+        },
+        {
+          "pc": "0x803c64d0",
+          "word": "0xa2102b",
+          "asm": "sltu $v0, $a1, $v0"
+        },
+        {
+          "pc": "0x803c64d4",
+          "word": "0x10400170",
+          "asm": "beqz $v0, 0x803c6a98"
+        },
+        {
+          "pc": "0x803c64d8",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803c64dc",
+          "word": "0x8e640000",
+          "asm": "lw $a0, ($s3)"
+        },
+        {
+          "pc": "0x803c64e0",
+          "word": "0x90820000",
+          "asm": "lbu $v0, ($a0)"
+        },
+        {
+          "pc": "0x803c64e4",
+          "word": "0x90830001",
+          "asm": "lbu $v1, 1($a0)"
+        },
+        {
+          "pc": "0x803c64e8",
+          "word": "0x852821",
+          "asm": "addu $a1, $a0, $a1"
+        },
+        {
+          "pc": "0x803c64ec",
+          "word": "0x21200",
+          "asm": "sll $v0, $v0, 8"
+        },
+        {
+          "pc": "0x803c64f0",
+          "word": "0x621821",
+          "asm": "addu $v1, $v1, $v0"
+        },
+        {
+          "pc": "0x803c64f4",
+          "word": "0x3071ffff",
+          "asm": "andi $s1, $v1, 0xffff"
+        },
+        {
+          "pc": "0x803c64f8",
+          "word": "0x3402ffff",
+          "asm": "ori $v0, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c64fc",
+          "word": "0x90b40003",
+          "asm": "lbu $s4, 3($a1)"
+        },
+        {
+          "pc": "0x803c6500",
+          "word": "0x12220191",
+          "asm": "beq $s1, $v0, 0x803c6b48"
+        },
+        {
+          "pc": "0x803c6504",
+          "word": "0x90920002",
+          "asm": "lbu $s2, 2($a0)"
+        },
+        {
+          "pc": "0x803c6508",
+          "word": "0x361e2f00",
+          "asm": "ori $fp, $s0, 0x2f00"
+        },
+        {
+          "pc": "0x803c650c",
+          "word": "0x2416003f",
+          "asm": "addiu $s6, $zero, 0x3f"
+        },
+        {
+          "pc": "0x803c6510",
+          "word": "0x80f195e",
+          "asm": "j 0x803c6578"
+        },
+        {
+          "pc": "0x803c6514",
+          "word": "0x3415ffff",
+          "asm": "ori $s5, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c6518",
+          "word": "0x322300ff",
+          "asm": "andi $v1, $s1, 0xff"
+        },
+        {
+          "pc": "0x803c651c",
+          "word": "0x25088928",
+          "asm": "addiu $t0, $t0, -0x76d8"
+        },
+        {
+          "pc": "0x803c6520",
+          "word": "0x681821",
+          "asm": "addu $v1, $v1, $t0"
+        },
+        {
+          "pc": "0x803c6524",
+          "word": "0x90620000",
+          "asm": "lbu $v0, ($v1)"
+        },
+        {
+          "pc": "0x803c6528",
+          "word": "0x122027",
+          "asm": "nor $a0, $zero, $s2"
+        },
+        {
+          "pc": "0x803c652c",
+          "word": "0x2922824",
+          "asm": "and $a1, $s4, $s2"
+        },
+        {
+          "pc": "0x803c6530",
+          "word": "0x441024",
+          "asm": "and $v0, $v0, $a0"
+        },
+        {
+          "pc": "0x803c6534",
+          "word": "0x451025",
+          "asm": "or $v0, $v0, $a1"
+        },
+        {
+          "pc": "0x803c6538",
+          "word": "0xa0620000",
+          "asm": "sb $v0, ($v1)"
+        },
+        {
+          "pc": "0x803c653c",
+          "word": "0x92620004",
+          "asm": "lbu $v0, 4($s3)"
+        },
+        {
+          "pc": "0x803c6540",
+          "word": "0x8e630000",
+          "asm": "lw $v1, ($s3)"
+        },
+        {
+          "pc": "0x803c6544",
+          "word": "0x92650006",
+          "asm": "lbu $a1, 6($s3)"
+        },
+        {
+          "pc": "0x803c6548",
+          "word": "0x24420003",
+          "asm": "addiu $v0, $v0, 3"
+        },
+        {
+          "pc": "0x803c654c",
+          "word": "0x621821",
+          "asm": "addu $v1, $v1, $v0"
+        },
+        {
+          "pc": "0x803c6550",
+          "word": "0xae630000",
+          "asm": "sw $v1, ($s3)"
+        },
+        {
+          "pc": "0x803c6554",
+          "word": "0x90620000",
+          "asm": "lbu $v0, ($v1)"
+        },
+        {
+          "pc": "0x803c6558",
+          "word": "0x90640001",
+          "asm": "lbu $a0, 1($v1)"
+        },
+        {
+          "pc": "0x803c655c",
+          "word": "0x652821",
+          "asm": "addu $a1, $v1, $a1"
+        },
+        {
+          "pc": "0x803c6560",
+          "word": "0x21200",
+          "asm": "sll $v0, $v0, 8"
+        },
+        {
+          "pc": "0x803c6564",
+          "word": "0x822021",
+          "asm": "addu $a0, $a0, $v0"
+        },
+        {
+          "pc": "0x803c6568",
+          "word": "0x3091ffff",
+          "asm": "andi $s1, $a0, 0xffff"
+        },
+        {
+          "pc": "0x803c656c",
+          "word": "0x90b40003",
+          "asm": "lbu $s4, 3($a1)"
+        },
+        {
+          "pc": "0x803c6570",
+          "word": "0x12350175",
+          "asm": "beq $s1, $s5, 0x803c6b48"
+        },
+        {
+          "pc": "0x803c6574",
+          "word": "0x90720002",
+          "asm": "lbu $s2, 2($v1)"
+        },
+        {
+          "pc": "0x803c6578",
+          "word": "0x118202",
+          "asm": "srl $s0, $s1, 8"
+        },
+        {
+          "pc": "0x803c657c",
+          "word": "0x1216ffe6",
+          "asm": "beq $s0, $s6, 0x803c6518"
+        },
+        {
+          "pc": "0x803c6580",
+          "word": "0x3c088070",
+          "asm": "lui $t0, 0x8070"
+        },
+        {
+          "pc": "0x803c6584",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c6588",
+          "word": "0x3c02021",
+          "asm": "move $a0, $fp"
+        },
+        {
+          "pc": "0x803c658c",
+          "word": "0x12020005",
+          "asm": "beq $s0, $v0, 0x803c65a4"
+        },
+        {
+          "pc": "0x803c6590",
+          "word": "0x322400ff",
+          "asm": "andi $a0, $s1, 0xff"
+        },
+        {
+          "pc": "0x803c6594",
+          "word": "0x2002821",
+          "asm": "move $a1, $s0"
+        },
+        {
+          "pc": "0x803c6598",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c659c",
+          "word": "0x3c02021",
+          "asm": "move $a0, $fp"
+        },
+        {
+          "pc": "0x803c65a0",
+          "word": "0x322400ff",
+          "asm": "andi $a0, $s1, 0xff"
+        },
+        {
+          "pc": "0x803c65a4",
+          "word": "0x34842f00",
+          "asm": "ori $a0, $a0, 0x2f00"
+        },
+        {
+          "pc": "0x803c65a8",
+          "word": "0x2802821",
+          "asm": "move $a1, $s4"
+        },
+        {
+          "pc": "0x803c65ac",
+          "word": "0xc17e212",
+          "asm": "jal 0x805f8848"
+        },
+        {
+          "pc": "0x803c65b0",
+          "word": "0x2403021",
+          "asm": "move $a2, $s2"
+        },
+        {
+          "pc": "0x803c65b4",
+          "word": "0x80f1950",
+          "asm": "j 0x803c6540"
+        },
+        {
+          "pc": "0x803c65b8",
+          "word": "0x92620004",
+          "asm": "lbu $v0, 4($s3)"
+        },
+        {
+          "pc": "0x803c65bc",
+          "word": "0x3c108067",
+          "asm": "lui $s0, 0x8067"
+        },
+        {
+          "pc": "0x803c65c0",
+          "word": "0x92660006",
+          "asm": "lbu $a2, 6($s3)"
+        },
+        {
+          "pc": "0x803c65c4",
+          "word": "0x9205ec19",
+          "asm": "lbu $a1, -0x13e7($s0)"
+        },
+        {
+          "pc": "0x803c65c8",
+          "word": "0x10c5ffa5",
+          "asm": "beq $a2, $a1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c65cc",
+          "word": "0x3c048061",
+          "asm": "lui $a0, 0x8061"
+        },
+        {
+          "pc": "0x803c65d0",
+          "word": "0xc180869",
+          "asm": "jal 0x806021a4"
+        },
+        {
+          "pc": "0x803c65d4",
+          "word": "0x2484bc24",
+          "asm": "addiu $a0, $a0, -0x43dc"
+        },
+        {
+          "pc": "0x803c65d8",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c65dc",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c65e0",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c65e4",
+          "word": "0xa203ec19",
+          "asm": "sb $v1, -0x13e7($s0)"
+        },
+        {
+          "pc": "0x803c65e8",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c65ec",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c65f0",
+          "word": "0x3c058067",
+          "asm": "lui $a1, 0x8067"
+        },
+        {
+          "pc": "0x803c65f4",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c65f8",
+          "word": "0x90a2ec18",
+          "asm": "lbu $v0, -0x13e8($a1)"
+        },
+        {
+          "pc": "0x803c65fc",
+          "word": "0x1043ff98",
+          "asm": "beq $v0, $v1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c6600",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c6604",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c6608",
+          "word": "0xa0a3ec18",
+          "asm": "sb $v1, -0x13e8($a1)"
+        },
+        {
+          "pc": "0x803c660c",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6610",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6614",
+          "word": "0x3c028067",
+          "asm": "lui $v0, 0x8067"
+        },
+        {
+          "pc": "0x803c6618",
+          "word": "0x9043ec1e",
+          "asm": "lbu $v1, -0x13e2($v0)"
+        },
+        {
+          "pc": "0x803c661c",
+          "word": "0x92650006",
+          "asm": "lbu $a1, 6($s3)"
+        },
+        {
+          "pc": "0x803c6620",
+          "word": "0x1065ff8f",
+          "asm": "beq $v1, $a1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c6624",
+          "word": "0x3c028067",
+          "asm": "lui $v0, 0x8067"
+        },
+        {
+          "pc": "0x803c6628",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c662c",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c6630",
+          "word": "0xa045ec1a",
+          "asm": "sb $a1, -0x13e6($v0)"
+        },
+        {
+          "pc": "0x803c6634",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6638",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c663c",
+          "word": "0x3c058067",
+          "asm": "lui $a1, 0x8067"
+        },
+        {
+          "pc": "0x803c6640",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c6644",
+          "word": "0x90a2ec1b",
+          "asm": "lbu $v0, -0x13e5($a1)"
+        },
+        {
+          "pc": "0x803c6648",
+          "word": "0x1043ff85",
+          "asm": "beq $v0, $v1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c664c",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c6650",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c6654",
+          "word": "0xa0a3ec1b",
+          "asm": "sb $v1, -0x13e5($a1)"
+        },
+        {
+          "pc": "0x803c6658",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c665c",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6660",
+          "word": "0x3c058067",
+          "asm": "lui $a1, 0x8067"
+        },
+        {
+          "pc": "0x803c6664",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c6668",
+          "word": "0x90a2ec1c",
+          "asm": "lbu $v0, -0x13e4($a1)"
+        },
+        {
+          "pc": "0x803c666c",
+          "word": "0x1043ff7c",
+          "asm": "beq $v0, $v1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c6670",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c6674",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c6678",
+          "word": "0xa0a3ec1c",
+          "asm": "sb $v1, -0x13e4($a1)"
+        },
+        {
+          "pc": "0x803c667c",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6680",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6684",
+          "word": "0x3c058067",
+          "asm": "lui $a1, 0x8067"
+        },
+        {
+          "pc": "0x803c6688",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c668c",
+          "word": "0x90a2ec1d",
+          "asm": "lbu $v0, -0x13e3($a1)"
+        },
+        {
+          "pc": "0x803c6690",
+          "word": "0x1043ff73",
+          "asm": "beq $v0, $v1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c6694",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c6698",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c669c",
+          "word": "0xa0a3ec1d",
+          "asm": "sb $v1, -0x13e3($a1)"
+        },
+        {
+          "pc": "0x803c66a0",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c66a4",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c66a8",
+          "word": "0x3c058067",
+          "asm": "lui $a1, 0x8067"
+        },
+        {
+          "pc": "0x803c66ac",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c66b0",
+          "word": "0x90a2ec1e",
+          "asm": "lbu $v0, -0x13e2($a1)"
+        },
+        {
+          "pc": "0x803c66b4",
+          "word": "0x1043ff6a",
+          "asm": "beq $v0, $v1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c66b8",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c66bc",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c66c0",
+          "word": "0xa0a3ec1e",
+          "asm": "sb $v1, -0x13e2($a1)"
+        },
+        {
+          "pc": "0x803c66c4",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c66c8",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c66cc",
+          "word": "0x3c058067",
+          "asm": "lui $a1, 0x8067"
+        },
+        {
+          "pc": "0x803c66d0",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c66d4",
+          "word": "0x90a2ec1f",
+          "asm": "lbu $v0, -0x13e1($a1)"
+        },
+        {
+          "pc": "0x803c66d8",
+          "word": "0x1043ff61",
+          "asm": "beq $v0, $v1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c66dc",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c66e0",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c66e4",
+          "word": "0xa0a3ec1f",
+          "asm": "sb $v1, -0x13e1($a1)"
+        },
+        {
+          "pc": "0x803c66e8",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c66ec",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c66f0",
+          "word": "0x3c058067",
+          "asm": "lui $a1, 0x8067"
+        },
+        {
+          "pc": "0x803c66f4",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c66f8",
+          "word": "0x90a2ec20",
+          "asm": "lbu $v0, -0x13e0($a1)"
+        },
+        {
+          "pc": "0x803c66fc",
+          "word": "0x1043ff58",
+          "asm": "beq $v0, $v1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c6700",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c6704",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c6708",
+          "word": "0xa0a3ec20",
+          "asm": "sb $v1, -0x13e0($a1)"
+        },
+        {
+          "pc": "0x803c670c",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6710",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6714",
+          "word": "0x3c058067",
+          "asm": "lui $a1, 0x8067"
+        },
+        {
+          "pc": "0x803c6718",
+          "word": "0x92630006",
+          "asm": "lbu $v1, 6($s3)"
+        },
+        {
+          "pc": "0x803c671c",
+          "word": "0x90a2ec21",
+          "asm": "lbu $v0, -0x13df($a1)"
+        },
+        {
+          "pc": "0x803c6720",
+          "word": "0x1043ff4f",
+          "asm": "beq $v0, $v1, 0x803c6460"
+        },
+        {
+          "pc": "0x803c6724",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x803c6728",
+          "word": "0xc0f1877",
+          "asm": "jal 0x803c61dc"
+        },
+        {
+          "pc": "0x803c672c",
+          "word": "0xa0a3ec21",
+          "asm": "sb $v1, -0x13df($a1)"
+        },
+        {
+          "pc": "0x803c6730",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6734",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6738",
+          "word": "0x3c178066",
+          "asm": "lui $s7, 0x8066"
+        },
+        {
+          "pc": "0x803c673c",
+          "word": "0x8ee48020",
+          "asm": "lw $a0, -0x7fe0($s7)"
+        },
+        {
+          "pc": "0x803c6740",
+          "word": "0x2405ff00",
+          "asm": "addiu $a1, $zero, -0x100"
+        },
+        {
+          "pc": "0x803c6744",
+          "word": "0xc172e11",
+          "asm": "jal 0x805cb844"
+        },
+        {
+          "pc": "0x803c6748",
+          "word": "0x3c100010",
+          "asm": "lui $s0, 0x10"
+        },
+        {
+          "pc": "0x803c674c",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c6750",
+          "word": "0x36042f00",
+          "asm": "ori $a0, $s0, 0x2f00"
+        },
+        {
+          "pc": "0x803c6754",
+          "word": "0xafa20018",
+          "asm": "sw $v0, 0x18($sp)"
+        },
+        {
+          "pc": "0x803c6758",
+          "word": "0x92650006",
+          "asm": "lbu $a1, 6($s3)"
+        },
+        {
+          "pc": "0x803c675c",
+          "word": "0x92620004",
+          "asm": "lbu $v0, 4($s3)"
+        },
+        {
+          "pc": "0x803c6760",
+          "word": "0xa2102b",
+          "asm": "sltu $v0, $a1, $v0"
+        },
+        {
+          "pc": "0x803c6764",
+          "word": "0x104000d3",
+          "asm": "beqz $v0, 0x803c6ab4"
+        },
+        {
+          "pc": "0x803c6768",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803c676c",
+          "word": "0x8e630000",
+          "asm": "lw $v1, ($s3)"
+        },
+        {
+          "pc": "0x803c6770",
+          "word": "0x90620000",
+          "asm": "lbu $v0, ($v1)"
+        },
+        {
+          "pc": "0x803c6774",
+          "word": "0x90640001",
+          "asm": "lbu $a0, 1($v1)"
+        },
+        {
+          "pc": "0x803c6778",
+          "word": "0x652821",
+          "asm": "addu $a1, $v1, $a1"
+        },
+        {
+          "pc": "0x803c677c",
+          "word": "0x21200",
+          "asm": "sll $v0, $v0, 8"
+        },
+        {
+          "pc": "0x803c6780",
+          "word": "0x828821",
+          "asm": "addu $s1, $a0, $v0"
+        },
+        {
+          "pc": "0x803c6784",
+          "word": "0x3402ffff",
+          "asm": "ori $v0, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c6788",
+          "word": "0x90b40003",
+          "asm": "lbu $s4, 3($a1)"
+        },
+        {
+          "pc": "0x803c678c",
+          "word": "0x122200e6",
+          "asm": "beq $s1, $v0, 0x803c6b28"
+        },
+        {
+          "pc": "0x803c6790",
+          "word": "0x90720002",
+          "asm": "lbu $s2, 2($v1)"
+        },
+        {
+          "pc": "0x803c6794",
+          "word": "0x36152f00",
+          "asm": "ori $s5, $s0, 0x2f00"
+        },
+        {
+          "pc": "0x803c6798",
+          "word": "0x3c16806c",
+          "asm": "lui $s6, 0x806c"
+        },
+        {
+          "pc": "0x803c679c",
+          "word": "0x80f1a17",
+          "asm": "j 0x803c685c"
+        },
+        {
+          "pc": "0x803c67a0",
+          "word": "0x341effff",
+          "asm": "ori $fp, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c67a4",
+          "word": "0x2484bbf0",
+          "asm": "addiu $a0, $a0, -0x4410"
+        },
+        {
+          "pc": "0x803c67a8",
+          "word": "0x2202821",
+          "asm": "move $a1, $s1"
+        },
+        {
+          "pc": "0x803c67ac",
+          "word": "0x2803021",
+          "asm": "move $a2, $s4"
+        },
+        {
+          "pc": "0x803c67b0",
+          "word": "0xc180869",
+          "asm": "jal 0x806021a4"
+        },
+        {
+          "pc": "0x803c67b4",
+          "word": "0x2403821",
+          "asm": "move $a3, $s2"
+        },
+        {
+          "pc": "0x803c67b8",
+          "word": "0x32230001",
+          "asm": "andi $v1, $s1, 1"
+        },
+        {
+          "pc": "0x803c67bc",
+          "word": "0x106000c4",
+          "asm": "beqz $v1, 0x803c6ad0"
+        },
+        {
+          "pc": "0x803c67c0",
+          "word": "0x96c29c80",
+          "asm": "lhu $v0, -0x6380($s6)"
+        },
+        {
+          "pc": "0x803c67c4",
+          "word": "0x3c08806c",
+          "asm": "lui $t0, 0x806c"
+        },
+        {
+          "pc": "0x803c67c8",
+          "word": "0x25089e5c",
+          "asm": "addiu $t0, $t0, -0x61a4"
+        },
+        {
+          "pc": "0x803c67cc",
+          "word": "0x21840",
+          "asm": "sll $v1, $v0, 1"
+        },
+        {
+          "pc": "0x803c67d0",
+          "word": "0x682821",
+          "asm": "addu $a1, $v1, $t0"
+        },
+        {
+          "pc": "0x803c67d4",
+          "word": "0x3c04806c",
+          "asm": "lui $a0, 0x806c"
+        },
+        {
+          "pc": "0x803c67d8",
+          "word": "0x3c08806c",
+          "asm": "lui $t0, 0x806c"
+        },
+        {
+          "pc": "0x803c67dc",
+          "word": "0x24849da8",
+          "asm": "addiu $a0, $a0, -0x6258"
+        },
+        {
+          "pc": "0x803c67e0",
+          "word": "0x21080",
+          "asm": "sll $v0, $v0, 2"
+        },
+        {
+          "pc": "0x803c67e4",
+          "word": "0x25089e20",
+          "asm": "addiu $t0, $t0, -0x61e0"
+        },
+        {
+          "pc": "0x803c67e8",
+          "word": "0x441021",
+          "asm": "addu $v0, $v0, $a0"
+        },
+        {
+          "pc": "0x803c67ec",
+          "word": "0x2626ffff",
+          "asm": "addiu $a2, $s1, -1"
+        },
+        {
+          "pc": "0x803c67f0",
+          "word": "0x123a00",
+          "asm": "sll $a3, $s2, 8"
+        },
+        {
+          "pc": "0x803c67f4",
+          "word": "0x142200",
+          "asm": "sll $a0, $s4, 8"
+        },
+        {
+          "pc": "0x803c67f8",
+          "word": "0x681821",
+          "asm": "addu $v1, $v1, $t0"
+        },
+        {
+          "pc": "0x803c67fc",
+          "word": "0xa4a40000",
+          "asm": "sh $a0, ($a1)"
+        },
+        {
+          "pc": "0x803c6800",
+          "word": "0xac460000",
+          "asm": "sw $a2, ($v0)"
+        },
+        {
+          "pc": "0x803c6804",
+          "word": "0xa4670000",
+          "asm": "sh $a3, ($v1)"
+        },
+        {
+          "pc": "0x803c6808",
+          "word": "0x3c05806c",
+          "asm": "lui $a1, 0x806c"
+        },
+        {
+          "pc": "0x803c680c",
+          "word": "0x94a29c80",
+          "asm": "lhu $v0, -0x6380($a1)"
+        },
+        {
+          "pc": "0x803c6810",
+          "word": "0x24420001",
+          "asm": "addiu $v0, $v0, 1"
+        },
+        {
+          "pc": "0x803c6814",
+          "word": "0x3042ffff",
+          "asm": "andi $v0, $v0, 0xffff"
+        },
+        {
+          "pc": "0x803c6818",
+          "word": "0x2c43001e",
+          "asm": "sltiu $v1, $v0, 0x1e"
+        },
+        {
+          "pc": "0x803c681c",
+          "word": "0x106000bc",
+          "asm": "beqz $v1, 0x803c6b10"
+        },
+        {
+          "pc": "0x803c6820",
+          "word": "0xa4a29c80",
+          "asm": "sh $v0, -0x6380($a1)"
+        },
+        {
+          "pc": "0x803c6824",
+          "word": "0x92630004",
+          "asm": "lbu $v1, 4($s3)"
+        },
+        {
+          "pc": "0x803c6828",
+          "word": "0x8e620000",
+          "asm": "lw $v0, ($s3)"
+        },
+        {
+          "pc": "0x803c682c",
+          "word": "0x92640006",
+          "asm": "lbu $a0, 6($s3)"
+        },
+        {
+          "pc": "0x803c6830",
+          "word": "0x24630003",
+          "asm": "addiu $v1, $v1, 3"
+        },
+        {
+          "pc": "0x803c6834",
+          "word": "0x431021",
+          "asm": "addu $v0, $v0, $v1"
+        },
+        {
+          "pc": "0x803c6838",
+          "word": "0xae620000",
+          "asm": "sw $v0, ($s3)"
+        },
+        {
+          "pc": "0x803c683c",
+          "word": "0x90430000",
+          "asm": "lbu $v1, ($v0)"
+        },
+        {
+          "pc": "0x803c6840",
+          "word": "0x90450001",
+          "asm": "lbu $a1, 1($v0)"
+        },
+        {
+          "pc": "0x803c6844",
+          "word": "0x442021",
+          "asm": "addu $a0, $v0, $a0"
+        },
+        {
+          "pc": "0x803c6848",
+          "word": "0x31a00",
+          "asm": "sll $v1, $v1, 8"
+        },
+        {
+          "pc": "0x803c684c",
+          "word": "0xa38821",
+          "asm": "addu $s1, $a1, $v1"
+        },
+        {
+          "pc": "0x803c6850",
+          "word": "0x90940003",
+          "asm": "lbu $s4, 3($a0)"
+        },
+        {
+          "pc": "0x803c6854",
+          "word": "0x123e00b4",
+          "asm": "beq $s1, $fp, 0x803c6b28"
+        },
+        {
+          "pc": "0x803c6858",
+          "word": "0x90520002",
+          "asm": "lbu $s2, 2($v0)"
+        },
+        {
+          "pc": "0x803c685c",
+          "word": "0x3c03806c",
+          "asm": "lui $v1, 0x806c"
+        },
+        {
+          "pc": "0x803c6860",
+          "word": "0x90629c82",
+          "asm": "lbu $v0, -0x637e($v1)"
+        },
+        {
+          "pc": "0x803c6864",
+          "word": "0x1440ffcf",
+          "asm": "bnez $v0, 0x803c67a4"
+        },
+        {
+          "pc": "0x803c6868",
+          "word": "0x3c048061",
+          "asm": "lui $a0, 0x8061"
+        },
+        {
+          "pc": "0x803c686c",
+          "word": "0x2a02021",
+          "asm": "move $a0, $s5"
+        },
+        {
+          "pc": "0x803c6870",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c6874",
+          "word": "0x7e303a00",
+          "asm": "ext $s0, $s1, 8, 8"
+        },
+        {
+          "pc": "0x803c6878",
+          "word": "0x12020005",
+          "asm": "beq $s0, $v0, 0x803c6890"
+        },
+        {
+          "pc": "0x803c687c",
+          "word": "0x322400ff",
+          "asm": "andi $a0, $s1, 0xff"
+        },
+        {
+          "pc": "0x803c6880",
+          "word": "0x2002821",
+          "asm": "move $a1, $s0"
+        },
+        {
+          "pc": "0x803c6884",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c6888",
+          "word": "0x2a02021",
+          "asm": "move $a0, $s5"
+        },
+        {
+          "pc": "0x803c688c",
+          "word": "0x322400ff",
+          "asm": "andi $a0, $s1, 0xff"
+        },
+        {
+          "pc": "0x803c6890",
+          "word": "0x952025",
+          "asm": "or $a0, $a0, $s5"
+        },
+        {
+          "pc": "0x803c6894",
+          "word": "0x2802821",
+          "asm": "move $a1, $s4"
+        },
+        {
+          "pc": "0x803c6898",
+          "word": "0xc17e212",
+          "asm": "jal 0x805f8848"
+        },
+        {
+          "pc": "0x803c689c",
+          "word": "0x2403021",
+          "asm": "move $a2, $s2"
+        },
+        {
+          "pc": "0x803c68a0",
+          "word": "0x80f1a0a",
+          "asm": "j 0x803c6828"
+        },
+        {
+          "pc": "0x803c68a4",
+          "word": "0x92630004",
+          "asm": "lbu $v1, 4($s3)"
+        },
+        {
+          "pc": "0x803c68a8",
+          "word": "0x3c100010",
+          "asm": "lui $s0, 0x10"
+        },
+        {
+          "pc": "0x803c68ac",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c68b0",
+          "word": "0x36043600",
+          "asm": "ori $a0, $s0, 0x3600"
+        },
+        {
+          "pc": "0x803c68b4",
+          "word": "0xafa20014",
+          "asm": "sw $v0, 0x14($sp)"
+        },
+        {
+          "pc": "0x803c68b8",
+          "word": "0x92650006",
+          "asm": "lbu $a1, 6($s3)"
+        },
+        {
+          "pc": "0x803c68bc",
+          "word": "0x92620004",
+          "asm": "lbu $v0, 4($s3)"
+        },
+        {
+          "pc": "0x803c68c0",
+          "word": "0xa2102b",
+          "asm": "sltu $v0, $a1, $v0"
+        },
+        {
+          "pc": "0x803c68c4",
+          "word": "0x1040fee7",
+          "asm": "beqz $v0, 0x803c6464"
+        },
+        {
+          "pc": "0x803c68c8",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c68cc",
+          "word": "0x8e630000",
+          "asm": "lw $v1, ($s3)"
+        },
+        {
+          "pc": "0x803c68d0",
+          "word": "0x90620000",
+          "asm": "lbu $v0, ($v1)"
+        },
+        {
+          "pc": "0x803c68d4",
+          "word": "0x90640001",
+          "asm": "lbu $a0, 1($v1)"
+        },
+        {
+          "pc": "0x803c68d8",
+          "word": "0x652821",
+          "asm": "addu $a1, $v1, $a1"
+        },
+        {
+          "pc": "0x803c68dc",
+          "word": "0x21200",
+          "asm": "sll $v0, $v0, 8"
+        },
+        {
+          "pc": "0x803c68e0",
+          "word": "0x448821",
+          "asm": "addu $s1, $v0, $a0"
+        },
+        {
+          "pc": "0x803c68e4",
+          "word": "0x3402ffff",
+          "asm": "ori $v0, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c68e8",
+          "word": "0x90b50003",
+          "asm": "lbu $s5, 3($a1)"
+        },
+        {
+          "pc": "0x803c68ec",
+          "word": "0x1222009e",
+          "asm": "beq $s1, $v0, 0x803c6b68"
+        },
+        {
+          "pc": "0x803c68f0",
+          "word": "0x90740002",
+          "asm": "lbu $s4, 2($v1)"
+        },
+        {
+          "pc": "0x803c68f4",
+          "word": "0x36163600",
+          "asm": "ori $s6, $s0, 0x3600"
+        },
+        {
+          "pc": "0x803c68f8",
+          "word": "0x36173647",
+          "asm": "ori $s7, $s0, 0x3647"
+        },
+        {
+          "pc": "0x803c68fc",
+          "word": "0x80f1a5e",
+          "asm": "j 0x803c6978"
+        },
+        {
+          "pc": "0x803c6900",
+          "word": "0x361e365f",
+          "asm": "ori $fp, $s0, 0x365f"
+        },
+        {
+          "pc": "0x803c6904",
+          "word": "0x3c030010",
+          "asm": "lui $v1, 0x10"
+        },
+        {
+          "pc": "0x803c6908",
+          "word": "0x3463368f",
+          "asm": "ori $v1, $v1, 0x368f"
+        },
+        {
+          "pc": "0x803c690c",
+          "word": "0x12430028",
+          "asm": "beq $s2, $v1, 0x803c69b0"
+        },
+        {
+          "pc": "0x803c6910",
+          "word": "0x3c040010",
+          "asm": "lui $a0, 0x10"
+        },
+        {
+          "pc": "0x803c6914",
+          "word": "0x348436d7",
+          "asm": "ori $a0, $a0, 0x36d7"
+        },
+        {
+          "pc": "0x803c6918",
+          "word": "0x12440025",
+          "asm": "beq $s2, $a0, 0x803c69b0"
+        },
+        {
+          "pc": "0x803c691c",
+          "word": "0x3c060010",
+          "asm": "lui $a2, 0x10"
+        },
+        {
+          "pc": "0x803c6920",
+          "word": "0x34c636df",
+          "asm": "ori $a2, $a2, 0x36df"
+        },
+        {
+          "pc": "0x803c6924",
+          "word": "0x12460023",
+          "asm": "beq $s2, $a2, 0x803c69b4"
+        },
+        {
+          "pc": "0x803c6928",
+          "word": "0x2650ffff",
+          "asm": "addiu $s0, $s2, -1"
+        },
+        {
+          "pc": "0x803c692c",
+          "word": "0x2402021",
+          "asm": "move $a0, $s2"
+        },
+        {
+          "pc": "0x803c6930",
+          "word": "0x2a02821",
+          "asm": "move $a1, $s5"
+        },
+        {
+          "pc": "0x803c6934",
+          "word": "0xc17e212",
+          "asm": "jal 0x805f8848"
+        },
+        {
+          "pc": "0x803c6938",
+          "word": "0x2803021",
+          "asm": "move $a2, $s4"
+        },
+        {
+          "pc": "0x803c693c",
+          "word": "0x92630004",
+          "asm": "lbu $v1, 4($s3)"
+        },
+        {
+          "pc": "0x803c6940",
+          "word": "0x8e620000",
+          "asm": "lw $v0, ($s3)"
+        },
+        {
+          "pc": "0x803c6944",
+          "word": "0x92640006",
+          "asm": "lbu $a0, 6($s3)"
+        },
+        {
+          "pc": "0x803c6948",
+          "word": "0x24630003",
+          "asm": "addiu $v1, $v1, 3"
+        },
+        {
+          "pc": "0x803c694c",
+          "word": "0x431021",
+          "asm": "addu $v0, $v0, $v1"
+        },
+        {
+          "pc": "0x803c6950",
+          "word": "0xae620000",
+          "asm": "sw $v0, ($s3)"
+        },
+        {
+          "pc": "0x803c6954",
+          "word": "0x90430000",
+          "asm": "lbu $v1, ($v0)"
+        },
+        {
+          "pc": "0x803c6958",
+          "word": "0x90450001",
+          "asm": "lbu $a1, 1($v0)"
+        },
+        {
+          "pc": "0x803c695c",
+          "word": "0x442021",
+          "asm": "addu $a0, $v0, $a0"
+        },
+        {
+          "pc": "0x803c6960",
+          "word": "0x31a00",
+          "asm": "sll $v1, $v1, 8"
+        },
+        {
+          "pc": "0x803c6964",
+          "word": "0xa38821",
+          "asm": "addu $s1, $a1, $v1"
+        },
+        {
+          "pc": "0x803c6968",
+          "word": "0x3403ffff",
+          "asm": "ori $v1, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c696c",
+          "word": "0x90950003",
+          "asm": "lbu $s5, 3($a0)"
+        },
+        {
+          "pc": "0x803c6970",
+          "word": "0x1223007d",
+          "asm": "beq $s1, $v1, 0x803c6b68"
+        },
+        {
+          "pc": "0x803c6974",
+          "word": "0x90540002",
+          "asm": "lbu $s4, 2($v0)"
+        },
+        {
+          "pc": "0x803c6978",
+          "word": "0x2c02021",
+          "asm": "move $a0, $s6"
+        },
+        {
+          "pc": "0x803c697c",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c6980",
+          "word": "0x7e303a00",
+          "asm": "ext $s0, $s1, 8, 8"
+        },
+        {
+          "pc": "0x803c6984",
+          "word": "0x12020005",
+          "asm": "beq $s0, $v0, 0x803c699c"
+        },
+        {
+          "pc": "0x803c6988",
+          "word": "0x322200ff",
+          "asm": "andi $v0, $s1, 0xff"
+        },
+        {
+          "pc": "0x803c698c",
+          "word": "0x2002821",
+          "asm": "move $a1, $s0"
+        },
+        {
+          "pc": "0x803c6990",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c6994",
+          "word": "0x2c02021",
+          "asm": "move $a0, $s6"
+        },
+        {
+          "pc": "0x803c6998",
+          "word": "0x322200ff",
+          "asm": "andi $v0, $s1, 0xff"
+        },
+        {
+          "pc": "0x803c699c",
+          "word": "0x569025",
+          "asm": "or $s2, $v0, $s6"
+        },
+        {
+          "pc": "0x803c69a0",
+          "word": "0x12570004",
+          "asm": "beq $s2, $s7, 0x803c69b4"
+        },
+        {
+          "pc": "0x803c69a4",
+          "word": "0x2650ffff",
+          "asm": "addiu $s0, $s2, -1"
+        },
+        {
+          "pc": "0x803c69a8",
+          "word": "0x165effd6",
+          "asm": "bne $s2, $fp, 0x803c6904"
+        },
+        {
+          "pc": "0x803c69ac",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803c69b0",
+          "word": "0x2650ffff",
+          "asm": "addiu $s0, $s2, -1"
+        },
+        {
+          "pc": "0x803c69b4",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c69b8",
+          "word": "0x2002021",
+          "asm": "move $a0, $s0"
+        },
+        {
+          "pc": "0x803c69bc",
+          "word": "0x2402021",
+          "asm": "move $a0, $s2"
+        },
+        {
+          "pc": "0x803c69c0",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c69c4",
+          "word": "0x408821",
+          "asm": "move $s1, $v0"
+        },
+        {
+          "pc": "0x803c69c8",
+          "word": "0x141827",
+          "asm": "nor $v1, $zero, $s4"
+        },
+        {
+          "pc": "0x803c69cc",
+          "word": "0x2b42024",
+          "asm": "and $a0, $s5, $s4"
+        },
+        {
+          "pc": "0x803c69d0",
+          "word": "0x431024",
+          "asm": "and $v0, $v0, $v1"
+        },
+        {
+          "pc": "0x803c69d4",
+          "word": "0x441025",
+          "asm": "or $v0, $v0, $a0"
+        },
+        {
+          "pc": "0x803c69d8",
+          "word": "0x7c021620",
+          "asm": "seh $v0, $v0"
+        },
+        {
+          "pc": "0x803c69dc",
+          "word": "0x3043ffff",
+          "asm": "andi $v1, $v0, 0xffff"
+        },
+        {
+          "pc": "0x803c69e0",
+          "word": "0x31a00",
+          "asm": "sll $v1, $v1, 8"
+        },
+        {
+          "pc": "0x803c69e4",
+          "word": "0x431025",
+          "asm": "or $v0, $v0, $v1"
+        },
+        {
+          "pc": "0x803c69e8",
+          "word": "0x3045ffff",
+          "asm": "andi $a1, $v0, 0xffff"
+        },
+        {
+          "pc": "0x803c69ec",
+          "word": "0x2002021",
+          "asm": "move $a0, $s0"
+        },
+        {
+          "pc": "0x803c69f0",
+          "word": "0xc17e204",
+          "asm": "jal 0x805f8810"
+        },
+        {
+          "pc": "0x803c69f4",
+          "word": "0x3406ffff",
+          "asm": "ori $a2, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c69f8",
+          "word": "0x2002021",
+          "asm": "move $a0, $s0"
+        },
+        {
+          "pc": "0x803c69fc",
+          "word": "0x2202821",
+          "asm": "move $a1, $s1"
+        },
+        {
+          "pc": "0x803c6a00",
+          "word": "0xc17e212",
+          "asm": "jal 0x805f8848"
+        },
+        {
+          "pc": "0x803c6a04",
+          "word": "0x240600ff",
+          "asm": "addiu $a2, $zero, 0xff"
+        },
+        {
+          "pc": "0x803c6a08",
+          "word": "0x80f1a50",
+          "asm": "j 0x803c6940"
+        },
+        {
+          "pc": "0x803c6a0c",
+          "word": "0x92630004",
+          "asm": "lbu $v1, 4($s3)"
+        },
+        {
+          "pc": "0x803c6a10",
+          "word": "0x92640006",
+          "asm": "lbu $a0, 6($s3)"
+        },
+        {
+          "pc": "0x803c6a14",
+          "word": "0x92620004",
+          "asm": "lbu $v0, 4($s3)"
+        },
+        {
+          "pc": "0x803c6a18",
+          "word": "0x82102b",
+          "asm": "sltu $v0, $a0, $v0"
+        },
+        {
+          "pc": "0x803c6a1c",
+          "word": "0x1040fe90",
+          "asm": "beqz $v0, 0x803c6460"
+        },
+        {
+          "pc": "0x803c6a20",
+          "word": "0xc42021",
+          "asm": "addu $a0, $a2, $a0"
+        },
+        {
+          "pc": "0x803c6a24",
+          "word": "0x90c20000",
+          "asm": "lbu $v0, ($a2)"
+        },
+        {
+          "pc": "0x803c6a28",
+          "word": "0x90c30001",
+          "asm": "lbu $v1, 1($a2)"
+        },
+        {
+          "pc": "0x803c6a2c",
+          "word": "0x21200",
+          "asm": "sll $v0, $v0, 8"
+        },
+        {
+          "pc": "0x803c6a30",
+          "word": "0x432821",
+          "asm": "addu $a1, $v0, $v1"
+        },
+        {
+          "pc": "0x803c6a34",
+          "word": "0x3402ffff",
+          "asm": "ori $v0, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c6a38",
+          "word": "0x90830003",
+          "asm": "lbu $v1, 3($a0)"
+        },
+        {
+          "pc": "0x803c6a3c",
+          "word": "0x10a2fe88",
+          "asm": "beq $a1, $v0, 0x803c6460"
+        },
+        {
+          "pc": "0x803c6a40",
+          "word": "0x90c60002",
+          "asm": "lbu $a2, 2($a2)"
+        },
+        {
+          "pc": "0x803c6a44",
+          "word": "0x3c110010",
+          "asm": "lui $s1, 0x10"
+        },
+        {
+          "pc": "0x803c6a48",
+          "word": "0x3410ffff",
+          "asm": "ori $s0, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c6a4c",
+          "word": "0xb12025",
+          "asm": "or $a0, $a1, $s1"
+        },
+        {
+          "pc": "0x803c6a50",
+          "word": "0xc17e212",
+          "asm": "jal 0x805f8848"
+        },
+        {
+          "pc": "0x803c6a54",
+          "word": "0x602821",
+          "asm": "move $a1, $v1"
+        },
+        {
+          "pc": "0x803c6a58",
+          "word": "0x92630004",
+          "asm": "lbu $v1, 4($s3)"
+        },
+        {
+          "pc": "0x803c6a5c",
+          "word": "0x8e620000",
+          "asm": "lw $v0, ($s3)"
+        },
+        {
+          "pc": "0x803c6a60",
+          "word": "0x92640006",
+          "asm": "lbu $a0, 6($s3)"
+        },
+        {
+          "pc": "0x803c6a64",
+          "word": "0x24630003",
+          "asm": "addiu $v1, $v1, 3"
+        },
+        {
+          "pc": "0x803c6a68",
+          "word": "0x431021",
+          "asm": "addu $v0, $v0, $v1"
+        },
+        {
+          "pc": "0x803c6a6c",
+          "word": "0xae620000",
+          "asm": "sw $v0, ($s3)"
+        },
+        {
+          "pc": "0x803c6a70",
+          "word": "0x90430000",
+          "asm": "lbu $v1, ($v0)"
+        },
+        {
+          "pc": "0x803c6a74",
+          "word": "0x90450001",
+          "asm": "lbu $a1, 1($v0)"
+        },
+        {
+          "pc": "0x803c6a78",
+          "word": "0x442021",
+          "asm": "addu $a0, $v0, $a0"
+        },
+        {
+          "pc": "0x803c6a7c",
+          "word": "0x31a00",
+          "asm": "sll $v1, $v1, 8"
+        },
+        {
+          "pc": "0x803c6a80",
+          "word": "0xa32821",
+          "asm": "addu $a1, $a1, $v1"
+        },
+        {
+          "pc": "0x803c6a84",
+          "word": "0x90460002",
+          "asm": "lbu $a2, 2($v0)"
+        },
+        {
+          "pc": "0x803c6a88",
+          "word": "0x14b0fff0",
+          "asm": "bne $a1, $s0, 0x803c6a4c"
+        },
+        {
+          "pc": "0x803c6a8c",
+          "word": "0x90830003",
+          "asm": "lbu $v1, 3($a0)"
+        },
+        {
+          "pc": "0x803c6a90",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6a94",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6a98",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x803c6a9c",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c6aa0",
+          "word": "0x36042f00",
+          "asm": "ori $a0, $s0, 0x2f00"
+        },
+        {
+          "pc": "0x803c6aa4",
+          "word": "0xc172e13",
+          "asm": "jal 0x805cb84c"
+        },
+        {
+          "pc": "0x803c6aa8",
+          "word": "0x8ee48020",
+          "asm": "lw $a0, -0x7fe0($s7)"
+        },
+        {
+          "pc": "0x803c6aac",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6ab0",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6ab4",
+          "word": "0x8fa50018",
+          "asm": "lw $a1, 0x18($sp)"
+        },
+        {
+          "pc": "0x803c6ab8",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c6abc",
+          "word": "0x36042f00",
+          "asm": "ori $a0, $s0, 0x2f00"
+        },
+        {
+          "pc": "0x803c6ac0",
+          "word": "0xc172e13",
+          "asm": "jal 0x805cb84c"
+        },
+        {
+          "pc": "0x803c6ac4",
+          "word": "0x8ee48020",
+          "asm": "lw $a0, -0x7fe0($s7)"
+        },
+        {
+          "pc": "0x803c6ac8",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6acc",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6ad0",
+          "word": "0x3c04806c",
+          "asm": "lui $a0, 0x806c"
+        },
+        {
+          "pc": "0x803c6ad4",
+          "word": "0x3c06806c",
+          "asm": "lui $a2, 0x806c"
+        },
+        {
+          "pc": "0x803c6ad8",
+          "word": "0x3c08806c",
+          "asm": "lui $t0, 0x806c"
+        },
+        {
+          "pc": "0x803c6adc",
+          "word": "0x21840",
+          "asm": "sll $v1, $v0, 1"
+        },
+        {
+          "pc": "0x803c6ae0",
+          "word": "0x24849da8",
+          "asm": "addiu $a0, $a0, -0x6258"
+        },
+        {
+          "pc": "0x803c6ae4",
+          "word": "0x21080",
+          "asm": "sll $v0, $v0, 2"
+        },
+        {
+          "pc": "0x803c6ae8",
+          "word": "0x24c69e5c",
+          "asm": "addiu $a2, $a2, -0x61a4"
+        },
+        {
+          "pc": "0x803c6aec",
+          "word": "0x25089e20",
+          "asm": "addiu $t0, $t0, -0x61e0"
+        },
+        {
+          "pc": "0x803c6af0",
+          "word": "0x441021",
+          "asm": "addu $v0, $v0, $a0"
+        },
+        {
+          "pc": "0x803c6af4",
+          "word": "0x662021",
+          "asm": "addu $a0, $v1, $a2"
+        },
+        {
+          "pc": "0x803c6af8",
+          "word": "0x681821",
+          "asm": "addu $v1, $v1, $t0"
+        },
+        {
+          "pc": "0x803c6afc",
+          "word": "0x3c05806c",
+          "asm": "lui $a1, 0x806c"
+        },
+        {
+          "pc": "0x803c6b00",
+          "word": "0xac510000",
+          "asm": "sw $s1, ($v0)"
+        },
+        {
+          "pc": "0x803c6b04",
+          "word": "0xa4720000",
+          "asm": "sh $s2, ($v1)"
+        },
+        {
+          "pc": "0x803c6b08",
+          "word": "0x80f1a03",
+          "asm": "j 0x803c680c"
+        },
+        {
+          "pc": "0x803c6b0c",
+          "word": "0xa4940000",
+          "asm": "sh $s4, ($a0)"
+        },
+        {
+          "pc": "0x803c6b10",
+          "word": "0x3c048061",
+          "asm": "lui $a0, 0x8061"
+        },
+        {
+          "pc": "0x803c6b14",
+          "word": "0xc18088a",
+          "asm": "jal 0x80602228"
+        },
+        {
+          "pc": "0x803c6b18",
+          "word": "0x2484bc04",
+          "asm": "addiu $a0, $a0, -0x43fc"
+        },
+        {
+          "pc": "0x803c6b1c",
+          "word": "0x2402001d",
+          "asm": "addiu $v0, $zero, 0x1d"
+        },
+        {
+          "pc": "0x803c6b20",
+          "word": "0x80f1a09",
+          "asm": "j 0x803c6824"
+        },
+        {
+          "pc": "0x803c6b24",
+          "word": "0xa6c29c80",
+          "asm": "sh $v0, -0x6380($s6)"
+        },
+        {
+          "pc": "0x803c6b28",
+          "word": "0x8fa50018",
+          "asm": "lw $a1, 0x18($sp)"
+        },
+        {
+          "pc": "0x803c6b2c",
+          "word": "0x3c040010",
+          "asm": "lui $a0, 0x10"
+        },
+        {
+          "pc": "0x803c6b30",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c6b34",
+          "word": "0x34842f00",
+          "asm": "ori $a0, $a0, 0x2f00"
+        },
+        {
+          "pc": "0x803c6b38",
+          "word": "0xc172e13",
+          "asm": "jal 0x805cb84c"
+        },
+        {
+          "pc": "0x803c6b3c",
+          "word": "0x8ee48020",
+          "asm": "lw $a0, -0x7fe0($s7)"
+        },
+        {
+          "pc": "0x803c6b40",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6b44",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6b48",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x803c6b4c",
+          "word": "0x3c040010",
+          "asm": "lui $a0, 0x10"
+        },
+        {
+          "pc": "0x803c6b50",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c6b54",
+          "word": "0x34842f00",
+          "asm": "ori $a0, $a0, 0x2f00"
+        },
+        {
+          "pc": "0x803c6b58",
+          "word": "0xc172e13",
+          "asm": "jal 0x805cb84c"
+        },
+        {
+          "pc": "0x803c6b5c",
+          "word": "0x8ee48020",
+          "asm": "lw $a0, -0x7fe0($s7)"
+        },
+        {
+          "pc": "0x803c6b60",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6b64",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        },
+        {
+          "pc": "0x803c6b68",
+          "word": "0x8fa50014",
+          "asm": "lw $a1, 0x14($sp)"
+        },
+        {
+          "pc": "0x803c6b6c",
+          "word": "0x3c040010",
+          "asm": "lui $a0, 0x10"
+        },
+        {
+          "pc": "0x803c6b70",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c6b74",
+          "word": "0x34843600",
+          "asm": "ori $a0, $a0, 0x3600"
+        },
+        {
+          "pc": "0x803c6b78",
+          "word": "0x80f1919",
+          "asm": "j 0x803c6464"
+        },
+        {
+          "pc": "0x803c6b7c",
+          "word": "0x8fbf0044",
+          "asm": "lw $ra, 0x44($sp)"
+        }
+      ]
+    },
+    "pq_gop_table": {
+      "start": "0x803c1df4",
+      "end_exclusive": "0x803c1fd8",
+      "aligned_jal_candidates_not_reachability_proof": [
+        "0x803c2078",
+        "0x803c20f8"
+      ],
+      "instructions": [
+        {
+          "pc": "0x803c1df4",
+          "word": "0x8c820000",
+          "asm": "lw $v0, ($a0)"
+        },
+        {
+          "pc": "0x803c1df8",
+          "word": "0x27bdffc0",
+          "asm": "addiu $sp, $sp, -0x40"
+        },
+        {
+          "pc": "0x803c1dfc",
+          "word": "0xafb20020",
+          "asm": "sw $s2, 0x20($sp)"
+        },
+        {
+          "pc": "0x803c1e00",
+          "word": "0xafbf003c",
+          "asm": "sw $ra, 0x3c($sp)"
+        },
+        {
+          "pc": "0x803c1e04",
+          "word": "0xafbe0038",
+          "asm": "sw $fp, 0x38($sp)"
+        },
+        {
+          "pc": "0x803c1e08",
+          "word": "0xafb70034",
+          "asm": "sw $s7, 0x34($sp)"
+        },
+        {
+          "pc": "0x803c1e0c",
+          "word": "0xafb60030",
+          "asm": "sw $s6, 0x30($sp)"
+        },
+        {
+          "pc": "0x803c1e10",
+          "word": "0xafb5002c",
+          "asm": "sw $s5, 0x2c($sp)"
+        },
+        {
+          "pc": "0x803c1e14",
+          "word": "0xafb40028",
+          "asm": "sw $s4, 0x28($sp)"
+        },
+        {
+          "pc": "0x803c1e18",
+          "word": "0xafb30024",
+          "asm": "sw $s3, 0x24($sp)"
+        },
+        {
+          "pc": "0x803c1e1c",
+          "word": "0xafb1001c",
+          "asm": "sw $s1, 0x1c($sp)"
+        },
+        {
+          "pc": "0x803c1e20",
+          "word": "0xafb00018",
+          "asm": "sw $s0, 0x18($sp)"
+        },
+        {
+          "pc": "0x803c1e24",
+          "word": "0x10400006",
+          "asm": "beqz $v0, 0x803c1e40"
+        },
+        {
+          "pc": "0x803c1e28",
+          "word": "0x809021",
+          "asm": "move $s2, $a0"
+        },
+        {
+          "pc": "0x803c1e2c",
+          "word": "0x90820005",
+          "asm": "lbu $v0, 5($a0)"
+        },
+        {
+          "pc": "0x803c1e30",
+          "word": "0x90830004",
+          "asm": "lbu $v1, 4($a0)"
+        },
+        {
+          "pc": "0x803c1e34",
+          "word": "0x43102b",
+          "asm": "sltu $v0, $v0, $v1"
+        },
+        {
+          "pc": "0x803c1e38",
+          "word": "0x1440000d",
+          "asm": "bnez $v0, 0x803c1e70"
+        },
+        {
+          "pc": "0x803c1e3c",
+          "word": "0x3c100010",
+          "asm": "lui $s0, 0x10"
+        },
+        {
+          "pc": "0x803c1e40",
+          "word": "0x8fbf003c",
+          "asm": "lw $ra, 0x3c($sp)"
+        },
+        {
+          "pc": "0x803c1e44",
+          "word": "0x8fbe0038",
+          "asm": "lw $fp, 0x38($sp)"
+        },
+        {
+          "pc": "0x803c1e48",
+          "word": "0x8fb70034",
+          "asm": "lw $s7, 0x34($sp)"
+        },
+        {
+          "pc": "0x803c1e4c",
+          "word": "0x8fb60030",
+          "asm": "lw $s6, 0x30($sp)"
+        },
+        {
+          "pc": "0x803c1e50",
+          "word": "0x8fb5002c",
+          "asm": "lw $s5, 0x2c($sp)"
+        },
+        {
+          "pc": "0x803c1e54",
+          "word": "0x8fb40028",
+          "asm": "lw $s4, 0x28($sp)"
+        },
+        {
+          "pc": "0x803c1e58",
+          "word": "0x8fb30024",
+          "asm": "lw $s3, 0x24($sp)"
+        },
+        {
+          "pc": "0x803c1e5c",
+          "word": "0x8fb20020",
+          "asm": "lw $s2, 0x20($sp)"
+        },
+        {
+          "pc": "0x803c1e60",
+          "word": "0x8fb1001c",
+          "asm": "lw $s1, 0x1c($sp)"
+        },
+        {
+          "pc": "0x803c1e64",
+          "word": "0x8fb00018",
+          "asm": "lw $s0, 0x18($sp)"
+        },
+        {
+          "pc": "0x803c1e68",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x803c1e6c",
+          "word": "0x27bd0040",
+          "asm": "addiu $sp, $sp, 0x40"
+        },
+        {
+          "pc": "0x803c1e70",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c1e74",
+          "word": "0x36042f00",
+          "asm": "ori $a0, $s0, 0x2f00"
+        },
+        {
+          "pc": "0x803c1e78",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c1e7c",
+          "word": "0x36041ffe",
+          "asm": "ori $a0, $s0, 0x1ffe"
+        },
+        {
+          "pc": "0x803c1e80",
+          "word": "0x8e440000",
+          "asm": "lw $a0, ($s2)"
+        },
+        {
+          "pc": "0x803c1e84",
+          "word": "0xafa20010",
+          "asm": "sw $v0, 0x10($sp)"
+        },
+        {
+          "pc": "0x803c1e88",
+          "word": "0x92450005",
+          "asm": "lbu $a1, 5($s2)"
+        },
+        {
+          "pc": "0x803c1e8c",
+          "word": "0x90820000",
+          "asm": "lbu $v0, ($a0)"
+        },
+        {
+          "pc": "0x803c1e90",
+          "word": "0x90830001",
+          "asm": "lbu $v1, 1($a0)"
+        },
+        {
+          "pc": "0x803c1e94",
+          "word": "0x852821",
+          "asm": "addu $a1, $a0, $a1"
+        },
+        {
+          "pc": "0x803c1e98",
+          "word": "0x21200",
+          "asm": "sll $v0, $v0, 8"
+        },
+        {
+          "pc": "0x803c1e9c",
+          "word": "0x621821",
+          "asm": "addu $v1, $v1, $v0"
+        },
+        {
+          "pc": "0x803c1ea0",
+          "word": "0x3070ffff",
+          "asm": "andi $s0, $v1, 0xffff"
+        },
+        {
+          "pc": "0x803c1ea4",
+          "word": "0x3402ffff",
+          "asm": "ori $v0, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c1ea8",
+          "word": "0x90b40004",
+          "asm": "lbu $s4, 4($a1)"
+        },
+        {
+          "pc": "0x803c1eac",
+          "word": "0x90910002",
+          "asm": "lbu $s1, 2($a0)"
+        },
+        {
+          "pc": "0x803c1eb0",
+          "word": "0x12020035",
+          "asm": "beq $s0, $v0, 0x803c1f88"
+        },
+        {
+          "pc": "0x803c1eb4",
+          "word": "0x90930003",
+          "asm": "lbu $s3, 3($a0)"
+        },
+        {
+          "pc": "0x803c1eb8",
+          "word": "0x3c150010",
+          "asm": "lui $s5, 0x10"
+        },
+        {
+          "pc": "0x803c1ebc",
+          "word": "0x2417002f",
+          "asm": "addiu $s7, $zero, 0x2f"
+        },
+        {
+          "pc": "0x803c1ec0",
+          "word": "0x241e001f",
+          "asm": "addiu $fp, $zero, 0x1f"
+        },
+        {
+          "pc": "0x803c1ec4",
+          "word": "0x80f07c9",
+          "asm": "j 0x803c1f24"
+        },
+        {
+          "pc": "0x803c1ec8",
+          "word": "0x3416ffff",
+          "asm": "ori $s6, $zero, 0xffff"
+        },
+        {
+          "pc": "0x803c1ecc",
+          "word": "0x105e0022",
+          "asm": "beq $v0, $fp, 0x803c1f58"
+        },
+        {
+          "pc": "0x803c1ed0",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803c1ed4",
+          "word": "0x2152021",
+          "asm": "addu $a0, $s0, $s5"
+        },
+        {
+          "pc": "0x803c1ed8",
+          "word": "0x2802821",
+          "asm": "move $a1, $s4"
+        },
+        {
+          "pc": "0x803c1edc",
+          "word": "0xc17e212",
+          "asm": "jal 0x805f8848"
+        },
+        {
+          "pc": "0x803c1ee0",
+          "word": "0x2603021",
+          "asm": "move $a2, $s3"
+        },
+        {
+          "pc": "0x803c1ee4",
+          "word": "0x92430004",
+          "asm": "lbu $v1, 4($s2)"
+        },
+        {
+          "pc": "0x803c1ee8",
+          "word": "0x8e420000",
+          "asm": "lw $v0, ($s2)"
+        },
+        {
+          "pc": "0x803c1eec",
+          "word": "0x92450005",
+          "asm": "lbu $a1, 5($s2)"
+        },
+        {
+          "pc": "0x803c1ef0",
+          "word": "0x24630004",
+          "asm": "addiu $v1, $v1, 4"
+        },
+        {
+          "pc": "0x803c1ef4",
+          "word": "0x431021",
+          "asm": "addu $v0, $v0, $v1"
+        },
+        {
+          "pc": "0x803c1ef8",
+          "word": "0xae420000",
+          "asm": "sw $v0, ($s2)"
+        },
+        {
+          "pc": "0x803c1efc",
+          "word": "0x90430000",
+          "asm": "lbu $v1, ($v0)"
+        },
+        {
+          "pc": "0x803c1f00",
+          "word": "0x90440001",
+          "asm": "lbu $a0, 1($v0)"
+        },
+        {
+          "pc": "0x803c1f04",
+          "word": "0x452821",
+          "asm": "addu $a1, $v0, $a1"
+        },
+        {
+          "pc": "0x803c1f08",
+          "word": "0x31a00",
+          "asm": "sll $v1, $v1, 8"
+        },
+        {
+          "pc": "0x803c1f0c",
+          "word": "0x832021",
+          "asm": "addu $a0, $a0, $v1"
+        },
+        {
+          "pc": "0x803c1f10",
+          "word": "0x3090ffff",
+          "asm": "andi $s0, $a0, 0xffff"
+        },
+        {
+          "pc": "0x803c1f14",
+          "word": "0x90b40004",
+          "asm": "lbu $s4, 4($a1)"
+        },
+        {
+          "pc": "0x803c1f18",
+          "word": "0x90510002",
+          "asm": "lbu $s1, 2($v0)"
+        },
+        {
+          "pc": "0x803c1f1c",
+          "word": "0x1216001a",
+          "asm": "beq $s0, $s6, 0x803c1f88"
+        },
+        {
+          "pc": "0x803c1f20",
+          "word": "0x90530003",
+          "asm": "lbu $s3, 3($v0)"
+        },
+        {
+          "pc": "0x803c1f24",
+          "word": "0x101202",
+          "asm": "srl $v0, $s0, 8"
+        },
+        {
+          "pc": "0x803c1f28",
+          "word": "0x1457ffe8",
+          "asm": "bne $v0, $s7, 0x803c1ecc"
+        },
+        {
+          "pc": "0x803c1f2c",
+          "word": "0x3c040010",
+          "asm": "lui $a0, 0x10"
+        },
+        {
+          "pc": "0x803c1f30",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c1f34",
+          "word": "0x34842f00",
+          "asm": "ori $a0, $a0, 0x2f00"
+        },
+        {
+          "pc": "0x803c1f38",
+          "word": "0x3c040010",
+          "asm": "lui $a0, 0x10"
+        },
+        {
+          "pc": "0x803c1f3c",
+          "word": "0x2202821",
+          "asm": "move $a1, $s1"
+        },
+        {
+          "pc": "0x803c1f40",
+          "word": "0x1051ffe4",
+          "asm": "beq $v0, $s1, 0x803c1ed4"
+        },
+        {
+          "pc": "0x803c1f44",
+          "word": "0x34842f00",
+          "asm": "ori $a0, $a0, 0x2f00"
+        },
+        {
+          "pc": "0x803c1f48",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c1f4c",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803c1f50",
+          "word": "0x80f07b6",
+          "asm": "j 0x803c1ed8"
+        },
+        {
+          "pc": "0x803c1f54",
+          "word": "0x2152021",
+          "asm": "addu $a0, $s0, $s5"
+        },
+        {
+          "pc": "0x803c1f58",
+          "word": "0xc17e1f1",
+          "asm": "jal 0x805f87c4"
+        },
+        {
+          "pc": "0x803c1f5c",
+          "word": "0x34841ffe",
+          "asm": "ori $a0, $a0, 0x1ffe"
+        },
+        {
+          "pc": "0x803c1f60",
+          "word": "0x3042000f",
+          "asm": "andi $v0, $v0, 0xf"
+        },
+        {
+          "pc": "0x803c1f64",
+          "word": "0x3c040010",
+          "asm": "lui $a0, 0x10"
+        },
+        {
+          "pc": "0x803c1f68",
+          "word": "0x2202821",
+          "asm": "move $a1, $s1"
+        },
+        {
+          "pc": "0x803c1f6c",
+          "word": "0x34841ffe",
+          "asm": "ori $a0, $a0, 0x1ffe"
+        },
+        {
+          "pc": "0x803c1f70",
+          "word": "0x1051ffd8",
+          "asm": "beq $v0, $s1, 0x803c1ed4"
+        },
+        {
+          "pc": "0x803c1f74",
+          "word": "0x2406000f",
+          "asm": "addiu $a2, $zero, 0xf"
+        },
+        {
+          "pc": "0x803c1f78",
+          "word": "0xc17e212",
+          "asm": "jal 0x805f8848"
+        },
+        {
+          "pc": "0x803c1f7c",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803c1f80",
+          "word": "0x80f07b6",
+          "asm": "j 0x803c1ed8"
+        },
+        {
+          "pc": "0x803c1f84",
+          "word": "0x2152021",
+          "asm": "addu $a0, $s0, $s5"
+        },
+        {
+          "pc": "0x803c1f88",
+          "word": "0x3c100010",
+          "asm": "lui $s0, 0x10"
+        },
+        {
+          "pc": "0x803c1f8c",
+          "word": "0x2202821",
+          "asm": "move $a1, $s1"
+        },
+        {
+          "pc": "0x803c1f90",
+          "word": "0xc17e1fa",
+          "asm": "jal 0x805f87e8"
+        },
+        {
+          "pc": "0x803c1f94",
+          "word": "0x36042f00",
+          "asm": "ori $a0, $s0, 0x2f00"
+        },
+        {
+          "pc": "0x803c1f98",
+          "word": "0x8fa20010",
+          "asm": "lw $v0, 0x10($sp)"
+        },
+        {
+          "pc": "0x803c1f9c",
+          "word": "0x36041ffe",
+          "asm": "ori $a0, $s0, 0x1ffe"
+        },
+        {
+          "pc": "0x803c1fa0",
+          "word": "0x2406000f",
+          "asm": "addiu $a2, $zero, 0xf"
+        },
+        {
+          "pc": "0x803c1fa4",
+          "word": "0xc17e212",
+          "asm": "jal 0x805f8848"
+        },
+        {
+          "pc": "0x803c1fa8",
+          "word": "0x3045000f",
+          "asm": "andi $a1, $v0, 0xf"
+        },
+        {
+          "pc": "0x803c1fac",
+          "word": "0x8fbf003c",
+          "asm": "lw $ra, 0x3c($sp)"
+        },
+        {
+          "pc": "0x803c1fb0",
+          "word": "0x8fbe0038",
+          "asm": "lw $fp, 0x38($sp)"
+        },
+        {
+          "pc": "0x803c1fb4",
+          "word": "0x8fb70034",
+          "asm": "lw $s7, 0x34($sp)"
+        },
+        {
+          "pc": "0x803c1fb8",
+          "word": "0x8fb60030",
+          "asm": "lw $s6, 0x30($sp)"
+        },
+        {
+          "pc": "0x803c1fbc",
+          "word": "0x8fb5002c",
+          "asm": "lw $s5, 0x2c($sp)"
+        },
+        {
+          "pc": "0x803c1fc0",
+          "word": "0x8fb40028",
+          "asm": "lw $s4, 0x28($sp)"
+        },
+        {
+          "pc": "0x803c1fc4",
+          "word": "0x8fb30024",
+          "asm": "lw $s3, 0x24($sp)"
+        },
+        {
+          "pc": "0x803c1fc8",
+          "word": "0x8fb20020",
+          "asm": "lw $s2, 0x20($sp)"
+        },
+        {
+          "pc": "0x803c1fcc",
+          "word": "0x8fb1001c",
+          "asm": "lw $s1, 0x1c($sp)"
+        },
+        {
+          "pc": "0x803c1fd0",
+          "word": "0x8fb00018",
+          "asm": "lw $s0, 0x18($sp)"
+        },
+        {
+          "pc": "0x803c1fd4",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        }
+      ]
+    },
+    "display_delays_and_return": {
+      "start": "0x803e0df0",
+      "end_exclusive": "0x803e0e84",
+      "aligned_jal_candidates_not_reachability_proof": [],
+      "instructions": [
+        {
+          "pc": "0x803e0df0",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x803e0df4",
+          "word": "0xc0f7d22",
+          "asm": "jal 0x803df488"
+        },
+        {
+          "pc": "0x803e0df8",
+          "word": "0x24050050",
+          "asm": "addiu $a1, $zero, 0x50"
+        },
+        {
+          "pc": "0x803e0dfc",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x803e0e00",
+          "word": "0xc0f7d22",
+          "asm": "jal 0x803df488"
+        },
+        {
+          "pc": "0x803e0e04",
+          "word": "0x24050051",
+          "asm": "addiu $a1, $zero, 0x51"
+        },
+        {
+          "pc": "0x803e0e08",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x803e0e0c",
+          "word": "0xc0f7d22",
+          "asm": "jal 0x803df488"
+        },
+        {
+          "pc": "0x803e0e10",
+          "word": "0x24050052",
+          "asm": "addiu $a1, $zero, 0x52"
+        },
+        {
+          "pc": "0x803e0e14",
+          "word": "0x24050053",
+          "asm": "addiu $a1, $zero, 0x53"
+        },
+        {
+          "pc": "0x803e0e18",
+          "word": "0xc0f7d22",
+          "asm": "jal 0x803df488"
+        },
+        {
+          "pc": "0x803e0e1c",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x803e0e20",
+          "word": "0x3c04803e",
+          "asm": "lui $a0, 0x803e"
+        },
+        {
+          "pc": "0x803e0e24",
+          "word": "0xc17d9dc",
+          "asm": "jal 0x805f6770"
+        },
+        {
+          "pc": "0x803e0e28",
+          "word": "0x2484f2c8",
+          "asm": "addiu $a0, $a0, -0xd38"
+        },
+        {
+          "pc": "0x803e0e2c",
+          "word": "0xc156ea6",
+          "asm": "jal 0x8055ba98"
+        },
+        {
+          "pc": "0x803e0e30",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803e0e34",
+          "word": "0x90430002",
+          "asm": "lbu $v1, 2($v0)"
+        },
+        {
+          "pc": "0x803e0e38",
+          "word": "0x10600003",
+          "asm": "beqz $v1, 0x803e0e48"
+        },
+        {
+          "pc": "0x803e0e3c",
+          "word": "0x3c0403a8",
+          "asm": "lui $a0, 0x3a8"
+        },
+        {
+          "pc": "0x803e0e40",
+          "word": "0xc157170",
+          "asm": "jal 0x8055c5c0"
+        },
+        {
+          "pc": "0x803e0e44",
+          "word": "0x34847000",
+          "asm": "ori $a0, $a0, 0x7000"
+        },
+        {
+          "pc": "0x803e0e48",
+          "word": "0xc17bd0d",
+          "asm": "jal 0x805ef434"
+        },
+        {
+          "pc": "0x803e0e4c",
+          "word": "0x24040001",
+          "asm": "addiu $a0, $zero, 1"
+        },
+        {
+          "pc": "0x803e0e50",
+          "word": "0xc0f0836",
+          "asm": "jal 0x803c20d8"
+        },
+        {
+          "pc": "0x803e0e54",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x803e0e58",
+          "word": "0x8fbf027c",
+          "asm": "lw $ra, 0x27c($sp)"
+        },
+        {
+          "pc": "0x803e0e5c",
+          "word": "0x8fb50278",
+          "asm": "lw $s5, 0x278($sp)"
+        },
+        {
+          "pc": "0x803e0e60",
+          "word": "0x8fb40274",
+          "asm": "lw $s4, 0x274($sp)"
+        },
+        {
+          "pc": "0x803e0e64",
+          "word": "0x8fb30270",
+          "asm": "lw $s3, 0x270($sp)"
+        },
+        {
+          "pc": "0x803e0e68",
+          "word": "0x8fb2026c",
+          "asm": "lw $s2, 0x26c($sp)"
+        },
+        {
+          "pc": "0x803e0e6c",
+          "word": "0x8fb10268",
+          "asm": "lw $s1, 0x268($sp)"
+        },
+        {
+          "pc": "0x803e0e70",
+          "word": "0x8fb00264",
+          "asm": "lw $s0, 0x264($sp)"
+        },
+        {
+          "pc": "0x803e0e74",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x803e0e78",
+          "word": "0x27bd0280",
+          "asm": "addiu $sp, $sp, 0x280"
+        },
+        {
+          "pc": "0x803e0e7c",
+          "word": "0x2484ffe9",
+          "asm": "addiu $a0, $a0, -0x17"
+        },
+        {
+          "pc": "0x803e0e80",
+          "word": "0x2c840005",
+          "asm": "sltiu $a0, $a0, 5"
+        }
+      ]
+    },
+    "application_display_startup": {
+      "start": "0x8040440c",
+      "end_exclusive": "0x80404504",
+      "aligned_jal_candidates_not_reachability_proof": [
+        "0x804698cc"
+      ],
+      "instructions": [
+        {
+          "pc": "0x8040440c",
+          "word": "0x27bdffa0",
+          "asm": "addiu $sp, $sp, -0x60"
+        },
+        {
+          "pc": "0x80404410",
+          "word": "0x2404000c",
+          "asm": "addiu $a0, $zero, 0xc"
+        },
+        {
+          "pc": "0x80404414",
+          "word": "0xafbf005c",
+          "asm": "sw $ra, 0x5c($sp)"
+        },
+        {
+          "pc": "0x80404418",
+          "word": "0xafb20058",
+          "asm": "sw $s2, 0x58($sp)"
+        },
+        {
+          "pc": "0x8040441c",
+          "word": "0xafb00050",
+          "asm": "sw $s0, 0x50($sp)"
+        },
+        {
+          "pc": "0x80404420",
+          "word": "0xc13c7a0",
+          "asm": "jal 0x804f1e80"
+        },
+        {
+          "pc": "0x80404424",
+          "word": "0xafb10054",
+          "asm": "sw $s1, 0x54($sp)"
+        },
+        {
+          "pc": "0x80404428",
+          "word": "0xc13c65e",
+          "asm": "jal 0x804f1978"
+        },
+        {
+          "pc": "0x8040442c",
+          "word": "0x3c10806b",
+          "asm": "lui $s0, 0x806b"
+        },
+        {
+          "pc": "0x80404430",
+          "word": "0xc15312e",
+          "asm": "jal 0x8054c4b8"
+        },
+        {
+          "pc": "0x80404434",
+          "word": "0x26107218",
+          "asm": "addiu $s0, $s0, 0x7218"
+        },
+        {
+          "pc": "0x80404438",
+          "word": "0xc0f824e",
+          "asm": "jal 0x803e0938"
+        },
+        {
+          "pc": "0x8040443c",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x80404440",
+          "word": "0xc13c3f2",
+          "asm": "jal 0x804f0fc8"
+        },
+        {
+          "pc": "0x80404444",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x80404448",
+          "word": "0x24020001",
+          "asm": "addiu $v0, $zero, 1"
+        },
+        {
+          "pc": "0x8040444c",
+          "word": "0x27a40014",
+          "asm": "addiu $a0, $sp, 0x14"
+        },
+        {
+          "pc": "0x80404450",
+          "word": "0xa3a20020",
+          "asm": "sb $v0, 0x20($sp)"
+        },
+        {
+          "pc": "0x80404454",
+          "word": "0xc148290",
+          "asm": "jal 0x80520a40"
+        },
+        {
+          "pc": "0x80404458",
+          "word": "0xa3a20021",
+          "asm": "sb $v0, 0x21($sp)"
+        },
+        {
+          "pc": "0x8040445c",
+          "word": "0x3c04803f",
+          "asm": "lui $a0, 0x803f"
+        },
+        {
+          "pc": "0x80404460",
+          "word": "0xc14a4fe",
+          "asm": "jal 0x805293f8"
+        },
+        {
+          "pc": "0x80404464",
+          "word": "0x2484e738",
+          "asm": "addiu $a0, $a0, -0x18c8"
+        },
+        {
+          "pc": "0x80404468",
+          "word": "0x3c04803e",
+          "asm": "lui $a0, 0x803e"
+        },
+        {
+          "pc": "0x8040446c",
+          "word": "0xc14a4f0",
+          "asm": "jal 0x805293c0"
+        },
+        {
+          "pc": "0x80404470",
+          "word": "0x24841bf8",
+          "asm": "addiu $a0, $a0, 0x1bf8"
+        },
+        {
+          "pc": "0x80404474",
+          "word": "0x3c04803e",
+          "asm": "lui $a0, 0x803e"
+        },
+        {
+          "pc": "0x80404478",
+          "word": "0xc14a4e2",
+          "asm": "jal 0x80529388"
+        },
+        {
+          "pc": "0x8040447c",
+          "word": "0x24841cec",
+          "asm": "addiu $a0, $a0, 0x1cec"
+        },
+        {
+          "pc": "0x80404480",
+          "word": "0x3c04803e",
+          "asm": "lui $a0, 0x803e"
+        },
+        {
+          "pc": "0x80404484",
+          "word": "0xc14a4c6",
+          "asm": "jal 0x80529318"
+        },
+        {
+          "pc": "0x80404488",
+          "word": "0x2484f5a0",
+          "asm": "addiu $a0, $a0, -0xa60"
+        },
+        {
+          "pc": "0x8040448c",
+          "word": "0x8e03000c",
+          "asm": "lw $v1, 0xc($s0)"
+        },
+        {
+          "pc": "0x80404490",
+          "word": "0x60f809",
+          "asm": "jalr $v1"
+        },
+        {
+          "pc": "0x80404494",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x80404498",
+          "word": "0x8e040010",
+          "asm": "lw $a0, 0x10($s0)"
+        },
+        {
+          "pc": "0x8040449c",
+          "word": "0x80f809",
+          "asm": "jalr $a0"
+        },
+        {
+          "pc": "0x804044a0",
+          "word": "0xa7a20034",
+          "asm": "sh $v0, 0x34($sp)"
+        },
+        {
+          "pc": "0x804044a4",
+          "word": "0x8e030004",
+          "asm": "lw $v1, 4($s0)"
+        },
+        {
+          "pc": "0x804044a8",
+          "word": "0x60f809",
+          "asm": "jalr $v1"
+        },
+        {
+          "pc": "0x804044ac",
+          "word": "0xa7a20036",
+          "asm": "sh $v0, 0x36($sp)"
+        },
+        {
+          "pc": "0x804044b0",
+          "word": "0xa7a20038",
+          "asm": "sh $v0, 0x38($sp)"
+        },
+        {
+          "pc": "0x804044b4",
+          "word": "0x3c0200dd",
+          "asm": "lui $v0, 0xdd"
+        },
+        {
+          "pc": "0x804044b8",
+          "word": "0x3442d800",
+          "asm": "ori $v0, $v0, 0xd800"
+        },
+        {
+          "pc": "0x804044bc",
+          "word": "0x3c030072",
+          "asm": "lui $v1, 0x72"
+        },
+        {
+          "pc": "0x804044c0",
+          "word": "0xafa2003c",
+          "asm": "sw $v0, 0x3c($sp)"
+        },
+        {
+          "pc": "0x804044c4",
+          "word": "0x3463f400",
+          "asm": "ori $v1, $v1, 0xf400"
+        },
+        {
+          "pc": "0x804044c8",
+          "word": "0x3c020be0",
+          "asm": "lui $v0, 0xbe0"
+        },
+        {
+          "pc": "0x804044cc",
+          "word": "0x27a40034",
+          "asm": "addiu $a0, $sp, 0x34"
+        },
+        {
+          "pc": "0x804044d0",
+          "word": "0xafa30040",
+          "asm": "sw $v1, 0x40($sp)"
+        },
+        {
+          "pc": "0x804044d4",
+          "word": "0x34428000",
+          "asm": "ori $v0, $v0, 0x8000"
+        },
+        {
+          "pc": "0x804044d8",
+          "word": "0x24031000",
+          "asm": "addiu $v1, $zero, 0x1000"
+        },
+        {
+          "pc": "0x804044dc",
+          "word": "0xafa30048",
+          "asm": "sw $v1, 0x48($sp)"
+        },
+        {
+          "pc": "0x804044e0",
+          "word": "0xafa20044",
+          "asm": "sw $v0, 0x44($sp)"
+        },
+        {
+          "pc": "0x804044e4",
+          "word": "0xc14cceb",
+          "asm": "jal 0x805333ac"
+        },
+        {
+          "pc": "0x804044e8",
+          "word": "0xa3a0003a",
+          "asm": "sb $zero, 0x3a($sp)"
+        },
+        {
+          "pc": "0x804044ec",
+          "word": "0x3c04803f",
+          "asm": "lui $a0, 0x803f"
+        },
+        {
+          "pc": "0x804044f0",
+          "word": "0xc147e40",
+          "asm": "jal 0x8051f900"
+        },
+        {
+          "pc": "0x804044f4",
+          "word": "0x2484e508",
+          "asm": "addiu $a0, $a0, -0x1af8"
+        },
+        {
+          "pc": "0x804044f8",
+          "word": "0x3c04803f",
+          "asm": "lui $a0, 0x803f"
+        },
+        {
+          "pc": "0x804044fc",
+          "word": "0xc147e47",
+          "asm": "jal 0x8051f91c"
+        },
+        {
+          "pc": "0x80404500",
+          "word": "0x2484e5c0",
+          "asm": "addiu $a0, $a0, -0x1a40"
+        }
+      ]
+    },
+    "hardware_semaphore_hal": {
+      "start": "0x8053b924",
+      "end_exclusive": "0x8053ba24",
+      "aligned_jal_candidates_not_reachability_proof": [],
+      "instructions": [
+        {
+          "pc": "0x8053b924",
+          "word": "0x308600ff",
+          "asm": "andi $a2, $a0, 0xff"
+        },
+        {
+          "pc": "0x8053b928",
+          "word": "0x2cc20009",
+          "asm": "sltiu $v0, $a2, 9"
+        },
+        {
+          "pc": "0x8053b92c",
+          "word": "0x30a5ffff",
+          "asm": "andi $a1, $a1, 0xffff"
+        },
+        {
+          "pc": "0x8053b930",
+          "word": "0x1040000b",
+          "asm": "beqz $v0, 0x8053b960"
+        },
+        {
+          "pc": "0x8053b934",
+          "word": "0x1821",
+          "asm": "move $v1, $zero"
+        },
+        {
+          "pc": "0x8053b938",
+          "word": "0x3c02806e",
+          "asm": "lui $v0, 0x806e"
+        },
+        {
+          "pc": "0x8053b93c",
+          "word": "0x8c448818",
+          "asm": "lw $a0, -0x77e8($v0)"
+        },
+        {
+          "pc": "0x8053b940",
+          "word": "0x24c30c00",
+          "asm": "addiu $v1, $a2, 0xc00"
+        },
+        {
+          "pc": "0x8053b944",
+          "word": "0x31880",
+          "asm": "sll $v1, $v1, 2"
+        },
+        {
+          "pc": "0x8053b948",
+          "word": "0x641821",
+          "asm": "addu $v1, $v1, $a0"
+        },
+        {
+          "pc": "0x8053b94c",
+          "word": "0xa4650000",
+          "asm": "sh $a1, ($v1)"
+        },
+        {
+          "pc": "0x8053b950",
+          "word": "0x94620000",
+          "asm": "lhu $v0, ($v1)"
+        },
+        {
+          "pc": "0x8053b954",
+          "word": "0x3042ffff",
+          "asm": "andi $v0, $v0, 0xffff"
+        },
+        {
+          "pc": "0x8053b958",
+          "word": "0x451026",
+          "asm": "xor $v0, $v0, $a1"
+        },
+        {
+          "pc": "0x8053b95c",
+          "word": "0x2c430001",
+          "asm": "sltiu $v1, $v0, 1"
+        },
+        {
+          "pc": "0x8053b960",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x8053b964",
+          "word": "0x601021",
+          "asm": "move $v0, $v1"
+        },
+        {
+          "pc": "0x8053b968",
+          "word": "0x308600ff",
+          "asm": "andi $a2, $a0, 0xff"
+        },
+        {
+          "pc": "0x8053b96c",
+          "word": "0x2cc20009",
+          "asm": "sltiu $v0, $a2, 9"
+        },
+        {
+          "pc": "0x8053b970",
+          "word": "0x1040000a",
+          "asm": "beqz $v0, 0x8053b99c"
+        },
+        {
+          "pc": "0x8053b974",
+          "word": "0x30a5ffff",
+          "asm": "andi $a1, $a1, 0xffff"
+        },
+        {
+          "pc": "0x8053b978",
+          "word": "0x3c03806e",
+          "asm": "lui $v1, 0x806e"
+        },
+        {
+          "pc": "0x8053b97c",
+          "word": "0x8c648818",
+          "asm": "lw $a0, -0x77e8($v1)"
+        },
+        {
+          "pc": "0x8053b980",
+          "word": "0x24c20c00",
+          "asm": "addiu $v0, $a2, 0xc00"
+        },
+        {
+          "pc": "0x8053b984",
+          "word": "0x21080",
+          "asm": "sll $v0, $v0, 2"
+        },
+        {
+          "pc": "0x8053b988",
+          "word": "0x441021",
+          "asm": "addu $v0, $v0, $a0"
+        },
+        {
+          "pc": "0x8053b98c",
+          "word": "0x94430000",
+          "asm": "lhu $v1, ($v0)"
+        },
+        {
+          "pc": "0x8053b990",
+          "word": "0x3063ffff",
+          "asm": "andi $v1, $v1, 0xffff"
+        },
+        {
+          "pc": "0x8053b994",
+          "word": "0x10650003",
+          "asm": "beq $v1, $a1, 0x8053b9a4"
+        },
+        {
+          "pc": "0x8053b998",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x8053b99c",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x8053b9a0",
+          "word": "0x1021",
+          "asm": "move $v0, $zero"
+        },
+        {
+          "pc": "0x8053b9a4",
+          "word": "0xa4400000",
+          "asm": "sh $zero, ($v0)"
+        },
+        {
+          "pc": "0x8053b9a8",
+          "word": "0x94420000",
+          "asm": "lhu $v0, ($v0)"
+        },
+        {
+          "pc": "0x8053b9ac",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x8053b9b0",
+          "word": "0x2c420001",
+          "asm": "sltiu $v0, $v0, 1"
+        },
+        {
+          "pc": "0x8053b9b4",
+          "word": "0x308500ff",
+          "asm": "andi $a1, $a0, 0xff"
+        },
+        {
+          "pc": "0x8053b9b8",
+          "word": "0x2ca20009",
+          "asm": "sltiu $v0, $a1, 9"
+        },
+        {
+          "pc": "0x8053b9bc",
+          "word": "0x10400009",
+          "asm": "beqz $v0, 0x8053b9e4"
+        },
+        {
+          "pc": "0x8053b9c0",
+          "word": "0x1821",
+          "asm": "move $v1, $zero"
+        },
+        {
+          "pc": "0x8053b9c4",
+          "word": "0x3c03806e",
+          "asm": "lui $v1, 0x806e"
+        },
+        {
+          "pc": "0x8053b9c8",
+          "word": "0x8c648818",
+          "asm": "lw $a0, -0x77e8($v1)"
+        },
+        {
+          "pc": "0x8053b9cc",
+          "word": "0x24a20c00",
+          "asm": "addiu $v0, $a1, 0xc00"
+        },
+        {
+          "pc": "0x8053b9d0",
+          "word": "0x21080",
+          "asm": "sll $v0, $v0, 2"
+        },
+        {
+          "pc": "0x8053b9d4",
+          "word": "0x441021",
+          "asm": "addu $v0, $v0, $a0"
+        },
+        {
+          "pc": "0x8053b9d8",
+          "word": "0xa4400000",
+          "asm": "sh $zero, ($v0)"
+        },
+        {
+          "pc": "0x8053b9dc",
+          "word": "0x94430000",
+          "asm": "lhu $v1, ($v0)"
+        },
+        {
+          "pc": "0x8053b9e0",
+          "word": "0x2c630001",
+          "asm": "sltiu $v1, $v1, 1"
+        },
+        {
+          "pc": "0x8053b9e4",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x8053b9e8",
+          "word": "0x601021",
+          "asm": "move $v0, $v1"
+        },
+        {
+          "pc": "0x8053b9ec",
+          "word": "0x308700ff",
+          "asm": "andi $a3, $a0, 0xff"
+        },
+        {
+          "pc": "0x8053b9f0",
+          "word": "0x2ce20009",
+          "asm": "sltiu $v0, $a3, 9"
+        },
+        {
+          "pc": "0x8053b9f4",
+          "word": "0x10400009",
+          "asm": "beqz $v0, 0x8053ba1c"
+        },
+        {
+          "pc": "0x8053b9f8",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x8053b9fc",
+          "word": "0x3c03806e",
+          "asm": "lui $v1, 0x806e"
+        },
+        {
+          "pc": "0x8053ba00",
+          "word": "0x8c648818",
+          "asm": "lw $a0, -0x77e8($v1)"
+        },
+        {
+          "pc": "0x8053ba04",
+          "word": "0x24e20c00",
+          "asm": "addiu $v0, $a3, 0xc00"
+        },
+        {
+          "pc": "0x8053ba08",
+          "word": "0x21080",
+          "asm": "sll $v0, $v0, 2"
+        },
+        {
+          "pc": "0x8053ba0c",
+          "word": "0x441021",
+          "asm": "addu $v0, $v0, $a0"
+        },
+        {
+          "pc": "0x8053ba10",
+          "word": "0x94430000",
+          "asm": "lhu $v1, ($v0)"
+        },
+        {
+          "pc": "0x8053ba14",
+          "word": "0x24060001",
+          "asm": "addiu $a2, $zero, 1"
+        },
+        {
+          "pc": "0x8053ba18",
+          "word": "0xa4a30000",
+          "asm": "sh $v1, ($a1)"
+        },
+        {
+          "pc": "0x8053ba1c",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x8053ba20",
+          "word": "0xc01021",
+          "asm": "move $v0, $a2"
+        }
+      ]
+    },
+    "ge_context_save_restore": {
+      "start": "0x8052681c",
+      "end_exclusive": "0x805269d4",
+      "aligned_jal_candidates_not_reachability_proof": [
+        "0x80521c1c",
+        "0x80521db0",
+        "0x80521f3c",
+        "0x8052258c",
+        "0x805226e4",
+        "0x8052279c",
+        "0x80523174",
+        "0x8052374c",
+        "0x805238d0",
+        "0x805239f4",
+        "0x80524050",
+        "0x805241f0",
+        "0x80524280",
+        "0x805251a4",
+        "0x80525330",
+        "0x80525344",
+        "0x80525358",
+        "0x80525368",
+        "0x80525378",
+        "0x8052538c",
+        "0x805253a0",
+        "0x805253b4",
+        "0x80525750",
+        "0x80525bfc",
+        "0x80526980",
+        "0x805269ec",
+        "0x80526a40",
+        "0x80526aa0",
+        "0x80526b0c",
+        "0x80526b64",
+        "0x80526bf8",
+        "0x80526c24",
+        "0x80526e2c",
+        "0x80526f3c",
+        "0x80526fb8",
+        "0x805270cc",
+        "0x805270dc",
+        "0x805270ec",
+        "0x805270fc",
+        "0x8052710c",
+        "0x80527118",
+        "0x8052712c",
+        "0x8052713c",
+        "0x805271e0"
+      ],
+      "instructions": [
+        {
+          "pc": "0x8052681c",
+          "word": "0x27bdffe0",
+          "asm": "addiu $sp, $sp, -0x20"
+        },
+        {
+          "pc": "0x80526820",
+          "word": "0xafb00014",
+          "asm": "sw $s0, 0x14($sp)"
+        },
+        {
+          "pc": "0x80526824",
+          "word": "0x30b0ffff",
+          "asm": "andi $s0, $a1, 0xffff"
+        },
+        {
+          "pc": "0x80526828",
+          "word": "0x2e020080",
+          "asm": "sltiu $v0, $s0, 0x80"
+        },
+        {
+          "pc": "0x8052682c",
+          "word": "0xafb10018",
+          "asm": "sw $s1, 0x18($sp)"
+        },
+        {
+          "pc": "0x80526830",
+          "word": "0xafbf001c",
+          "asm": "sw $ra, 0x1c($sp)"
+        },
+        {
+          "pc": "0x80526834",
+          "word": "0x10400013",
+          "asm": "beqz $v0, 0x80526884"
+        },
+        {
+          "pc": "0x80526838",
+          "word": "0x808821",
+          "asm": "move $s1, $a0"
+        },
+        {
+          "pc": "0x8052683c",
+          "word": "0x2e020033",
+          "asm": "sltiu $v0, $s0, 0x33"
+        },
+        {
+          "pc": "0x80526840",
+          "word": "0x1440000a",
+          "asm": "bnez $v0, 0x8052686c"
+        },
+        {
+          "pc": "0x80526844",
+          "word": "0x3c038063",
+          "asm": "lui $v1, 0x8063"
+        },
+        {
+          "pc": "0x80526848",
+          "word": "0x26020004",
+          "asm": "addiu $v0, $s0, 4"
+        },
+        {
+          "pc": "0x8052684c",
+          "word": "0x8fbf001c",
+          "asm": "lw $ra, 0x1c($sp)"
+        },
+        {
+          "pc": "0x80526850",
+          "word": "0x21040",
+          "asm": "sll $v0, $v0, 1"
+        },
+        {
+          "pc": "0x80526854",
+          "word": "0x2221021",
+          "asm": "addu $v0, $s1, $v0"
+        },
+        {
+          "pc": "0x80526858",
+          "word": "0x94420004",
+          "asm": "lhu $v0, 4($v0)"
+        },
+        {
+          "pc": "0x8052685c",
+          "word": "0x8fb10018",
+          "asm": "lw $s1, 0x18($sp)"
+        },
+        {
+          "pc": "0x80526860",
+          "word": "0x8fb00014",
+          "asm": "lw $s0, 0x14($sp)"
+        },
+        {
+          "pc": "0x80526864",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x80526868",
+          "word": "0x27bd0020",
+          "asm": "addiu $sp, $sp, 0x20"
+        },
+        {
+          "pc": "0x8052686c",
+          "word": "0x101080",
+          "asm": "sll $v0, $s0, 2"
+        },
+        {
+          "pc": "0x80526870",
+          "word": "0x24630e14",
+          "asm": "addiu $v1, $v1, 0xe14"
+        },
+        {
+          "pc": "0x80526874",
+          "word": "0x621821",
+          "asm": "addu $v1, $v1, $v0"
+        },
+        {
+          "pc": "0x80526878",
+          "word": "0x8c640000",
+          "asm": "lw $a0, ($v1)"
+        },
+        {
+          "pc": "0x8052687c",
+          "word": "0x800008",
+          "asm": "jr $a0"
+        },
+        {
+          "pc": "0x80526880",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x80526884",
+          "word": "0xc149974",
+          "asm": "jal 0x805265d0"
+        },
+        {
+          "pc": "0x80526888",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x8052688c",
+          "word": "0x8e220004",
+          "asm": "lw $v0, 4($s1)"
+        },
+        {
+          "pc": "0x80526890",
+          "word": "0x26031400",
+          "asm": "addiu $v1, $s0, 0x1400"
+        },
+        {
+          "pc": "0x80526894",
+          "word": "0x31880",
+          "asm": "sll $v1, $v1, 2"
+        },
+        {
+          "pc": "0x80526898",
+          "word": "0x621821",
+          "asm": "addu $v1, $v1, $v0"
+        },
+        {
+          "pc": "0x8052689c",
+          "word": "0x94640000",
+          "asm": "lhu $a0, ($v1)"
+        },
+        {
+          "pc": "0x805268a0",
+          "word": "0x8fbf001c",
+          "asm": "lw $ra, 0x1c($sp)"
+        },
+        {
+          "pc": "0x805268a4",
+          "word": "0x8fb10018",
+          "asm": "lw $s1, 0x18($sp)"
+        },
+        {
+          "pc": "0x805268a8",
+          "word": "0x3082ffff",
+          "asm": "andi $v0, $a0, 0xffff"
+        },
+        {
+          "pc": "0x805268ac",
+          "word": "0x8fb00014",
+          "asm": "lw $s0, 0x14($sp)"
+        },
+        {
+          "pc": "0x805268b0",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x805268b4",
+          "word": "0x27bd0020",
+          "asm": "addiu $sp, $sp, 0x20"
+        },
+        {
+          "pc": "0x805268b8",
+          "word": "0x96220060",
+          "asm": "lhu $v0, 0x60($s1)"
+        },
+        {
+          "pc": "0x805268bc",
+          "word": "0x24060007",
+          "asm": "addiu $a2, $zero, 7"
+        },
+        {
+          "pc": "0x805268c0",
+          "word": "0x2403002a",
+          "asm": "addiu $v1, $zero, 0x2a"
+        },
+        {
+          "pc": "0x805268c4",
+          "word": "0x3042fff8",
+          "asm": "andi $v0, $v0, 0xfff8"
+        },
+        {
+          "pc": "0x805268c8",
+          "word": "0x7c022e20",
+          "asm": "seh $a1, $v0"
+        },
+        {
+          "pc": "0x805268cc",
+          "word": "0x8e220004",
+          "asm": "lw $v0, 4($s1)"
+        },
+        {
+          "pc": "0x805268d0",
+          "word": "0x24631400",
+          "asm": "addiu $v1, $v1, 0x1400"
+        },
+        {
+          "pc": "0x805268d4",
+          "word": "0x31880",
+          "asm": "sll $v1, $v1, 2"
+        },
+        {
+          "pc": "0x805268d8",
+          "word": "0x621821",
+          "asm": "addu $v1, $v1, $v0"
+        },
+        {
+          "pc": "0x805268dc",
+          "word": "0x94640000",
+          "asm": "lhu $a0, ($v1)"
+        },
+        {
+          "pc": "0x805268e0",
+          "word": "0x8fbf001c",
+          "asm": "lw $ra, 0x1c($sp)"
+        },
+        {
+          "pc": "0x805268e4",
+          "word": "0x8fb10018",
+          "asm": "lw $s1, 0x18($sp)"
+        },
+        {
+          "pc": "0x805268e8",
+          "word": "0xc42024",
+          "asm": "and $a0, $a2, $a0"
+        },
+        {
+          "pc": "0x805268ec",
+          "word": "0xa42025",
+          "asm": "or $a0, $a1, $a0"
+        },
+        {
+          "pc": "0x805268f0",
+          "word": "0x3082ffff",
+          "asm": "andi $v0, $a0, 0xffff"
+        },
+        {
+          "pc": "0x805268f4",
+          "word": "0x8fb00014",
+          "asm": "lw $s0, 0x14($sp)"
+        },
+        {
+          "pc": "0x805268f8",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x805268fc",
+          "word": "0x27bd0020",
+          "asm": "addiu $sp, $sp, 0x20"
+        },
+        {
+          "pc": "0x80526900",
+          "word": "0x2001821",
+          "asm": "move $v1, $s0"
+        },
+        {
+          "pc": "0x80526904",
+          "word": "0x3406ffff",
+          "asm": "ori $a2, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80526908",
+          "word": "0x8149a33",
+          "asm": "j 0x805268cc"
+        },
+        {
+          "pc": "0x8052690c",
+          "word": "0x2821",
+          "asm": "move $a1, $zero"
+        },
+        {
+          "pc": "0x80526910",
+          "word": "0x9622000e",
+          "asm": "lhu $v0, 0xe($s1)"
+        },
+        {
+          "pc": "0x80526914",
+          "word": "0x3406fc8f",
+          "asm": "ori $a2, $zero, 0xfc8f"
+        },
+        {
+          "pc": "0x80526918",
+          "word": "0x24030001",
+          "asm": "addiu $v1, $zero, 1"
+        },
+        {
+          "pc": "0x8052691c",
+          "word": "0x8149a33",
+          "asm": "j 0x805268cc"
+        },
+        {
+          "pc": "0x80526920",
+          "word": "0x30450370",
+          "asm": "andi $a1, $v0, 0x370"
+        },
+        {
+          "pc": "0x80526924",
+          "word": "0x9622000c",
+          "asm": "lhu $v0, 0xc($s1)"
+        },
+        {
+          "pc": "0x80526928",
+          "word": "0x24060001",
+          "asm": "addiu $a2, $zero, 1"
+        },
+        {
+          "pc": "0x8052692c",
+          "word": "0x1821",
+          "asm": "move $v1, $zero"
+        },
+        {
+          "pc": "0x80526930",
+          "word": "0x3042fffe",
+          "asm": "andi $v0, $v0, 0xfffe"
+        },
+        {
+          "pc": "0x80526934",
+          "word": "0x8149a33",
+          "asm": "j 0x805268cc"
+        },
+        {
+          "pc": "0x80526938",
+          "word": "0x7c022e20",
+          "asm": "seh $a1, $v0"
+        },
+        {
+          "pc": "0x8052693c",
+          "word": "0x27bdffd8",
+          "asm": "addiu $sp, $sp, -0x28"
+        },
+        {
+          "pc": "0x80526940",
+          "word": "0x3c028063",
+          "asm": "lui $v0, 0x8063"
+        },
+        {
+          "pc": "0x80526944",
+          "word": "0xafb40020",
+          "asm": "sw $s4, 0x20($sp)"
+        },
+        {
+          "pc": "0x80526948",
+          "word": "0xafb3001c",
+          "asm": "sw $s3, 0x1c($sp)"
+        },
+        {
+          "pc": "0x8052694c",
+          "word": "0xafb20018",
+          "asm": "sw $s2, 0x18($sp)"
+        },
+        {
+          "pc": "0x80526950",
+          "word": "0xafb10014",
+          "asm": "sw $s1, 0x14($sp)"
+        },
+        {
+          "pc": "0x80526954",
+          "word": "0xafb00010",
+          "asm": "sw $s0, 0x10($sp)"
+        },
+        {
+          "pc": "0x80526958",
+          "word": "0xafbf0024",
+          "asm": "sw $ra, 0x24($sp)"
+        },
+        {
+          "pc": "0x8052695c",
+          "word": "0x809021",
+          "asm": "move $s2, $a0"
+        },
+        {
+          "pc": "0x80526960",
+          "word": "0x24540ee0",
+          "asm": "addiu $s4, $v0, 0xee0"
+        },
+        {
+          "pc": "0x80526964",
+          "word": "0x8821",
+          "asm": "move $s1, $zero"
+        },
+        {
+          "pc": "0x80526968",
+          "word": "0x8021",
+          "asm": "move $s0, $zero"
+        },
+        {
+          "pc": "0x8052696c",
+          "word": "0x8149a5f",
+          "asm": "j 0x8052697c"
+        },
+        {
+          "pc": "0x80526970",
+          "word": "0x241300ff",
+          "asm": "addiu $s3, $zero, 0xff"
+        },
+        {
+          "pc": "0x80526974",
+          "word": "0x440000f",
+          "asm": "bltz $v0, 0x805269b4"
+        },
+        {
+          "pc": "0x80526978",
+          "word": "0x8fbf0024",
+          "asm": "lw $ra, 0x24($sp)"
+        },
+        {
+          "pc": "0x8052697c",
+          "word": "0x2002821",
+          "asm": "move $a1, $s0"
+        },
+        {
+          "pc": "0x80526980",
+          "word": "0xc149a07",
+          "asm": "jal 0x8052681c"
+        },
+        {
+          "pc": "0x80526984",
+          "word": "0x2402021",
+          "asm": "move $a0, $s2"
+        },
+        {
+          "pc": "0x80526988",
+          "word": "0x403021",
+          "asm": "move $a2, $v0"
+        },
+        {
+          "pc": "0x8052698c",
+          "word": "0x2002821",
+          "asm": "move $a1, $s0"
+        },
+        {
+          "pc": "0x80526990",
+          "word": "0xc14996c",
+          "asm": "jal 0x805265b0"
+        },
+        {
+          "pc": "0x80526994",
+          "word": "0x2402021",
+          "asm": "move $a0, $s2"
+        },
+        {
+          "pc": "0x80526998",
+          "word": "0x26220001",
+          "asm": "addiu $v0, $s1, 1"
+        },
+        {
+          "pc": "0x8052699c",
+          "word": "0x3051ffff",
+          "asm": "andi $s1, $v0, 0xffff"
+        },
+        {
+          "pc": "0x805269a0",
+          "word": "0x2911821",
+          "asm": "addu $v1, $s4, $s1"
+        },
+        {
+          "pc": "0x805269a4",
+          "word": "0x90700000",
+          "asm": "lbu $s0, ($v1)"
+        },
+        {
+          "pc": "0x805269a8",
+          "word": "0x1613fff2",
+          "asm": "bne $s0, $s3, 0x80526974"
+        },
+        {
+          "pc": "0x805269ac",
+          "word": "0x7c101420",
+          "asm": "seb $v0, $s0"
+        },
+        {
+          "pc": "0x805269b0",
+          "word": "0x8fbf0024",
+          "asm": "lw $ra, 0x24($sp)"
+        },
+        {
+          "pc": "0x805269b4",
+          "word": "0x24020001",
+          "asm": "addiu $v0, $zero, 1"
+        },
+        {
+          "pc": "0x805269b8",
+          "word": "0x8fb40020",
+          "asm": "lw $s4, 0x20($sp)"
+        },
+        {
+          "pc": "0x805269bc",
+          "word": "0x8fb3001c",
+          "asm": "lw $s3, 0x1c($sp)"
+        },
+        {
+          "pc": "0x805269c0",
+          "word": "0x8fb20018",
+          "asm": "lw $s2, 0x18($sp)"
+        },
+        {
+          "pc": "0x805269c4",
+          "word": "0x8fb10014",
+          "asm": "lw $s1, 0x14($sp)"
+        },
+        {
+          "pc": "0x805269c8",
+          "word": "0x8fb00010",
+          "asm": "lw $s0, 0x10($sp)"
+        },
+        {
+          "pc": "0x805269cc",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x805269d0",
+          "word": "0x27bd0028",
+          "asm": "addiu $sp, $sp, 0x28"
+        }
+      ]
+    },
+    "ge_command_queue_wait": {
+      "start": "0x80526240",
+      "end_exclusive": "0x80526540",
+      "aligned_jal_candidates_not_reachability_proof": [
+        "0x8052657c",
+        "0x80526604"
+      ],
+      "instructions": [
+        {
+          "pc": "0x80526240",
+          "word": "0x8c880004",
+          "asm": "lw $t0, 4($a0)"
+        },
+        {
+          "pc": "0x80526244",
+          "word": "0x27bdffd0",
+          "asm": "addiu $sp, $sp, -0x30"
+        },
+        {
+          "pc": "0x80526248",
+          "word": "0xafb40024",
+          "asm": "sw $s4, 0x24($sp)"
+        },
+        {
+          "pc": "0x8052624c",
+          "word": "0x95025004",
+          "asm": "lhu $v0, 0x5004($t0)"
+        },
+        {
+          "pc": "0x80526250",
+          "word": "0xafbf002c",
+          "asm": "sw $ra, 0x2c($sp)"
+        },
+        {
+          "pc": "0x80526254",
+          "word": "0xafb50028",
+          "asm": "sw $s5, 0x28($sp)"
+        },
+        {
+          "pc": "0x80526258",
+          "word": "0x30420002",
+          "asm": "andi $v0, $v0, 2"
+        },
+        {
+          "pc": "0x8052625c",
+          "word": "0xafb30020",
+          "asm": "sw $s3, 0x20($sp)"
+        },
+        {
+          "pc": "0x80526260",
+          "word": "0xafb2001c",
+          "asm": "sw $s2, 0x1c($sp)"
+        },
+        {
+          "pc": "0x80526264",
+          "word": "0xafb10018",
+          "asm": "sw $s1, 0x18($sp)"
+        },
+        {
+          "pc": "0x80526268",
+          "word": "0xafb00014",
+          "asm": "sw $s0, 0x14($sp)"
+        },
+        {
+          "pc": "0x8052626c",
+          "word": "0x1040004b",
+          "asm": "beqz $v0, 0x8052639c"
+        },
+        {
+          "pc": "0x80526270",
+          "word": "0x80a021",
+          "asm": "move $s4, $a0"
+        },
+        {
+          "pc": "0x80526274",
+          "word": "0x950250a8",
+          "asm": "lhu $v0, 0x50a8($t0)"
+        },
+        {
+          "pc": "0x80526278",
+          "word": "0x9504501c",
+          "asm": "lhu $a0, 0x501c($t0)"
+        },
+        {
+          "pc": "0x8052627c",
+          "word": "0x24030200",
+          "asm": "addiu $v1, $zero, 0x200"
+        },
+        {
+          "pc": "0x80526280",
+          "word": "0x30420007",
+          "asm": "andi $v0, $v0, 7"
+        },
+        {
+          "pc": "0x80526284",
+          "word": "0x438804",
+          "asm": "sllv $s1, $v1, $v0"
+        },
+        {
+          "pc": "0x80526288",
+          "word": "0x7c8422c0",
+          "asm": "ext $a0, $a0, 0xb, 5"
+        },
+        {
+          "pc": "0x8052628c",
+          "word": "0xb1102b",
+          "asm": "sltu $v0, $a1, $s1"
+        },
+        {
+          "pc": "0x80526290",
+          "word": "0xa09021",
+          "asm": "move $s2, $a1"
+        },
+        {
+          "pc": "0x80526294",
+          "word": "0x2c840010",
+          "asm": "sltiu $a0, $a0, 0x10"
+        },
+        {
+          "pc": "0x80526298",
+          "word": "0x222900a",
+          "asm": "movz $s2, $s1, $v0"
+        },
+        {
+          "pc": "0x8052629c",
+          "word": "0x10800015",
+          "asm": "beqz $a0, 0x805262f4"
+        },
+        {
+          "pc": "0x805262a0",
+          "word": "0x2506501c",
+          "asm": "addiu $a2, $t0, 0x501c"
+        },
+        {
+          "pc": "0x805262a4",
+          "word": "0x3c028063",
+          "asm": "lui $v0, 0x8063"
+        },
+        {
+          "pc": "0x805262a8",
+          "word": "0x24550d30",
+          "asm": "addiu $s5, $v0, 0xd30"
+        },
+        {
+          "pc": "0x805262ac",
+          "word": "0x94c20000",
+          "asm": "lhu $v0, ($a2)"
+        },
+        {
+          "pc": "0x805262b0",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x805262b4",
+          "word": "0x3c130008",
+          "asm": "lui $s3, 8"
+        },
+        {
+          "pc": "0x805262b8",
+          "word": "0x7c4222c0",
+          "asm": "ext $v0, $v0, 0xb, 5"
+        },
+        {
+          "pc": "0x805262bc",
+          "word": "0x24840001",
+          "asm": "addiu $a0, $a0, 1"
+        },
+        {
+          "pc": "0x805262c0",
+          "word": "0x2c420010",
+          "asm": "sltiu $v0, $v0, 0x10"
+        },
+        {
+          "pc": "0x805262c4",
+          "word": "0x8021",
+          "asm": "move $s0, $zero"
+        },
+        {
+          "pc": "0x805262c8",
+          "word": "0x1040000a",
+          "asm": "beqz $v0, 0x805262f4"
+        },
+        {
+          "pc": "0x805262cc",
+          "word": "0x93182b",
+          "asm": "sltu $v1, $a0, $s3"
+        },
+        {
+          "pc": "0x805262d0",
+          "word": "0x10600068",
+          "asm": "beqz $v1, 0x80526474"
+        },
+        {
+          "pc": "0x805262d4",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x805262d8",
+          "word": "0x2506501c",
+          "asm": "addiu $a2, $t0, 0x501c"
+        },
+        {
+          "pc": "0x805262dc",
+          "word": "0x94c20000",
+          "asm": "lhu $v0, ($a2)"
+        },
+        {
+          "pc": "0x805262e0",
+          "word": "0x24840001",
+          "asm": "addiu $a0, $a0, 1"
+        },
+        {
+          "pc": "0x805262e4",
+          "word": "0x7c4222c0",
+          "asm": "ext $v0, $v0, 0xb, 5"
+        },
+        {
+          "pc": "0x805262e8",
+          "word": "0x2c420010",
+          "asm": "sltiu $v0, $v0, 0x10"
+        },
+        {
+          "pc": "0x805262ec",
+          "word": "0x1440fff8",
+          "asm": "bnez $v0, 0x805262d0"
+        },
+        {
+          "pc": "0x805262f0",
+          "word": "0x93182b",
+          "asm": "sltu $v1, $a0, $s3"
+        },
+        {
+          "pc": "0x805262f4",
+          "word": "0x95025010",
+          "asm": "lhu $v0, 0x5010($t0)"
+        },
+        {
+          "pc": "0x805262f8",
+          "word": "0x2328823",
+          "asm": "subu $s1, $s1, $s2"
+        },
+        {
+          "pc": "0x805262fc",
+          "word": "0x95035014",
+          "asm": "lhu $v1, 0x5014($t0)"
+        },
+        {
+          "pc": "0x80526300",
+          "word": "0x3042ffff",
+          "asm": "andi $v0, $v0, 0xffff"
+        },
+        {
+          "pc": "0x80526304",
+          "word": "0x51102b",
+          "asm": "sltu $v0, $v0, $s1"
+        },
+        {
+          "pc": "0x80526308",
+          "word": "0x25065010",
+          "asm": "addiu $a2, $t0, 0x5010"
+        },
+        {
+          "pc": "0x8052630c",
+          "word": "0x1440001a",
+          "asm": "bnez $v0, 0x80526378"
+        },
+        {
+          "pc": "0x80526310",
+          "word": "0x25095014",
+          "asm": "addiu $t1, $t0, 0x5014"
+        },
+        {
+          "pc": "0x80526314",
+          "word": "0x3c028063",
+          "asm": "lui $v0, 0x8063"
+        },
+        {
+          "pc": "0x80526318",
+          "word": "0x24550d5c",
+          "asm": "addiu $s5, $v0, 0xd5c"
+        },
+        {
+          "pc": "0x8052631c",
+          "word": "0x94c20000",
+          "asm": "lhu $v0, ($a2)"
+        },
+        {
+          "pc": "0x80526320",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x80526324",
+          "word": "0x3c130008",
+          "asm": "lui $s3, 8"
+        },
+        {
+          "pc": "0x80526328",
+          "word": "0x3042ffff",
+          "asm": "andi $v0, $v0, 0xffff"
+        },
+        {
+          "pc": "0x8052632c",
+          "word": "0x24840001",
+          "asm": "addiu $a0, $a0, 1"
+        },
+        {
+          "pc": "0x80526330",
+          "word": "0x51102b",
+          "asm": "sltu $v0, $v0, $s1"
+        },
+        {
+          "pc": "0x80526334",
+          "word": "0x8021",
+          "asm": "move $s0, $zero"
+        },
+        {
+          "pc": "0x80526338",
+          "word": "0x93182b",
+          "asm": "sltu $v1, $a0, $s3"
+        },
+        {
+          "pc": "0x8052633c",
+          "word": "0x95250000",
+          "asm": "lhu $a1, ($t1)"
+        },
+        {
+          "pc": "0x80526340",
+          "word": "0x1440000e",
+          "asm": "bnez $v0, 0x8052637c"
+        },
+        {
+          "pc": "0x80526344",
+          "word": "0x8fbf002c",
+          "asm": "lw $ra, 0x2c($sp)"
+        },
+        {
+          "pc": "0x80526348",
+          "word": "0x10600039",
+          "asm": "beqz $v1, 0x80526430"
+        },
+        {
+          "pc": "0x8052634c",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x80526350",
+          "word": "0x25065010",
+          "asm": "addiu $a2, $t0, 0x5010"
+        },
+        {
+          "pc": "0x80526354",
+          "word": "0x25095014",
+          "asm": "addiu $t1, $t0, 0x5014"
+        },
+        {
+          "pc": "0x80526358",
+          "word": "0x94c20000",
+          "asm": "lhu $v0, ($a2)"
+        },
+        {
+          "pc": "0x8052635c",
+          "word": "0x24840001",
+          "asm": "addiu $a0, $a0, 1"
+        },
+        {
+          "pc": "0x80526360",
+          "word": "0x93182b",
+          "asm": "sltu $v1, $a0, $s3"
+        },
+        {
+          "pc": "0x80526364",
+          "word": "0x3042ffff",
+          "asm": "andi $v0, $v0, 0xffff"
+        },
+        {
+          "pc": "0x80526368",
+          "word": "0x51102b",
+          "asm": "sltu $v0, $v0, $s1"
+        },
+        {
+          "pc": "0x8052636c",
+          "word": "0x95250000",
+          "asm": "lhu $a1, ($t1)"
+        },
+        {
+          "pc": "0x80526370",
+          "word": "0x1040fff5",
+          "asm": "beqz $v0, 0x80526348"
+        },
+        {
+          "pc": "0x80526374",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x80526378",
+          "word": "0x8fbf002c",
+          "asm": "lw $ra, 0x2c($sp)"
+        },
+        {
+          "pc": "0x8052637c",
+          "word": "0x8fb50028",
+          "asm": "lw $s5, 0x28($sp)"
+        },
+        {
+          "pc": "0x80526380",
+          "word": "0x8fb40024",
+          "asm": "lw $s4, 0x24($sp)"
+        },
+        {
+          "pc": "0x80526384",
+          "word": "0x8fb30020",
+          "asm": "lw $s3, 0x20($sp)"
+        },
+        {
+          "pc": "0x80526388",
+          "word": "0x8fb2001c",
+          "asm": "lw $s2, 0x1c($sp)"
+        },
+        {
+          "pc": "0x8052638c",
+          "word": "0x8fb10018",
+          "asm": "lw $s1, 0x18($sp)"
+        },
+        {
+          "pc": "0x80526390",
+          "word": "0x8fb00014",
+          "asm": "lw $s0, 0x14($sp)"
+        },
+        {
+          "pc": "0x80526394",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x80526398",
+          "word": "0x27bd0030",
+          "asm": "addiu $sp, $sp, 0x30"
+        },
+        {
+          "pc": "0x8052639c",
+          "word": "0x9503501c",
+          "asm": "lhu $v1, 0x501c($t0)"
+        },
+        {
+          "pc": "0x805263a0",
+          "word": "0x24110010",
+          "asm": "addiu $s1, $zero, 0x10"
+        },
+        {
+          "pc": "0x805263a4",
+          "word": "0x2ca20010",
+          "asm": "sltiu $v0, $a1, 0x10"
+        },
+        {
+          "pc": "0x805263a8",
+          "word": "0xa2880a",
+          "asm": "movz $s1, $a1, $v0"
+        },
+        {
+          "pc": "0x805263ac",
+          "word": "0x7c6322c0",
+          "asm": "ext $v1, $v1, 0xb, 5"
+        },
+        {
+          "pc": "0x805263b0",
+          "word": "0x71182b",
+          "asm": "sltu $v1, $v1, $s1"
+        },
+        {
+          "pc": "0x805263b4",
+          "word": "0x1060fff0",
+          "asm": "beqz $v1, 0x80526378"
+        },
+        {
+          "pc": "0x805263b8",
+          "word": "0x2506501c",
+          "asm": "addiu $a2, $t0, 0x501c"
+        },
+        {
+          "pc": "0x805263bc",
+          "word": "0x3c028063",
+          "asm": "lui $v0, 0x8063"
+        },
+        {
+          "pc": "0x805263c0",
+          "word": "0x24530d7c",
+          "asm": "addiu $s3, $v0, 0xd7c"
+        },
+        {
+          "pc": "0x805263c4",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x805263c8",
+          "word": "0x8021",
+          "asm": "move $s0, $zero"
+        },
+        {
+          "pc": "0x805263cc",
+          "word": "0x3c120008",
+          "asm": "lui $s2, 8"
+        },
+        {
+          "pc": "0x805263d0",
+          "word": "0x94c20000",
+          "asm": "lhu $v0, ($a2)"
+        },
+        {
+          "pc": "0x805263d4",
+          "word": "0x24840001",
+          "asm": "addiu $a0, $a0, 1"
+        },
+        {
+          "pc": "0x805263d8",
+          "word": "0x7c4222c0",
+          "asm": "ext $v0, $v0, 0xb, 5"
+        },
+        {
+          "pc": "0x805263dc",
+          "word": "0x51102b",
+          "asm": "sltu $v0, $v0, $s1"
+        },
+        {
+          "pc": "0x805263e0",
+          "word": "0x1040ffe5",
+          "asm": "beqz $v0, 0x80526378"
+        },
+        {
+          "pc": "0x805263e4",
+          "word": "0x92182b",
+          "asm": "sltu $v1, $a0, $s2"
+        },
+        {
+          "pc": "0x805263e8",
+          "word": "0x10600003",
+          "asm": "beqz $v1, 0x805263f8"
+        },
+        {
+          "pc": "0x805263ec",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x805263f0",
+          "word": "0x81498f4",
+          "asm": "j 0x805263d0"
+        },
+        {
+          "pc": "0x805263f4",
+          "word": "0x2506501c",
+          "asm": "addiu $a2, $t0, 0x501c"
+        },
+        {
+          "pc": "0x805263f8",
+          "word": "0x94c60000",
+          "asm": "lhu $a2, ($a2)"
+        },
+        {
+          "pc": "0x805263fc",
+          "word": "0x2002821",
+          "asm": "move $a1, $s0"
+        },
+        {
+          "pc": "0x80526400",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x80526404",
+          "word": "0x7cc622c0",
+          "asm": "ext $a2, $a2, 0xb, 5"
+        },
+        {
+          "pc": "0x80526408",
+          "word": "0xc180869",
+          "asm": "jal 0x806021a4"
+        },
+        {
+          "pc": "0x8052640c",
+          "word": "0x2203821",
+          "asm": "move $a3, $s1"
+        },
+        {
+          "pc": "0x80526410",
+          "word": "0x26030001",
+          "asm": "addiu $v1, $s0, 1"
+        },
+        {
+          "pc": "0x80526414",
+          "word": "0x3070ffff",
+          "asm": "andi $s0, $v1, 0xffff"
+        },
+        {
+          "pc": "0x80526418",
+          "word": "0x2e02000b",
+          "asm": "sltiu $v0, $s0, 0xb"
+        },
+        {
+          "pc": "0x8052641c",
+          "word": "0x10400023",
+          "asm": "beqz $v0, 0x805264ac"
+        },
+        {
+          "pc": "0x80526420",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x80526424",
+          "word": "0x8e880004",
+          "asm": "lw $t0, 4($s4)"
+        },
+        {
+          "pc": "0x80526428",
+          "word": "0x81498f4",
+          "asm": "j 0x805263d0"
+        },
+        {
+          "pc": "0x8052642c",
+          "word": "0x2506501c",
+          "asm": "addiu $a2, $t0, 0x501c"
+        },
+        {
+          "pc": "0x80526430",
+          "word": "0x94c60000",
+          "asm": "lhu $a2, ($a2)"
+        },
+        {
+          "pc": "0x80526434",
+          "word": "0x2002821",
+          "asm": "move $a1, $s0"
+        },
+        {
+          "pc": "0x80526438",
+          "word": "0x2a02021",
+          "asm": "move $a0, $s5"
+        },
+        {
+          "pc": "0x8052643c",
+          "word": "0x30c6ffff",
+          "asm": "andi $a2, $a2, 0xffff"
+        },
+        {
+          "pc": "0x80526440",
+          "word": "0x2403821",
+          "asm": "move $a3, $s2"
+        },
+        {
+          "pc": "0x80526444",
+          "word": "0x95220000",
+          "asm": "lhu $v0, ($t1)"
+        },
+        {
+          "pc": "0x80526448",
+          "word": "0xc180869",
+          "asm": "jal 0x806021a4"
+        },
+        {
+          "pc": "0x8052644c",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x80526450",
+          "word": "0x26030001",
+          "asm": "addiu $v1, $s0, 1"
+        },
+        {
+          "pc": "0x80526454",
+          "word": "0x3070ffff",
+          "asm": "andi $s0, $v1, 0xffff"
+        },
+        {
+          "pc": "0x80526458",
+          "word": "0x2e02000b",
+          "asm": "sltiu $v0, $s0, 0xb"
+        },
+        {
+          "pc": "0x8052645c",
+          "word": "0x1040001f",
+          "asm": "beqz $v0, 0x805264dc"
+        },
+        {
+          "pc": "0x80526460",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x80526464",
+          "word": "0x8e880004",
+          "asm": "lw $t0, 4($s4)"
+        },
+        {
+          "pc": "0x80526468",
+          "word": "0x25065010",
+          "asm": "addiu $a2, $t0, 0x5010"
+        },
+        {
+          "pc": "0x8052646c",
+          "word": "0x81498d6",
+          "asm": "j 0x80526358"
+        },
+        {
+          "pc": "0x80526470",
+          "word": "0x25095014",
+          "asm": "addiu $t1, $t0, 0x5014"
+        },
+        {
+          "pc": "0x80526474",
+          "word": "0x94c60000",
+          "asm": "lhu $a2, ($a2)"
+        },
+        {
+          "pc": "0x80526478",
+          "word": "0x2002821",
+          "asm": "move $a1, $s0"
+        },
+        {
+          "pc": "0x8052647c",
+          "word": "0x2a02021",
+          "asm": "move $a0, $s5"
+        },
+        {
+          "pc": "0x80526480",
+          "word": "0x7cc622c0",
+          "asm": "ext $a2, $a2, 0xb, 5"
+        },
+        {
+          "pc": "0x80526484",
+          "word": "0xc180869",
+          "asm": "jal 0x806021a4"
+        },
+        {
+          "pc": "0x80526488",
+          "word": "0x2403821",
+          "asm": "move $a3, $s2"
+        },
+        {
+          "pc": "0x8052648c",
+          "word": "0x26030001",
+          "asm": "addiu $v1, $s0, 1"
+        },
+        {
+          "pc": "0x80526490",
+          "word": "0x3070ffff",
+          "asm": "andi $s0, $v1, 0xffff"
+        },
+        {
+          "pc": "0x80526494",
+          "word": "0x2e02000b",
+          "asm": "sltiu $v0, $s0, 0xb"
+        },
+        {
+          "pc": "0x80526498",
+          "word": "0x1040001d",
+          "asm": "beqz $v0, 0x80526510"
+        },
+        {
+          "pc": "0x8052649c",
+          "word": "0x2021",
+          "asm": "move $a0, $zero"
+        },
+        {
+          "pc": "0x805264a0",
+          "word": "0x8e880004",
+          "asm": "lw $t0, 4($s4)"
+        },
+        {
+          "pc": "0x805264a4",
+          "word": "0x81498b7",
+          "asm": "j 0x805262dc"
+        },
+        {
+          "pc": "0x805264a8",
+          "word": "0x2506501c",
+          "asm": "addiu $a2, $t0, 0x501c"
+        },
+        {
+          "pc": "0x805264ac",
+          "word": "0x8e880004",
+          "asm": "lw $t0, 4($s4)"
+        },
+        {
+          "pc": "0x805264b0",
+          "word": "0x95025000",
+          "asm": "lhu $v0, 0x5000($t0)"
+        },
+        {
+          "pc": "0x805264b4",
+          "word": "0x95035004",
+          "asm": "lhu $v1, 0x5004($t0)"
+        },
+        {
+          "pc": "0x805264b8",
+          "word": "0x2506501c",
+          "asm": "addiu $a2, $t0, 0x501c"
+        },
+        {
+          "pc": "0x805264bc",
+          "word": "0x3042ffff",
+          "asm": "andi $v0, $v0, 0xffff"
+        },
+        {
+          "pc": "0x805264c0",
+          "word": "0x3063ffff",
+          "asm": "andi $v1, $v1, 0xffff"
+        },
+        {
+          "pc": "0x805264c4",
+          "word": "0xa5005000",
+          "asm": "sh $zero, 0x5000($t0)"
+        },
+        {
+          "pc": "0x805264c8",
+          "word": "0xa5005004",
+          "asm": "sh $zero, 0x5004($t0)"
+        },
+        {
+          "pc": "0x805264cc",
+          "word": "0xa5025000",
+          "asm": "sh $v0, 0x5000($t0)"
+        },
+        {
+          "pc": "0x805264d0",
+          "word": "0xa5035004",
+          "asm": "sh $v1, 0x5004($t0)"
+        },
+        {
+          "pc": "0x805264d4",
+          "word": "0x81498f4",
+          "asm": "j 0x805263d0"
+        },
+        {
+          "pc": "0x805264d8",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x805264dc",
+          "word": "0x8e880004",
+          "asm": "lw $t0, 4($s4)"
+        },
+        {
+          "pc": "0x805264e0",
+          "word": "0x95025000",
+          "asm": "lhu $v0, 0x5000($t0)"
+        },
+        {
+          "pc": "0x805264e4",
+          "word": "0x95035004",
+          "asm": "lhu $v1, 0x5004($t0)"
+        },
+        {
+          "pc": "0x805264e8",
+          "word": "0x25065010",
+          "asm": "addiu $a2, $t0, 0x5010"
+        },
+        {
+          "pc": "0x805264ec",
+          "word": "0x3042ffff",
+          "asm": "andi $v0, $v0, 0xffff"
+        },
+        {
+          "pc": "0x805264f0",
+          "word": "0x3063ffff",
+          "asm": "andi $v1, $v1, 0xffff"
+        },
+        {
+          "pc": "0x805264f4",
+          "word": "0xa5005000",
+          "asm": "sh $zero, 0x5000($t0)"
+        },
+        {
+          "pc": "0x805264f8",
+          "word": "0x25095014",
+          "asm": "addiu $t1, $t0, 0x5014"
+        },
+        {
+          "pc": "0x805264fc",
+          "word": "0xa5005004",
+          "asm": "sh $zero, 0x5004($t0)"
+        },
+        {
+          "pc": "0x80526500",
+          "word": "0xa5025000",
+          "asm": "sh $v0, 0x5000($t0)"
+        },
+        {
+          "pc": "0x80526504",
+          "word": "0xa5035004",
+          "asm": "sh $v1, 0x5004($t0)"
+        },
+        {
+          "pc": "0x80526508",
+          "word": "0x81498d6",
+          "asm": "j 0x80526358"
+        },
+        {
+          "pc": "0x8052650c",
+          "word": "0x0",
+          "asm": "nop "
+        },
+        {
+          "pc": "0x80526510",
+          "word": "0x8e880004",
+          "asm": "lw $t0, 4($s4)"
+        },
+        {
+          "pc": "0x80526514",
+          "word": "0x95025000",
+          "asm": "lhu $v0, 0x5000($t0)"
+        },
+        {
+          "pc": "0x80526518",
+          "word": "0x95035004",
+          "asm": "lhu $v1, 0x5004($t0)"
+        },
+        {
+          "pc": "0x8052651c",
+          "word": "0x2506501c",
+          "asm": "addiu $a2, $t0, 0x501c"
+        },
+        {
+          "pc": "0x80526520",
+          "word": "0x3042ffff",
+          "asm": "andi $v0, $v0, 0xffff"
+        },
+        {
+          "pc": "0x80526524",
+          "word": "0x3063ffff",
+          "asm": "andi $v1, $v1, 0xffff"
+        },
+        {
+          "pc": "0x80526528",
+          "word": "0xa5005000",
+          "asm": "sh $zero, 0x5000($t0)"
+        },
+        {
+          "pc": "0x8052652c",
+          "word": "0xa5005004",
+          "asm": "sh $zero, 0x5004($t0)"
+        },
+        {
+          "pc": "0x80526530",
+          "word": "0xa5025000",
+          "asm": "sh $v0, 0x5000($t0)"
+        },
+        {
+          "pc": "0x80526534",
+          "word": "0xa5035004",
+          "asm": "sh $v1, 0x5004($t0)"
+        },
+        {
+          "pc": "0x80526538",
+          "word": "0x81498b7",
+          "asm": "j 0x805262dc"
+        },
+        {
+          "pc": "0x8052653c",
+          "word": "0x0",
+          "asm": "nop "
+        }
+      ]
+    },
+    "gop_initializer": {
+      "start": "0x80539ce4",
+      "end_exclusive": "0x80539fc0",
+      "aligned_jal_candidates_not_reachability_proof": [
+        "0x80533670"
+      ],
+      "instructions": [
+        {
+          "pc": "0x80539ce4",
+          "word": "0x27bdffc0",
+          "asm": "addiu $sp, $sp, -0x40"
+        },
+        {
+          "pc": "0x80539ce8",
+          "word": "0xafb30024",
+          "asm": "sw $s3, 0x24($sp)"
+        },
+        {
+          "pc": "0x80539cec",
+          "word": "0x30b300ff",
+          "asm": "andi $s3, $a1, 0xff"
+        },
+        {
+          "pc": "0x80539cf0",
+          "word": "0x2e620002",
+          "asm": "sltiu $v0, $s3, 2"
+        },
+        {
+          "pc": "0x80539cf4",
+          "word": "0xafbf003c",
+          "asm": "sw $ra, 0x3c($sp)"
+        },
+        {
+          "pc": "0x80539cf8",
+          "word": "0xafbe0038",
+          "asm": "sw $fp, 0x38($sp)"
+        },
+        {
+          "pc": "0x80539cfc",
+          "word": "0xafb70034",
+          "asm": "sw $s7, 0x34($sp)"
+        },
+        {
+          "pc": "0x80539d00",
+          "word": "0xafb60030",
+          "asm": "sw $s6, 0x30($sp)"
+        },
+        {
+          "pc": "0x80539d04",
+          "word": "0xafb5002c",
+          "asm": "sw $s5, 0x2c($sp)"
+        },
+        {
+          "pc": "0x80539d08",
+          "word": "0xafb40028",
+          "asm": "sw $s4, 0x28($sp)"
+        },
+        {
+          "pc": "0x80539d0c",
+          "word": "0xafb20020",
+          "asm": "sw $s2, 0x20($sp)"
+        },
+        {
+          "pc": "0x80539d10",
+          "word": "0xafb1001c",
+          "asm": "sw $s1, 0x1c($sp)"
+        },
+        {
+          "pc": "0x80539d14",
+          "word": "0xafb00018",
+          "asm": "sw $s0, 0x18($sp)"
+        },
+        {
+          "pc": "0x80539d18",
+          "word": "0xafa40040",
+          "asm": "sw $a0, 0x40($sp)"
+        },
+        {
+          "pc": "0x80539d1c",
+          "word": "0x14400013",
+          "asm": "bnez $v0, 0x80539d6c"
+        },
+        {
+          "pc": "0x80539d20",
+          "word": "0xafa00010",
+          "asm": "sw $zero, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539d24",
+          "word": "0x3c048063",
+          "asm": "lui $a0, 0x8063"
+        },
+        {
+          "pc": "0x80539d28",
+          "word": "0x3c058063",
+          "asm": "lui $a1, 0x8063"
+        },
+        {
+          "pc": "0x80539d2c",
+          "word": "0x2603021",
+          "asm": "move $a2, $s3"
+        },
+        {
+          "pc": "0x80539d30",
+          "word": "0x248413e0",
+          "asm": "addiu $a0, $a0, 0x13e0"
+        },
+        {
+          "pc": "0x80539d34",
+          "word": "0xc180869",
+          "asm": "jal 0x806021a4"
+        },
+        {
+          "pc": "0x80539d38",
+          "word": "0x24a51ed4",
+          "asm": "addiu $a1, $a1, 0x1ed4"
+        },
+        {
+          "pc": "0x80539d3c",
+          "word": "0x8fbf003c",
+          "asm": "lw $ra, 0x3c($sp)"
+        },
+        {
+          "pc": "0x80539d40",
+          "word": "0x8fbe0038",
+          "asm": "lw $fp, 0x38($sp)"
+        },
+        {
+          "pc": "0x80539d44",
+          "word": "0x8fb70034",
+          "asm": "lw $s7, 0x34($sp)"
+        },
+        {
+          "pc": "0x80539d48",
+          "word": "0x8fb60030",
+          "asm": "lw $s6, 0x30($sp)"
+        },
+        {
+          "pc": "0x80539d4c",
+          "word": "0x8fb5002c",
+          "asm": "lw $s5, 0x2c($sp)"
+        },
+        {
+          "pc": "0x80539d50",
+          "word": "0x8fb40028",
+          "asm": "lw $s4, 0x28($sp)"
+        },
+        {
+          "pc": "0x80539d54",
+          "word": "0x8fb30024",
+          "asm": "lw $s3, 0x24($sp)"
+        },
+        {
+          "pc": "0x80539d58",
+          "word": "0x8fb20020",
+          "asm": "lw $s2, 0x20($sp)"
+        },
+        {
+          "pc": "0x80539d5c",
+          "word": "0x8fb1001c",
+          "asm": "lw $s1, 0x1c($sp)"
+        },
+        {
+          "pc": "0x80539d60",
+          "word": "0x8fb00018",
+          "asm": "lw $s0, 0x18($sp)"
+        },
+        {
+          "pc": "0x80539d64",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x80539d68",
+          "word": "0x27bd0040",
+          "asm": "addiu $sp, $sp, 0x40"
+        },
+        {
+          "pc": "0x80539d6c",
+          "word": "0x2602021",
+          "asm": "move $a0, $s3"
+        },
+        {
+          "pc": "0x80539d70",
+          "word": "0xc14e7f0",
+          "asm": "jal 0x80539fc0"
+        },
+        {
+          "pc": "0x80539d74",
+          "word": "0x27a50010",
+          "asm": "addiu $a1, $sp, 0x10"
+        },
+        {
+          "pc": "0x80539d78",
+          "word": "0x8fa20040",
+          "asm": "lw $v0, 0x40($sp)"
+        },
+        {
+          "pc": "0x80539d7c",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539d80",
+          "word": "0x24060001",
+          "asm": "addiu $a2, $zero, 1"
+        },
+        {
+          "pc": "0x80539d84",
+          "word": "0x24510610",
+          "asm": "addiu $s1, $v0, 0x610"
+        },
+        {
+          "pc": "0x80539d88",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539d8c",
+          "word": "0x24a51f00",
+          "asm": "addiu $a1, $a1, 0x1f00"
+        },
+        {
+          "pc": "0x80539d90",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539d94",
+          "word": "0x24070001",
+          "asm": "addiu $a3, $zero, 1"
+        },
+        {
+          "pc": "0x80539d98",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539d9c",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539da0",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539da4",
+          "word": "0x24a51f00",
+          "asm": "addiu $a1, $a1, 0x1f00"
+        },
+        {
+          "pc": "0x80539da8",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539dac",
+          "word": "0x24070007",
+          "asm": "addiu $a3, $zero, 7"
+        },
+        {
+          "pc": "0x80539db0",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539db4",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539db8",
+          "word": "0x24064100",
+          "asm": "addiu $a2, $zero, 0x4100"
+        },
+        {
+          "pc": "0x80539dbc",
+          "word": "0x24a51f02",
+          "asm": "addiu $a1, $a1, 0x1f02"
+        },
+        {
+          "pc": "0x80539dc0",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539dc4",
+          "word": "0x3407ff00",
+          "asm": "ori $a3, $zero, 0xff00"
+        },
+        {
+          "pc": "0x80539dc8",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539dcc",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539dd0",
+          "word": "0x24061000",
+          "asm": "addiu $a2, $zero, 0x1000"
+        },
+        {
+          "pc": "0x80539dd4",
+          "word": "0x24a51f6a",
+          "asm": "addiu $a1, $a1, 0x1f6a"
+        },
+        {
+          "pc": "0x80539dd8",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539ddc",
+          "word": "0x3407ffff",
+          "asm": "ori $a3, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80539de0",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539de4",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539de8",
+          "word": "0x24061000",
+          "asm": "addiu $a2, $zero, 0x1000"
+        },
+        {
+          "pc": "0x80539dec",
+          "word": "0x24a51f6c",
+          "asm": "addiu $a1, $a1, 0x1f6c"
+        },
+        {
+          "pc": "0x80539df0",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539df4",
+          "word": "0x3407ffff",
+          "asm": "ori $a3, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80539df8",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539dfc",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539e00",
+          "word": "0x24064000",
+          "asm": "addiu $a2, $zero, 0x4000"
+        },
+        {
+          "pc": "0x80539e04",
+          "word": "0x24a51f00",
+          "asm": "addiu $a1, $a1, 0x1f00"
+        },
+        {
+          "pc": "0x80539e08",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539e0c",
+          "word": "0x24074000",
+          "asm": "addiu $a3, $zero, 0x4000"
+        },
+        {
+          "pc": "0x80539e10",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539e14",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539e18",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539e1c",
+          "word": "0x24a51f00",
+          "asm": "addiu $a1, $a1, 0x1f00"
+        },
+        {
+          "pc": "0x80539e20",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539e24",
+          "word": "0x24070400",
+          "asm": "addiu $a3, $zero, 0x400"
+        },
+        {
+          "pc": "0x80539e28",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539e2c",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539e30",
+          "word": "0x24060098",
+          "asm": "addiu $a2, $zero, 0x98"
+        },
+        {
+          "pc": "0x80539e34",
+          "word": "0x24a51f04",
+          "asm": "addiu $a1, $a1, 0x1f04"
+        },
+        {
+          "pc": "0x80539e38",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539e3c",
+          "word": "0x3407ffff",
+          "asm": "ori $a3, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80539e40",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539e44",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539e48",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539e4c",
+          "word": "0x24a51f00",
+          "asm": "addiu $a1, $a1, 0x1f00"
+        },
+        {
+          "pc": "0x80539e50",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539e54",
+          "word": "0x24070400",
+          "asm": "addiu $a3, $zero, 0x400"
+        },
+        {
+          "pc": "0x80539e58",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539e5c",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539e60",
+          "word": "0x24060700",
+          "asm": "addiu $a2, $zero, 0x700"
+        },
+        {
+          "pc": "0x80539e64",
+          "word": "0x24a51f32",
+          "asm": "addiu $a1, $a1, 0x1f32"
+        },
+        {
+          "pc": "0x80539e68",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539e6c",
+          "word": "0x24070700",
+          "asm": "addiu $a3, $zero, 0x700"
+        },
+        {
+          "pc": "0x80539e70",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539e74",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539e78",
+          "word": "0x24060060",
+          "asm": "addiu $a2, $zero, 0x60"
+        },
+        {
+          "pc": "0x80539e7c",
+          "word": "0x24a51f32",
+          "asm": "addiu $a1, $a1, 0x1f32"
+        },
+        {
+          "pc": "0x80539e80",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539e84",
+          "word": "0x240700ff",
+          "asm": "addiu $a3, $zero, 0xff"
+        },
+        {
+          "pc": "0x80539e88",
+          "word": "0x8fa20010",
+          "asm": "lw $v0, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539e8c",
+          "word": "0x3c050002",
+          "asm": "lui $a1, 2"
+        },
+        {
+          "pc": "0x80539e90",
+          "word": "0x34a51f60",
+          "asm": "ori $a1, $a1, 0x1f60"
+        },
+        {
+          "pc": "0x80539e94",
+          "word": "0x452821",
+          "asm": "addu $a1, $v0, $a1"
+        },
+        {
+          "pc": "0x80539e98",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539e9c",
+          "word": "0x24070001",
+          "asm": "addiu $a3, $zero, 1"
+        },
+        {
+          "pc": "0x80539ea0",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539ea4",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539ea8",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539eac",
+          "word": "0xc14e8dd",
+          "asm": "jal 0x8053a374"
+        },
+        {
+          "pc": "0x80539eb0",
+          "word": "0x2602821",
+          "asm": "move $a1, $s3"
+        },
+        {
+          "pc": "0x80539eb4",
+          "word": "0x16600027",
+          "asm": "bnez $s3, 0x80539f54"
+        },
+        {
+          "pc": "0x80539eb8",
+          "word": "0x9021",
+          "asm": "move $s2, $zero"
+        },
+        {
+          "pc": "0x80539ebc",
+          "word": "0x3c020001",
+          "asm": "lui $v0, 1"
+        },
+        {
+          "pc": "0x80539ec0",
+          "word": "0x345e1f18",
+          "asm": "ori $fp, $v0, 0x1f18"
+        },
+        {
+          "pc": "0x80539ec4",
+          "word": "0x34571f1a",
+          "asm": "ori $s7, $v0, 0x1f1a"
+        },
+        {
+          "pc": "0x80539ec8",
+          "word": "0x34561f1c",
+          "asm": "ori $s6, $v0, 0x1f1c"
+        },
+        {
+          "pc": "0x80539ecc",
+          "word": "0x34551f28",
+          "asm": "ori $s5, $v0, 0x1f28"
+        },
+        {
+          "pc": "0x80539ed0",
+          "word": "0x24140004",
+          "asm": "addiu $s4, $zero, 4"
+        },
+        {
+          "pc": "0x80539ed4",
+          "word": "0x32500003",
+          "asm": "andi $s0, $s2, 3"
+        },
+        {
+          "pc": "0x80539ed8",
+          "word": "0x108180",
+          "asm": "sll $s0, $s0, 6"
+        },
+        {
+          "pc": "0x80539edc",
+          "word": "0x21e2821",
+          "asm": "addu $a1, $s0, $fp"
+        },
+        {
+          "pc": "0x80539ee0",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539ee4",
+          "word": "0x3407ffff",
+          "asm": "ori $a3, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80539ee8",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539eec",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539ef0",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539ef4",
+          "word": "0x2172821",
+          "asm": "addu $a1, $s0, $s7"
+        },
+        {
+          "pc": "0x80539ef8",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539efc",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539f00",
+          "word": "0x3407ffff",
+          "asm": "ori $a3, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80539f04",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539f08",
+          "word": "0x2162821",
+          "asm": "addu $a1, $s0, $s6"
+        },
+        {
+          "pc": "0x80539f0c",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539f10",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539f14",
+          "word": "0x3407ffff",
+          "asm": "ori $a3, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80539f18",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539f1c",
+          "word": "0x2152821",
+          "asm": "addu $a1, $s0, $s5"
+        },
+        {
+          "pc": "0x80539f20",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539f24",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539f28",
+          "word": "0x3407ffff",
+          "asm": "ori $a3, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80539f2c",
+          "word": "0x3c020001",
+          "asm": "lui $v0, 1"
+        },
+        {
+          "pc": "0x80539f30",
+          "word": "0x34421f2a",
+          "asm": "ori $v0, $v0, 0x1f2a"
+        },
+        {
+          "pc": "0x80539f34",
+          "word": "0x26520001",
+          "asm": "addiu $s2, $s2, 1"
+        },
+        {
+          "pc": "0x80539f38",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539f3c",
+          "word": "0x2022821",
+          "asm": "addu $a1, $s0, $v0"
+        },
+        {
+          "pc": "0x80539f40",
+          "word": "0x3021",
+          "asm": "move $a2, $zero"
+        },
+        {
+          "pc": "0x80539f44",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539f48",
+          "word": "0x3407ffff",
+          "asm": "ori $a3, $zero, 0xffff"
+        },
+        {
+          "pc": "0x80539f4c",
+          "word": "0x1654ffe2",
+          "asm": "bne $s2, $s4, 0x80539ed8"
+        },
+        {
+          "pc": "0x80539f50",
+          "word": "0x32500003",
+          "asm": "andi $s0, $s2, 3"
+        },
+        {
+          "pc": "0x80539f54",
+          "word": "0x8fa30040",
+          "asm": "lw $v1, 0x40($sp)"
+        },
+        {
+          "pc": "0x80539f58",
+          "word": "0x8c62062c",
+          "asm": "lw $v0, 0x62c($v1)"
+        },
+        {
+          "pc": "0x80539f5c",
+          "word": "0x90430000",
+          "asm": "lbu $v1, ($v0)"
+        },
+        {
+          "pc": "0x80539f60",
+          "word": "0x14600010",
+          "asm": "bnez $v1, 0x80539fa4"
+        },
+        {
+          "pc": "0x80539f64",
+          "word": "0x8fa50010",
+          "asm": "lw $a1, 0x10($sp)"
+        },
+        {
+          "pc": "0x80539f68",
+          "word": "0x8fa40040",
+          "asm": "lw $a0, 0x40($sp)"
+        },
+        {
+          "pc": "0x80539f6c",
+          "word": "0xc14e0f3",
+          "asm": "jal 0x805383cc"
+        },
+        {
+          "pc": "0x80539f70",
+          "word": "0x2602821",
+          "asm": "move $a1, $s3"
+        },
+        {
+          "pc": "0x80539f74",
+          "word": "0x8fbf003c",
+          "asm": "lw $ra, 0x3c($sp)"
+        },
+        {
+          "pc": "0x80539f78",
+          "word": "0x8fbe0038",
+          "asm": "lw $fp, 0x38($sp)"
+        },
+        {
+          "pc": "0x80539f7c",
+          "word": "0x8fb70034",
+          "asm": "lw $s7, 0x34($sp)"
+        },
+        {
+          "pc": "0x80539f80",
+          "word": "0x8fb60030",
+          "asm": "lw $s6, 0x30($sp)"
+        },
+        {
+          "pc": "0x80539f84",
+          "word": "0x8fb5002c",
+          "asm": "lw $s5, 0x2c($sp)"
+        },
+        {
+          "pc": "0x80539f88",
+          "word": "0x8fb40028",
+          "asm": "lw $s4, 0x28($sp)"
+        },
+        {
+          "pc": "0x80539f8c",
+          "word": "0x8fb30024",
+          "asm": "lw $s3, 0x24($sp)"
+        },
+        {
+          "pc": "0x80539f90",
+          "word": "0x8fb20020",
+          "asm": "lw $s2, 0x20($sp)"
+        },
+        {
+          "pc": "0x80539f94",
+          "word": "0x8fb1001c",
+          "asm": "lw $s1, 0x1c($sp)"
+        },
+        {
+          "pc": "0x80539f98",
+          "word": "0x8fb00018",
+          "asm": "lw $s0, 0x18($sp)"
+        },
+        {
+          "pc": "0x80539f9c",
+          "word": "0x3e00008",
+          "asm": "jr $ra"
+        },
+        {
+          "pc": "0x80539fa0",
+          "word": "0x27bd0040",
+          "asm": "addiu $sp, $sp, 0x40"
+        },
+        {
+          "pc": "0x80539fa4",
+          "word": "0x2202021",
+          "asm": "move $a0, $s1"
+        },
+        {
+          "pc": "0x80539fa8",
+          "word": "0x24060004",
+          "asm": "addiu $a2, $zero, 4"
+        },
+        {
+          "pc": "0x80539fac",
+          "word": "0x24a51f00",
+          "asm": "addiu $a1, $a1, 0x1f00"
+        },
+        {
+          "pc": "0x80539fb0",
+          "word": "0xc14e884",
+          "asm": "jal 0x8053a210"
+        },
+        {
+          "pc": "0x80539fb4",
+          "word": "0x24070004",
+          "asm": "addiu $a3, $zero, 4"
+        },
+        {
+          "pc": "0x80539fb8",
+          "word": "0x814e7db",
+          "asm": "j 0x80539f6c"
+        },
+        {
+          "pc": "0x80539fbc",
+          "word": "0x8fa40040",
+          "asm": "lw $a0, 0x40($sp)"
+        }
+      ]
+    }
+  },
+  "register_semantics_limit": "COMB reg8F bits4/5 preserved by table; analog meaning/reset unverified. GE queue-enable bit1 must not be guessed."
+}

@@ -22,3 +22,5 @@
 | Pixel-exact behavior | No physical LCD4214 golden captures | Compare guest frames with user-supplied physical-TV screenshots and captured key/timing sequences |
 
 Resource container offsets and strings are verified by bounds/hash checks; font/graphics codec, control tokens and all rendering semantics remain unresolved. Electrical panel timings and LC420WUE revision are not claimed. No CI secrets or protected broadcast decryption are supplied.
+
+Current additional boundary: **8052624C / BF205004 bit1**, GE virtual command-queue enable, after original GFX context preservation. Exact reset state, any external producer, clock/reset prerequisites and command-queue processing remain unknown. Genuine FIFO space/busy/tag status must follow queued operations; no constant success response is acceptable. SEM initial ownership and GOP initial bank are explicit experiments. The COMB transaction still assumes absent intermediate analog side effects, with high bits never made valid. See [current continuation and capture requirements](comb-and-ge-continuation.md).

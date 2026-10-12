@@ -9,6 +9,7 @@
 #include "peripherals/rtc.hpp"
 #include "peripherals/utmi.hpp"
 #include "peripherals/spi_isp.hpp"
+#include "peripherals/semaphore.hpp"
 #include "video/gamma.hpp"
 #include "video/scaler_timing.hpp"
 namespace manta {
@@ -21,16 +22,21 @@ class Riu {
   bool bdmaPending_ = false;
   std::map<uint32_t, uint32_t> pendingRmw_;
   std::map<uint32_t, uint32_t> consumedRead_;
+  std::map<uint32_t,uint32_t> preservedUnknownWrite_;
   std::optional<uint32_t> opaqueRead_;
   bool uartEnabled_ = false;
   GpioI2c gpio_;
   Rtc rtc_[2];
   UtmiCalibration utmi_[2];
   SpiIsp spi_;
+  HardwareSemaphore semaphore_;
   GammaRam gamma_;
   ScalerTiming scaler_;
   std::optional<bool> lastOutputSync_;
   uint64_t outputSyncReads_=0, outputSyncTransitions_=0;
+  struct CombRestore { uint32_t address; uint8_t bank, low; uint32_t unknown; bool written=false; };
+  std::optional<CombRestore> combRestore_;
+  uint64_t combRestoreCount_=0;
   RiuByte timingSnapshot_;
   bool timingSnapshotPending_ = false;
   unsigned miuSequence_[2]{};
@@ -46,6 +52,19 @@ class Riu {
   void updateOutputTiming(uint64_t tick);
 
 public:
+  bool candidateSemaphore=false;
+  void configureExploratorySemaphoreIdle() { semaphore_.exploratoryIdle(); }
+  uint64_t semaphoreAcquisitions() const { return semaphore_.acquisitions(); }
+  uint64_t semaphoreReleases() const { return semaphore_.releases(); }
+  uint64_t semaphoreContentions() const { return semaphore_.contentions(); }
+  bool exploratoryCombRestore=false;
+  // Explicit transaction experiment: no reset value is assigned. Unknown
+  // high bits remain unknown; the temporary low byte is quarantined until
+  // the original T4 workaround restores its saved, known low byte.
+  bool beginCombRestore(uint32_t address,uint32_t unknown);
+  uint32_t preservedStoreKey(uint32_t address) const;
+  uint64_t combRestoreCount() const { return combRestoreCount_; }
+  bool combRestorePending() const { return combRestore_.has_value(); }
   bool exploratoryDlcTimeout=false;
   uint64_t exploratoryDisplayClock = 0;
   void configureExploratoryDisplayClock(uint64_t hz) { scaler_.clock(hz); exploratoryDisplayClock=hz; }
@@ -95,6 +114,10 @@ public:
   // Banked GOP window access is corroborated by stock 8053A140/A210 and
   // Titania4 GFLIP. No reset selector, IRQ or write-ack value is invented.
   bool gopBankKnown() const;
+  void configureExploratoryGopBank(unsigned bank) {
+    if(bank>15)throw std::runtime_error("GOP initial bank out of range");
+    bytes_[0x1f203ffc]={uint8_t(0xa0|bank),15}; // IRQ flags/ACK remain unknown
+  }
   uint8_t gopBank() const;
   RiuByte gopByte(unsigned bank, unsigned offset) const;
   void saveTimingSnapshot() {
@@ -112,6 +135,10 @@ public:
   bool spiDataUnknown(uint64_t tick) const { return spi_.dataReady(tick) && spi_.dataKnown() == 0; }
   unsigned undocumentedSpiSamples() const { return spi_.nor.undocumentedSamples; }
   void prepareRmw(uint32_t a, uint32_t definedBits) { pendingRmw_[a] = definedBits; }
+  void preparePreservedWrite(uint32_t a,unsigned n,uint32_t unknown) {
+    auto full=n==4?0xffffffffu:(1u<<(n*8))-1;
+    pendingRmw_[a]=full&~unknown; preservedUnknownWrite_[a]=unknown;
+  }
   void prepareMaskedRead(uint32_t a, uint32_t consumed) { consumedRead_[a] = consumed; }
   void prepareOpaqueRead(uint32_t a) { opaqueRead_=a; }
   uint32_t knownBits(uint32_t a, unsigned size) const;

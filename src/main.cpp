@@ -93,6 +93,14 @@ static int appMain(const std::vector<std::string> &args) {
         o.exploratoryDlcPending=v=="1";
       }
       else if(a=="--exploratory-dlc-timeout") o.exploratoryDlcTimeout=true;
+      else if(a=="--exploratory-comb-paired-restore") o.exploratoryCombRestore=true;
+      else if(a=="--candidate-semaphore") o.candidateSemaphore=true;
+      else if(a=="--exploratory-semaphore-idle") o.exploratorySemaphoreIdle=true;
+      else if(a=="--exploratory-gop-bank") {
+        auto b=std::stoul(value(i),nullptr,0);
+        if(b>15)throw std::runtime_error("GOP bank out of range");
+        o.exploratoryGopBank=int(b);
+      }
       else if(a=="--exploratory-comb-bank") {
         auto b=std::stoul(value(i),nullptr,0);
         if(b>255)throw std::runtime_error("COMB bank out of range");
@@ -137,6 +145,10 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-dlc-pending 0|1: HYPOTHETICAL pre-existing capture-range request; completion remains unknown\n"
                "--exploratory-dlc-timeout: HYPOTHETICAL held-low completion to test original timeout path\n"
                "--exploratory-comb-bank N: HYPOTHETICAL initial comb-filter bank selector\n"
+               "--exploratory-comb-paired-restore: HYPOTHETICAL quarantined T4 duplicate/restore transaction, no invented status values\n"
+               "--exploratory-gop-bank N: HYPOTHETICAL initial selector only (0..15); no IRQ/ACK reset assumption\n"
+               "--candidate-semaphore: stateful resource-ID acquire/release; reset owners stay unknown\n"
+               "--exploratory-semaphore-idle: HYPOTHETICAL initially unowned resources; no PM51/AEON ownership asserted\n"
                "--exploratory-gamma-enable 0|1: HYPOTHETICAL initial bank-10 gamma enable bit\n"
                "--summary FILE --coverage FILE --max-instructions N\n"
                "--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS\n"

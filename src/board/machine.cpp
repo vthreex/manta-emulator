@@ -23,7 +23,20 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateSpi = o.candidateSpi;
   riu_.candidateChipId = o.candidateChipId;
   riu_.candidateGamma = o.candidateGamma;
+  riu_.candidateSemaphore=o.candidateSemaphore;
+  if(o.exploratorySemaphoreIdle) {
+    if(!o.candidateSemaphore || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("Semaphore idle experiment requires candidate hardware and guarded execution");
+    riu_.configureExploratorySemaphoreIdle();
+  }
   riu_.configureSpi(o.flashModel, o.spiUnknownInput);
+  if(o.exploratoryCombRestore && (!o.symbolicInit || !o.deferDiagnosticReads))
+    throw std::runtime_error("COMB paired-write experiment requires guarded execution");
+  riu_.exploratoryCombRestore=o.exploratoryCombRestore;
+  if(o.exploratoryGopBank>=0) {
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("GOP initial bank experiment requires guarded execution");
+    riu_.configureExploratoryGopBank(unsigned(o.exploratoryGopBank));
+  }
   if(o.exploratoryDlcTimeout && (!o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("DLC timeout experiment requires guarded execution");
   riu_.exploratoryDlcTimeout=o.exploratoryDlcTimeout;
@@ -150,6 +163,8 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
     ++gopEvents_;
   if ((k == "read" || k == "write") && a >= 0x1f205000 && a < 0x1f205200)
     ++geEvents_;
+  if ((k == "blocked_read" || k == "blocked_write") && a >= 0x1f205000 && a < 0x1f205200)
+    ++geBlockedEvents_;
   if (k == "read" || k == "write" || k == "blocked_read" || k == "deferred_read") {
     recentMmio_.push_back(line);
     if (recentMmio_.size() > 256)
@@ -266,14 +281,21 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       m.stop(why, op >= 32 && op <= 38 ? address : 0);
       return;
     }
+    if(a==0x805f883c && w==0xa4820000 && m.cpu_.reg(UC_MIPS_REG_31)==0x803c69f8) {
+      auto target=m.cpu_.reg(UC_MIPS_REG_4)&0x1fffffff;
+      m.riu_.beginCombRestore(target,m.preservedBits_.mask(2)&0xffff);
+    }
     auto preservedWhy=m.preservedBits_.observe(w,[&](unsigned r){return m.cpu_.reg(UC_MIPS_REG_0+int(r));},
-      [&](uint32_t address){return m.riu_.controlByteKey(address);},
+      [&](uint32_t address){return m.riu_.preservedStoreKey(address);},
       [&](uint32_t address,unsigned width,uint32_t unknown){
-        auto full=width==4?0xffffffffu:(1u<<(width*8))-1;
-        m.riu_.prepareRmw(address,full&~unknown);
+        m.riu_.preparePreservedWrite(address,width,unknown);
         m.event("preserved_control_write",address,width,unknown,"original unknown bits return to the same banked byte/bit identities; no decision or new hardware consumer authorized");
       });
-    if(!preservedWhy.empty()) {m.stop(preservedWhy);return;}
+    if(!preservedWhy.empty()) {
+      auto op=w>>26;
+      auto target=(m.cpu_.reg(UC_MIPS_REG_0+int((w>>21)&31))+uint32_t(int32_t(int16_t(w))))&0x1fffffff;
+      m.stop(preservedWhy,op>=32 && op<=43?target:0);return;
+    }
   }
   auto op = w >> 26;
   if ((op >= 32 && op <= 38) || (op >= 40 && op <= 43) || (op == 46)) {
@@ -445,6 +467,41 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
         m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
         m.riu_.prepareOpaqueRead(a);
         m.event("deferred_dlc_gain",a,n,0,"INVALID gain snapshot; original extract/copies/restore permitted, first unknown decision stops");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x805f87dc &&
+       a==0x1f203ffc && n==1 && m.cpu_.reg(UC_MIPS_REG_31)==0x803c1e80) {
+      constexpr uint32_t expected[]={0x8e440000,0xafa20010,0x92450005,0x90820000,0x90830001};
+      uint32_t actual[5]{};m.cpu_.read(0x003c1e80,actual,sizeof(actual));
+      if(std::equal(std::begin(expected),std::end(expected),std::begin(actual))) {
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_gop_selector_snapshot",a,n,0,"INVALID stock PQ save/restore; first unknown bank selection/decision still stops");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x805f87dc &&
+       a==0x1f203ffc && n==1 && m.cpu_.reg(UC_MIPS_REG_31)==0x803c1f60) {
+      constexpr uint32_t leaf[]={0x90620000,0x03e00008,0x304200ff};
+      constexpr uint32_t caller[]={0x3042000f,0x3c040010,0x02202821,0x34841ffe,0x1051ffd8,0x2406000f};
+      uint32_t actualLeaf[3]{},actualCaller[6]{};
+      m.cpu_.read(0x005f87dc,actualLeaf,sizeof(actualLeaf));
+      m.cpu_.read(0x003c1f60,actualCaller,sizeof(actualCaller));
+      if(std::equal(std::begin(leaf),std::end(leaf),std::begin(actualLeaf)) &&
+         std::equal(std::begin(caller),std::end(caller),std::begin(actualCaller))) {
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_gop_selector_mask",a,n,0,"INVALID upper IRQ flags discarded by original caller ANDI; unknown low bank still rejects BEQ");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x805268dc &&
+       a>=0x1f205000 && a<0x1f205200 && n==2 && m.cpu_.reg(UC_MIPS_REG_31)==0x80526988) {
+      constexpr uint32_t expected[]={0x94640000,0x8fbf001c,0x8fb10018,0x00c42024,
+        0x00a42025,0x3082ffff,0x8fb00014,0x03e00008,0x27bd0020};
+      uint32_t actual[9]{};m.cpu_.read(pc&0x1fffffff,actual,sizeof(actual));
+      if(std::equal(std::begin(expected),std::end(expected),std::begin(actual))) {
+        m.preservedBits_.seed(4,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_ge_context_sample",a,n,0,"INVALID original GE_ReadReg context sample; only unchanged origin/bit restore permitted, no enable/queue/draw state inferred");
       }
     }
     if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x805f87dc && n==1 &&
@@ -643,9 +700,10 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
     } else if ((op == 35 || op == 36 || op == 37) && !dependent[rs] && rt != 0) {
       // An independent RAM callback-pointer load may occur inside a device
       // RMW. It neither consumes nor defines the sampled register bits.
-      auto target = (values[rs] + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
+      auto target = PreservedBits::backingAddress(values[rs] + uint32_t(int32_t(int16_t(w))));
       auto loadSize = op == 35 ? 4u : op == 37 ? 2u : 1u;
-      if (target >= 0x08000000 - loadSize || (target & (loadSize - 1))) return 0;
+      auto ramSize=dramBacking_.empty()?0x08000000u:uint32_t(dramBacking_.size());
+      if (target > ramSize - loadSize || (target & (loadSize - 1))) return 0;
       for (unsigned byte = 0; byte < loadSize; ++byte)
         if (unknownObservations_.bytes().contains(target + byte) || preservedBits_.memoryUnknown(target+byte)) return 0;
       values[rt] = 0;
@@ -758,6 +816,11 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"candidate_miu\": " << (options_.candidateMiu ? "true" : "false")
     << ",\n  \"deferred_diagnostic_reads\": " << deferredReads_
     << ",\n  \"candidate_spi\": " << (options_.candidateSpi ? "true" : "false")
+    << ",\n  \"candidate_semaphore\": " << (options_.candidateSemaphore ? "true" : "false")
+    << ",\n  \"exploratory_semaphore_idle\": " << (options_.exploratorySemaphoreIdle ? "true" : "false")
+    << ",\n  \"semaphore_acquisitions\": " << riu_.semaphoreAcquisitions()
+    << ",\n  \"semaphore_releases\": " << riu_.semaphoreReleases()
+    << ",\n  \"semaphore_contentions\": " << riu_.semaphoreContentions()
     << ",\n  \"candidate_chip_id\": " << (options_.candidateChipId ? "true" : "false")
     << ",\n  \"spi_flash_model\": \"" << (options_.flashModel == NorModel::W25Q64BV ? "w25q64bv" : "mx25l6405d") << "\""
     << ",\n  \"spi_unknown_input_policy\": " << unsigned(options_.spiUnknownInput)
@@ -844,11 +907,16 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"exploratory_dlc_initial_pending\": " << options_.exploratoryDlcPending
     << ",\n  \"exploratory_dlc_timeout\": " << (options_.exploratoryDlcTimeout ? "true":"false")
     << ",\n  \"exploratory_comb_initial_bank\": " << options_.exploratoryCombBank
+    << ",\n  \"exploratory_gop_initial_bank\": " << options_.exploratoryGopBank
+    << ",\n  \"exploratory_comb_paired_restore\": " << (options_.exploratoryCombRestore?"true":"false")
+    << ",\n  \"comb_paired_restores\": " << riu_.combRestoreCount()
+    << ",\n  \"comb_paired_restore_pending\": " << (riu_.combRestorePending()?"true":"false")
     << ",\n  \"virtual_output_frames\": " << riu_.displayFrames(dispatches_)
     << ",\n  \"output_sync_reads\": " << riu_.outputSyncReads()
     << ",\n  \"output_sync_observed_transitions\": " << riu_.outputSyncTransitions()
     << ",\n  \"gop_aperture_events\": " << gopEvents_
-    << ",\n  \"ge_candidate_aperture_events\": " << geEvents_;
+    << ",\n  \"ge_candidate_aperture_events\": " << geEvents_
+    << ",\n  \"ge_blocked_aperture_events\": " << geBlockedEvents_;
   if(auto bank=riu_.scBank()) s << ",\n  \"current_sc_bank\": " << *bank;
   else s << ",\n  \"current_sc_bank\": null";
   if(auto bank=riu_.combBank())s << ",\n  \"current_comb_bank\": " << *bank;
