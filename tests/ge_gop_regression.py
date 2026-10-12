@@ -55,7 +55,14 @@ with tempfile.TemporaryDirectory(prefix='manta-ge-replay-') as directory:
  r=subprocess.run([a.emulator]+flags+['--replay-trace',a.reference_trace,'--summary',str(out)],capture_output=True,text=True)
  assert r.returncode==2,(r.returncode,r.stderr)
  replay=json.loads(out.read_text())
- assert replay==ref,'every original CPU/IRQ/MMIO checkpoint and replayed event must agree'
+ extra={'candidate_tsp':False,'exploratory_tsp_reset_low':False,'tsp_queue_known':False,
+   'tsp_reset_held':True,'tsp_reset_assertions':0,'tsp_reset_releases':0,
+   'tsp_filein_submissions':0,'tsp_queue_count':None,'tsp_indirect_reads':0,'tsp_indirect_writes':0,
+   'tsp_firmware_download_requests':0,'tsp_firmware_download_pending':False,
+   'tsp_firmware_download_completions':0,'tsp_firmware_download_bytes':0,'tsp_firmware_download_source':'0x0'}
+ assert set(replay)-set(ref)<=set(extra),'unexpected golden-summary schema change'
+ assert all(replay[k]==extra[k] for k in set(replay)-set(ref))
+ assert {k:replay[k] for k in ref}==ref,'every original CPU/IRQ/MMIO checkpoint and replayed event must agree'
  assert '@@@ Hello T4' in r.stdout and 'USB_Init_Configure done...' in r.stdout
  assert 'First GOP driver instance, flush GWIN HW' in r.stdout
 assert hashlib.sha256(Path(a.firmware).read_bytes()).hexdigest()==stock

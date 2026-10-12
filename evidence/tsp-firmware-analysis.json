@@ -1,0 +1,268 @@
+{
+  "original_spi_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "guest_buffer_bytes": 17416,
+  "guest_buffer_sha256": "69785f9a58c2927ceb9e92cd0fb5d8b39c9978a3c2971a7e9e6fbd9a09df189a",
+  "guest_physical_source": "0x72db00",
+  "isa_evidence": "little-endian OpenRISC: movhi/shift then exact r31..r1 addi-zero initialization, followed by ori/jalr/nop patterns",
+  "candidate_reset_prefix_offset": "0x100",
+  "physical_reset_PC_not_validated": true,
+  "image_locations": [
+    {
+      "kind": "raw SPI",
+      "offset": "0x1e7838"
+    }
+  ],
+  "reset_prefix_disassembly": [
+    {
+      "offset": "0x100",
+      "word": "0x18000000",
+      "asm": "l.movhi r0,0x0"
+    },
+    {
+      "offset": "0x104",
+      "word": "0xb8000010",
+      "asm": "l.slli r0,r0,16"
+    },
+    {
+      "offset": "0x108",
+      "word": "0x9fe00000",
+      "asm": "l.addi r31,r0,0"
+    },
+    {
+      "offset": "0x10c",
+      "word": "0x9fc00000",
+      "asm": "l.addi r30,r0,0"
+    },
+    {
+      "offset": "0x110",
+      "word": "0x9fa00000",
+      "asm": "l.addi r29,r0,0"
+    },
+    {
+      "offset": "0x114",
+      "word": "0x9f800000",
+      "asm": "l.addi r28,r0,0"
+    },
+    {
+      "offset": "0x118",
+      "word": "0x9f600000",
+      "asm": "l.addi r27,r0,0"
+    },
+    {
+      "offset": "0x11c",
+      "word": "0x9f400000",
+      "asm": "l.addi r26,r0,0"
+    },
+    {
+      "offset": "0x120",
+      "word": "0x9f200000",
+      "asm": "l.addi r25,r0,0"
+    },
+    {
+      "offset": "0x124",
+      "word": "0x9f000000",
+      "asm": "l.addi r24,r0,0"
+    },
+    {
+      "offset": "0x128",
+      "word": "0x9ee00000",
+      "asm": "l.addi r23,r0,0"
+    },
+    {
+      "offset": "0x12c",
+      "word": "0x9ec00000",
+      "asm": "l.addi r22,r0,0"
+    },
+    {
+      "offset": "0x130",
+      "word": "0x9ea00000",
+      "asm": "l.addi r21,r0,0"
+    },
+    {
+      "offset": "0x134",
+      "word": "0x9e800000",
+      "asm": "l.addi r20,r0,0"
+    },
+    {
+      "offset": "0x138",
+      "word": "0x9e600000",
+      "asm": "l.addi r19,r0,0"
+    },
+    {
+      "offset": "0x13c",
+      "word": "0x9e400000",
+      "asm": "l.addi r18,r0,0"
+    },
+    {
+      "offset": "0x140",
+      "word": "0x9e200000",
+      "asm": "l.addi r17,r0,0"
+    },
+    {
+      "offset": "0x144",
+      "word": "0x9e000000",
+      "asm": "l.addi r16,r0,0"
+    },
+    {
+      "offset": "0x148",
+      "word": "0x9de00000",
+      "asm": "l.addi r15,r0,0"
+    },
+    {
+      "offset": "0x14c",
+      "word": "0x9dc00000",
+      "asm": "l.addi r14,r0,0"
+    },
+    {
+      "offset": "0x150",
+      "word": "0x9da00000",
+      "asm": "l.addi r13,r0,0"
+    },
+    {
+      "offset": "0x154",
+      "word": "0x9d800000",
+      "asm": "l.addi r12,r0,0"
+    },
+    {
+      "offset": "0x158",
+      "word": "0x9d600000",
+      "asm": "l.addi r11,r0,0"
+    },
+    {
+      "offset": "0x15c",
+      "word": "0x9d400000",
+      "asm": "l.addi r10,r0,0"
+    },
+    {
+      "offset": "0x160",
+      "word": "0x9d200000",
+      "asm": "l.addi r9,r0,0"
+    },
+    {
+      "offset": "0x164",
+      "word": "0x9d000000",
+      "asm": "l.addi r8,r0,0"
+    },
+    {
+      "offset": "0x168",
+      "word": "0x9ce00000",
+      "asm": "l.addi r7,r0,0"
+    },
+    {
+      "offset": "0x16c",
+      "word": "0x9cc00000",
+      "asm": "l.addi r6,r0,0"
+    },
+    {
+      "offset": "0x170",
+      "word": "0x9ca00000",
+      "asm": "l.addi r5,r0,0"
+    },
+    {
+      "offset": "0x174",
+      "word": "0x9c800000",
+      "asm": "l.addi r4,r0,0"
+    },
+    {
+      "offset": "0x178",
+      "word": "0x9c600000",
+      "asm": "l.addi r3,r0,0"
+    },
+    {
+      "offset": "0x17c",
+      "word": "0x9c400000",
+      "asm": "l.addi r2,r0,0"
+    },
+    {
+      "offset": "0x180",
+      "word": "0x9c200000",
+      "asm": "l.addi r1,r0,0"
+    },
+    {
+      "offset": "0x184",
+      "word": "0x18400000",
+      "asm": "l.movhi r2,0x0"
+    },
+    {
+      "offset": "0x188",
+      "word": "0xa8420194",
+      "asm": "l.ori r2,r2,0x194"
+    },
+    {
+      "offset": "0x18c",
+      "word": "0x44001000",
+      "asm": "l.jalr r2"
+    },
+    {
+      "offset": "0x190",
+      "word": "0x15000000",
+      "asm": "l.nop 0"
+    },
+    {
+      "offset": "0x194",
+      "word": "0x18200000",
+      "asm": "l.movhi r1,0x0"
+    },
+    {
+      "offset": "0x198",
+      "word": "0xa8212700",
+      "asm": "l.ori r1,r1,0x2700"
+    },
+    {
+      "offset": "0x19c",
+      "word": "0x9c40fffd",
+      "asm": "l.addi r2,r0,-3"
+    },
+    {
+      "offset": "0x1a0",
+      "word": "0xe0211003",
+      "asm": "l.and r1,r1,r2"
+    },
+    {
+      "offset": "0x1a4",
+      "word": "0x18400000",
+      "asm": "l.movhi r2,0x0"
+    },
+    {
+      "offset": "0x1a8",
+      "word": "0xa8421f04",
+      "asm": "l.ori r2,r2,0x1f04"
+    },
+    {
+      "offset": "0x1ac",
+      "word": "0x44001000",
+      "asm": "l.jalr r2"
+    },
+    {
+      "offset": "0x1b0",
+      "word": "0x15000000",
+      "asm": "l.nop 0"
+    },
+    {
+      "offset": "0x1b4",
+      "word": "0xd7e157fc",
+      "asm": ".word 0xd7e157fc ; unsupported by bounded analysis decoder"
+    },
+    {
+      "offset": "0x1b8",
+      "word": "0x9d410000",
+      "asm": "l.addi r10,r1,0"
+    },
+    {
+      "offset": "0x1bc",
+      "word": "0x44004800",
+      "asm": "l.jalr r9"
+    },
+    {
+      "offset": "0x1c0",
+      "word": "0x8541fffc",
+      "asm": "l.lwz r10,-4(r1)"
+    }
+  ],
+  "guest_DMA_bytes": 12288,
+  "DMA_prefix_sha256": "cb673a6f285c933d063e9ed921bb436bf3a524ac417d8d98bcd42df84221fe1c",
+  "eight_final_bytes": "000000000000715f",
+  "final_bytes_meaning_unknown": true,
+  "auxiliary_execution_demonstrated": false,
+  "original_firmware_or_reference_payload_redistributed": false
+}

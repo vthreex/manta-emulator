@@ -1,7 +1,32 @@
 #include "peripherals/riu.hpp"
 #include <array>
 #include <stdexcept>
+#include "storage/sha256.hpp"
 namespace manta {
+uint32_t Riu::tspPayloadKey(uint32_t target,unsigned lane) {
+  if(target<0x00420000 || target>=0x00430000 || (target&7) || lane>=4)
+    throw std::runtime_error("TSP indirect target outside corroborated aligned filter-register aperture");
+  return 0x83000000u+(target-0x00420000)/2+lane;
+}
+uint32_t Riu::tspSelectedTarget() const {
+  if(knownBits(0x1f202b24,2)!=0xffff || knownBits(0x1f202b28,2)!=0xffff)
+    throw std::runtime_error("TSP indirect address contains unknown bits");
+  auto encoded=get(0x1f202b24,2)|(get(0x1f202b28,2)<<16);
+  if(encoded>0x7fffffffu)throw std::runtime_error("TSP indirect address shift would overflow");
+  auto target=encoded<<1;
+  tspPayloadKey(target,0);return target;
+}
+uint32_t Riu::controlByteKey(uint32_t a) const {
+  if(candidateTsp) {
+    if((a>=0x1f202b2c && a<0x1f202b2e) || (a>=0x1f202b30 && a<0x1f202b32))
+      return tspPayloadKey(tspSelectedTarget(),a>=0x1f202b30?2+a-0x1f202b30:a-0x1f202b2c);
+    if((a>=0x1f202b34 && a<0x1f202b36) || (a>=0x1f202b38 && a<0x1f202b3a)) {
+      if(!tspReadTarget_)throw std::runtime_error("TSP indirect read has no completed address/command producer");
+      return tspPayloadKey(*tspReadTarget_,a>=0x1f202b38?2+a-0x1f202b38:a-0x1f202b34);
+    }
+  }
+  return storageKey(a);
+}
 bool Riu::beginCombRestore(uint32_t a,uint32_t unknown) {
   if(!exploratoryCombRestore || !symbolicInit || combRestore_ || !combBank() ||
       (unknown&255)!=(unknown>>8) || !unknown || unknown>0xffff ||
@@ -16,7 +41,7 @@ bool Riu::beginCombRestore(uint32_t a,uint32_t unknown) {
 uint32_t Riu::preservedStoreKey(uint32_t a) const {
   if(combRestore_ && !combRestore_->written && a==combRestore_->address)
     return storageKey(a+1);
-  return storageKey(a);
+  return controlByteKey(a);
 }
 std::optional<PanelTiming> Riu::panelTiming() const {
   auto word=[&](unsigned off,unsigned mask)->std::optional<unsigned> {
@@ -69,6 +94,7 @@ uint32_t Riu::storageKey(uint32_t a) const {
   return a;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(candidateTsp && a==0x1f202afc && n==2)return tsp_.known()?TspQueue::countStatusMask:0;
   if(candidateGe && ge_.initialized() && a==0x1f20501c && n==2)return GeQueue::statusKnown;
   if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag()?0xffff:0;
   uint32_t v = 0;
@@ -77,9 +103,14 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     if (it != bytes_.end())
       v |= uint32_t(it->second.known) << (8 * i);
   }
+  if(candidateTsp && a==0x1f202be8 && n==2) {
+    v&=~8u;if(tspDownload_.known())v|=8;
+  }
   return v;
 }
 uint32_t Riu::get(uint32_t a, unsigned n) const {
+  if(candidateTsp && a==0x1f202afc && n==2)
+    return tsp_.known()?((0xa5a5u&~TspQueue::countStatusMask)|tsp_.status()):0xa5a5;
   if(candidateGe && ge_.initialized() && a==0x1f20501c && n==2)
     return (0xa5a5u&~GeQueue::statusKnown)|ge_.status();
   if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag().value_or(0xa5a5);
@@ -87,6 +118,9 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
   for (unsigned i = 0; i < n; ++i) {
     auto it = bytes_.find(storageKey(a + i));
     v |= uint32_t(it == bytes_.end() ? 0xa5 : it->second.value) << (i * 8);
+  }
+  if(candidateTsp && a==0x1f202be8 && n==2) {
+    v&=~8u;if(tspDownload_.done())v|=8;
   }
   return v;
 }
@@ -107,6 +141,10 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
   return crc;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(candidateTsp && tspDownload_.advance(tick))
+    event("tsp_firmware_download_complete",tspDownloadSource_,unsigned(tspDownload_.bytes()),0,
+        "actual guest RAM bytes installed into internal QMEM; sha256="+sha256(tspDownload_.transferred())+"; transfer latency provisional, auxiliary CPU not emulated");
+  if(candidateTsp)tsp_.execute(tick);
   if(candidateGe)ge_.advance(tick);
   bool masked = consumedRead_.contains(a);
   auto provenConsumed = masked ? consumedRead_.at(a) : 0;
@@ -287,6 +325,8 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   if (n != 1 && n != 2 && n != 4)
     throw std::runtime_error("Unsupported RIU access width");
+  auto previousTspControl=candidateTsp && a==0x1f202be8?get(a,n):0;
+  auto previousTspKnown=candidateTsp && a==0x1f202be8?knownBits(a,n):0;
   bool closingComb=false;
   if(combRestore_) {
     auto &c=*combRestore_;
@@ -343,6 +383,57 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(candidateTsp && n==2) {
+    if(a==0x1f202be8 && (knownBits(a,2)&4) && (v&4) &&
+       (previousTspKnown&4) && !(previousTspControl&4)) {
+      if(knownBits(0x1f202be0,2)!=0xffff || knownBits(0x1f202be4,2)!=0xffff ||
+         (knownBits(0x1f202c1c,2)&15)!=15 || !dramRead)
+        throw std::runtime_error("TSP firmware DMA descriptor/address high bits or DRAM backend unknown");
+      tspDownloadSource_=(get(0x1f202be0,2)<<6)|((get(0x1f202c1c,2)&15)<<22);
+      auto length=get(0x1f202be4,2)<<2;
+      auto payload=dramRead(tspDownloadSource_,length);
+      if(payload.size()!=length)throw std::runtime_error("TSP firmware DMA source unavailable");
+      tspDownload_.start(payload,tick);
+      event("tsp_firmware_download_request",tspDownloadSource_,length,0,
+          "original start edge; source[21:6]+high[25:22], NUM[17:2]; bounded guest RAM payload captured for QMEM transfer, no completion fabricated");
+    }
+    if(a==0x1f202be8 && (knownBits(a,2)&1) && (v&1) &&
+       (previousTspKnown&1) && !(previousTspControl&1))
+      throw std::runtime_error("TSP OpenRISC auxiliary CPU execution/address mapping unsupported; no alive/firmware response fabricated");
+    if(a==0x1f202b20 && (knownBits(a,2)&0xff)==0xff && (v&1)) {
+      auto command=v&0xff;
+      if(command!=0x21 && command!=0x23)
+        throw std::runtime_error("TSP indirect command unsupported; no borrowed Titania3 opcode response");
+      if(!tsp_.known() || tsp_.held())throw std::runtime_error("TSP indirect access before known experimental reset release");
+      auto target=tspSelectedTarget();
+      for(unsigned lane=0;lane<4;++lane) {
+        auto key=tspPayloadKey(target,lane);
+        auto port=(command==0x21?0x1f202b34u:0x1f202b2cu)+(lane>=2?4:0)+(lane&1);
+        if(command==0x21) {
+          auto it=bytes_.find(key);bytes_[port]=it==bytes_.end()?RiuByte{}:it->second;
+        } else bytes_[key]=bytes_[port];
+      }
+      if(command==0x21){tspReadTarget_=target;++tspIndirectReads_;}
+      else ++tspIndirectWrites_;
+      event(command==0x21?"tsp_indirect_read":"tsp_indirect_write",target,4,
+        get(command==0x21?0x1f202b34:0x1f202b2c,2)|(get(command==0x21?0x1f202b38:0x1f202b30,2)<<16),
+        "original address>>1 and 21h/23h command transport; unknown filter bits retain internal-register provenance; no filter reset values invented");
+    }
+    if(a==0x1f202be8 && tsp_.control(uint16_t(v),uint16_t(knownBits(a,2))))
+      event("exploratory_tsp_reset",a,n,v,"HYPOTHETICAL active-low engine control bit1 reset coupling; queue emptied by original reset write, not by status reads");
+    if(a==0x1f202bfc && tsp_.commandReset(uint16_t(v),uint16_t(knownBits(a,2))))
+      event("tsp_cmdq_reset",a,n,v,"original HAL command-queue reset bit11 asserted; pending work discarded by reset, not completed");
+    if(a==0x1f202af8 && (knownBits(a,2)&1) && (v&1)) {
+      auto address=get(0x1f202ae8,2)|(get(0x1f202aec,2)<<16);
+      auto size=get(0x1f202af0,2)|(get(0x1f202af4,2)<<16);
+      if((knownBits(0x1f202ae8,2)|(knownBits(0x1f202aec,2)<<16))!=0xffffffffu ||
+         (knownBits(0x1f202af0,2)|(knownBits(0x1f202af4,2)<<16))!=0xffffffffu)
+        throw std::runtime_error("TSP file-in descriptor contains unknown bits");
+      tsp_.submit({address,size,uint16_t(v),tick});
+      event("tsp_filein_submit",address,4,size,"guest descriptor retained pending; TS DMA/demux execution unsupported");
+      tsp_.execute(tick);
+    }
+  }
   if(candidateGe && GeQueue::aperture(a)) {
     if(n!=2 || (a&3))throw std::runtime_error("GE controller requires corroborated halfword register lanes");
     if(a==0x1f20501c)throw std::runtime_error("GE queue status is hardware-owned, not a writable latch");

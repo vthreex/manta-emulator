@@ -96,6 +96,8 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-comb-paired-restore") o.exploratoryCombRestore=true;
       else if(a=="--candidate-semaphore") o.candidateSemaphore=true;
       else if(a=="--candidate-ge") o.candidateGe=true;
+      else if(a=="--candidate-tsp") o.candidateTsp=true;
+      else if(a=="--exploratory-tsp-reset-low") o.exploratoryTspResetLow=true;
       else if(a=="--candidate-gop-palette") o.candidateGopPalette=true;
       else if(a=="--exploratory-ge-reset") o.exploratoryGeReset=true;
       else if(a=="--exploratory-semaphore-idle") o.exploratorySemaphoreIdle=true;
@@ -121,6 +123,7 @@ static int appMain(const std::vector<std::string> &args) {
       }
       else if (a == "--summary")
         o.summary = utf8Path(value(i));
+      else if(a=="--tsp-firmware-dump") o.tspFirmwareDump=utf8Path(value(i));
       else if (a == "--coverage")
         o.coverage = utf8Path(value(i));
       else if (a == "--break-pc")
@@ -152,11 +155,14 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-gop-bank N: HYPOTHETICAL initial selector only (0..15); no IRQ/ACK reset assumption\n"
                "--candidate-semaphore: stateful resource-ID acquire/release; reset owners stay unknown\n"
                "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
+               "--candidate-tsp: queue count/full/empty derived from reset and actual pending descriptors; unsupported TS DMA never completes\n"
+               "--exploratory-tsp-reset-low: HYPOTHETICAL engine control bit1 active-low reset coupling; no initial count assigned\n"
                "--candidate-gop-palette: guest color/index and original write-pulse palette uploads; no invented reset colors\n"
                "--exploratory-ge-reset: HYPOTHETICAL disabled engine/virtual queue, initially empty 16-entry stages with provisional clocks/latency\n"
                "--exploratory-semaphore-idle: HYPOTHETICAL initially unowned resources; no PM51/AEON ownership asserted\n"
                "--exploratory-gamma-enable 0|1: HYPOTHETICAL initial bank-10 gamma enable bit\n"
                "--summary FILE --coverage FILE --max-instructions N\n"
+               "--tsp-firmware-dump FILE: bounded private dump of original guest TSP_SetBase input; requires --candidate-tsp\n"
                "--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS\n"
                "Diagnostic: --diagnostic-stage2 --symbolic-init "
                "--candidate-bdma\n"

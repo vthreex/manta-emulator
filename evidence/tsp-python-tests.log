@@ -1,0 +1,9 @@
+test_bounded_random_inputs (__main__.Forensics.test_bounded_random_inputs) ... ok
+test_output_bound (__main__.Forensics.test_output_bound) ... ok
+test_round_trip_and_trailer (__main__.Forensics.test_round_trip_and_trailer) ... ok
+test_wrong_original_rejected (__main__.Forensics.test_wrong_original_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.008s
+
+OK

@@ -807,6 +807,107 @@ void tspProvenanceTests() {
   regs[2]=0;
   require(step(0x14400001).empty(),"TSP branch can consume only independently known queue-count bits");
 }
+void tspQueueTests() {
+  manta::TspQueue q;
+  rejects([&]{q.count();});
+  require(!q.control(0,0xffff) && !q.known(),"TSP reset polarity is never silently assumed");
+  q.enableExploratoryResetLow();
+  require(!q.control(0,0xfffd) && !q.known(),"unknown TSP reset bit cannot initialize occupancy");
+  require(q.control(0,0xffff) && q.held() && q.count()==0 && q.resets()==1,
+      "original engine reset assertion empties queue only in explicit reset experiment");
+  require(q.status()==0x80,"TSP empty status derives from queue occupancy");
+  rejects([&]{q.submit({0x1000,188,1,0});});
+  require(q.control(2,0xffff) && !q.held() && q.releases()==1,"original guest releases TSP reset");
+  q.submit({0x1000,188,1,10});
+  require(q.count()==1 && q.status()==1 && q.submissions()==1,"actual file-in descriptor changes pending occupancy");
+  rejects([&]{q.execute(1000000);});
+  require(q.count()==1,"unimplemented TS DMA cannot disappear with virtual time");
+  for(unsigned i=1;i<16;++i)q.submit({0x1000+i*188,188,1,10+i});
+  require(q.count()==16 && q.status()==0x50,"TSP full flag and count derive from bounded FIFO");
+  rejects([&]{q.submit({0x4000,188,1,100});});
+  require(!q.commandReset(0x800,0xf7ff) && q.count()==16,"unknown command reset cannot discard work");
+  require(q.commandReset(0x800,0xffff) && q.count()==0 && q.submissions()==16,
+      "command reset discards pending work without claiming completion");
+  constexpr uint32_t reader[]={0x946200fc,0x946300f8,0x03e00008,0x3042001f};
+  require(manta::immediateReadMask(reader)==31,"stock strided TSP count reader consumes only low five bits through JR delay slot");
+  constexpr uint32_t unsafe[]={0x946200fc,0x00401821,0x03e00008,0x3042001f};
+  require(!manta::immediateReadMask(unsafe),"TSP count read proof rejects an intervening copy");
+  constexpr uint32_t unsafeJump[]={0x949f00fc,0x03e00008,0x33ff001f};
+  require(!manta::immediateReadMask(unsafeJump),"JR consumes its target before a delay-slot mask; unknown loaded RA cannot pass read proof");
+  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;r.candidateTsp=true;
+  require(r.knownBits(0x1f202afc,2)==0,"TSP candidate status initially remains unknown");
+  r.configureExploratoryTspResetLow();r.write(0x1f202be8,2,0,0,0xffff,1);
+  r.write(0x1f202be8,2,2,0,0xffff,2);
+  require(r.tspQueueKnown() && r.tspResetReleases()==1 && r.knownBits(0x1f202afc,2)==0xdf,
+      "guest RIU writes cause reset and count state, leaving unrelated bits invalid");
+  r.prepareMaskedRead(0x1f202afc,31);
+  require((r.read(0x1f202afc,2,0,0xffff,3)&31)==0,"guest count read observes reset FIFO rather than universal zero register");
+}
+void tspIndirectTests() {
+  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;r.candidateTsp=true;
+  r.configureExploratoryTspResetLow();r.write(0x1f202be8,2,0,0,0xffff,1);r.write(0x1f202be8,2,2,0,0xffff,2);
+  auto select=[&](uint32_t target){r.write(0x1f202b24,2,(target>>1)&65535,0,0xffff,3);
+    r.write(0x1f202b28,2,target>>17,0,0xffff,4);};
+  auto command=[&](uint16_t v){r.write(0x1f202b20,2,v,0,0xffff,5);};
+  select(0x420000);command(0x21);
+  require(r.tspIndirectReads()==1 && r.knownBits(0x1f202b34,2)==0 && r.knownBits(0x1f202b38,2)==0,
+      "original indirect read command retains unknown filter SRAM reset contents");
+  require(r.controlByteKey(0x1f202b34)==r.preservedStoreKey(0x1f202b2c) &&
+      r.controlByteKey(0x1f202b38)==r.preservedStoreKey(0x1f202b30),
+      "separate TSP read/write ports share exact internal register bit provenance");
+  r.write(0x1f202b2c,2,0x5678,0,0xffff,6);r.write(0x1f202b30,2,0x1234,0,0xffff,7);
+  command(0x21);require(r.knownBits(0x1f202b34,2)==0,"data staging without a write command cannot change filter SRAM");
+  command(0x23);command(0x21);
+  require(r.knownBits(0x1f202b34,2)==65535 && r.knownBits(0x1f202b38,2)==65535 &&
+      r.read(0x1f202b34,2,0,0xffff,8)==0x5678 && r.read(0x1f202b38,2,0,0xffff,9)==0x1234,
+      "original address/data/write/read sequence has actual guest-visible storage effects");
+  select(0x420008);command(0x21);
+  require(r.knownBits(0x1f202b34,2)==0,"indirect filter words retain independent undefined state");
+  auto oldKey=r.controlByteKey(0x1f202b34);select(0x420010);
+  require(r.controlByteKey(0x1f202b34)==oldKey && r.preservedStoreKey(0x1f202b2c)!=oldKey,
+      "read latch preserves its producer address; a new destination cannot inherit invalid source bits");
+  select(0x420008);
+  r.preparePreservedWrite(0x1f202b2c,2,0xfffe);r.write(0x1f202b2c,2,0xa5a4,0,0xffff,10);
+  r.preparePreservedWrite(0x1f202b30,2,0xffff);r.write(0x1f202b30,2,0xa5a5,0,0xffff,11);
+  command(0x23);command(0x21);
+  require(r.knownBits(0x1f202b34,2)==1 && r.knownBits(0x1f202b38,2)==0,
+      "masked guest filter update defines only its explicit bit, not poison or prior write-buffer bits");
+  rejects([&]{command(0x25);});
+  select(0x430000);rejects([&]{command(0x21);});
+  select(0x420002);rejects([&]{command(0x21);});
+  r.write(0x1f202b24,2,0,0,0xffff,12);r.write(0x1f202b28,2,0x8000,0,0xffff,13);
+  rejects([&]{command(0x21);});
+}
+void tspDownloadTests() {
+  manta::TspDownload d;std::vector<uint8_t> source(64);
+  for(unsigned i=0;i<source.size();++i)source[i]=uint8_t(i^0x5a);
+  require(!d.known() && !d.done(),"TSP download completion starts unknown");
+  rejects([&]{d.byte(0);});
+  d.start(source,10);
+  require(d.known() && d.pending() && !d.done(),"actual TSP transfer starts busy, without pretending SRAM is initialized");
+  require(!d.advance(13),"TSP programmed transfer cannot finish before its deterministic deadline");
+  rejects([&]{d.byte(0);});
+  require(d.advance(14) && d.done() && d.completions()==1 && d.transferred()==source,
+      "TSP completion follows an actual byte-for-byte transfer into QMEM");
+  require(d.byte(63)==source[63],"download modifies real internal SRAM bytes");
+  rejects([&]{d.byte(64);});
+  rejects([&]{d.start(std::vector<uint8_t>(0x4004),15);});
+  rejects([&]{d.start(std::vector<uint8_t>(3),15);});
+  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;r.candidateTsp=true;
+  r.configureExploratoryTspResetLow();r.write(0x1f202be8,2,0,0,0xffff,0);r.write(0x1f202be8,2,2,0,0xffff,1);
+  r.dramRead=[&](uint32_t address,size_t length){require(address==0x72db00 && length==64,
+      "original low/high descriptor fields decode real source and four-byte transfer size");return source;};
+  r.write(0x1f202be0,2,0xcb6c,0,0xffff,2);r.write(0x1f202be4,2,16,0,0xffff,3);
+  r.write(0x1f202c1c,2,1,0,0xffff,4);r.write(0x1f202be8,2,6,0,0xffff,10);
+  require(r.tspDownloadRequests()==1 && r.tspDownloadPending(),"original RIU start edge triggers programmed firmware DMA");
+  r.write(0x1f202be8,2,14,0,0xffff,11);
+  r.prepareMaskedRead(0x1f202be8,8);
+  require(!(r.read(0x1f202be8,2,0,0xffff,12)&8),"software cannot manufacture asynchronous download completion");
+  r.prepareMaskedRead(0x1f202be8,8);
+  require((r.read(0x1f202be8,2,0,0xffff,14)&8) && r.tspQmemByte(63)==source[63],
+      "original poll sees done only after the actual SRAM effect");
+  rejects([&]{r.write(0x1f202be8,2,3,0,0xffff,15);});
+}
 int main() {
   try {
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
@@ -837,6 +938,9 @@ int main() {
     gopSelectorProvenanceTests();
     gopPaletteTests();
     tspProvenanceTests();
+    tspQueueTests();
+    tspIndirectTests();
+    tspDownloadTests();
     dlcStatusTests();
     combBankTests();
 #ifdef UC_MIPS_MANTA_TIMER_API

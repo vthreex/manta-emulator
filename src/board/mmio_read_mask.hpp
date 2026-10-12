@@ -9,10 +9,12 @@ inline std::optional<uint32_t> immediateReadMask(std::span<const uint32_t> words
   if(words.empty())return {};
   auto op=words[0]>>26, rt=(words[0]>>16)&31;
   if((op!=36 && op!=37) || !rt)return {};
-  if(words.size()>=3 && words[1]==0x03e00008 && words[2]>>26==12 &&
+  if(rt!=31 && words.size()>=3 && words[1]==0x03e00008 && words[2]>>26==12 &&
       ((words[2]>>21)&31)==rt && ((words[2]>>16)&31)==rt)return words[2]&65535;
   for(size_t i=1;i<words.size();++i) {
     auto word=words[i], nextOp=word>>26, rs=(word>>21)&31, target=(word>>16)&31;
+    if(word==0x03e00008 && rt!=31 && i+1<words.size() && words[i+1]>>26==12 &&
+        ((words[i+1]>>21)&31)==rt && ((words[i+1]>>16)&31)==rt)return words[i+1]&65535;
     if(nextOp==12 && rs==rt && target==rt)return word&65535;
     if(nextOp==31 && (word&63)==0 && rs==rt && target==rt) {
       unsigned count=((word>>11)&31)+1, shift=(word>>6)&31;

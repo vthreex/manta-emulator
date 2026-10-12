@@ -4,3 +4,4 @@
 *.hpp text eol=lf
 *.md text eol=lf
 evidence/ge-gop-uart.raw binary
+evidence/tsp-uart.raw binary

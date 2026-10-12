@@ -30,8 +30,10 @@ struct Options {
   bool candidateSemaphore=false, exploratorySemaphoreIdle=false;
   bool candidateGe=false, exploratoryGeReset=false;
   bool candidateGopPalette=false;
+  bool candidateTsp=false, exploratoryTspResetLow=false;
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage;
+  std::filesystem::path tspFirmwareDump;
 };
 class Msd309Machine {
   std::vector<uint8_t> dramBacking_; // outlives CPU mappings, shared MIU aliases

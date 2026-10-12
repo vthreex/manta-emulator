@@ -1,0 +1,220 @@
+{
+  "actual_last_guest_writes_not_reset_value_proof": {
+    "0x1f202be8": {
+      "tick": 666276286,
+      "pc": "0x805d6bac",
+      "kind": "write",
+      "address": "0x1f202be8",
+      "width": 2,
+      "value": "0x4a",
+      "ra": "0x805d5eb8",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202bec": {
+      "tick": 666276296,
+      "pc": "0x805d6bd4",
+      "kind": "write",
+      "address": "0x1f202bec",
+      "width": 2,
+      "value": "0x0",
+      "ra": "0x805d5eb8",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202b80": {
+      "tick": 666269898,
+      "pc": "0x805d81f4",
+      "kind": "write",
+      "address": "0x1f202b80",
+      "width": 2,
+      "value": "0x5b60",
+      "ra": "0x805d81dc",
+      "sp": "0x8072d860",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202b84": {
+      "tick": 666269900,
+      "pc": "0x805d81fc",
+      "kind": "write",
+      "address": "0x1f202b84",
+      "width": 2,
+      "value": "0xe",
+      "ra": "0x805d81dc",
+      "sp": "0x8072d860",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202be0": {
+      "tick": 666275410,
+      "pc": "0x805d822c",
+      "kind": "write",
+      "address": "0x1f202be0",
+      "width": 2,
+      "value": "0xcb6c",
+      "ra": "0x805d8218",
+      "sp": "0x8072d860",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202be4": {
+      "tick": 666275411,
+      "pc": "0x805d8230",
+      "kind": "write",
+      "address": "0x1f202be4",
+      "width": 2,
+      "value": "0xc00",
+      "ra": "0x805d8218",
+      "sp": "0x8072d860",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202b90": {
+      "tick": 666276231,
+      "pc": "0x805d830c",
+      "kind": "write",
+      "address": "0x1f202b90",
+      "width": 2,
+      "value": "0xe5a5",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d860",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202b94": {
+      "tick": 666276235,
+      "pc": "0x805d831c",
+      "kind": "write",
+      "address": "0x1f202b94",
+      "width": 2,
+      "value": "0xffff",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d860",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202b88": {
+      "tick": 666276240,
+      "pc": "0x805d8330",
+      "kind": "write",
+      "address": "0x1f202b88",
+      "width": 2,
+      "value": "0xa5a5",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202b8c": {
+      "tick": 666276244,
+      "pc": "0x805d8340",
+      "kind": "write",
+      "address": "0x1f202b8c",
+      "width": 2,
+      "value": "0xa5a5",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202ba0": {
+      "tick": 666276249,
+      "pc": "0x805d8354",
+      "kind": "write",
+      "address": "0x1f202ba0",
+      "width": 2,
+      "value": "0xe5a5",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202ba4": {
+      "tick": 666276253,
+      "pc": "0x805d8364",
+      "kind": "write",
+      "address": "0x1f202ba4",
+      "width": 2,
+      "value": "0xffff",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202b98": {
+      "tick": 666276258,
+      "pc": "0x805d8378",
+      "kind": "write",
+      "address": "0x1f202b98",
+      "width": 2,
+      "value": "0xa5a5",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    "0x1f202b9c": {
+      "tick": 666276262,
+      "pc": "0x805d8388",
+      "kind": "write",
+      "address": "0x1f202b9c",
+      "width": 2,
+      "value": "0xa5a5",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    }
+  },
+  "events": [
+    {
+      "tick": 666260194,
+      "pc": "0x805d83ec",
+      "kind": "tsp_cmdq_reset",
+      "address": "0x1f202bfc",
+      "width": 2,
+      "value": "0x8d25",
+      "ra": "0x805d83b4",
+      "sp": "0x8072d878",
+      "detail": "original HAL command-queue reset bit11 asserted; pending work discarded by reset, not completed"
+    },
+    {
+      "tick": 666260221,
+      "pc": "0x805d819c",
+      "kind": "tsp_original_firmware_buffer",
+      "address": "0x72db00",
+      "width": 17416,
+      "value": "0x0",
+      "ra": "0x805d5ea8",
+      "sp": "0x8072d890",
+      "detail": "original HAL CPU_SetBase arguments; RAM sha256=69785f9a58c2927ceb9e92cd0fb5d8b39c9978a3c2971a7e9e6fbd9a09df189a; download unit/IRAM mapping and ISA not inferred from this capture"
+    },
+    {
+      "tick": 666275439,
+      "pc": "0x805d82a0",
+      "kind": "tsp_firmware_download_request",
+      "address": "0x72db00",
+      "width": 12288,
+      "value": "0x0",
+      "ra": "0x805d8218",
+      "sp": "0x8072d860",
+      "detail": "original start edge; source[21:6]+high[25:22], NUM[17:2]; bounded guest RAM payload captured for QMEM transfer, no completion fabricated"
+    },
+    {
+      "tick": 666276209,
+      "pc": "0x805d82b4",
+      "kind": "tsp_firmware_download_complete",
+      "address": "0x72db00",
+      "width": 12288,
+      "value": "0x0",
+      "ra": "0x805d8218",
+      "sp": "0x8072d860",
+      "detail": "actual guest RAM bytes installed into internal QMEM; sha256=cb673a6f285c933d063e9ed921bb436bf3a524ac417d8d98bcd42df84221fe1c; transfer latency provisional, auxiliary CPU not emulated"
+    }
+  ],
+  "CPU_SetBase": "805d819c addiu $sp, $sp, -0x30\n805d81a0 sw $s1, 0x20($sp)\n805d81a4 sw $a1, 0x10($sp)\n805d81a8 move $s1, $a0\n805d81ac lui $a1, 0x8065\n805d81b0 lui $a0, 0x8065\n805d81b4 sw $s3, 0x28($sp)\n805d81b8 addiu $a0, $a0, 0x1eb0\n805d81bc addiu $a1, $a1, 0x1f24\n805d81c0 addiu $a2, $zero, 0x6ac\n805d81c4 move $a3, $s1\n805d81c8 lui $s3, 0x806e\n805d81cc sw $ra, 0x2c($sp)\n805d81d0 sw $s2, 0x24($sp)\n805d81d4 jal 0x806021a4\n805d81d8 sw $s0, 0x1c($sp)\n805d81dc lw $a0, 0x6e84($s3)\n805d81e0 srl $v1, $s1, 0x13\n805d81e4 srl $s0, $s1, 6\n805d81e8 ext $v0, $s1, 3, 0x10\n805d81ec lui $s2, 0xf\n805d81f0 and $s2, $s0, $s2\n805d81f4 sh $v0, 0x180($a0)\n805d81f8 andi $s0, $s0, 0xffff\n805d81fc sh $v1, 0x184($a0)\n805d8200 lui $a0, 0x8065\n805d8204 addiu $a0, $a0, 0x1eec\n805d8208 move $a1, $s1\n805d820c move $a3, $s0\n805d8210 jal 0x806021a4\n805d8214 move $a2, $s2\n805d8218 lw $a1, 0x6e84($s3)\n805d821c lui $v0, 0xc00\n805d8220 or $s0, $s0, $v0\n805d8224 srl $v1, $s0, 0x10\n805d8228 andi $s0, $s0, 0xffff\n805d822c sh $s0, 0x1e0($a1)\n805d8230 sh $v1, 0x1e4($a1)\n805d8234 lhu $v0, 0x21c($a1)\n805d8238 lhu $v0, 0x218($a1)\n805d823c andi $v0, $v0, 0xffff\n805d8240 sh $v0, 0x218($a1)\n805d8244 lhu $v1, 0x21c($a1)\n805d8248 lhu $a0, 0x218($a1)\n805d824c lui $v0, 0xfff0\n805d8250 sll $v1, $v1, 0x10\n805d8254 andi $a0, $a0, 0xffff\n805d8258 ori $v0, $v0, 0xffff\n805d825c or $v1, $v1, $a0\n805d8260 and $v1, $v1, $v0\n805d8264 or $v1, $v1, $s2\n805d8268 srl $v1, $v1, 0x10\n805d826c sh $v1, 0x21c($a1)\n805d8270 lhu $v0, 0x1ec($a1)\n805d8274 lhu $v0, 0x1e8($a1)\n805d8278 andi $v0, $v0, 0xfff3\n805d827c sh $v0, 0x1e8($a1)\n805d8280 lhu $v1, 0x1ec($a1)\n805d8284 lhu $v0, 0x1e8($a1)\n805d8288 andi $v1, $v1, 0xffff\n805d828c sh $v1, 0x1ec($a1)\n805d8290 lhu $v0, 0x1ec($a1)\n805d8294 lhu $v0, 0x1e8($a1)\n805d8298 andi $v0, $v0, 0xfffb\n805d829c ori $v0, $v0, 4\n805d82a0 sh $v0, 0x1e8($a1)\n805d82a4 lhu $v1, 0x1ec($a1)\n805d82a8 lhu $v0, 0x1e8($a1)\n805d82ac andi $v1, $v1, 0xffff\n805d82b0 sh $v1, 0x1ec($a1)\n805d82b4 lhu $v0, 0x1ec($a1)\n805d82b8 lhu $v0, 0x1e8($a1)\n805d82bc andi $v0, $v0, 8\n805d82c0 beqz $v0, 0x805d82b4\n805d82c4 nop \n805d82c8 lhu $v0, 0x1ec($a1)\n805d82cc lhu $v0, 0x1e8($a1)\n805d82d0 lw $ra, 0x2c($sp)\n805d82d4 lw $s3, 0x28($sp)\n805d82d8 andi $v0, $v0, 0xfff3\n805d82dc sh $v0, 0x1e8($a1)\n805d82e0 lhu $v1, 0x1ec($a1)\n805d82e4 lhu $v0, 0x1e8($a1)\n805d82e8 lw $s2, 0x24($sp)\n805d82ec andi $v1, $v1, 0xffff\n805d82f0 sh $v1, 0x1ec($a1)\n805d82f4 lhu $v0, 0x194($a1)\n805d82f8 lhu $v0, 0x190($a1)\n805d82fc lw $s1, 0x20($sp)\n805d8300 lw $s0, 0x1c($sp)\n805d8304 andi $v0, $v0, 0xffff\n805d8308 ori $v0, $v0, 0xe000\n805d830c sh $v0, 0x190($a1)\n805d8310 lhu $v0, 0x194($a1)\n805d8314 lhu $v0, 0x190($a1)\n805d8318 ori $v0, $zero, 0xffff\n805d831c sh $v0, 0x194($a1)\n805d8320 lhu $v0, 0x18c($a1)\n805d8324 lhu $v0, 0x188($a1)\n805d8328 addiu $sp, $sp, 0x30\n805d832c andi $v0, $v0, 0xffff\n805d8330 sh $v0, 0x188($a1)\n805d8334 lhu $v1, 0x18c($a1)\n805d8338 lhu $v0, 0x188($a1)\n805d833c andi $v1, $v1, 0xffff\n805d8340 sh $v1, 0x18c($a1)\n805d8344 lhu $v0, 0x1a4($a1)\n805d8348 lhu $v0, 0x1a0($a1)\n805d834c andi $v0, $v0, 0xffff\n805d8350 ori $v0, $v0, 0xe000\n805d8354 sh $v0, 0x1a0($a1)\n805d8358 lhu $v0, 0x1a4($a1)\n805d835c lhu $v0, 0x1a0($a1)\n805d8360 ori $v0, $zero, 0xffff\n805d8364 sh $v0, 0x1a4($a1)\n805d8368 lhu $v0, 0x19c($a1)\n805d836c lhu $v0, 0x198($a1)\n805d8370 andi $v0, $v0, 0xdfff\n805d8374 ori $v0, $v0, 0x2000\n805d8378 sh $v0, 0x198($a1)\n805d837c lhu $v1, 0x19c($a1)\n805d8380 lhu $v0, 0x198($a1)\n805d8384 andi $v1, $v1, 0xffff\n805d8388 sh $v1, 0x19c($a1)\n805d838c jr $ra\n805d8390 nop ",
+  "CPU_enable": "805d6b68 sll $v1, $a0, 3\n805d6b6c sll $a3, $a0, 7\n805d6b70 lui $v0, 0x806e\n805d6b74 lw $t0, 0x6e84($v0)\n805d6b78 subu $a3, $a3, $v1\n805d6b7c addu $a3, $a3, $a0\n805d6b80 sll $a3, $a3, 3\n805d6b84 addu $a3, $t0, $a3\n805d6b88 lhu $v1, 0x1ec($a3)\n805d6b8c lhu $v0, 0x1e8($a3)\n805d6b90 addiu $a0, $zero, -0x14\n805d6b94 sll $v1, $v1, 0x10\n805d6b98 andi $v0, $v0, 0xffff\n805d6b9c or $v1, $v1, $v0\n805d6ba0 and $v1, $v1, $a0\n805d6ba4 or $v1, $v1, $a1\n805d6ba8 andi $v1, $v1, 0xffff\n805d6bac sh $v1, 0x1e8($a3)\n805d6bb0 lhu $v0, 0x1ec($a3)\n805d6bb4 lhu $v1, 0x1e8($a3)\n805d6bb8 andi $t1, $a1, 0xff\n805d6bbc sll $v0, $v0, 0x10\n805d6bc0 andi $v1, $v1, 0xffff\n805d6bc4 or $v0, $v0, $v1\n805d6bc8 and $v0, $v0, $a0\n805d6bcc or $v0, $v0, $a1\n805d6bd0 srl $v0, $v0, 0x10\n805d6bd4 sh $v0, 0x1ec($a3)\n805d6bd8 lhu $v0, 0x1fc($t0)\n805d6bdc lhu $v1, 0x1f8($t0)\n805d6be0 andi $a0, $t1, 0x10\n805d6be4 andi $v1, $v1, 0xffff\n805d6be8 sh $v1, 0x1f8($t0)\n805d6bec lhu $v0, 0x1fc($t0)\n805d6bf0 lhu $v1, 0x1f8($t0)\n805d6bf4 andi $v0, $v0, 0xfff7\n805d6bf8 sh $v0, 0x1fc($t0)\n805d6bfc beqz $a0, 0x805d6c64",
+  "Alive": "805d7c30 lui $v0, 0x806e\n805d7c34 lw $a1, 0x6e84($v0)\n805d7c38 addiu $v0, $zero, 0x100\n805d7c3c addiu $sp, $sp, -8\n805d7c40 sh $zero, 0x200($a1)\n805d7c44 move $a0, $zero\n805d7c48 sh $zero, 0x204($a1)\n805d7c4c ori $a2, $zero, 0xffff\n805d7c50 sh $zero, 0x100($a1)\n805d7c54 addiu $a3, $zero, 4\n805d7c58 sh $v0, 0x104($a1)\n805d7c5c lhu $v1, 0x104($a1)\n805d7c60 lhu $v0, 0x100($a1)\n805d7c64 sll $v1, $v1, 0x10\n805d7c68 andi $v0, $v0, 0xffff\n805d7c6c or $v1, $v1, $v0\n805d7c70 beqz $v1, 0x805d7cd4\n805d7c74 nop \n805d7c78 sw $zero, ($sp)\n805d7c7c lw $v0, ($sp)\n805d7c80 sltu $v0, $v0, $a2\n805d7c84 bnez $v0, 0x805d7ca8\n805d7c88 addiu $a0, $a0, 1\n805d7c8c bne $a0, $a3, 0x805d7c5c\n805d7c90 nop \n805d7c94 sh $zero, 0x100($a1)\n805d7c98 move $v0, $zero\n805d7c9c sh $zero, 0x104($a1)\n805d7ca0 jr $ra\n805d7ca4 addiu $sp, $sp, 8",
+  "startup_enable_and_retry": "805d5ea0 jal 0x805d819c\n805d5ea4 move $a1, $s0\n805d5ea8 move $a0, $zero\n805d5eac addiu $a1, $zero, 2\n805d5eb0 jal 0x805d6b68\n805d5eb4 move $a2, $zero\n805d5eb8 addiu $a0, $zero, 1\n805d5ebc move $a1, $zero\n805d5ec0 jal 0x805d78dc\n805d5ec4 move $a2, $zero\n805d5ec8 jal 0x805d8094\n805d5ecc lui $s2, 0x806b\n805d5ed0 move $a0, $zero\n805d5ed4 addiu $a1, $zero, 3\n805d5ed8 jal 0x805d6b68\n805d5edc move $a2, $zero\n805d5ee0 jal 0x805d7a88\n805d5ee4 nop \n805d5ee8 jal 0x805d7af0\n805d5eec addiu $a0, $zero, 0x2100\n805d5ef0 lui $v0, 0x8065\n805d5ef4 lui $v1, 0x8065\n805d5ef8 addiu $s4, $v0, 0x1918\n805d5efc j 0x805d5f30\n805d5f00 addiu $s3, $v1, 0x1cfc\n805d5f04 addiu $a2, $zero, 2\n805d5f08 move $a0, $zero\n805d5f0c jal 0x805d6b68\n805d5f10 move $a1, $zero\n805d5f14 move $a0, $s1\n805d5f18 jal 0x805d819c\n805d5f1c move $a1, $s0\n805d5f20 move $a0, $zero\n805d5f24 addiu $a1, $zero, 3\n805d5f28 jal 0x805d6b68\n805d5f2c move $a2, $zero\n805d5f30 jal 0x805d7c30\n805d5f34 nop \n805d5f38 bnez $v0, 0x805d5f88\n805d5f3c nop \n805d5f40 lw $v0, 0x6d18($s2)\n805d5f44 addiu $v0, $v0, -1\n805d5f48 sltiu $v0, $v0, 2\n805d5f4c beqz $v0, 0x805d5f04\n805d5f50 nop \n805d5f54 jal 0x806021a4\n805d5f58 move $a0, $s4\n805d5f5c jal 0x80602228\n805d5f60 move $a0, $s3\n805d5f64 j 0x805d5f08\n805d5f68 addiu $a2, $zero, 2\n805d5f6c jal 0x806021a4\n805d5f70 addiu $a0, $a0, 0x1918\n805d5f74 lui $a0, 0x8065\n805d5f78 jal 0x80602228\n805d5f7c addiu $a0, $a0, 0x1cb4\n805d5f80 j 0x805d5b78\n805d5f84 nop \n805d5f88 jal 0x805d7a88\n805d5f8c lui $s0, 0x806e\n805d5f90 jal 0x805d7af0\n805d5f94 addiu $a0, $zero, 0x2100\n805d5f98 jal 0x805d69f0\n805d5f9c addiu $a0, $zero, 0xa\n805d5fa0 jal 0x805d8a90\n805d5fa4 nop ",
+  "CPU_SetBase_callers": [
+    "0x805d5ea0",
+    "0x805d5f18"
+  ],
+  "Alive_callers": [
+    "0x805d5ac8",
+    "0x805d5b80",
+    "0x805d5f30"
+  ],
+  "no_optional_exit_in_observed_retry_region": true,
+  "post_enable_code_analyzed_statically_not_executed": true,
+  "unprogrammed_mapping_and_endian_bits_remain_invalid": true
+}

@@ -27,6 +27,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateSemaphore=o.candidateSemaphore;
   riu_.candidateGe=o.candidateGe;
   riu_.candidateGopPalette=o.candidateGopPalette;
+  riu_.candidateTsp=o.candidateTsp;
+  if(!o.tspFirmwareDump.empty() && !o.candidateTsp)
+    throw std::runtime_error("TSP firmware dump requires candidate TSP instrumentation");
+  if(o.exploratoryTspResetLow) {
+    if(!o.candidateTsp || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("TSP reset-polarity experiment requires candidate TSP and guarded execution");
+    riu_.configureExploratoryTspResetLow();
+  }
   if(o.exploratoryGeReset) {
     if(!o.candidateGe || !o.symbolicInit || !o.deferDiagnosticReads)
       throw std::runtime_error("GE reset experiment requires candidate GE and guarded execution");
@@ -104,6 +112,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     for (size_t i = 0; i < n; ++i)
       b[i] = flash_.read(a + uint32_t(i));
     return b;
+  };
+  riu_.dramRead=[this](uint32_t address,size_t size) {
+    if(!options_.candidateMiu || size==0 || size>0x4000 || uint64_t(address)+size>dramBacking_.size())
+      throw std::runtime_error("TSP DMA guest DRAM source outside mapped bounds");
+    for(size_t i=0;i<size;++i)
+      if(preservedBits_.memoryUnknown(address+uint32_t(i)) || unknownObservations_.bytes().contains(address+uint32_t(i)))
+        throw std::runtime_error("TSP DMA source contains invalid hardware-origin bits");
+    std::vector<uint8_t> bytes(size);cpu_.read(address,bytes.data(),size);return bytes;
   };
   riu_.event = [this](auto &k, auto a, auto n, auto v, auto &d) { event(k, a, n, v, d); };
   if (!o.trace.empty()) {
@@ -221,6 +237,23 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
     ++m.gopInitializerEntries_;
     m.event("gop_initializer", uint32_t(a), 0, 0,
             "stock MDrv_GOP_Init entry identified by original diagnostic string and disassembly");
+  }
+  if(m.options_.candidateTsp && a==0x805d819c) {
+    auto source=m.cpu_.reg(UC_MIPS_REG_4),size=m.cpu_.reg(UC_MIPS_REG_5);
+    auto physical=PreservedBits::backingAddress(source);
+    bool valid=!m.preservedBits_.mask(4) && !m.preservedBits_.mask(5) && size>0 && size<=0x200000 &&
+      uint64_t(physical)+size<=m.dramBacking_.size();
+    for(unsigned i=0;valid && i<size;++i)
+      if(m.preservedBits_.memoryUnknown(physical+i) || m.unknownObservations_.bytes().contains(physical+i))valid=false;
+    if(valid) {
+      std::vector<uint8_t> image(size);m.cpu_.read(physical,image.data(),size);
+      m.event("tsp_original_firmware_buffer",source,size,0,"original HAL CPU_SetBase arguments; RAM sha256="+sha256(image)+"; download unit/IRAM mapping and ISA not inferred from this capture");
+      if(!m.options_.tspFirmwareDump.empty()) {
+        std::ofstream out(m.options_.tspFirmwareDump,std::ios::binary);
+        out.write(reinterpret_cast<const char*>(image.data()),image.size());
+        if(!out)throw std::runtime_error("cannot write private TSP firmware buffer dump");
+      }
+    } else m.event("tsp_original_firmware_buffer",source,size,0,"unverified/invalid source arguments; no host firmware bytes read or output");
   }
   if(a==0x805f8300) {
     ++m.scalerInitializerEntries_;
@@ -479,6 +512,31 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       }
     }
     auto geCaller=m.cpu_.reg(UC_MIPS_REG_31);
+    if(m.options_.candidateTsp && m.options_.symbolicInit && m.options_.deferDiagnosticReads &&
+       pc>=0x805d671c && pc<0x805d8fbc && a>=0x1f202a00 && a<0x1f202e00 && n==2) {
+      // This extends invalid-observation tracking across the verified original
+      // TSP HAL, not hardware semantics. The entire loaded code region must
+      // still match the immutable main stream. Every unknown branch/address/
+      // foreign-device bit use is rejected by PreservedBits independently.
+      std::vector<uint8_t> original(0x28a0);uint32_t instruction=0;
+      m.cpu_.read(0x005d671c,original.data(),original.size());
+      m.cpu_.read(pc&0x1fffffff,&instruction,4);
+      if(instruction>>26==37 && sha256(original)=="2dd76c78083be436df9036c3acbfba69ac3eaaca53c2292a85dd8c4e04d50ca3") {
+        m.preservedBits_.seed((instruction>>16)&31,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_tsp_hal_observation",a,n,0,"INVALID observation in SHA-verified original HAL; preserved bits may only restore to same origin; no unknown status or hardware read side effect validated");
+      }
+    }
+    if(m.options_.candidateTsp && m.options_.symbolicInit && m.options_.deferDiagnosticReads &&
+       pc==0x805d7b3c && a==0x1f202af8 && n==2) {
+      constexpr uint32_t count[]={0x3c02806e,0x8c436e84,0x946200fc,0x946300f8,0x03e00008,0x3042001f};
+      uint32_t actual[6]{};m.cpu_.read(0x005d7b30,actual,sizeof(actual));
+      if(std::equal(std::begin(count),std::end(count),std::begin(actual))) {
+        m.preservedBits_.seed(3,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_tsp_count_dummy",a,n,0,"INVALID unused paired low read; occupancy comes only from modeled high count bits");
+      }
+    }
     if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==2 &&
        pc>=0x805d6b68 && pc<0x805d6d1c && a>=0x1f202a00 && a<0x1f202e00) {
       // Stock filter-route configuration retains unspecified fields from the
@@ -1020,6 +1078,22 @@ std::string Msd309Machine::summary() const {
   s << ",\n  \"candidate_gop_palette\": " << (options_.candidateGopPalette?"true":"false")
     << ",\n  \"gop_palette_commits\": " << riu_.paletteCommits()
     << ",\n  \"gop_palette_defined_entries\": [" << riu_.paletteDefined(0) << ',' << riu_.paletteDefined(1) << ']';
+  s << ",\n  \"candidate_tsp\": " << (options_.candidateTsp?"true":"false")
+    << ",\n  \"exploratory_tsp_reset_low\": " << (options_.exploratoryTspResetLow?"true":"false")
+    << ",\n  \"tsp_queue_known\": " << (riu_.tspQueueKnown()?"true":"false")
+    << ",\n  \"tsp_reset_held\": " << (riu_.tspResetHeld()?"true":"false")
+    << ",\n  \"tsp_reset_assertions\": " << riu_.tspResetCount()
+    << ",\n  \"tsp_reset_releases\": " << riu_.tspResetReleases()
+    << ",\n  \"tsp_filein_submissions\": " << riu_.tspSubmissions()
+    << ",\n  \"tsp_indirect_reads\": " << riu_.tspIndirectReads()
+    << ",\n  \"tsp_indirect_writes\": " << riu_.tspIndirectWrites()
+    << ",\n  \"tsp_firmware_download_requests\": " << riu_.tspDownloadRequests()
+    << ",\n  \"tsp_firmware_download_pending\": " << (riu_.tspDownloadPending()?"true":"false")
+    << ",\n  \"tsp_firmware_download_completions\": " << riu_.tspDownloadCompletions()
+    << ",\n  \"tsp_firmware_download_bytes\": " << riu_.tspDownloadBytes()
+    << ",\n  \"tsp_firmware_download_source\": \"" << hex(riu_.tspDownloadSource()) << "\""
+    << ",\n  \"tsp_queue_count\": ";
+  if(riu_.tspQueueKnown())s<<riu_.tspQueueCount();else s<<"null";
   if(auto bank=riu_.scBank()) s << ",\n  \"current_sc_bank\": " << *bank;
   else s << ",\n  \"current_sc_bank\": null";
   if(auto bank=riu_.combBank())s << ",\n  \"current_comb_bank\": " << *bank;

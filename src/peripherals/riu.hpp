@@ -14,6 +14,7 @@
 #include "video/scaler_timing.hpp"
 #include "video/ge_queue.hpp"
 #include "video/gop_palette.hpp"
+#include "peripherals/tsp.hpp"
 namespace manta {
 struct RiuByte {
   uint8_t value = 0xa5, known = 0;
@@ -36,6 +37,13 @@ class Riu {
   ScalerTiming scaler_;
   GeQueue ge_;
   GopPalette palette_;
+  TspQueue tsp_;
+  std::optional<uint32_t> tspReadTarget_;
+  uint64_t tspIndirectReads_=0,tspIndirectWrites_=0;
+  TspDownload tspDownload_;
+  uint32_t tspDownloadSource_=0;
+  uint32_t tspSelectedTarget() const;
+  static uint32_t tspPayloadKey(uint32_t target,unsigned lane);
   std::optional<bool> lastOutputSync_;
   uint64_t outputSyncReads_=0, outputSyncTransitions_=0;
   struct CombRestore { uint32_t address; uint8_t bank, low; uint32_t unknown; bool written=false; };
@@ -56,6 +64,22 @@ class Riu {
   void updateOutputTiming(uint64_t tick);
 
 public:
+  bool candidateTsp=false;
+  void configureExploratoryTspResetLow() {tsp_.enableExploratoryResetLow();}
+  bool tspQueueKnown() const {return tsp_.known();}
+  bool tspResetHeld() const {return tsp_.held();}
+  unsigned tspQueueCount() const {return tsp_.count();}
+  uint64_t tspResetCount() const {return tsp_.resets();}
+  uint64_t tspResetReleases() const {return tsp_.releases();}
+  uint64_t tspSubmissions() const {return tsp_.submissions();}
+  uint64_t tspIndirectReads() const {return tspIndirectReads_;}
+  uint64_t tspIndirectWrites() const {return tspIndirectWrites_;}
+  uint64_t tspDownloadRequests() const {return tspDownload_.requests();}
+  bool tspDownloadPending() const {return tspDownload_.pending();}
+  uint64_t tspDownloadCompletions() const {return tspDownload_.completions();}
+  size_t tspDownloadBytes() const {return tspDownload_.bytes();}
+  uint32_t tspDownloadSource() const {return tspDownloadSource_;}
+  uint8_t tspQmemByte(size_t offset) const {return tspDownload_.byte(offset);}
   bool candidateGopPalette=false;
   uint64_t paletteCommits() const { return palette_.commits(); }
   unsigned paletteDefined(unsigned plane) const { return palette_.defined(plane); }
@@ -161,7 +185,7 @@ public:
   void prepareMaskedRead(uint32_t a, uint32_t consumed) { consumedRead_[a] = consumed; }
   void prepareOpaqueRead(uint32_t a) { opaqueRead_=a; }
   uint32_t knownBits(uint32_t a, unsigned size) const;
-  uint32_t controlByteKey(uint32_t a) const { return storageKey(a); }
+  uint32_t controlByteKey(uint32_t a) const;
   bool symbolicInit = false;
   bool candidateBdma = false;
   bool gpioI2c = false;
@@ -186,6 +210,7 @@ public:
   std::function<void(const std::string &, uint32_t, unsigned, uint32_t, const std::string &)> event;
   std::function<std::vector<uint8_t>(uint32_t, size_t)> flashRead;
   std::function<bool(uint32_t, size_t, uint16_t)> dramTest;
+  std::function<std::vector<uint8_t>(uint32_t,size_t)> dramRead;
   uint32_t read(uint32_t a, unsigned size, uint32_t pc, uint32_t mask, uint64_t tick);
   void write(uint32_t a, unsigned size, uint32_t value, uint32_t pc, uint32_t mask, uint64_t tick);
   static uint32_t crcMsb(const std::vector<uint8_t> &data, uint32_t polynomial, uint32_t seed);

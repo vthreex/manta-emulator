@@ -60,6 +60,10 @@ with tempfile.TemporaryDirectory(prefix='manta-comb-replay-') as tmp:
  extra={'candidate_ge':False,'exploratory_ge_reset':False,'ge_parameter_submissions':0,
         'ge_parameter_transfers':0,'ge_parameter_retirements':0,
         'candidate_gop_palette':False,'gop_palette_commits':0,'gop_palette_defined_entries':[0,0]}
+ extra.update(candidate_tsp=False,exploratory_tsp_reset_low=False,tsp_queue_known=False,
+   tsp_reset_held=True,tsp_reset_assertions=0,tsp_reset_releases=0,tsp_filein_submissions=0,tsp_queue_count=None,
+   tsp_indirect_reads=0,tsp_indirect_writes=0,tsp_firmware_download_requests=0,tsp_firmware_download_pending=False,
+   tsp_firmware_download_completions=0,tsp_firmware_download_bytes=0,tsp_firmware_download_source='0x0')
  assert set(replay)-set(ref)<=set(extra),'unexpected golden-summary schema change'
  assert all(replay[k]==extra[k] for k in set(replay)-set(ref))
  assert {k:replay[k] for k in ref}==ref,'original boot/IRQ/MMIO sequence must replay identically'
