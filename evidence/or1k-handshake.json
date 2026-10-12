@@ -1,0 +1,28 @@
+{
+  "MIPS_success_PC": "0x805d5f88",
+  "original_auxiliary_register_writes": [
+    {
+      "tick": 666736114,
+      "pc": "0x805d7c5c",
+      "kind": "or1k_register_write",
+      "address": "0x21033c",
+      "width": 4,
+      "value": "0x1000000",
+      "ra": "0x805d5f38",
+      "sp": "0x8072d888",
+      "detail": "original auxiliary instruction writes shared TSP register backing; validity preserved"
+    },
+    {
+      "tick": 666736114,
+      "pc": "0x805d7c5c",
+      "kind": "or1k_register_write",
+      "address": "0x210330",
+      "width": 4,
+      "value": "0x0",
+      "ra": "0x805d5f38",
+      "sp": "0x8072d888",
+      "detail": "original auxiliary instruction writes shared TSP register backing; validity preserved"
+    }
+  ],
+  "host_ready_word_injected": false
+}

@@ -51,7 +51,10 @@ with tempfile.TemporaryDirectory(prefix='manta-tsp-replay-') as directory:
  r=subprocess.run([a.emulator]+flags+['--replay-trace',a.reference_trace,'--summary',str(out),
     '--tsp-firmware-dump',str(image)],capture_output=True,text=True)
  assert r.returncode==2,(r.returncode,r.stderr)
- replay=json.loads(out.read_text());assert replay==ref,'full original CPU/IRQ/MMIO execution must replay identically'
+ replay=json.loads(out.read_text())
+ extra=dict(exploratory_tsp_cpu=False,or1k_instructions=0,or1k_pc='0x0',or1k_data_reads=0,or1k_data_writes=0,or1k_running=False)
+ assert set(replay)-set(ref)<=set(extra) and all(replay[k]==extra[k] for k in set(replay)-set(ref))
+ assert {k:replay[k] for k in ref}==ref,'full original CPU/IRQ/MMIO execution must replay identically'
  assert image.stat().st_size==17416 and hashlib.sha256(image.read_bytes()).hexdigest()=='69785f9a58c2927ceb9e92cd0fb5d8b39c9978a3c2971a7e9e6fbd9a09df189a'
  assert '@@@ Hello T4' in r.stdout and 'First GOP driver instance, flush GWIN HW' in r.stdout
 assert hashlib.sha256(Path(a.firmware).read_bytes()).hexdigest()==stock

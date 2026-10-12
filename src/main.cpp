@@ -97,6 +97,15 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--candidate-semaphore") o.candidateSemaphore=true;
       else if(a=="--candidate-ge") o.candidateGe=true;
       else if(a=="--candidate-tsp") o.candidateTsp=true;
+      else if(a=="--exploratory-tsp-cpu") o.exploratoryTspCpu=true;
+      else if(a=="--defer-platform-identity") o.deferPlatformIdentity=true;
+      else if(a=="--exploratory-pm-ac-on") o.exploratoryPmAcOn=true;
+      else if(a=="--exploratory-sar-fullscale") o.exploratorySarFullscale=true;
+      else if(a=="--exploratory-ir-dma-reset") o.exploratoryIrDmaReset=true;
+      else if(a=="--exploratory-gop-reset-windows") o.exploratoryGopResetWindows=true;
+      else if(a=="--or1k-trace-first-visits") o.orFirstVisits=true;
+      else if(a=="--max-or1k-instructions") {o.orBudget=std::stoull(value(i));if(!o.orBudget)throw std::runtime_error("OR instruction budget must be positive");}
+      else if(a=="--or1k-dispatch-divider") {o.orDivider=std::stoull(value(i));if(!o.orDivider || o.orDivider>1024)throw std::runtime_error("OR dispatch divider must be 1..1024");}
       else if(a=="--exploratory-tsp-reset-low") o.exploratoryTspResetLow=true;
       else if(a=="--candidate-gop-palette") o.candidateGopPalette=true;
       else if(a=="--exploratory-ge-reset") o.exploratoryGeReset=true;
@@ -156,6 +165,15 @@ static int appMain(const std::vector<std::string> &args) {
                "--candidate-semaphore: stateful resource-ID acquire/release; reset owners stay unknown\n"
                "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
                "--candidate-tsp: queue count/full/empty derived from reset and actual pending descriptors; unsupported TS DMA never completes\n"
+               "--exploratory-tsp-cpu: actual ORBIS32 execution with explicit hypothetical reset mapping/PC and 1:1 scheduling\n"
+               "--defer-platform-identity: SHA-verified original cache stores keep unknown 0198/019C observations invalid; first consumer stops\n"
+               "--exploratory-pm-ac-on: external PM boundary models documented ACON cause ff only; no PM51 readiness or input events supplied\n"
+               "--exploratory-sar-fullscale: 3300mV inputs/reference for SAR0/1; original power/free-run controls and period trigger conversion, board wiring unverified\n"
+               "--exploratory-ir-dma-reset: original descriptor command commits an empty IR capture ring; 82h reset/index coupling unverified, no keys supplied\n"
+               "--exploratory-gop-reset-windows: original top-bank reset pulse clears GWIN enable bits only; exact reset scope unverified\n"
+               "--or1k-trace-first-visits: trace each original auxiliary PC once; every fetch still compared with immutable uploaded code and counted\n"
+               "--max-or1k-instructions N: diagnostic auxiliary dispatch budget (default 10000000)\n"
+               "--or1k-dispatch-divider N: EXPLORATORY MIPS-dispatches per auxiliary instruction (default 1); physical ratio unmeasured\n"
                "--exploratory-tsp-reset-low: HYPOTHETICAL engine control bit1 active-low reset coupling; no initial count assigned\n"
                "--candidate-gop-palette: guest color/index and original write-pulse palette uploads; no invented reset colors\n"
                "--exploratory-ge-reset: HYPOTHETICAL disabled engine/virtual queue, initially empty 16-entry stages with provisional clocks/latency\n"

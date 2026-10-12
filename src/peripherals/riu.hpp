@@ -15,6 +15,11 @@
 #include "video/ge_queue.hpp"
 #include "video/gop_palette.hpp"
 #include "peripherals/tsp.hpp"
+#include "cpu/openrisc.hpp"
+#include "peripherals/pm_boot.hpp"
+#include "peripherals/sar.hpp"
+#include "peripherals/ir_dma.hpp"
+#include <set>
 namespace manta {
 struct RiuByte {
   uint8_t value = 0xa5, known = 0;
@@ -42,6 +47,22 @@ class Riu {
   uint64_t tspIndirectReads_=0,tspIndirectWrites_=0;
   TspDownload tspDownload_;
   uint32_t tspDownloadSource_=0;
+  OpenRisc tspCpu_;
+  bool exploratoryTspCpu_=false;
+  PmBootReason pmBoot_;
+  SarAdc sar_;bool exploratorySarFullscale_=false;
+  IrDma irDma_;bool exploratoryIrDmaReset_=false;
+  bool exploratoryGopResetWindows_=false;
+  std::array<bool,2> gopResetHeld_{};
+  uint64_t gopResetPulses_=0;
+  bool orFirstVisits_=false;
+  uint64_t orBudget_=10000000,orOriginalWords_=0,orModifiedWords_=0;
+  uint64_t orDivider_=1;
+  std::set<uint32_t> orVisited_;
+  uint64_t tspCpuTick_=0,tspCpuReads_=0,tspCpuWrites_=0;
+  void advanceTsp(uint64_t tick);
+  OrWord tspCpuRead(uint32_t address,unsigned width,bool fetch);
+  void tspCpuWrite(uint32_t address,unsigned width,OrWord value);
   uint32_t tspSelectedTarget() const;
   static uint32_t tspPayloadKey(uint32_t target,unsigned lane);
   std::optional<bool> lastOutputSync_;
@@ -65,6 +86,28 @@ class Riu {
 
 public:
   bool candidateTsp=false;
+  void configureExploratoryTspCpu();
+  void configureExploratoryPmAcOn(){pmBoot_.acApplied();}
+  void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}
+  void configureExploratoryIrDmaReset(){exploratoryIrDmaReset_=true;}
+  uint64_t irDmaStarts()const{return irDma_.starts();}
+  uint64_t irDmaCaptures()const{return irDma_.captures();}
+  std::optional<unsigned> irDmaProducer()const{return irDma_.producer();}
+  uint32_t irDmaAddress()const{return irDma_.address();}
+  unsigned irDmaCapacity()const{return irDma_.capacity();}
+  void configureExploratoryGopResetWindows(){exploratoryGopResetWindows_=true;}
+  uint64_t gopResetPulses()const{return gopResetPulses_;}
+  void configureOrTraceBudget(bool first,uint64_t budget,uint64_t divider){orFirstVisits_=first;orBudget_=budget;orDivider_=divider;}
+  uint64_t orOriginalWords()const{return orOriginalWords_;}
+  uint64_t orModifiedWords()const{return orModifiedWords_;}
+  size_t orVisited()const{return orVisited_.size();}
+  uint64_t sarConversions()const{return sar_.conversions();}
+  std::string tspCoreStateSha()const;
+  uint64_t tspCpuInstructions()const{return tspCpu_.instructions();}
+  uint32_t tspCpuPc()const{return tspCpu_.pc();}
+  uint64_t tspCpuReads()const{return tspCpuReads_;}
+  uint64_t tspCpuWrites()const{return tspCpuWrites_;}
+  bool tspCpuRunning()const{return tspCpu_.running();}
   void configureExploratoryTspResetLow() {tsp_.enableExploratoryResetLow();}
   bool tspQueueKnown() const {return tsp_.known();}
   bool tspResetHeld() const {return tsp_.held();}
@@ -211,6 +254,7 @@ public:
   std::function<std::vector<uint8_t>(uint32_t, size_t)> flashRead;
   std::function<bool(uint32_t, size_t, uint16_t)> dramTest;
   std::function<std::vector<uint8_t>(uint32_t,size_t)> dramRead;
+  std::function<bool()> executionStopped;
   uint32_t read(uint32_t a, unsigned size, uint32_t pc, uint32_t mask, uint64_t tick);
   void write(uint32_t a, unsigned size, uint32_t value, uint32_t pc, uint32_t mask, uint64_t tick);
   static uint32_t crcMsb(const std::vector<uint8_t> &data, uint32_t polynomial, uint32_t seed);

@@ -92,5 +92,17 @@ public:
     if(offset>=qmem_.size() || !valid_[offset])throw std::runtime_error("TSP QMEM byte not initialized by a completed transfer");
     return qmem_[offset];
   }
+  void byte(size_t offset,uint8_t value) {
+    if(offset>=qmem_.size())throw std::runtime_error("TSP QMEM store outside bounds");
+    qmem_[offset]=value;valid_[offset]=true;
+  }
+  std::optional<uint8_t> originalByte(size_t offset)const{
+    if(offset>=payload_.size())return {};
+    return payload_[offset];
+  }
+  std::vector<uint8_t> stateBytes()const{
+    std::vector<uint8_t> out;out.reserve(qmem_.size()*2);
+    for(size_t i=0;i<qmem_.size();++i){out.push_back(valid_[i]);out.push_back(valid_[i]?qmem_[i]:0);}return out;
+  }
 };
 }

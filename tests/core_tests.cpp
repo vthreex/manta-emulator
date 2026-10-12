@@ -66,6 +66,95 @@ void cpuTests() {
   e.read(0x600, b, 4);
   require(b[0] == 1, "JR delay slot store occurred");
 }
+void openRiscTests(){
+  manta::OpenRisc cpu;std::array<uint8_t,0x1000> memory{};
+  cpu.read=[&](uint32_t a,unsigned n,bool){
+    if(a+n>memory.size())throw std::runtime_error("test bus bounds");
+    uint32_t v=0;for(unsigned i=0;i<n;++i)v|=uint32_t(memory[a+i])<<(i*8);
+    return manta::OrWord{v,0xffffffffu,{}};
+  };
+  cpu.write=[&](uint32_t a,unsigned n,manta::OrWord v){
+    if(a+n>memory.size() || v.known!=0xffffffffu)throw std::runtime_error("test store invalid");
+    for(unsigned i=0;i<n;++i)memory[a+i]=uint8_t(v.value>>(i*8));
+  };
+  auto program=[&](uint32_t pc,std::initializer_list<uint32_t> code){
+    for(auto w:code){for(unsigned i=0;i<4;++i)memory[pc+i]=uint8_t(w>>(i*8));pc+=4;}
+  };
+  cpu.reset(0x100);
+  require(cpu.reg(0).known==0,"OR reset does not invent initial GPR values");
+  program(0x100,{0x18000000,0x9c200007,0x04000004,0x9c400009,0x9c400063,0x15000000,
+    0x9c60000b,0xd4031800});
+  cpu.step();cpu.step();cpu.step();
+  require(cpu.pc()==0x10c && cpu.reg(9).value==0x110,"OR JAL links PC+8 and schedules delay slot");
+  cpu.step();require(cpu.pc()==0x118 && cpu.reg(2).value==9,"OR branch delay slot executes before target");
+  cpu.step();require(cpu.reg(3).value==11,"OR original target executes");
+  // Writable r0 (OpenRISC), signed immediate and carry/overflow.
+  program(0x200,{0x18000000,0x9c00ffff,0x18200000,0xa8210001,0xe0400800});cpu.reset(0x200);
+  for(int i=0;i<5;++i)cpu.step();
+  require(cpu.reg(0).value==0xffffffffu && cpu.reg(2).value==0 && (cpu.sr()&0x400),"OR writable r0 and arithmetic carry");
+  program(0x240,{0x18000000,0x9c200340,0x9c40001f,0x48000800,0x9c600006});
+  program(0x340,{0x15000000});cpu.reset(0x240);for(int i=0;i<5;++i)cpu.step();
+  require(cpu.pc()==0x340 && cpu.reg(9).value==0x254 && cpu.reg(3).value==6,"OR JALR encoding 12h with delay slot");
+  program(0x280,{0x18000000,0x9c200380,0x44000800,0x9c400003});cpu.reset(0x280);for(int i=0;i<4;++i)cpu.step();
+  require(cpu.pc()==0x380 && cpu.reg(9).known==0,"OR JR encoding 11h does not write link register");
+  program(0x300,{0x18000000,0x9c200800,0x18401234,0xa8425678,0xd4011000,0x84610000});
+  cpu.reset(0x300);for(int i=0;i<6;++i)cpu.step();
+  require(memory[0x800]==0x78 && memory[0x803]==0x12 && cpu.reg(3).value==0x12345678,"OR little-endian load/store shared bus");
+  program(0x400,{0x18000000,0x9c200001,0x84410000});cpu.reset(0x400);for(int i=0;i<3;++i)cpu.step();
+  require(cpu.pc()==0x600 && cpu.exceptions()==1,"OR alignment exception vector");
+  program(0x600,{0x24000000});cpu.step();require(cpu.pc()==0x408,"OR RFE restores faulting PC");
+  program(0x440,{0x9c210001});cpu.reset(0x440);rejects([&]{cpu.step();});
+  program(0x480,{0xfc000000});cpu.reset(0x480);rejects([&]{cpu.step();});
+  program(0x4c0,{0x18000000,0xb4200000});cpu.reset(0x4c0);cpu.step();rejects([&]{cpu.step();});
+  // Preserve opaque bits only through logic; comparisons must reject them.
+  cpu.read=[&](uint32_t a,unsigned n,bool){
+    if(a==0x900)return manta::OrWord{0xa5a5a5a5,0,a};
+    uint32_t v=0;for(unsigned i=0;i<n;++i)v|=uint32_t(memory.at(a+i))<<(i*8);
+    return manta::OrWord{v,0xffffffffu,{}};
+  };
+  program(0x500,{0x18000000,0x9c200900,0x84410000,0xa8420001,0xbc020000});cpu.reset(0x500);
+  for(int i=0;i<4;++i)cpu.step();
+  require(cpu.reg(2).known==1 && cpu.reg(2).origin==0x900,"OR logic keeps unknown-bit origin and only forced bit becomes known");
+  rejects([&]{cpu.step();});
+  cpu.halt();auto count=cpu.instructions();cpu.step();require(cpu.instructions()==count,"OR halt dispatches no instructions");
+}
+void irDmaTests(){
+  manta::IrDma dma;std::array<uint8_t,96> ram{};std::array<uint8_t,48> record{};
+  record.fill(0x35);auto store=[&](uint32_t a,std::span<const uint8_t> b){
+    require(a>=0x1000 && a+b.size()<=0x1060,"IR capture addresses actual configured ring");
+    std::copy(b.begin(),b.end(),ram.begin()+(a-0x1000));
+  };
+  require(!dma.producer(),"IR producer remains unknown before descriptor/reset experiment");
+  rejects([&]{dma.capture(record,store);});dma.configure(0x1000,2);
+  require(dma.producer()==0 && dma.captures()==0,"IR empty cursor derives from configured capture state, not reads");
+  dma.capture(record,store);require(dma.producer()==1 && ram[0]==0x35 && ram[47]==0x35,"IR captured record causes actual DMA bytes and cursor advance");
+  record.fill(0x62);dma.capture(record,store);
+  require(dma.producer()==0 && ram[48]==0x62 && dma.captures()==2,"IR capture ring wraps after actual second transfer");
+  rejects([&]{dma.capture(std::span<const uint8_t>(record).first(47),store);});
+  rejects([&]{dma.configure(3,2);});rejects([&]{dma.configure(0x10000000,2);});
+  manta::Riu r;r.symbolicInit=true;r.event=[](auto&,auto,auto,auto,auto&){};
+  r.configureExploratoryIrDmaReset();
+  for(auto [a,v]:{std::pair{0x1f206e70u,0u},{0x1f206e71u,0x8eu},{0x1f206e74u,0x70u},
+      {0x1f206e75u,0x68u},{0x1f206e78u,1u},{0x1f206e39u,0u}})r.write(a,1,v,0,255,1);
+  require(!r.irDmaProducer(),"IR descriptor staging alone cannot produce a cursor");
+  r.write(0x1f206e3d,1,0x82,0,255,2);
+  require(r.irDmaStarts()==1 && r.irDmaAddress()==0x3847000 && r.irDmaCapacity()==360,
+      "original IR address/length/MIU fields are decoded by actual guest command write");
+  require(r.read(0x1f206e79,1,0,255,3)==0 && r.read(0x1f206e7c,1,0,255,4)==0 && r.irDmaCaptures()==0,
+      "IR cursor is stable with no external records and no fake keys or completions");
+}
+void gopResetTests(){
+  manta::Riu r;r.symbolicInit=true;r.event=[](auto&,auto,auto,auto,auto&){};
+  r.configureExploratoryGopResetWindows();r.configureExploratoryGopBank(0);
+  require((r.gopByte(1,0).known&1)==0,"GWIN enable is not assigned a fabricated power-on state");
+  r.write(0x1f203e00,2,1,0,1,1);
+  for(unsigned w=0;w<4;++w)require((r.gopByte(1,w*0x80).known&1) && !(r.gopByte(1,w*0x80).value&1),"original top-bank reset pulse disables corresponding GWIN under explicit hypothesis");
+  require(r.gopByte(1,0).known==1 && r.gopByte(1,4).known==0 && r.gopByte(4,0).known==0,
+      "reset experiment defines only window-enable fields in its own plane");
+  r.write(0x1f203e00,2,1,0,1,2);require(r.gopResetPulses()==1,"held reset does not invent repeated reset edges");
+  r.write(0x1f203e00,2,0,0,1,3);r.write(0x1f203e00,2,1,0,1,4);
+  require(r.gopResetPulses()==2,"new original assert after release creates a new reset pulse");
+}
 void flashTests() {
   std::vector<uint8_t> b(0x800000, 255);
   manta::Flash f(b);
@@ -877,6 +966,14 @@ void tspIndirectTests() {
   select(0x420002);rejects([&]{command(0x21);});
   r.write(0x1f202b24,2,0,0,0xffff,12);r.write(0x1f202b28,2,0x8000,0,0xffff,13);
   rejects([&]{command(0x21);});
+  select(0x420660);r.write(0x1f202b2c,2,0,0,0xffff,14);r.write(0x1f202b30,2,0x100,0,0xffff,15);
+  command(0x23);
+  require(r.read(0x1f202b00,2,0,0xffff,16)==0 && r.read(0x1f202b04,2,0,0xffff,17)==0x100,
+      "OR command mailbox, MIPS direct access and indirect address share one backing");
+  r.write(0x1f202c00,2,0x5678,0,0xffff,18);r.write(0x1f202c04,2,0x1234,0,0xffff,19);
+  select(0x420678);command(0x21);
+  require(r.read(0x1f202b34,2,0,0xffff,20)==0x5678 && r.read(0x1f202b38,2,0,0xffff,21)==0x1234,
+      "response mailbox read through indirect port observes real direct writes, not an independent copy");
 }
 void tspDownloadTests() {
   manta::TspDownload d;std::vector<uint8_t> source(64);
@@ -917,6 +1014,25 @@ int main() {
     require(manta::sha256({}) == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             "SHA empty");
     cpuTests();
+    openRiscTests();
+    irDmaTests();
+    gopResetTests();
+    manta::PmBootReason pm;
+    require(!pm.cause(),"PM cause remains unknown without external AC-on event");
+    pm.acApplied();require(pm.cause()==0xff,"documented PM ACON event is distinct from standby and ready flags");
+    pm.acRemoved();require(!pm.cause(),"external power loss invalidates retained PM cause");
+    manta::SarAdc sar;sar.configure(0x20,0xff,2,0xff,0,0xff,10);sar.advance(18);
+    require(!sar.result(0),"SAR no undefined external input is invented");
+    sar.input(0,0);sar.input(1,3300);sar.configure(0x60,0xff,2,0xff,0,0xff,20);
+    sar.advance(100);require(!sar.result(0),"SAR digital powerdown prevents sampling");
+    sar.configure(0x20,0xff,2,0xff,0,0xff,100);sar.advance(107);
+    require(!sar.result(0),"SAR sample is not ready before conversion time");sar.advance(108);
+    require(sar.result(0)==0 && sar.result(1)==255,"SAR input voltage determines actual converted codes");
+    sar.input(0,1650);sar.advance(109);require(sar.result(0)==0,"changing voltage does not change latched result until next conversion");
+    sar.advance(116);require(sar.result(0)==127,"SAR next sample quantizes midpoint voltage");
+    sar.configure(0x20,0xff,3,0xff,0,0xff,117);require(!sar.result(0),"SAR analog powerdown invalidates output");
+    sar.configure(0x20,0,2,0xff,0,0xff,118);sar.advance(200);require(!sar.result(0),"SAR unknown power controls cannot manufacture output");
+    rejects([&]{sar.input(2,3300);});rejects([&]{sar.input(0,3301);});
     flashTests();
     riuTests();
     gpioTests();

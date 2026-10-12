@@ -28,6 +28,31 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateGe=o.candidateGe;
   riu_.candidateGopPalette=o.candidateGopPalette;
   riu_.candidateTsp=o.candidateTsp;
+  riu_.executionStopped=[this]{return stopped_;};
+  if(o.exploratoryGopResetWindows){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("GOP reset/window coupling experiment requires guarded exploration");
+    riu_.configureExploratoryGopResetWindows();
+  }
+  if(o.exploratoryIrDmaReset){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("IR DMA reset/index fixture requires explicitly guarded exploration");
+    riu_.configureExploratoryIrDmaReset();
+  }
+  riu_.configureOrTraceBudget(o.orFirstVisits,o.orBudget,o.orDivider);
+  if(o.exploratorySarFullscale){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("SAR input/reference fixture requires explicitly guarded exploration");
+    riu_.configureExploratorySarFullscale();
+  }
+  if(o.exploratoryPmAcOn){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("PM external AC-on boundary requires explicitly guarded exploration");
+    riu_.configureExploratoryPmAcOn();
+  }
+  if(o.deferPlatformIdentity && (!o.symbolicInit || !o.deferDiagnosticReads))
+    throw std::runtime_error("Platform identity deferral requires guarded symbolic execution");
+  if(o.exploratoryTspCpu){
+    if(!o.candidateTsp || !o.exploratoryTspResetLow || !o.deferDiagnosticReads)
+      throw std::runtime_error("OpenRISC reset/mapping experiment requires guarded TSP reset experiment");
+    riu_.configureExploratoryTspCpu();
+  }
   if(!o.tspFirmwareDump.empty() && !o.candidateTsp)
     throw std::runtime_error("TSP firmware dump requires candidate TSP instrumentation");
   if(o.exploratoryTspResetLow) {
@@ -194,8 +219,10 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
     if (recentMmio_.size() > 256)
       recentMmio_.pop_front();
   }
-  if (trace_)
+  if (trace_.is_open()){
     trace_ << line << '\n';
+    if(!trace_)stop("trace write failure; execution evidence truncated",a);
+  }
   if (replay_.is_open()) {
     std::string expected;
     if (!std::getline(replay_, expected) || expected != line)
@@ -512,8 +539,21 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       }
     }
     auto geCaller=m.cpu_.reg(UC_MIPS_REG_31);
+    if(m.options_.deferPlatformIdentity && n==4 &&
+       ((pc==0x80500278 && a==0x1f200198) ||
+        ((pc==0x8050027c || pc==0x8050028c) && a==0x1f20019c))) {
+      std::vector<uint8_t> code(0x40);uint32_t instruction=0;
+      m.cpu_.read(0x00500270,code.data(),code.size());m.cpu_.read(pc&0x1fffffff,&instruction,4);
+      if(sha256(code)=="487c66522294e5a40c050da2060c8019822957fcfc988b893afe78f61e041294" && instruction>>26==35){
+        m.preservedBits_.seed((instruction>>16)&31,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_platform_identity",a,n,0,"INVALID original cache observation; no hardware identity or authorization bits supplied; every decision/address/new-device use must stop");
+      }
+    }
     if(m.options_.candidateTsp && m.options_.symbolicInit && m.options_.deferDiagnosticReads &&
-       pc>=0x805d671c && pc<0x805d8fbc && a>=0x1f202a00 && a<0x1f202e00 && n==2) {
+       pc>=0x805d671c && pc<0x805d8fbc && n==2 &&
+       ((a>=0x1f202a00 && a<0x1f202e00) ||
+        (pc>=0x805d8a90 && pc<0x805d8b40 && a==0x1f201614))) {
       // This extends invalid-observation tracking across the verified original
       // TSP HAL, not hardware semantics. The entire loaded code region must
       // still match the immutable main stream. Every unknown branch/address/
@@ -946,11 +986,13 @@ int Msd309Machine::run() {
     std::ofstream f(options_.coverage);
     for (auto pc : coverage_)
       f << hex(pc) << '\n';
+    f.flush();if(!f)throw std::runtime_error("cannot write complete guest PC coverage file");
   }
   auto s = summary();
   if (!options_.summary.empty()) {
     std::ofstream f(options_.summary);
     f << s << '\n';
+    f.flush();if(!f)throw std::runtime_error("cannot write complete execution summary file");
   }
   std::cout << s << "\nUART: " << riu_.uart << '\n';
   return 2; // Research execution is incomplete even when a diagnostic
@@ -1079,6 +1121,12 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"gop_palette_commits\": " << riu_.paletteCommits()
     << ",\n  \"gop_palette_defined_entries\": [" << riu_.paletteDefined(0) << ',' << riu_.paletteDefined(1) << ']';
   s << ",\n  \"candidate_tsp\": " << (options_.candidateTsp?"true":"false")
+    << ",\n  \"exploratory_tsp_cpu\": " << (options_.exploratoryTspCpu?"true":"false")
+    << ",\n  \"or1k_instructions\": " << riu_.tspCpuInstructions()
+    << ",\n  \"or1k_pc\": \"" << hex(riu_.tspCpuPc()) << "\""
+    << ",\n  \"or1k_data_reads\": " << riu_.tspCpuReads()
+    << ",\n  \"or1k_data_writes\": " << riu_.tspCpuWrites()
+    << ",\n  \"or1k_running\": " << (riu_.tspCpuRunning()?"true":"false")
     << ",\n  \"exploratory_tsp_reset_low\": " << (options_.exploratoryTspResetLow?"true":"false")
     << ",\n  \"tsp_queue_known\": " << (riu_.tspQueueKnown()?"true":"false")
     << ",\n  \"tsp_reset_held\": " << (riu_.tspResetHeld()?"true":"false")
@@ -1094,6 +1142,21 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"tsp_firmware_download_source\": \"" << hex(riu_.tspDownloadSource()) << "\""
     << ",\n  \"tsp_queue_count\": ";
   if(riu_.tspQueueKnown())s<<riu_.tspQueueCount();else s<<"null";
+  if(options_.deferPlatformIdentity)s<<",\n  \"deferred_platform_identity_enabled\": true";
+  if(options_.exploratoryPmAcOn)s<<",\n  \"exploratory_pm_ac_on\": true";
+  if(options_.exploratorySarFullscale)s<<",\n  \"exploratory_sar_fullscale\": true,\n  \"sar_conversions\": "<<riu_.sarConversions();
+  if(options_.exploratoryTspCpu)s<<",\n  \"or1k_trace_first_visits\": "<<(options_.orFirstVisits?"true":"false")
+    <<",\n  \"or1k_budget\": "<<options_.orBudget<<",\n  \"or1k_original_word_fetches\": "<<riu_.orOriginalWords()
+    <<",\n  \"or1k_modified_word_fetches\": "<<riu_.orModifiedWords()<<",\n  \"or1k_unique_pcs\": "<<riu_.orVisited()
+    <<",\n  \"or1k_core_QMEM_state_sha256\": \""<<riu_.tspCoreStateSha()<<"\"";
+  if(options_.exploratoryTspCpu)s<<",\n  \"or1k_dispatch_divider\": "<<options_.orDivider;
+  if(options_.exploratoryGopResetWindows)s<<",\n  \"exploratory_gop_reset_windows\": true,\n  \"gop_reset_pulses\": "<<riu_.gopResetPulses();
+  if(options_.exploratoryIrDmaReset){
+    s<<",\n  \"exploratory_ir_dma_reset\": true,\n  \"ir_dma_starts\": "<<riu_.irDmaStarts()
+      <<",\n  \"ir_dma_captures\": "<<riu_.irDmaCaptures()<<",\n  \"ir_dma_base\": \""<<hex(riu_.irDmaAddress())
+      <<"\",\n  \"ir_dma_capacity\": "<<riu_.irDmaCapacity()<<",\n  \"ir_dma_producer\": ";
+    if(auto index=riu_.irDmaProducer())s<<*index;else s<<"null";
+  }
   if(auto bank=riu_.scBank()) s << ",\n  \"current_sc_bank\": " << *bank;
   else s << ",\n  \"current_sc_bank\": null";
   if(auto bank=riu_.combBank())s << ",\n  \"current_comb_bank\": " << *bank;

@@ -1,5 +1,5 @@
 """Identify the real guest-supplied TSP image; never substitutes reference code.
-OpenRISC decoder covers the observed reset prefix only and reports unknown words.
+OpenRISC decoder covers the observed startup/handler subset and reports unknown words.
 GNU or1k opcode definitions: https://gnu.googlesource.com/binutils-gdb/+/master/opcodes/or1k-opc.c
 No auxiliary CPU execution or physical reset address is inferred by this tool.
 """
@@ -13,11 +13,11 @@ def decode(word):
  if op==6 and (word&0x1f0000)==0:return f'l.movhi r{rd},0x{immediate:x}'
  if op in (0x27,0x29,0x2a,0x2b):
   name={0x27:'addi',0x29:'andi',0x2a:'ori',0x2b:'xori'}[op]
-  return f'l.{name} r{rd},r{ra},{signed if op==0x27 else hex(immediate)}'
+  return f'l.{name} r{rd},r{ra},{signed if op in (0x27,0x2b) else hex(immediate)}'
  if op==0x2e and word&0x3c0 in (0,0x40,0x80,0xc0):
   return f'l.{["slli","srli","srai","rori"][(word>>6)&3]} r{rd},r{ra},{word&31}'
  if word==0x15000000:return 'l.nop 0'
- if op in (0x11,0x12):return f'l.{"jalr" if op==0x11 else "jr"} r{rb}'
+ if op in (0x11,0x12):return f'l.{"jr" if op==0x11 else "jalr"} r{rb}'
  if op in (0,1,3,4):
   displacement=word&0x3ffffff
   if displacement&0x2000000:displacement-=0x4000000
@@ -26,6 +26,14 @@ def decode(word):
  if op==0x38:
   fn=word&0x7ff;name={0:'add',2:'sub',3:'and',4:'or',5:'xor',8:'sll',0x48:'srl',0x88:'sra'}.get(fn)
   if name:return f'l.{name} r{rd},r{ra},r{rb}'
+ if op in (0x35,0x36,0x37):
+  value=((word>>10)&0xf800)|(word&0x7ff);value=value if value<32768 else value-65536
+  return f'l.{ {0x35:"sw",0x36:"sb",0x37:"sh"}[op]} {value}(r{ra}),r{rb}'
+ if op in (0x2f,0x39):
+  comparison={0:'eq',1:'ne',2:'gtu',3:'geu',4:'ltu',5:'leu',10:'gts',11:'ges',12:'lts',13:'les'}.get(rd)
+  if comparison:return f'l.sf{comparison}{"i" if op==0x2f else ""} r{ra},{signed if op==0x2f else "r"+str(rb)}'
+ if op==0x2d:return f'l.mfspr r{rd},r{ra},0x{immediate:x}'
+ if op==0x30:return f'l.mtspr r{ra},r{rb},0x{((word>>10)&0xf800)|(word&0x7ff):x}'
  return f'.word 0x{word:08x} ; unsupported by bounded analysis decoder'
 
 def analyze(firmware,buffer,manifest):
@@ -48,6 +56,10 @@ def analyze(firmware,buffer,manifest):
   'isa_evidence':'little-endian OpenRISC: movhi/shift then exact r31..r1 addi-zero initialization, followed by ori/jalr/nop patterns',
   'candidate_reset_prefix_offset':'0x100','physical_reset_PC_not_validated':True,
   'image_locations':locations,'reset_prefix_disassembly':prefix,
+  'static_function_offsets':{'reset_prefix':'0x100','stack_setup':'0x194','stack_top':'0x2700',
+    'startup_trampoline':'0x1f04','initialization':'0x1dbc','main_loop':'0xd94','mailbox_dispatch':'0x1c4'},
+  'original_main_controller_base':'0x210200','original_command_mailbox':'0x210330',
+  'original_response_mailbox':'0x21033c','mailbox_alias_requires_cross_CPU_execution_validation':True,
   'guest_DMA_bytes':12288,'DMA_prefix_sha256':hashlib.sha256(image[:12288]).hexdigest(),
   'eight_final_bytes':image[-8:].hex(),'final_bytes_meaning_unknown':True,
   'auxiliary_execution_demonstrated':False,'original_firmware_or_reference_payload_redistributed':False}

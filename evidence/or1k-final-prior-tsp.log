@@ -1,0 +1,1 @@
+PASS: original TSP reset/count, 336/880 indirect operations, actual 12KiB QMEM transfer, unchanged guest/engine and full deterministic replay; auxiliary CPU and OSD unsupported

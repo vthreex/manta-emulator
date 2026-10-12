@@ -3,9 +3,97 @@
 #include <stdexcept>
 #include "storage/sha256.hpp"
 namespace manta {
+std::string Riu::tspCoreStateSha()const{
+  auto bytes=tspCpu_.stateBytes(),qmem=tspDownload_.stateBytes();bytes.insert(bytes.end(),qmem.begin(),qmem.end());
+  for(unsigned i=0;i<8;++i)bytes.push_back(uint8_t(tspCpuTick_>>(i*8)));
+  return sha256(bytes);
+}
+void Riu::configureExploratoryTspCpu(){
+  exploratoryTspCpu_=true;
+  // Nearby register definitions agree with the original ORed mask bits, but
+  // unprogrammed Titania4 reset fields and reset PC remain explicit fixtures.
+  for(auto address:{0x1f202b88u,0x1f202b8cu,0x1f202b90u,0x1f202b94u,
+       0x1f202b98u,0x1f202b9cu,0x1f202ba0u,0x1f202ba4u})put(address,2,0);
+  bytes_[0x1f202be9]={0x85,0x30}; // Only instruction/data endian bits (LE).
+  tspCpu_.read=[this](uint32_t a,unsigned n,bool f){return tspCpuRead(a,n,f);};
+  tspCpu_.write=[this](uint32_t a,unsigned n,OrWord v){tspCpuWrite(a,n,v);};
+  tspCpu_.trace=[this](uint32_t pc,uint32_t word){
+    bool fresh=orVisited_.insert(pc).second;
+    if(!orFirstVisits_ || fresh)event("or1k_instruction",pc,4,word,orFirstVisits_?
+      "original auxiliary instruction; first visit per PC trace; total execution and immutable-word comparisons counted separately":
+      "original TSP QMEM instruction; deterministic auxiliary dispatch");
+  };
+}
+void Riu::advanceTsp(uint64_t tick){
+  if(!exploratoryTspCpu_ || !tspCpu_.running())return;
+  // One auxiliary dispatch per MIPS dispatch is provisional, not a measured
+  // frequency. Scheduling uses the same monotonically increasing guest tick.
+  while(tick-tspCpuTick_>=orDivider_){
+    if(executionStopped && executionStopped())return;
+    if(tspCpu_.instructions()>=orBudget_)throw std::runtime_error("OpenRISC diagnostic dispatch budget reached; no hardware timeout or successful boot inferred");
+    tspCpuTick_+=orDivider_;tspCpu_.step();
+  }
+}
+OrWord Riu::tspCpuRead(uint32_t a,unsigned n,bool fetch){
+  uint32_t base=fetch?0x1f202b88:0x1f202b98,mask=fetch?0x1f202b90:0x1f202ba0;
+  if(knownBits(base,2)!=0xffff || knownBits(base+4,2)!=0xffff || knownBits(mask,2)!=0xffff || knownBits(mask+4,2)!=0xffff)
+    throw std::runtime_error("OpenRISC QMEM mapping contains unknown bits");
+  auto combine=[&](uint32_t p){return get(p,2)|(get(p+4,2)<<16);};
+  if((a&combine(mask))==combine(base)){
+    auto offset=a&0x3fff;if(offset+n>0x4000)throw std::runtime_error("OpenRISC QMEM boundary crossing");
+    uint32_t value=0;for(unsigned i=0;i<n;++i)value|=uint32_t(tspDownload_.byte(offset+i))<<(i*8);
+    if(fetch){bool original=true;for(unsigned i=0;i<n;++i){auto b=tspDownload_.originalByte(offset+i);if(!b||*b!=uint8_t(value>>(i*8)))original=false;}
+      if(original)++orOriginalWords_;else ++orModifiedWords_;}
+    if(!fetch)++tspCpuReads_;
+    return {value,0xffffffffu,{}};
+  }
+  if(fetch)throw std::runtime_error("OpenRISC instruction fetch outside configured QMEM unsupported");
+  ++tspCpuReads_;
+  // These aliases are corroborated by both original command handlers: MIPS
+  // Alive issues 01000000 at B00; OR main sets global=210200, dispatches +130,
+  // responds at +13c, and clears +130. MIPS reads response from C00.
+  if((a==0x210330 || a==0x21033c) && n==4){
+    uint32_t p=a==0x210330?0x1f202b00:0x1f202c00;
+    OrWord v{get(p,2)|(get(p+4,2)<<16),knownBits(p,2)|(knownBits(p+4,2)<<16),a};
+    event("or1k_register_read",a,n,v.value,"shared TSP register storage; unknown reset bits retain origin");return v;
+  }
+  if(a>=0x210000 && a<0x218000 && n==4 && !(a&3)){
+    OrWord v{0,0,a};
+    for(unsigned i=0;i<4;++i){auto it=bytes_.find(tspPayloadKey(a<<1,i));auto byte=it==bytes_.end()?RiuByte{}:it->second;
+      v.value|=uint32_t(byte.value)<<(i*8);v.known|=uint32_t(byte.known)<<(i*8);}
+    event("or1k_internal_read",a,n,v.value,"internal register aperture shared with MIPS indirect address<<1 transport; undefined reset bits remain invalid");return v;
+  }
+  throw std::runtime_error("OpenRISC data bus address unsupported");
+}
+void Riu::tspCpuWrite(uint32_t a,unsigned n,OrWord v){
+  ++tspCpuWrites_;
+  auto dbase=get(0x1f202b98,2)|(get(0x1f202b9c,2)<<16),dmask=get(0x1f202ba0,2)|(get(0x1f202ba4,2)<<16);
+  uint32_t wanted=n==4?0xffffffffu:(1u<<(n*8))-1;
+  if((a&dmask)==dbase){
+    if((v.known&wanted)!=wanted)throw std::runtime_error("OpenRISC unknown bits stored in QMEM unsupported");
+    for(unsigned i=0;i<n;++i)tspDownload_.byte((a&0x3fff)+i,uint8_t(v.value>>(i*8)));
+    event("or1k_qmem_write",a,n,v.value,"original auxiliary instruction writes the shared downloaded QMEM backing");return;
+  }
+  if((a==0x210330 || a==0x21033c) && n==4){
+    if(v.known!=0xffffffffu && v.origin!=a)throw std::runtime_error("OpenRISC unknown foreign register write");
+    uint32_t p=a==0x210330?0x1f202b00:0x1f202c00;
+    for(unsigned i=0;i<4;++i)bytes_[p+(i>=2?4:0)+(i&1)]={uint8_t(v.value>>(i*8)),uint8_t(v.known>>(i*8))};
+    event("or1k_register_write",a,n,v.value,"original auxiliary instruction writes shared TSP register backing; validity preserved");return;
+  }
+  if(a>=0x210000 && a<0x218000 && n==4 && !(a&3)){
+    if(v.known!=0xffffffffu && v.origin!=a)throw std::runtime_error("OpenRISC unknown foreign internal register write");
+    for(unsigned i=0;i<4;++i)bytes_[tspPayloadKey(a<<1,i)]={uint8_t(v.value>>(i*8)),uint8_t(v.known>>(i*8))};
+    event("or1k_internal_write",a,n,v.value,"original auxiliary write to shared internal register storage; no unknown side-effect completion claimed");return;
+  }
+  throw std::runtime_error("OpenRISC store address unsupported");
+}
 uint32_t Riu::tspPayloadKey(uint32_t target,unsigned lane) {
   if(target<0x00420000 || target>=0x00430000 || (target&7) || lane>=4)
     throw std::runtime_error("TSP indirect target outside corroborated aligned filter-register aperture");
+  if(target==0x420660 || target==0x420678){
+    uint32_t base=target==0x420660?0x1f202b00:0x1f202c00;
+    return base+(lane>=2?4:0)+(lane&1);
+  }
   return 0x83000000u+(target-0x00420000)/2+lane;
 }
 uint32_t Riu::tspSelectedTarget() const {
@@ -94,6 +182,9 @@ uint32_t Riu::storageKey(uint32_t a) const {
   return a;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c) && irDma_.producer())return 255;
+  if(a==0x1f001cdd && n==1 && pmBoot_.cause())return 255;
+  if(exploratorySarFullscale_ && n==1 && (a==0x1f002834 || a==0x1f002835) && sar_.result(a-0x1f002834))return 255;
   if(candidateTsp && a==0x1f202afc && n==2)return tsp_.known()?TspQueue::countStatusMask:0;
   if(candidateGe && ge_.initialized() && a==0x1f20501c && n==2)return GeQueue::statusKnown;
   if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag()?0xffff:0;
@@ -141,6 +232,21 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
   return crc;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  advanceTsp(tick);
+  if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c))if(auto cursor=irDma_.producer()){
+    auto v=(*cursor>>(a==0x1f206e79?0:8))&255;
+    event("exploratory_ir_dma_cursor",a,n,v,"capture-ring producer index after original descriptor command; no external IR records supplied, no key or interrupt fabricated; reset coupling unvalidated");return v;
+  }
+  if(exploratorySarFullscale_){
+    sar_.advance(tick);
+    if(n==1 && (a==0x1f002834 || a==0x1f002835))if(auto v=sar_.result(a-0x1f002834)){
+      event("exploratory_sar_sample",a,n,*v,"free-running conversion from explicit 3300mV/reference fixture, guest digital/analog power controls and period; keypad wiring and latency unvalidated");return *v;
+    }
+  }
+  if(a==0x1f001cdd && n==1 && pmBoot_.cause()){
+    event("exploratory_pm_boot_reason",a,n,*pmBoot_.cause(),"EXPLORATORY external PM boundary with applied AC power: documented ACON enum ff; no PM51 code, ready ACK or wake key fabricated");
+    return *pmBoot_.cause();
+  }
   if(candidateTsp && tspDownload_.advance(tick))
     event("tsp_firmware_download_complete",tspDownloadSource_,unsigned(tspDownload_.bytes()),0,
         "actual guest RAM bytes installed into internal QMEM; sha256="+sha256(tspDownload_.transferred())+"; transfer latency provisional, auxiliary CPU not emulated");
@@ -323,6 +429,9 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  advanceTsp(tick);
+  if(a<=0x1f001cdd && uint64_t(a)+n>0x1f001cdd && pmBoot_.cause())
+    throw std::runtime_error("PM PowerOnMode writer unsupported under external AC-on boundary; mode not silently changed or acknowledged");
   if (n != 1 && n != 2 && n != 4)
     throw std::runtime_error("Unsupported RIU access width");
   auto previousTspControl=candidateTsp && a==0x1f202be8?get(a,n):0;
@@ -383,6 +492,21 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(exploratorySarFullscale_ && (a==0x1f002800 || a==0x1f002801 || a==0x1f002804)){
+    sar_.configure(uint8_t(get(0x1f002800,1)),uint8_t(knownBits(0x1f002800,1)),
+      uint8_t(get(0x1f002801,1)),uint8_t(knownBits(0x1f002801,1)),
+      uint8_t(get(0x1f002804,1)),uint8_t(knownBits(0x1f002804,1)),tick);
+  }
+  if(exploratoryIrDmaReset_ && a==0x1f206e3d && n==1 && knownBits(a,1)==255 && v==0x82){
+    for(auto field:{0x1f206e70u,0x1f206e71u,0x1f206e74u,0x1f206e75u,0x1f206e78u})
+      if(knownBits(field,1)!=255)throw std::runtime_error("IR DMA descriptor contains unknown bits");
+    if(!(knownBits(0x1f206e39,1)&1))throw std::runtime_error("IR DMA MIU selection unknown");
+    uint32_t address=(get(0x1f206e70,1)|(get(0x1f206e71,1)<<8)|(get(0x1f206e74,1)<<16))<<3;
+    address+=(get(0x1f206e39,1)&1)?0x08000000:0;
+    unsigned capacity=get(0x1f206e75,1)|(get(0x1f206e78,1)<<8);
+    irDma_.configure(address,capacity);
+    event("exploratory_ir_dma_configure",address,48,capacity,"original buffer fields committed; HYPOTHETICAL command 82h starts/reset-empty capture ring; no captured pulses or keys invented");
+  }
   if(candidateTsp && n==2) {
     if(a==0x1f202be8 && (knownBits(a,2)&4) && (v&4) &&
        (previousTspKnown&4) && !(previousTspControl&4)) {
@@ -399,7 +523,15 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
     if(a==0x1f202be8 && (knownBits(a,2)&1) && (v&1) &&
        (previousTspKnown&1) && !(previousTspControl&1))
-      throw std::runtime_error("TSP OpenRISC auxiliary CPU execution/address mapping unsupported; no alive/firmware response fabricated");
+      {
+        if(!exploratoryTspCpu_)throw std::runtime_error("TSP OpenRISC auxiliary CPU execution/address mapping unsupported; no alive/firmware response fabricated");
+        if(!tspDownload_.done() || (knownBits(a,2)&0x3002)!=0x3002 || (v&0x3000) || !(v&2))
+          throw std::runtime_error("OpenRISC enable before download/reset/endianness configuration");
+        tspCpu_.reset(0x100);tspCpuTick_=tick;
+        event("exploratory_or1k_enable",a,n,v,"HYPOTHETICAL reset PC 100, SR 8001, zero unprogrammed QMEM fields, little-endian buses, configured auxiliary dispatch divider; no alive response supplied");
+      }
+    if(exploratoryTspCpu_ && a==0x1f202be8 &&
+       (((knownBits(a,2)&1)&&!(v&1)) || ((knownBits(a,2)&2)&&!(v&2))))tspCpu_.halt();
     if(a==0x1f202b20 && (knownBits(a,2)&0xff)==0xff && (v&1)) {
       auto command=v&0xff;
       if(command!=0x21 && command!=0x23)
@@ -444,6 +576,19 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       event("blocked_write",a,n,v,stopReason);return;
     }
     event("ge_queue_submit",a,n,v,"guest parameter register submission; two experimental timed stages; no raster operation retired");
+  }
+  if(exploratoryGopResetWindows_ && a==0x1f203e00 && n==2 &&
+      (gopBank()==0 || gopBank()==3) && (knownBits(a,n)&1)){
+    unsigned plane=gopBank()/3;
+    if(v&1){
+      if(!gopResetHeld_[plane]){
+        ++gopResetPulses_;auto bank=plane?4u:1u;auto windows=plane?2u:4u;
+        for(unsigned w=0;w<windows;++w){auto &b=bytes_[0x80000000u+(bank<<10)+w*0x80];
+          b.value&=0xfe;b.known|=1;}
+        event("exploratory_gop_reset_windows",gopBank(),2,v,"HYPOTHETICAL original top-bank bit0 reset pulse disables corresponding GWIN enable bits only; format/address/IRQ/other reset fields remain unknown");
+      }
+      gopResetHeld_[plane]=true;
+    }else gopResetHeld_[plane]=false;
   }
   if(candidateGopPalette && a==0x1f203e14 && n==2 && (gopBank()==0 || gopBank()==3)) {
     auto color=get(0x1f203e0c,2)|(get(0x1f203e10,2)<<16);

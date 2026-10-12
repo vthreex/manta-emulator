@@ -1,0 +1,31 @@
+{
+  "guest_PC": "0x804f0c48",
+  "guest_address": "0xbf204b15",
+  "width": 1,
+  "original_routine_SHA256": "139a6c1ee7a0ae0b66afe137ea50cf45ce9e92b7b12be324f0b9735953db47dd",
+  "asm": [
+    "804f0c34 lui $v1, 0x806c",
+    "804f0c38 lw $a0, -0x72f4($v1)",
+    "804f0c3c lui $v0, 0x20",
+    "804f0c40 ori $v0, $v0, 0x4b15",
+    "804f0c44 addu $a0, $a0, $v0",
+    "804f0c48 lbu $v0, ($a0)",
+    "804f0c4c andi $v0, $v0, 0xf",
+    "804f0c50 slti $v0, $v0, 4",
+    "804f0c54 jr $ra",
+    "804f0c58 xori $v0, $v0, 1"
+  ],
+  "predicate": "(read_byte & 0xf) >= 4",
+  "direct_callers": [
+    "0x803e29cc",
+    "0x803e2b1c"
+  ],
+  "comparison_archive_SHA256": "bc43b6df76df4c22ae36d47aa8682857be5b5fcc084fc6f462010ca1558cd73b",
+  "comparison_archive_source": "https://github.com/Toysoft/mstar/blob/master/Chakra3_017a0d6_20170731/core/drv_bsp/marlon_nos_mips/lib/libapiXC.a",
+  "related_symbol": "Hal_ADC_is_scart_rgb",
+  "related_mask": "0x50",
+  "related_expected": "0x10",
+  "related_write_bit": 5,
+  "compatibility_not_proven": true,
+  "no_nibble_or_no_input_value_supplied": true
+}

@@ -31,6 +31,14 @@ struct Options {
   bool candidateGe=false, exploratoryGeReset=false;
   bool candidateGopPalette=false;
   bool candidateTsp=false, exploratoryTspResetLow=false;
+  bool exploratoryTspCpu=false;
+  bool deferPlatformIdentity=false;
+  bool exploratoryPmAcOn=false;
+  bool exploratorySarFullscale=false,orFirstVisits=false;
+  bool exploratoryIrDmaReset=false;
+  bool exploratoryGopResetWindows=false;
+  uint64_t orBudget=10000000;
+  uint64_t orDivider=1;
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage;
   std::filesystem::path tspFirmwareDump;

@@ -60,7 +60,8 @@ with tempfile.TemporaryDirectory(prefix='manta-ge-replay-') as directory:
    'tsp_filein_submissions':0,'tsp_queue_count':None,'tsp_indirect_reads':0,'tsp_indirect_writes':0,
    'tsp_firmware_download_requests':0,'tsp_firmware_download_pending':False,
    'tsp_firmware_download_completions':0,'tsp_firmware_download_bytes':0,'tsp_firmware_download_source':'0x0'}
- assert set(replay)-set(ref)<=set(extra),'unexpected golden-summary schema change'
+  extra.update(exploratory_tsp_cpu=False,or1k_instructions=0,or1k_pc='0x0',or1k_data_reads=0,or1k_data_writes=0,or1k_running=False)
+  assert set(replay)-set(ref)<=set(extra),'unexpected golden-summary schema change'
  assert all(replay[k]==extra[k] for k in set(replay)-set(ref))
  assert {k:replay[k] for k in ref}==ref,'every original CPU/IRQ/MMIO checkpoint and replayed event must agree'
  assert '@@@ Hello T4' in r.stdout and 'USB_Init_Configure done...' in r.stdout
