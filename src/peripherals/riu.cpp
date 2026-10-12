@@ -182,6 +182,9 @@ uint32_t Riu::storageKey(uint32_t a) const {
   return a;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(a==0x1f204b15 && n==1 && scart_.sample()){
+    auto it=bytes_.find(storageKey(a));return 15|(it==bytes_.end()?0:it->second.known);
+  }
   if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c) && irDma_.producer())return 255;
   if(a==0x1f001cdd && n==1 && pmBoot_.cause())return 255;
   if(exploratorySarFullscale_ && n==1 && (a==0x1f002834 || a==0x1f002835) && sar_.result(a-0x1f002834))return 255;
@@ -196,6 +199,15 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   }
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.known())v|=8;
+  }
+  if(a==0x1f205ea4 && (n==1 || n==2) && (scBank()==1 || scBank()==3)){
+    // GetEuroHdtvStatus reader and enum agree on bits 2/3. These are live
+    // detection fields; programming control bits must not define them.
+    v&=~12u;if(analogDisconnected_)v|=12;
+  }
+  if(a<=0x1f205f05 && uint64_t(a)+n>0x1f205f05 && scBank()==0x23){
+    auto bit=1u<<(8*(0x1f205f05-a));
+    v&=~bit;if(pqSram_.known())v|=bit;
   }
   return v;
 }
@@ -212,6 +224,11 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
   }
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.done())v|=8;
+  }
+  if(a==0x1f205ea4 && (n==1 || n==2) && (scBank()==1 || scBank()==3) && analogDisconnected_)v&=~12u;
+  if(a<=0x1f205f05 && uint64_t(a)+n>0x1f205f05 && scBank()==0x23 && pqSram_.known()){
+    auto bit=1u<<(8*(0x1f205f05-a));
+    v&=~bit;if(pqSram_.busy())v|=bit;
   }
   return v;
 }
@@ -233,6 +250,7 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
   advanceTsp(tick);
+  if(pqSram_.advance(tick))event("pq_sram_commit",0x1f205f04,2,uint32_t(pqSram_.commits),"original five-byte coefficient payload stored in SRAM; deterministic provisional transfer latency elapsed");
   if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c))if(auto cursor=irDma_.producer()){
     auto v=(*cursor>>(a==0x1f206e79?0:8))&255;
     event("exploratory_ir_dma_cursor",a,n,v,"capture-ring producer index after original descriptor command; no external IR records supplied, no key or interrupt fabricated; reset coupling unvalidated");return v;
@@ -259,6 +277,13 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     throw std::runtime_error("Unsupported RIU access width");
   bool opaque=opaqueRead_ && *opaqueRead_==a;
   opaqueRead_.reset();
+  if(a==0x1f205ea4 && n==1 && (scBank()==1 || scBank()==3) && analogDisconnected_)
+    event("analog_input_detection",a,n,0,"explicitly disconnected analog input: NORMAL/no Euro or Australia HDTV detected, original mask 0Ch and named reference enum corroborate two status bits; positive-pattern detection/timing unsupported");
+  if(a==0x1f204b15 && n==1 && masked && provenConsumed==15 && scart_.sample()){
+    scart_.observe();auto v=get(a,n)&~15u;
+    event("exploratory_scart_grounded_sample",a,n,v,"HYPOTHETICAL low-nibble code zero for explicitly grounded SCART FB after original ADC config; related-board pull-down evidence, exact Titania4 ADC transfer unknown; upper bits remain invalid");
+    return v;
+  }
   if(combRestore_ && !(combRestore_->written && a==combRestore_->address && n==1 &&
       pc==0x805f8860 && pendingRmw_.contains(a) && pendingRmw_.at(a)==255)) {
     stopReason="COMB temporary unknown bits quarantined before original low-byte restore";
@@ -430,6 +455,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   advanceTsp(tick);
+  if(pqSram_.advance(tick))event("pq_sram_commit",0x1f205f04,2,uint32_t(pqSram_.commits),"original five-byte coefficient payload stored in SRAM; deterministic provisional transfer latency elapsed");
   if(a<=0x1f001cdd && uint64_t(a)+n>0x1f001cdd && pmBoot_.cause())
     throw std::runtime_error("PM PowerOnMode writer unsupported under external AC-on boundary; mode not silently changed or acknowledged");
   if (n != 1 && n != 2 && n != 4)
@@ -497,6 +523,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       uint8_t(get(0x1f002801,1)),uint8_t(knownBits(0x1f002801,1)),
       uint8_t(get(0x1f002804,1)),uint8_t(knownBits(0x1f002804,1)),tick);
   }
+  if(a==0x1f204b10 && n==2)scart_.configure(uint16_t(get(a,n)),uint16_t(knownBits(a,n)));
   if(exploratoryIrDmaReset_ && a==0x1f206e3d && n==1 && knownBits(a,1)==255 && v==0x82){
     for(auto field:{0x1f206e70u,0x1f206e71u,0x1f206e74u,0x1f206e75u,0x1f206e78u})
       if(knownBits(field,1)!=255)throw std::runtime_error("IR DMA descriptor contains unknown bits");
@@ -619,6 +646,35 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   }
   if(exploratoryDisplayClock && ((a>=0x1f205e04 && a<0x1f205e44) || a==0x1f20174c))
     updateOutputTiming(tick);
+  if(a<=0x1f205f05 && uint64_t(a)+n>0x1f205f05 && scBank()==0x23 && pqSram_.known() &&
+     (v&(1u<<(8*(0x1f205f05-a))))){
+    if((knownBits(0x1f205f04,2)&3)!=3)
+      throw std::runtime_error("PQ SRAM write-enable selection unknown");
+    auto mode=get(0x1f205f04,2)&3;
+    // Original 803C83BC disables both CPU write ports after the last entry,
+    // retaining the sampled busy bit. No selected port means no NEW write;
+    // the payload already captured by the preceding request stays pending.
+    if(!mode){
+      event("pq_sram_port_disable",a,n,v,"original write-enable clear; retained busy field does not submit another SRAM transaction; previously captured payload continues");
+    }else{
+    // The C writer updates only FFh, but that does not prove the preserved
+    // ninth address bit irrelevant. Require it known too; upper C banks
+    // remain unsupported rather than silently truncating their selector.
+    constexpr auto addressMask=0x1ffu;
+    if((knownBits(0x1f205f08,2)&addressMask)!=addressMask ||
+       knownBits(0x1f205f0c,2)!=0xffff || knownBits(0x1f205f10,2)!=0xffff ||
+       (knownBits(0x1f205f14,2)&255)!=255)
+      throw std::runtime_error("PQ SRAM command contains unknown mode/address/payload");
+    // Inspect bank00 reg03 without changing the guest bank selector.
+    auto gate=bytes_.find(0x8100000d);
+    if(gate==bytes_.end() || !(gate->second.known&0x10) || (gate->second.value&0x10))
+      throw std::runtime_error("PQ SRAM write without known CPU port enable");
+    auto lo=get(0x1f205f0c,2),hi=get(0x1f205f10,2),last=get(0x1f205f14,2);
+    auto address=get(0x1f205f08,2)&addressMask;
+    pqSram_.submit(mode,address,{uint8_t(lo),uint8_t(lo>>8),uint8_t(hi),uint8_t(hi>>8),uint8_t(last)},tick);
+    event("pq_sram_submit",address,5,(lo|(hi<<16)),"original bank23 reg41 write strobe; fifth payload byte="+std::to_string(last&255)+"; plane="+std::to_string(mode==1?0:1));
+    }
+  }
   if (candidateGamma && a == 0x1f205fb4 && n == 1 && get(0x1f205e00, 1) == 0x10) {
     auto command = v & 0xe0;
     if ((knownBits(a, 1) & 0xe0) != 0xe0)

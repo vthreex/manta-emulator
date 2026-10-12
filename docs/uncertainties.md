@@ -1,5 +1,7 @@
 # Evidence still needed
 
+Current stop: `806006D4 / BF003C05`. The original full-byte `<2` predicate changes a capped fetch-size parameter, consistent with a related named OPM-fetch patch. Exact byte identity and value are unresolved; neither Marlon's constant-false implementation nor other CHIPTOP revision fields establish it. See [current evidence and capture method](application-display-continuation.md). SCART zero-code, SCMI initial low byte, no-input detection/reset, SRAM idle/port reset and transfer clock remain explicitly experimental. Strict POR and undocumented CF are unchanged. Historical boundaries below remain evidence, not current-stop claims.
+
 | Boundary | Exact observation | Next research/model method |
 |---|---|---|
 | PM reset bits | Strict read `BFC00C60 / BF001C74` | Trace initialization table masks and identify reset-defined bits from matching chip docs; do not assume all zero |

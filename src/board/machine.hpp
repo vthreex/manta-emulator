@@ -37,6 +37,12 @@ struct Options {
   bool exploratorySarFullscale=false,orFirstVisits=false;
   bool exploratoryIrDmaReset=false;
   bool exploratoryGopResetWindows=false;
+  bool exploratoryScartGrounded=false;
+  bool graphicsProbes=false;
+  int exploratoryScmiFormat=-1;
+  bool exploratoryAnalogDisconnected=false;
+  bool exploratoryPqSramIdle=false;
+  bool exploratoryPqDisabledPorts=false;
   uint64_t orBudget=10000000;
   uint64_t orDivider=1;
   uint32_t breakpoint = 0, pauseMmio = 0;
@@ -72,6 +78,7 @@ class Msd309Machine {
   uint64_t timerEntries_ = 0, gopEvents_ = 0, geEvents_ = 0, geBlockedEvents_=0;
   bool gopInitializerEntered_ = false;
   uint64_t gopInitializerEntries_ = 0;
+  uint64_t gopWindowProgramEntries_=0,gopWrite32Entries_=0;
   uint64_t scalerInitializerEntries_=0, scalerInitializerReturns_=0, dlcInitializerReturns_=0;
   bool spiJedecRead_ = false, spiDescriptorSelected_ = false;
   std::array<uint8_t,3> spiJedec_{};

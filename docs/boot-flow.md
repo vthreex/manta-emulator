@@ -1,5 +1,7 @@
 # Observed boot flow
 
+The latest [application/display continuation](application-display-continuation.md) demonstrates the original dual-CPU alive handshake, two original Y coefficient tables and further SCMI configuration under explicit experiments. It stops at `806006D4 / BF003C05` before an unknown fetch-patch decision. No authentic OSD frame is demonstrated. Earlier checkpoints below remain historical observations.
+
 Reset mapping `0xBFC00000` is conventional MIPS KSEG1 and consistent with this image's absolute branches and flash pointers. Physical boot wiring is not independently confirmed. Unicorn translates these accesses to physical `0x1FC00000`.
 
 ```mermaid

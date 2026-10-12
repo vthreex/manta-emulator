@@ -1,0 +1,17 @@
+{
+  "target": "0xBF003C05",
+  "overlapping_bus_events": [
+    {
+      "tick": 933062691,
+      "pc": "0x806006d4",
+      "kind": "blocked_read",
+      "address": "0x1f003c05",
+      "width": 1,
+      "value": "0xa5",
+      "ra": "0x805f4b18",
+      "sp": "0x8072d7b8",
+      "detail": "unknown reset/status bits; value is poison, execution stops"
+    }
+  ],
+  "overlapping_guest_writes": 0
+}

@@ -29,6 +29,26 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateGopPalette=o.candidateGopPalette;
   riu_.candidateTsp=o.candidateTsp;
   riu_.executionStopped=[this]{return stopped_;};
+  if(o.exploratoryPqSramIdle){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("PQ SRAM idle fixture requires guarded exploration");
+    riu_.configureExploratoryPqSramIdle();
+  }
+  if(o.exploratoryPqDisabledPorts){
+    if(!o.exploratoryPqSramIdle)throw std::runtime_error("PQ disabled-port reset fixture requires explicit idle experiment");
+    riu_.configureExploratoryPqDisabledPorts();
+  }
+  if(o.exploratoryAnalogDisconnected){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("Disconnected analog input fixture requires guarded exploration");
+    riu_.configureExploratoryAnalogDisconnected();
+  }
+  if(o.exploratoryScmiFormat>=0){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("SCMI format reset fixture requires guarded exploration");
+    riu_.configureExploratoryScmiFormat(unsigned(o.exploratoryScmiFormat));
+  }
+  if(o.exploratoryScartGrounded){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("SCART grounded input experiment requires guarded exploration");
+    riu_.configureExploratoryScartGrounded();
+  }
   if(o.exploratoryGopResetWindows){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("GOP reset/window coupling experiment requires guarded exploration");
     riu_.configureExploratoryGopResetWindows();
@@ -264,6 +284,23 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
     ++m.gopInitializerEntries_;
     m.event("gop_initializer", uint32_t(a), 0, 0,
             "stock MDrv_GOP_Init entry identified by original diagnostic string and disassembly");
+  }
+  if(m.options_.graphicsProbes && (a==0x80538944 || a==0x8053a43c)){
+    if(a==0x80538944)++m.gopWindowProgramEntries_;else ++m.gopWrite32Entries_;
+    m.event(a==0x80538944?"guest_gop_window_program":"guest_gop_write32",uint32_t(a),4,m.cpu_.reg(UC_MIPS_REG_6),
+      "original routine entry; raw a0="+hex(m.cpu_.reg(UC_MIPS_REG_4))+", a1="+hex(m.cpu_.reg(UC_MIPS_REG_5))+"; arguments alone do not prove enabled framebuffer or pixels");
+  }
+  if(m.options_.exploratoryPqSramIdle && (a==0x803c8250 || a==0x803c8424)){
+    auto type=m.cpu_.reg(UC_MIPS_REG_4)&255,source=m.cpu_.reg(UC_MIPS_REG_5);
+    auto size=a==0x803c8250?640u:320u,physical=PreservedBits::backingAddress(source);
+    bool valid=!m.preservedBits_.mask(4) && !m.preservedBits_.mask(5) &&
+      uint64_t(physical)+size<=m.dramBacking_.size();
+    for(unsigned b=0;valid && b<size;++b)
+      if(m.preservedBits_.memoryUnknown(physical+b) || m.unknownObservations_.bytes().contains(physical+b))valid=false;
+    if(valid){
+      std::vector<uint8_t> bytes(size);m.cpu_.read(physical,bytes.data(),size);
+      m.event("guest_pq_table_upload",source,size,type,"original Y/C SRAM writer entry; immutable guest-source payload SHA256="+sha256(bytes));
+    }
   }
   if(m.options_.candidateTsp && a==0x805d819c) {
     auto source=m.cpu_.reg(UC_MIPS_REG_4),size=m.cpu_.reg(UC_MIPS_REG_5);
@@ -539,6 +576,15 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       }
     }
     auto geCaller=m.cpu_.reg(UC_MIPS_REG_31);
+    if(m.options_.exploratoryAnalogDisconnected && pc==0x805f1ca4 && a==0x1f205ea4 && n==1 &&
+       (m.riu_.scBank()==1 || m.riu_.scBank()==3)){
+      std::vector<uint8_t> code(0x7c);m.cpu_.read(0x005f1c6c,code.data(),code.size());
+      if(sha256(code)=="86ceb9987e92def5e205c445f7fa10f48aa94b09ee393430102db91089ba2685"){
+        m.preservedBits_.seed(4,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("guarded_euro_hdtv_read",a,n,m.riu_.knownBits(a,n),"SHA-verified original two-bit detection predicate; unrelated byte fields stay invalid through copy/masks and are discarded before decision");
+      }
+    }
     if(m.options_.deferPlatformIdentity && n==4 &&
        ((pc==0x80500278 && a==0x1f200198) ||
         ((pc==0x8050027c || pc==0x8050028c) && a==0x1f20019c))) {
@@ -548,6 +594,34 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
         m.preservedBits_.seed((instruction>>16)&31,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
         m.riu_.prepareOpaqueRead(a);
         m.event("deferred_platform_identity",a,n,0,"INVALID original cache observation; no hardware identity or authorization bits supplied; every decision/address/new-device use must stop");
+      }
+    }
+    if(m.options_.exploratoryPqSramIdle && m.options_.deferDiagnosticReads &&
+       pc==0x805f87dc && a==0x1f002880 && n==1 && m.cpu_.reg(UC_MIPS_REG_RA)==0x803be8b0){
+      std::vector<uint8_t> caller(0x38),reader(0x24);
+      m.cpu_.read(0x003be898,caller.data(),caller.size());m.cpu_.read(0x005f87c4,reader.data(),reader.size());
+      if(sha256(caller)=="a5ac5d7fb7978bbe13a29769f0118ddc7b395c0d24bd6a90ddf904b41eedab74" &&
+         sha256(reader)=="800e472c50e0aca66e5b03e90febcd803c78e924f256044d4e50fee4addc10d4"){
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_pq_dummy_observation",a,n,0,"INVALID unused byte from SAR aperture in original PQ configuration; value discarded before next device access, first data use stops; hardware meaning/read side effects unvalidated");
+      }
+    }
+    if(m.options_.exploratoryPqSramIdle && pc==0x805f8a28 && n==2 && m.riu_.scBank()==0x23 && a==0x1f205f04){
+      std::vector<uint8_t> code(0x80);m.cpu_.read(0x005f89d0,code.data(),code.size());
+      if(sha256(code)=="62ec998080b3026dbcb7560f699b09e9bfd47d20a48cbf028a954f373dd10943"){
+        m.preservedBits_.seed(16,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("guarded_pq_sram_read",a,n,m.riu_.knownBits(a,n),"original SRAM busy read; bit8 comes from pending coefficient transfer, unrelated fields retain unknown provenance");
+      }
+    }
+    if(m.options_.exploratoryScmiFormat>=0 && pc==0x805f8a28 && n==2 && m.riu_.scBank()==0x12 &&
+       (a==0x1f205e08 || a==0x1f205f08)){
+      std::vector<uint8_t> code(0x80);m.cpu_.read(0x005f89d0,code.data(),code.size());
+      if(sha256(code)=="62ec998080b3026dbcb7560f699b09e9bfd47d20a48cbf028a954f373dd10943"){
+        m.preservedBits_.seed(16,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("guarded_scmi_format_read",a,n,m.riu_.knownBits(a,n),"original shared read routine; configured initial low byte only; unknown upper byte retains origin, first decision/address/foreign-device use stops");
       }
     }
     if(m.options_.candidateTsp && m.options_.symbolicInit && m.options_.deferDiagnosticReads &&
@@ -824,7 +898,7 @@ bool Msd309Machine::proveDiagnosticCache(uint32_t pc, uint32_t a, unsigned n) {
          cpu_.reg(UC_MIPS_REG_4) == (pc == 0x80469898 ? 0xbf000000 : 0xbf200a3c);
 }
 // Prove a straight-line immediate AND/OR RMW before allowing unknown reset
-// bits through it. Reject branches, calls, escaping stores, loads and other
+// bits through it. Reject sampled-value branches, calls, escaping stores and other
 // uses of the sampled value. This is bit provenance, not a status response.
 uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigned width) {
   if ((pc < 0x803b0180 || pc >= 0x806b8ce0) && (pc < 0xbfc00000 || pc >= 0xbfc02c60))
@@ -847,14 +921,28 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
   for (unsigned i = 1; i <= 12; ++i) {
     cpu_.read(proofPc & 0x1fffffff, &w, 4);
     auto instructionPc=proofPc;
+    bool delaySlot=jumpAfterDelay!=0;
     if(jumpAfterDelay) { proofPc=jumpAfterDelay; jumpAfterDelay=0; }
     else proofPc+=4;
     op = w >> 26;
     auto rs = (w >> 21) & 31, rt = (w >> 16) & 31;
+    if(delaySlot && (op==2 || op==4 || op==5))return 0;
     if(op==2) {
       auto target=(instructionPc&0xf0000000)|((w&0x3ffffff)<<2);
       if(target+0x400<pc || target>pc+0x400 || target==instructionPc) return 0;
       jumpAfterDelay=target; // analyze original J delay slot then target; CPU still executes both
+    } else if((op==4 || op==5) && !dependent[rs] && !dependent[rt] &&
+              !unknownObservations_.registerUnknown(rs) && !unknownObservations_.registerUnknown(rt) &&
+              !preservedBits_.mask(rs) && !preservedBits_.mask(rt)) {
+      // Original 805FDC44 branches on its independently known enable arg.
+      // Analyze that selected path INCLUDING its architectural delay slot.
+      // A comparison involving sampled MMIO bits never qualifies.
+      bool take=op==4?values[rs]==values[rt]:values[rs]!=values[rt];
+      if(take){
+        auto target=instructionPc+4+uint32_t(int32_t(int16_t(w))*4);
+        if(target+0x400<pc || target>pc+0x400 || target==instructionPc)return 0;
+        jumpAfterDelay=target;
+      }
     } else if (op == 12 || op == 13) {
       if (rt == 0)
         return 0;
@@ -880,13 +968,24 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
       auto rd = (w >> 11) & 31;
       dependent[rd] = 0;
       values[rd] = values[rt] << ((w >> 6) & 31);
+    } else if(op==0 && ((w&63)==42 || (w&63)==43) &&
+              !dependent[rs] && !dependent[rt] && ((w>>11)&31)!=0){
+      // Original 806001D8 converts an independent boolean argument with
+      // SLTU before masking/storing another register's sampled value.
+      // Comparing the MMIO sample itself is still rejected.
+      auto rd=(w>>11)&31;dependent[rd]=0;
+      values[rd]=(w&63)==42?int32_t(values[rs])<int32_t(values[rt]):values[rs]<values[rt];
     } else if (op == 0 && ((w & 63) == 10 || (w & 63) == 11) &&
                !dependent[rs] && !dependent[rt] && !dependent[(w >> 11) & 31]) {
       auto rd = (w >> 11) & 31;
       if (rd && ((w & 63) == 10 ? values[rt] == 0 : values[rt] != 0)) values[rd] = values[rs];
-    } else if (op == 31 && rs == 0 && (w & 0x7ff) == 0x620 && !dependent[rt] && ((w >> 11) & 31)) {
+    } else if (op == 31 && rs == 0 && (w & 0x7ff) == 0x620 && ((w >> 11) & 31)) {
       auto rd = (w >> 11) & 31;
-      values[rd] = uint32_t(int32_t(int16_t(values[rt]))); dependent[rd] = 0;
+      values[rd] = uint32_t(int32_t(int16_t(values[rt])));
+      // SEH leaves the low sixteen bit identities unchanged. Replicated
+      // unknown sign bits stay dependent until the original AND FFFF/SH
+      // discards them; they cannot authorize a branch/address/other store.
+      dependent[rd]=(dependent[rt]&0xffff)|((dependent[rt]&0x8000)?0xffff0000u:0);
     } else if (op == 0 && (w & 63) == 39 && !dependent[rs] && !dependent[rt] && ((w >> 11) & 31)) {
       auto rd = (w >> 11) & 31;
       values[rd] = ~(values[rs] | values[rt]); dependent[rd] = 0;
@@ -1144,6 +1243,22 @@ std::string Msd309Machine::summary() const {
   if(riu_.tspQueueKnown())s<<riu_.tspQueueCount();else s<<"null";
   if(options_.deferPlatformIdentity)s<<",\n  \"deferred_platform_identity_enabled\": true";
   if(options_.exploratoryPmAcOn)s<<",\n  \"exploratory_pm_ac_on\": true";
+  if(options_.exploratoryScartGrounded)s<<",\n  \"exploratory_scart_grounded\": true,\n  \"scart_input_reads\": "<<riu_.scartReads();
+  if(options_.exploratoryScmiFormat>=0)s<<",\n  \"exploratory_scmi_format_byte\": "<<options_.exploratoryScmiFormat;
+  if(options_.exploratoryAnalogDisconnected)s<<",\n  \"exploratory_analog_disconnected\": true";
+  if(options_.exploratoryPqSramIdle)s<<",\n  \"exploratory_pq_sram_idle\": true,\n  \"pq_sram_submissions\": "<<riu_.pqSram().submissions<<",\n  \"pq_sram_commits\": "<<riu_.pqSram().commits<<",\n  \"pq_sram_state_sha256\": \""<<sha256(riu_.pqSram().stateBytes())<<"\"";
+  if(options_.exploratoryPqDisabledPorts)s<<",\n  \"exploratory_pq_disabled_ports\": true";
+  if(options_.graphicsProbes){
+    s<<",\n  \"graphics_probes\": {\"window_program_entries\":"<<gopWindowProgramEntries_<<",\"write32_entries\":"<<gopWrite32Entries_<<",\"decoded_windows\":[";
+    bool first=true;
+    for(auto bank:{1u,4u})for(unsigned w=0;w<(bank==1?4u:2u);++w)if(auto g=readGopWindow(riu_,bank,w)){
+      if(!first)s<<',';
+      first=false;
+      s<<"{\"bank\":"<<bank<<",\"window\":"<<w<<",\"MIU_relative_address\":\""<<hex(g->miuRelativeAddress)<<"\",\"pitch\":"<<g->pitch
+       <<",\"width\":"<<g->width<<",\"height\":"<<g->height<<",\"format\":"<<unsigned(g->format)<<",\"bpp\":"<<unsigned(g->bpp)<<'}';
+    }
+    s<<"]}";
+  }
   if(options_.exploratorySarFullscale)s<<",\n  \"exploratory_sar_fullscale\": true,\n  \"sar_conversions\": "<<riu_.sarConversions();
   if(options_.exploratoryTspCpu)s<<",\n  \"or1k_trace_first_visits\": "<<(options_.orFirstVisits?"true":"false")
     <<",\n  \"or1k_budget\": "<<options_.orBudget<<",\n  \"or1k_original_word_fetches\": "<<riu_.orOriginalWords()

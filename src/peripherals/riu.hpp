@@ -19,6 +19,8 @@
 #include "peripherals/pm_boot.hpp"
 #include "peripherals/sar.hpp"
 #include "peripherals/ir_dma.hpp"
+#include "inputs/scart.hpp"
+#include "video/pq_sram.hpp"
 #include <set>
 namespace manta {
 struct RiuByte {
@@ -51,6 +53,9 @@ class Riu {
   bool exploratoryTspCpu_=false;
   PmBootReason pmBoot_;
   SarAdc sar_;bool exploratorySarFullscale_=false;
+  ScartGroundedInput scart_;
+  bool analogDisconnected_=false;
+  PqSram pqSram_;
   IrDma irDma_;bool exploratoryIrDmaReset_=false;
   bool exploratoryGopResetWindows_=false;
   std::array<bool,2> gopResetHeld_{};
@@ -89,6 +94,21 @@ public:
   void configureExploratoryTspCpu();
   void configureExploratoryPmAcOn(){pmBoot_.acApplied();}
   void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}
+  void configureExploratoryScartGrounded(){scart_.ground();}
+  void configureExploratoryPqSramIdle(){pqSram_.exploratoryIdle();}
+  void configureExploratoryPqDisabledPorts(){
+    auto &b=bytes_[0x81000000u+(0x23u<<10)+0x104];
+    b.value&=uint8_t(~3u);b.known|=3;
+  }
+  const PqSram &pqSram()const{return pqSram_;}
+  uint64_t scartReads()const{return scart_.reads();}
+  void configureExploratoryAnalogDisconnected(bool disconnected=true){analogDisconnected_=disconnected;}
+  void configureExploratoryScmiFormat(unsigned byte){
+    if(byte>255)throw std::runtime_error("SCMI format fixture byte outside 0..255");
+    // Original main/sub read/write targets 1204/1284; only low byte defined.
+    // Reset value is an explicit hypothesis, not a silicon default or status.
+    for(auto offset:{8u,0x108u})bytes_[0x81000000u+(0x12u<<10)+offset]={uint8_t(byte),255};
+  }
   void configureExploratoryIrDmaReset(){exploratoryIrDmaReset_=true;}
   uint64_t irDmaStarts()const{return irDma_.starts();}
   uint64_t irDmaCaptures()const{return irDma_.captures();}

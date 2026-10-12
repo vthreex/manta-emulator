@@ -1,0 +1,10 @@
+unknown-subwindow 0x805fe070 194157756 332
+subwindow-enabled 0x805fe080 194157760 332
+unknown-dlc-request 0x805e39f0 204559942 366
+dlc-request-pending 0x805e3a00 204559946 366
+unknown-dlc-completion 0x805e3d14 204562256 366
+unknown-comb-selector 0x805f87dc 279467165 606
+comb-high-byte-guard 0x805f883c 279469882 606
+full-display-replay 0x805f883c 279469882 606
+half-output-clock 0x805fe070 214888446 399
+PASS: original output waits, feature-gate guard, DLC completion guard/timeouts, banked COMB path and deterministic replay; no authentic frame claimed

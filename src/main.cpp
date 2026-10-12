@@ -76,6 +76,15 @@ static int appMain(const std::vector<std::string> &args) {
         o.candidateChipId = true;
       else if (a == "--cp0-timer")
         o.cp0Timer = true;
+      else if (a == "--exploratory-scart-grounded")o.exploratoryScartGrounded=true;
+      else if (a == "--graphics-probes")o.graphicsProbes=true;
+      else if(a=="--exploratory-analog-disconnected")o.exploratoryAnalogDisconnected=true;
+      else if(a=="--exploratory-pq-sram-idle")o.exploratoryPqSramIdle=true;
+      else if(a=="--exploratory-pq-disabled-ports")o.exploratoryPqDisabledPorts=true;
+      else if (a == "--exploratory-scmi-format-byte"){
+        auto v=std::stoul(value(i),nullptr,0);if(v>255)throw std::runtime_error("SCMI initial format byte must be 0..255");
+        o.exploratoryScmiFormat=int(v);
+      }
       else if (a == "--max-instructions")
         o.limit = std::stoull(value(i), nullptr, 0);
       else if (a == "--record-trace")
@@ -171,6 +180,12 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-sar-fullscale: 3300mV inputs/reference for SAR0/1; original power/free-run controls and period trigger conversion, board wiring unverified\n"
                "--exploratory-ir-dma-reset: original descriptor command commits an empty IR capture ring; 82h reset/index coupling unverified, no keys supplied\n"
                "--exploratory-gop-reset-windows: original top-bank reset pulse clears GWIN enable bits only; exact reset scope unverified\n"
+               "--exploratory-scart-grounded: explicit grounded FB input and hypothetical ADC zero code after original config; exact Titania4 transfer/pin mapping unverified\n"
+               "--graphics-probes: trace original GOP window-programming entries and report valid guest register descriptors; does not fabricate pixels\n"
+               "--exploratory-scmi-format-byte N: hypothetical initial main/sub bank12 format low byte; upper fields remain unknown\n"
+               "--exploratory-analog-disconnected: external no-analog-input fixture supplies NORMAL Euro/Australia detection status only; positive patterns/timing unsupported\n"
+               "--exploratory-pq-sram-idle: unvalidated initial idle state; original Y/C coefficient writes store real payloads with provisional deterministic latency\n"
+               "--exploratory-pq-disabled-ports: separate unvalidated reset fixture with Y/C write-enable bits initially cleared\n"
                "--or1k-trace-first-visits: trace each original auxiliary PC once; every fetch still compared with immutable uploaded code and counted\n"
                "--max-or1k-instructions N: diagnostic auxiliary dispatch budget (default 10000000)\n"
                "--or1k-dispatch-divider N: EXPLORATORY MIPS-dispatches per auxiliary instruction (default 1); physical ratio unmeasured\n"

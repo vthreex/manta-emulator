@@ -1,5 +1,7 @@
 # Register evidence and model scope
 
+The latest [application continuation](application-display-continuation.md) supersedes historical checkpoint statements below. Bank23 reg41 at `BF205F04` controls original five-byte Y/C coefficient SRAM transfers through reg42..45; bit8 is write/busy. Two Y tables are demonstrated, with experimental initial idle/disabled-port states and provisional latency. Original C indices differ from Marlon. The new byte `BF003C05` feeds `(byte < 2)` in a fetch-workaround predicate; identity/producer/value remain unverified and execution stops.
+
 "Verified" here means an address/access/formula or use is directly present in this firmware. It does not establish every register's electrical or timing semantics.
 
 | Address / block | Direct evidence | Current model / unresolved dependency |

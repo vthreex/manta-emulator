@@ -1,5 +1,7 @@
 # Firmware and resource map
 
+Recent original routines and byte hashes are preserved in [application disassembly](../evidence/application-disassembly.json): Y/C coefficient writers `803C8250`/`803C8424`, conditional SCMI setter `805FDBEC`, unused SAR-aperture observation caller `803BE898`, and unresolved fetch-workaround predicate `806006CC`. They are observed code paths, not a reconstruction of the TV interface. See [current continuation](application-display-continuation.md).
+
 Original: `0x800010` bytes, SHA-256 `d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9`. First 8 MiB SHA-256: `471e1f1c284e3c0fc9af68be0d8a79d0d635e0a1cca31066cd1e6df91e406d83`. The trailer is `bc000000000000000000000000000000`, preserved in private extraction output and never mapped as flash.
 
 The packaged flash copy matched the original's first 8 MiB exactly. The four supplied payloads reproduced their lengths and hashes. A bounded raw-DEFLATE scan of the remaining populated range recovered eight additional streams. Every listed stream has a real end marker, no unconsumed compressed data, and a matching four-byte little-endian uncompressed-length trailer. Additional streams are not called executable/font/media files merely because of entropy or a short signature.
