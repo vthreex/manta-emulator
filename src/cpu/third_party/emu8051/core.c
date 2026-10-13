@@ -421,6 +421,14 @@ void handle_interrupts(struct em8051 *aCPU)
     aCPU->mTickDelay = 2;
     switch (dest_ip)
     {
+    case ISR_INT0:
+        if (aCPU->mSFR[REG_TCON] & TCONMASK_IT0)
+            aCPU->mSFR[REG_TCON] &= ~TCONMASK_IE0;
+        break;
+    case ISR_INT1:
+        if (aCPU->mSFR[REG_TCON] & TCONMASK_IT1)
+            aCPU->mSFR[REG_TCON] &= ~TCONMASK_IE1;
+        break;
     case ISR_TF0:
         aCPU->mSFR[REG_TCON] &= ~TCONMASK_TF0; // clear overflow flag
         break;
@@ -458,7 +466,7 @@ bool tick(struct em8051 *aCPU)
     // Test for Power Down
     if (aCPU->mTickDelay == 0 && (aCPU->mSFR[REG_PCON]) & 0x02) {
         aCPU->mTickDelay = 1;
-        return 1;
+        return false;
     }
 
     // Interrupts are sent if the following cases are not true:
@@ -477,9 +485,10 @@ bool tick(struct em8051 *aCPU)
         if (is_idle) {
             aCPU->mTickDelay = 1;
         } else {
+            if (aCPU->instruction_boundary) aCPU->instruction_boundary(aCPU);
             aCPU->mTickDelay = aCPU->op[aCPU->mCodeMem[aCPU->mPC & (aCPU->mCodeMemMaxIdx)]](aCPU);
+            ticked = true;
         }
-        ticked = true;
         // update parity bit
         v = aCPU->mSFR[REG_ACC];
         v ^= v >> 4;

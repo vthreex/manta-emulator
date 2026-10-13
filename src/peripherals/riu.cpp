@@ -3,6 +3,84 @@
 #include <stdexcept>
 #include "storage/sha256.hpp"
 namespace manta {
+std::optional<VdByte> Riu::vdRead(uint16_t address){
+  if(address>=0x2f00 && address<0x2f20){
+    auto i=uint32_t(address-0x2f00),physical=0x1f224c00+(i<<1)-(i&1);
+    ++vdMailboxReads_;
+    auto v=VdByte{uint8_t(get(physical,1)),uint8_t(knownBits(physical,1)),address};
+    auto old=vdLastMailboxReads_.find(address);
+    if(old==vdLastMailboxReads_.end() || old->second.value!=v.value || old->second.known!=v.known){
+      event("vd_shared_mailbox_read",physical,1,v.value,"original MCU XDATA="+std::to_string(address)+"; same RIU bytes as MIPS, validity="+std::to_string(v.known)+"; repeated identical MCU reads counted but omitted from trace");
+      vdLastMailboxReads_[address]=v;
+    }
+    return v;
+  }
+  if(address==0x1b00)return VdByte{vdFiqMask_.value,vdFiqMask_.known,address};
+  if(address==0x2071 || address==0x2072){
+    auto v=vdVersionBytes_[address-0x2071];
+    if(v.known!=255)throw VdHardwareBoundary("VD MCU version byte read before original initialization");
+    return VdByte{v.value,v.known,address};
+  }
+  if(address==0x1b10)return VdByte{uint8_t(vdMcuProgram_.interruptPending?4:0),4,address};
+  if(address>=0x8000 && address<0x8400){
+    auto v=vdPrivateRam_[address-0x8000];
+    if(v.known!=255)throw VdHardwareBoundary("VD MCU private XRAM read before original initialization");
+    return VdByte{v.value,v.known,address};
+  }
+  return {};
+}
+bool Riu::vdWrite(uint16_t address,VdByte v){
+  if(v.known!=255 && v.origin!=address)
+    throw VdHardwareBoundary("VD MCU unknown bits stored to foreign XDATA origin");
+  if((address==0x2071 || address==0x2072) && v.known==255){
+    vdVersionBytes_[address-0x2071]={v.value,255};
+    event("vd_firmware_version_write",address,1,v.value,
+      "original MOVC at 5513/5514 publishes firmware-owned version bytes; no ready/status inference or reset default");
+    return true;
+  }
+  if(address>=0x2f00 && address<0x2f20){
+    auto i=uint32_t(address-0x2f00),physical=0x1f224c00+(i<<1)-(i&1);
+    bytes_[physical]={v.value,v.known};++vdMailboxWrites_;
+    event("vd_shared_mailbox_write",physical,1,v.value,"original MCU XDATA="+std::to_string(address)+" writes the MIPS shared backing; validity="+std::to_string(v.known)+"; no host-generated reply");
+    return true;
+  }
+  if(address==0x1b00){
+    vdFiqMask_={v.value,v.known};
+    event("vd_fiq_mask",address,1,v.value,"original MCU mask RMW; unrelated fields remain invalid, known="+std::to_string(v.known));
+    if((v.known&4) && !(v.value&4) && vdMcuProgram_.interruptPending && vdMcuCpu_.running())vdMcuCpu_.requestInt0();
+    return true;
+  }
+  if(address==0x1b08 && v.known==255){
+    if(v.value&4)vdMcuProgram_.interruptPending=false;
+    event("vd_fiq_clear",address,1,v.value,"original MCU ISR clears only the observed host-request bit2; no mailbox completion synthesized");
+    return true;
+  }
+  if(address>=0x8000 && address<0x8400 && v.known==255){
+    vdPrivateRam_[address-0x8000]={v.value,255};
+    event("vd_private_xram_write",address,1,v.value,"original MCU initialized private data; inferred 8000..83FF span is experimental, unwritten reads stop");
+    return true;
+  }
+  return false;
+}
+void Riu::advanceVd(uint64_t tick){
+  if(!exploratoryVdSharedRun || !vdMcuCpu_.running())return;
+  // A host hold must stop instruction dispatch. Release restarts the actual
+  // uploaded program and its scheduling origin; elapsed reset time is not
+  // spent executing an old CPU instance.
+  if(vdMcuProgram_.resetHeld()){vdTick_=tick;return;}
+  try{
+    while(tick-vdTick_>=vdDispatchDivider){
+      if(executionStopped && executionStopped())return;
+      if(vdMcuCpu_.totalInstructions()>=vdInstructionBudget)
+        throw std::runtime_error("VD MCU original instruction diagnostic budget reached");
+      vdTick_+=vdDispatchDivider;vdMcuCpu_.step();
+    }
+  }catch(const VdHardwareBoundary& boundary){
+    if(!exploratoryVdSuspendedBoundary)throw;
+    vdMcuSuspended_=true;vdMcuBoundaryReason_=boundary.what();
+    event("exploratory_vd_boundary_suspension",0,0,vdMcuCpu_.pc(),"scheduled original MCU stopped on unresolved hardware: "+vdMcuBoundaryReason_);
+  }
+}
 std::string Riu::tspCoreStateSha()const{
   auto bytes=tspCpu_.stateBytes(),qmem=tspDownload_.stateBytes();bytes.insert(bytes.end(),qmem.begin(),qmem.end());
   for(unsigned i=0;i<8;++i)bytes.push_back(uint8_t(tspCpuTick_>>(i*8)));
@@ -182,6 +260,7 @@ uint32_t Riu::storageKey(uint32_t a) const {
   return a;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(candidateAvdMcuProgram && a==0x1f2068e0 && n==1)return avdMcuProgram_.readable()?255:0;
   if(candidateVdMcuProgram && a==0x1f206920 && n==1)return vdMcuProgram_.readable()?255:0;
   if(a==0x1f204b15 && n==1 && scart_.sample()){
     auto it=bytes_.find(storageKey(a));return 15|(it==bytes_.end()?0:it->second.known);
@@ -253,6 +332,12 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
   advanceTsp(tick);
+  advanceVd(tick);
+  if(candidateAvdMcuProgram && a==0x1f2068e0){
+    if(n!=1)throw std::runtime_error("AVD MCU program readback requires byte width");
+    auto cursor=avdMcuProgram_.cursor();auto value=unsigned(avdMcuProgram_.read());
+    event("avd_mcu_program_read",a,n,value,"original guest program readback; address="+std::to_string(cursor));return value;
+  }
   if(exploratoryCiDetectHigh && a==0x1f206891 && n==1){
     ++ciDetectReads;
     event("exploratory_ci_detect_sample",a,n,4,
@@ -474,10 +559,13 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   advanceTsp(tick);
+  advanceVd(tick);
   if(exploratoryCiDetectHigh && a<=0x1f206891 && uint64_t(a)+n>0x1f206891)
     throw std::runtime_error("CI detect-input register write unsupported; external line is not guest-controlled storage");
   if(candidateVdMcuProgram && a<=0x1f206920 && uint64_t(a)+n>0x1f206920)
     throw std::runtime_error("VD MCU program read port is not writable");
+  if(candidateAvdMcuProgram && a<=0x1f2068e0 && uint64_t(a)+n>0x1f2068e0)
+    throw std::runtime_error("AVD MCU program readback port is not writable");
   if(a<=0x1f003c05 && uint64_t(a)+n>0x1f003c05 && exploratoryFetchRevisionByte_>=0)
     throw std::runtime_error("Write overlaps hypothetical immutable fetch revision byte; register writability remains unsupported");
   if(pqSram_.advance(tick))event("pq_sram_commit",0x1f205f04,2,uint32_t(pqSram_.commits),"original five-byte coefficient payload stored in SRAM; deterministic provisional transfer latency elapsed");
@@ -543,13 +631,23 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(candidateAvdMcuProgram && (a==0x1f2068c1 || a==0x1f2068c5 || a==0x1f2068c8 || a==0x1f2068c9 || a==0x1f2068d8)){
+    if(n!=1)throw std::runtime_error("AVD MCU programming requires byte access");
+    auto cursor=avdMcuProgram_.cursor();
+    auto start=avdMcuProgram_.write(a-0x1f2068c0,uint8_t(v),uint8_t(knownBits(a,n)));
+    if(a==0x1f2068d8)event("avd_mcu_program_write",a,n,v,"actual original MIPS program-port upload; address="+std::to_string(cursor));
+    if(start)event("avd_mcu_start_request",a,n,v,"original guest releases program execution; auxiliary AVD CPU/hardware not yet executing, no ready/ack/status response inferred");
+  }
   if(candidateVdMcuProgram && (a==0x1f206900 || a==0x1f206901 || a==0x1f206905 ||
       a==0x1f206908 || a==0x1f206909 || a==0x1f206918)){
     if(n!=1 || knownBits(a,n)!=255)throw std::runtime_error("VD MCU program control/data requires fully known byte access");
     auto cursor=vdMcuProgram_.cursor();auto irqs=vdMcuProgram_.interruptRequests;
     auto start=vdMcuProgram_.write(a-0x1f206900,uint8_t(v));
-    if(vdMcuProgram_.interruptRequests!=irqs)
+    if(vdMcuProgram_.interruptRequests!=irqs){
       event("mcu_mailbox_doorbell",a,n,v,"original mailbox command precedes high/low interrupt request pulse; pending request retained; MCU routing/acknowledgment not fabricated");
+      if(exploratoryVdSharedRun && vdMcuCpu_.running() && (vdFiqMask_.known&4) && !(vdFiqMask_.value&4))
+        vdMcuCpu_.requestInt0();
+    }
     if(a==0x1f206918)event("vd_mcu_program_write",a,n,v,"original guest program-port upload; address="+std::to_string(cursor));
     if(start){
       event("vd_mcu_start_request",a,n,v,exploratoryVdMcuStartup?
@@ -558,6 +656,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       if(exploratoryVdMcuStartup){
         vdMcuCpu_.deferSfr8eWrite=deferVdSfr8eWrite;
         vdMcuCpu_.deferResetKeyWrites=deferVdResetKeyWrites;
+        vdMcuCpu_.coreDiagnostic=[this](int code){event("vd_core_diagnostic",0,0,unsigned(code),"upstream ISR register-preservation warning; not a guest CPU exception");};
         vdMcuCpu_.deferredResetKey=[this](uint16_t address,uint8_t value){
           event("deferred_vd_reset_key_write",address,1,value,
             "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated");
@@ -567,6 +666,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
             "EXPLORATORY write-effect deferral only; original instruction executes; identity/clock/memory-mode effects unresolved; read remains forbidden, no peripheral response generated");
         };
         vdMcuCpu_.instruction=[this](uint16_t pc,uint8_t opcode,const std::string& text){
+          if(exploratoryVdSharedRun && !vdVisited_.insert(pc).second)return;
           event("vd_mcu_instruction",pc,1,opcode,"original uploaded MCU instruction attempt: "+text+"; standard 8052 reset/RAM experiment, bounded synchronous startup burst");
         };
         vdMcuCpu_.external=[this](uint16_t address,bool write,uint8_t value){
@@ -578,7 +678,14 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
             std::string(write?"write":"read")+" from original VD MCU; MCU PC="+std::to_string(vdMcuCpu_.pc())+"; nonstandard MStar SFR definition unresolved");
         };
         vdMcuSuspended_=false;vdMcuBoundaryReason_.clear();
-        try{vdMcuCpu_.startup(vdMcuProgram_);}
+        try{
+          if(exploratoryVdSharedRun){
+            vdMcuCpu_.busRead=[this](uint16_t address){return vdRead(address);};
+            vdMcuCpu_.busWrite=[this](uint16_t address,VdByte v){return vdWrite(address,v);};
+            vdMcuCpu_.standardInterrupts=true;vdFiqMask_={};vdPrivateRam_.fill({});
+            vdMcuCpu_.resetProgram(vdMcuProgram_);vdTick_=tick;
+          }else vdMcuCpu_.startup(vdMcuProgram_);
+        }
         catch(const VdHardwareBoundary& boundary){
           if(!exploratoryVdSuspendedBoundary)throw;
           vdMcuSuspended_=true;vdMcuBoundaryReason_=boundary.what();
@@ -586,7 +693,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
             "EXPLORATORY stalled auxiliary device: pending transaction has no effect/completion/reply; original MIPS store can retire; "+vdMcuBoundaryReason_);
         }
       }
-      if(!vdMcuSuspended_)throw std::runtime_error("MCU reset released after genuine program upload/readback; original auxiliary CPU execution unsupported");
+      if(!vdMcuSuspended_ && !exploratoryVdSharedRun)throw std::runtime_error("MCU reset released after genuine program upload/readback; original auxiliary CPU execution unsupported");
     }
   }
   if(exploratorySarFullscale_ && (a==0x1f002800 || a==0x1f002801 || a==0x1f002804)){

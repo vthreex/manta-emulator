@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "window_smoke_exit_code": 0,
+  "PATH_scope": "Windows System32 only",
+  "runtime_DLLs": {
+    "libgcc_s_seh-1.dll": "84bba68e880017ab8b041b343e928a6d917f7601071b74530f334b2667a8913e",
+    "libwinpthread-1.dll": "5024707b039416c95bc524d4fc6ed6861a66e98b083b5160cccf81daf3c47c7e"
+  }
+}

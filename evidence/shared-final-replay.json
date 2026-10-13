@@ -1,0 +1,96 @@
+{
+  "result": "PASS",
+  "emulator_sha256": "8159053255f8867e6bd9f390d81b21fa987e84004b07e4d98e9be3d145030e96",
+  "full_dual_CPU_trace_replay": "PASS",
+  "full_three_CPU_trace_replay": "PASS",
+  "original_TSP_SHA256": "69785f9a58c2927ceb9e92cd0fb5d8b39c9978a3c2971a7e9e6fbd9a09df189a",
+  "original_instruction_words_verified": 280644619,
+  "original_unique_OR_PCs": 207,
+  "MIPS_Alive_success_branch_executed": true,
+  "VD_MCU_actual_uploaded_and_verified_bytes": 22026,
+  "VD_MCU_original_instruction_attempts": 313,
+  "original_OSD_routine_entries": {
+    "0x8040440c": 1,
+    "0x80522d5c": 1
+  },
+  "hardware_assumptions_remain_explicit": true,
+  "AVD_actual_uploaded_and_verified_bytes": 13312,
+  "scope": "full original MIPS/OpenRISC/DVB-MCU cold replay; final summary equal and every recorded event checked",
+  "original_MIPS_dispatches": 1788854952,
+  "original_OpenRISC_instructions": 280644619,
+  "original_DVB_MCU_instructions": 468999,
+  "original_MCU_shared_writes": [
+    {
+      "tick": 946932811,
+      "pc": "0x8054b430",
+      "kind": "vd_shared_mailbox_write",
+      "address": "0x1f224c00",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x8054a430",
+      "sp": "0x8072d858",
+      "detail": "original MCU XDATA=12032 writes the MIPS shared backing; validity=255; no host-generated reply"
+    },
+    {
+      "tick": 950616244,
+      "pc": "0x804f2e74",
+      "kind": "vd_shared_mailbox_write",
+      "address": "0x1f224c00",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f5810",
+      "sp": "0x8072d8f0",
+      "detail": "original MCU XDATA=12032 writes the MIPS shared backing; validity=255; no host-generated reply"
+    },
+    {
+      "tick": 950616244,
+      "pc": "0x804f2e74",
+      "kind": "vd_shared_mailbox_write",
+      "address": "0x1f224c38",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f5810",
+      "sp": "0x8072d8f0",
+      "detail": "original MCU XDATA=12060 writes the MIPS shared backing; validity=255; no host-generated reply"
+    },
+    {
+      "tick": 950616244,
+      "pc": "0x804f2e74",
+      "kind": "vd_shared_mailbox_write",
+      "address": "0x1f224c39",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f5810",
+      "sp": "0x8072d8f0",
+      "detail": "original MCU XDATA=12061 writes the MIPS shared backing; validity=255; no host-generated reply"
+    },
+    {
+      "tick": 950616244,
+      "pc": "0x804f2e74",
+      "kind": "vd_shared_mailbox_write",
+      "address": "0x1f224c3c",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f5810",
+      "sp": "0x8072d8f0",
+      "detail": "original MCU XDATA=12062 writes the MIPS shared backing; validity=255; no host-generated reply"
+    },
+    {
+      "tick": 950616244,
+      "pc": "0x804f2e74",
+      "kind": "vd_shared_mailbox_write",
+      "address": "0x1f224c3d",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f5810",
+      "sp": "0x8072d8f0",
+      "detail": "original MCU XDATA=12063 writes the MIPS shared backing; validity=255; no host-generated reply"
+    }
+  ],
+  "original_MCU_status_alias_read_count": 204,
+  "original_mailbox_doorbell_count": 48,
+  "guarded_AVD_cache_count": 1,
+  "full_report": "shared-final-replay.json.gz",
+  "full_report_sha256": "bf94fc75167e232b91dbb647e227c2dc1733f9004c108f1b990fd7c729ceab8f",
+  "final_summary_sha256": "f7c0215f7a79f29fa0ac9dfeea27045daada1af32a585684367faffe75364c3d"
+}

@@ -74,6 +74,7 @@ struct em8051
     em8051operation op[256]; // function pointers to opcode handlers
     em8051decoder dec[256]; // opcode-to-string decoder handlers    
     em8051exception except; // callback: exceptional situation occurred
+    void (*instruction_boundary)(struct em8051 *); // local: after IRQ entry, before an opcode fetch
     em8051sfrread sfrread[128]; // callback array: SFR register being read
     em8051sfrwrite sfrwrite[128]; // callback array: SFR register written
     em8051xread xread; // callback: external memory being read

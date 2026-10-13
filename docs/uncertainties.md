@@ -27,6 +27,18 @@ Historical stop: `806006D4 / BF003C05`. The original full-byte `<2` predicate ch
 
 Resource container offsets and strings are verified by bounds/hash checks; font/graphics codec, control tokens and all rendering semantics remain unresolved. Electrical panel timings and LC420WUE revision are not claimed. No CI secrets or protected broadcast decryption are supplied.
 
+Latest continuation: the original DVB-T MCU establishes the previously
+unknown shared mailbox through genuine instructions, but XDATA 2200 still
+has no supported transaction effect or completion. The AVD 13312-byte
+programming port is demonstrated; that auxiliary CPU has not executed.
+SFR8E and reset-key effects, private XRAM extent, IRQ routing and relative
+clock remain explicit experiments. Audio DSP2 logical 2D5A / BF225AB4 is
+the current main blocking input: expected E3 is a firmware comparison,
+not a proven reset or ready value. Recover IDMA completion and the actual
+DSP-side reply producer before implementing it. See the
+[latest evidence](shared-mcu-continuation.md). Older boundaries below are
+historical; strict POR/SPI-CF and all other stated uncertainties persist.
+
 Current additional boundary: **8052624C / BF205004 bit1**, GE virtual command-queue enable, after original GFX context preservation. Exact reset state, any external producer, clock/reset prerequisites and command-queue processing remain unknown. Genuine FIFO space/busy/tag status must follow queued operations; no constant success response is acceptable. SEM initial ownership and GOP initial bank are explicit experiments. The COMB transaction still assumes absent intermediate analog side effects, with high bits never made valid. See [current continuation and capture requirements](comb-and-ge-continuation.md).
 
 Current original TSP execution resolves the auxiliary-enable software dependency under explicit experiments; it does not validate silicon reset PC/QMEM reset fields or clock ratio. Full auxiliary interrupts/MMU/cache and PM51 execution remain unsupported. The current hardware decision is 804F0C48 / BF204B15 low nibble >=4. Related named HAL code identifies a SCART RGB detection use of the same byte with different bit masks; exact Titania4 input/ADC semantics and absent-input reset value remain unknown. No arbitrary nibble is supplied. Original GOP enters twice but no framebuffer is demonstrated. [Current report](openrisc-continuation.md).

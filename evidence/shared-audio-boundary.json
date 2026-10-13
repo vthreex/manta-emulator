@@ -1,0 +1,199 @@
+{
+  "response": {
+    "read": 0,
+    "write": 0,
+    "blocked_read": 1,
+    "first": {
+      "tick": 1788854952,
+      "pc": "0x804f9098",
+      "kind": "blocked_read",
+      "address": "0x1f225ab4",
+      "width": 1,
+      "value": "0xa5",
+      "ra": "0x804f7a28",
+      "sp": "0x8072d898",
+      "detail": "unknown reset/status bits; value is poison, execution stops"
+    },
+    "last": {
+      "tick": 1788854952,
+      "pc": "0x804f9098",
+      "kind": "blocked_read",
+      "address": "0x1f225ab4",
+      "width": 1,
+      "value": "0xa5",
+      "ra": "0x804f7a28",
+      "sp": "0x8072d898",
+      "detail": "unknown reset/status bits; value is poison, execution stops"
+    }
+  },
+  "reset_sequence": [
+    {
+      "tick": 1374325000,
+      "pc": "0x804fa410",
+      "kind": "read",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0xa5",
+      "ra": "0x804f7360",
+      "sp": "0x8072d898",
+      "detail": "INVALID one-shot sample; machine bit-provenance guard rejects first decision/new-device use"
+    },
+    {
+      "tick": 1374325002,
+      "pc": "0x804fa418",
+      "kind": "write",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x3",
+      "ra": "0x804f7360",
+      "sp": "0x8072d898",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1375042898,
+      "pc": "0x804fa430",
+      "kind": "read",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x3",
+      "ra": "0x804fa424",
+      "sp": "0x8072d898",
+      "detail": "write latch only; hardware side effects unverified"
+    },
+    {
+      "tick": 1375042899,
+      "pc": "0x804fa434",
+      "kind": "write",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804fa424",
+      "sp": "0x8072d898",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1375668088,
+      "pc": "0x804fa4b0",
+      "kind": "read",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "write latch only; hardware side effects unverified"
+    },
+    {
+      "tick": 1375668098,
+      "pc": "0x804fa4d8",
+      "kind": "write",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1375668111,
+      "pc": "0x804fa4b0",
+      "kind": "read",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "write latch only; hardware side effects unverified"
+    },
+    {
+      "tick": 1375668121,
+      "pc": "0x804fa4d8",
+      "kind": "write",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x1",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1375668134,
+      "pc": "0x804fa4b0",
+      "kind": "read",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x1",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "write latch only; hardware side effects unverified"
+    },
+    {
+      "tick": 1375668144,
+      "pc": "0x804fa4d8",
+      "kind": "write",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x3",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1375668157,
+      "pc": "0x804fa4b0",
+      "kind": "read",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x3",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "write latch only; hardware side effects unverified"
+    },
+    {
+      "tick": 1375668167,
+      "pc": "0x804fa4d8",
+      "kind": "write",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x1",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1375668180,
+      "pc": "0x804fa4b0",
+      "kind": "read",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x1",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "write latch only; hardware side effects unverified"
+    },
+    {
+      "tick": 1375668190,
+      "pc": "0x804fa4d8",
+      "kind": "write",
+      "address": "0x1f225800",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f7368",
+      "sp": "0x8072d890",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1788854952,
+      "pc": "0x804f9098",
+      "kind": "blocked_read",
+      "address": "0x1f225ab4",
+      "width": 1,
+      "value": "0xa5",
+      "ra": "0x804f7a28",
+      "sp": "0x8072d898",
+      "detail": "unknown reset/status bits; value is poison, execution stops"
+    }
+  ],
+  "observed_register_addresses": 152,
+  "hardware_ready_response_generated": false,
+  "identity": "sound DSP2 system-load response expected E3; reset and producer unresolved"
+}

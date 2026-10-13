@@ -1,0 +1,1 @@
+PASS: original reset/inflate, POR guard, CF packet/unknown cache, Winbond JEDEC/table selection, XIU/guest TLB/MIU1 alias, 269 original IRQs, 768 original gamma samples, both enable states and full deterministic replay; no authentic GOP frame claimed

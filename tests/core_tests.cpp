@@ -877,7 +877,104 @@ void gopPaletteTests() {
   require(p.pulse(0,0x2009,0xffff,0x76543210,0xffffffffu) && p.mode(0,9)==0x2000,
       "GOP observed mode2 raw color remains separate from mode3; no pixel format conversion invented");
 }
+void vdSharedExecutionTests(){
+  auto program=[](const std::vector<uint8_t>& code){
+    manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+    for(auto b:code)p.write(0x18,b);return p;
+  };
+  for(bool timer:{false,true}){
+    std::vector<uint8_t> code(128);code[0]=2;code[2]=0x20;
+    code[timer?0xb:3]=2;code[(timer?0xb:3)+2]=0x40;
+    const std::vector<uint8_t> init=timer?std::vector<uint8_t>{0x75,0x81,0xa5,0x75,0xa8,0x82,0x75,0x89,1,
+      0x75,0x8c,0xff,0x75,0x8a,0xfc,0xd2,0x8c,0x80,0xfe}:
+      std::vector<uint8_t>{0x75,0x81,0xa5,0x75,0xa8,0x81,0xd2,0x88,0x80,0xfe};
+    std::copy(init.begin(),init.end(),code.begin()+0x20);
+    const std::vector<uint8_t> handler=timer?std::vector<uint8_t>{0xc2,0x8c,0x74,0x5a,0x32}:
+      std::vector<uint8_t>{0x74,0x5a,0x32};
+    std::copy(handler.begin(),handler.end(),code.begin()+0x40);
+    auto p=program(code);manta::VdMcuCpu cpu;cpu.standardInterrupts=true;
+    std::vector<uint16_t> fetches;cpu.instruction=[&](uint16_t pc,uint8_t b,const auto&){
+      require(pc<code.size() && b==code[pc],"8051 ISR fetch is validated after architectural interrupt entry");fetches.push_back(pc);
+    };
+    cpu.resetProgram(p);for(unsigned i=0;i<20;++i)cpu.step();
+    if(!timer)cpu.requestInt0();
+    for(unsigned i=0;i<70;++i)cpu.step();
+    require(cpu.interruptEntries()==1 && cpu.accumulator()==0x5a && cpu.stack()==0xa5,
+      "8051 executes one real ISR and RETI; edge flag clears at entry and timer handler stops its source");
+    require(std::find(fetches.begin(),fetches.end(),timer?0xb:3)!=fetches.end(),
+      "trace contains the actual auxiliary interrupt vector, not an interrupted-PC opcode");
+  }
+  {
+    auto p=program({0x75,0x87,1});manta::VdMcuCpu c;c.resetProgram(p);
+    for(unsigned i=0;i<20;++i)c.step();
+    require(c.instructions()==1,"8051 idle ticks are not counted as original instruction execution");
+  }
+  for(bool badBranch:{false,true}){
+    auto p=program({0x90,0x1b,0,0xe0,0x54,0xfb,0xf0,uint8_t(badBranch?0x60:0x90),0x40,0,0xe0});
+    manta::VdMcuCpu c;unsigned restores=0;c.busRead=[](uint16_t a)->std::optional<manta::VdByte>{
+      if(a==0x1b00)return manta::VdByte{0xa5,0,a};return {};
+    };
+    c.busWrite=[&](uint16_t a,manta::VdByte v){
+      require(a==0x1b00 && v.known==4 && v.origin==a && !(v.value&4),
+        "original MCU mask RMW defines only the cleared bit, retaining unknown-byte origin");++restores;return true;
+    };
+    std::string stop;try{c.startup(p,100);}catch(const std::exception& e){stop=e.what();}
+    require(restores==1 && stop.find(badBranch?"unknown XDATA bits":"XDATA read unsupported")!=std::string::npos,
+      "guarded MCU RMW does not turn unknown mask bits into a usable branch or status response");
+  }
+  {
+    manta::Riu r;r.event=[](auto,auto,auto,auto,auto){};
+    r.candidateVdMcuProgram=true;r.exploratoryVdMcuStartup=true;r.exploratoryVdSharedRun=true;
+    r.exploratoryVdSuspendedBoundary=true;
+    uint64_t tick=0;auto w=[&](unsigned p,unsigned v){r.write(0x1f206900+p,1,v,0,255,++tick);};
+    w(0,1);w(1,0);w(5,0x51);w(8,0);w(9,0);
+    const std::vector<uint8_t> code={0x90,0x2f,0,0xe4,0xf0,0xa3,0x74,0x23,0xf0,0xa3,0x74,0x81,0xf0,
+      0xa3,0x74,0x66,0xf0,0x90,0x40,0,0xe0};
+    for(auto b:code)w(0x18,b);w(5,0x50);w(5,0);w(1,1);w(0,0);
+    require(r.knownBits(0x1f224c00,1)==0,"mailbox reset value remains unknown before actual MCU instructions write it");
+    r.write(0x1f206700,1,0,0,255,tick+=1000);
+    require(r.vdMailboxWrites()==4 && r.vdMcuCpu().instructions()==13 && r.vdMcuSuspended(),
+      "scheduled MCU executes its real MOVX stores and stops on unmapped external data");
+    require(r.read(0x1f224c00,1,0,255,++tick)==0 && r.read(0x1f224c01,1,0,255,++tick)==0x23 &&
+      r.read(0x1f224c04,1,0,255,++tick)==0x81 && r.read(0x1f224c05,1,0,255,++tick)==0x66,
+      "MIPS sees original MCU writes through the verified byte-strided shared mailbox aliases");
+    require(r.knownBits(0x1f224c02,1)==0,"shared aliases do not define unconnected RIU byte gaps");
+  }
+  {
+    manta::Riu r;r.event=[](auto,auto,auto,auto,auto){};
+    r.candidateVdMcuProgram=true;r.exploratoryVdMcuStartup=true;r.exploratoryVdSharedRun=true;
+    uint64_t tick=0;auto w=[&](unsigned p,unsigned v){r.write(0x1f206900+p,1,v,0,255,++tick);};
+    w(0,1);w(1,0);w(5,0x51);w(8,0);w(9,0);w(0x18,0x80);w(0x18,0xfe);
+    w(5,0x50);w(5,0);w(1,1);w(0,0);
+    r.write(0x1f206700,1,0,0,255,tick+=100);
+    require(r.vdMcuCpu().totalInstructions()>0,"released auxiliary CPU really executes its uploaded branch loop");
+    w(0,1);auto held=r.vdMcuCpu().totalInstructions();
+    r.write(0x1f206700,1,0,0,255,tick+=10000);
+    require(r.vdMcuCpu().totalInstructions()==held,"host reset hold prevents all auxiliary instruction dispatch, without catch-up execution");
+    w(0,0);require(r.vdMcuCpu().instructions()==0 && r.vdMcuCpu().pc()==0,"reset release restarts original uploaded code at its reset vector");
+    r.write(0x1f206700,1,0,0,255,tick+=100);
+    require(r.vdMcuCpu().totalInstructions()>held,"original auxiliary execution resumes after release");
+  }
+}
 void tspProvenanceTests() {
+  {
+    manta::AvdMcuProgram avd;
+    require(!avd.readable(),"AVD readback is unknown until original programming");
+    rejects([&]{avd.read();});
+    rejects([&]{avd.write(1,0,0);});
+    avd.write(1,0,1);avd.write(5,0x50,0xf0);avd.write(8,0,255);avd.write(9,0,255);
+    rejects([&]{avd.write(0x18,0x12,255);});
+    avd.write(5,0x5d,0xf1); // unrelated preserved fields must not choose mode
+    for(auto b:{0x02,0x00,0x03,0x75,0x81,0xac})avd.write(0x18,uint8_t(b),255);
+    avd.write(8,0,255);avd.write(9,0,255);
+    for(auto b:{0x02,0x00,0x03,0x75,0x81,0xac})require(avd.read()==b,"AVD readback returns real uploaded byte and advances cursor");
+    require(avd.writes==6 && avd.reads==6 && !avd.readable(),"AVD never reads fabricated zero code past the guest upload");
+    avd.write(5,0,0xf1);require(avd.write(1,1,1) && avd.startRequests==1,"AVD release records request without any fabricated ready state");
+    require(!avd.readable(),"execution mode cannot use the programming readback port");
+    manta::Riu bus;bus.candidateAvdMcuProgram=true;bus.event=[](auto,auto,auto,auto,auto){};
+    require(bus.knownBits(0x1f2068e0,1)==0 && bus.knownBits(0x1f2068c1,1)==0,"AVD candidate does not invent hardware reset bytes");
+    rejects([&]{bus.write(0x1f2068e0,1,0,0,255,1);});
+  }
   {
     manta::Riu ci;ci.event=[](auto,auto,auto,auto,auto){};
     require(ci.knownBits(0x1f206891,1)==0,"strict CI detection has no invented absent-card default");
@@ -1354,6 +1451,7 @@ int main() {
       r.read(0x1f20667c,1,0,255,++tick);
       require(!r.stopReason.empty(),"main-CPU use of unknown decoder output still stops in the suspended-device experiment");
     }
+    vdSharedExecutionTests();
     flashTests();
     riuTests();
     gpioTests();

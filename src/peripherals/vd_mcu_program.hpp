@@ -52,6 +52,7 @@ public:
     auto v=code_[cursor_++];++reads;return v;
   }
   uint16_t cursor()const{return cursor_;}
+  bool resetHeld()const{return hold_==1;}
   bool readable()const{return hold_==1 && execution_==0 && control_==0x51 && low_>=0 && high_>=0 && byteKnown(cursor_);}
   std::vector<uint8_t>& codeStorage(){return code_;}
   bool byteKnown(uint16_t address)const{return !valid_.empty() && valid_[address];}

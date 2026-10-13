@@ -71,3 +71,26 @@ Original ORBIS32 code accesses command 210330 and response 21033C. They alias MI
 BF001CDD is corroborated as PM PowerOnMode by a matching reader and related enum header; an explicit external AC-on experiment selects FF. BF002834/35 are original SAR readings with programmed power/free-running conversion. Fullscale voltages and conversion pacing remain experiments. BF206E79/7C is the split IR DMA producer query; original 03847000/360/48-byte ring layout is recovered, while descriptor command 82h reset-index coupling is an experiment. Original GOP top-bank reset pulse to window-enable reset coupling likewise remains experimental.
 
 BF204B15 at 804F0C48 is an unresolved SCART-related ADC query. Related Marlon archive symbol Hal_ADC_is_scart_rgb accesses this same byte but tests bits 4/6 and sets bit 5, whereas this Manta code reads low nibble and compares it with four. Thus neither the reference bit masks nor a zero/no-input value is copied into the model. The exact Titania4 ADC transfer, producer, board pin and status semantics require further evidence. [Report](openrisc-continuation.md).
+
+## Original MCU / AVD and audio continuation
+
+The actual MIPS and 8051 handlers establish shared aliases between XDATA
+2F00..2F1F and BF224C00..4C3D with byte stride `2*i-(i&1)`. Original MCU
+MOVX at 4EAA defines BF224C38; its IRQ handler writes FF at 4B0C only after
+successful target access. MCU 1B00 mask, 1B10 pending and 1B08 clear bit2
+are corroborated by original code. Other bits remain unknown. IRQ routing,
+reset/RAM and relative timing are explicitly experimental. XDATA 2200
+remains an unsupported target, not a writable ready shortcut.
+
+Original AVD loader 805047D4 establishes the BF2068C1/C5/C8/C9/D8/E0
+programming sequence. All 13312 uploaded bytes read back through the actual
+port before the original comparison succeeds. Execution/ready effects of
+that auxiliary CPU remain unsupported. Original 35D4 / BF206BA8 cache and
+unused BF206A85 observation keep invalid provenance.
+
+The latest actual stopping read is **804F9098 / BF225AB4**. Its logical
+audio register is 2D5A; original caller 804F79D8 compares it with E3 during
+DSP2 system-code startup. The trace has no MIPS producer write to this
+byte. Audio IDMA/processor completion and its reset value remain unknown.
+No E3 or arbitrary initial failure value is returned. See the
+[current continuation](shared-mcu-continuation.md).

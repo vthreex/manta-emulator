@@ -32,9 +32,13 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.deferVdSfr8eWrite && !o.exploratoryVdMcuStartup)
     throw std::runtime_error("VD SFR write-effect deferral requires the explicit bounded startup experiment");
   riu_.deferVdSfr8eWrite=o.deferVdSfr8eWrite;
+  riu_.candidateAvdMcuProgram=o.candidateAvdMcuProgram;
   if(o.deferVdResetKeyWrites && (!o.deferVdSfr8eWrite || !o.exploratoryVdMcuStartup))
     throw std::runtime_error("VD reset-key write deferral requires explicit SFR deferral and original startup experiment");
   riu_.deferVdResetKeyWrites=o.deferVdResetKeyWrites;
+  if(o.exploratoryVdSharedRun && !o.exploratoryVdMcuStartup)
+    throw std::runtime_error("Shared MCU experiment requires original program upload/startup");
+  riu_.exploratoryVdSharedRun=o.exploratoryVdSharedRun;
   if(o.exploratoryVdSuspendedBoundary && (!o.exploratoryVdMcuStartup || !o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("Suspended VD boundary experiment requires original startup and guarded exploration");
   riu_.exploratoryVdSuspendedBoundary=o.exploratoryVdSuspendedBoundary;
@@ -612,6 +616,40 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
         m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
         m.riu_.prepareOpaqueRead(a);
         m.event("deferred_gop_selector_mask",a,n,0,"INVALID upper IRQ flags discarded by original caller ANDI; unknown low bank still rejects BEQ");
+      }
+    }
+    // The stock decoder initializer reads an old configuration byte into
+    // caller-clobbered t0, immediately overwrites the device byte, and never
+    // uses the observation. Keep it invalid rather than inventing a reset.
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x803e3768 &&
+       a==0x1f206a85 && n==1 && m.riu_.knownBits(a,n)!=255){
+      std::vector<uint8_t> code(0x27c);m.cpu_.read(0x003e364c,code.data(),code.size());
+      if(sha256(code)=="fa745ee810a0ae7f71667c399e1ecf2705d938c45e60db5fb75180c3575c3524"){
+        m.preservedBits_.seed(8,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_decoder_unused_sample",a,n,0,
+          "INVALID old configuration read; original next store replaces byte; no reset value assigned; any use of unknown observation remains guarded");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x80503b48 &&
+       a==0x1f206ba8 && n==1 && m.cpu_.reg(UC_MIPS_REG_31)==0x80502eac && m.riu_.knownBits(a,n)!=255){
+      std::vector<uint8_t> code(0x3c+0x2c);m.cpu_.read(0x00503b1c,code.data(),0x3c);
+      m.cpu_.read(0x00502ea4,code.data()+0x3c,0x2c);
+      if(sha256(code)=="bd5fcd1f4716e621b979bbdd7da019efdf561a1d90e89c4af83b3e6bada613c0"){
+        m.preservedBits_.seed(3,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_avd_config_cache",a,n,0,
+          "INVALID original register 35D4 cache at RAM 006D83BE; complete reader/caller verified; no reset value assigned, first unknown decision or hardware use remains guarded");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x804fa410 &&
+       a==0x1f225800 && n==1 && m.riu_.knownBits(a,n)!=255){
+      std::vector<uint8_t> code(0x60);m.cpu_.read(0x004fa3ec,code.data(),code.size());
+      if(sha256(code)=="b8b2ae3431a5a8f62435bbedcdef9a4ae336d32aed3b4a2246c7eb9e46f4a880"){
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_dsp_reset_unused",a,n,0,
+          "INVALID old control read discarded by next original ADDIU; stock code writes 3 then 0 with its own delays; no reset default or auxiliary ready response assigned");
       }
     }
     auto geCaller=m.cpu_.reg(UC_MIPS_REG_31);
@@ -1334,10 +1372,25 @@ std::string Msd309Machine::summary() const {
     if(options_.exploratoryVdSuspendedBoundary)s<<",\n  \"mcu_mailbox_interrupt_requests\": "<<riu_.vdMcuProgram().interruptRequests
       <<",\n  \"mcu_mailbox_interrupt_pending\": "<<(riu_.vdMcuProgram().interruptPending?"true":"false");
   }
+  if(options_.candidateAvdMcuProgram){
+    auto image=riu_.avdMcuProgram().contiguousImage();
+    s<<",\n  \"candidate_avd_mcu_program\": true,\n  \"avd_mcu_program_writes\": "<<riu_.avdMcuProgram().writes
+      <<",\n  \"avd_mcu_program_reads\": "<<riu_.avdMcuProgram().reads
+      <<",\n  \"avd_mcu_start_requests\": "<<riu_.avdMcuProgram().startRequests
+      <<",\n  \"avd_mcu_program_bytes\": "<<image.size()<<",\n  \"avd_mcu_program_sha256\": \""<<sha256(image)<<"\""
+      <<",\n  \"avd_mcu_instructions\": 0";
+  }
   if(options_.exploratoryVdMcuStartup)s<<",\n  \"exploratory_vd_mcu_startup\": true,\n  \"vd_mcu_instructions\": "<<riu_.vdMcuCpu().instructions()
     <<",\n  \"vd_mcu_upstream_ticks\": "<<riu_.vdMcuCpu().cycles()<<",\n  \"vd_mcu_pc\": \""<<hex(riu_.vdMcuCpu().pc())<<"\",\n  \"vd_mcu_stack\": "<<unsigned(riu_.vdMcuCpu().stack());
   if(options_.deferVdSfr8eWrite)s<<",\n  \"deferred_vd_sfr8e_write_enabled\": true";
   if(options_.deferVdResetKeyWrites)s<<",\n  \"deferred_vd_reset_key_writes_enabled\": true";
+  if(options_.exploratoryVdSharedRun)s<<",\n  \"exploratory_vd_shared_run\": true"
+    <<",\n  \"vd_mcu_total_instructions\": "<<riu_.vdMcuCpu().totalInstructions()
+    <<",\n  \"vd_mcu_interrupt_entries\": "<<riu_.vdMcuCpu().interruptEntries()
+    <<",\n  \"vd_mcu_running\": "<<(riu_.vdMcuCpu().running()?"true":"false")
+    <<",\n  \"vd_mailbox_reads\": "<<riu_.vdMailboxReads()
+    <<",\n  \"vd_mailbox_writes\": "<<riu_.vdMailboxWrites()
+    <<",\n  \"vd_dispatch_divider\": "<<riu_.vdDispatchDivider;
   if(options_.exploratoryVdSuspendedBoundary)s<<",\n  \"exploratory_vd_suspended_boundary\": true,\n  \"vd_mcu_suspended\": "<<(riu_.vdMcuSuspended()?"true":"false")
     <<",\n  \"vd_mcu_boundary_reason\": \""<<riu_.vdMcuBoundaryReason()<<"\"";
   if(options_.osdProbes){

@@ -4,7 +4,9 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
+#include <optional>
 namespace manta {
+struct VdByte { uint8_t value=0xa5,known=0;uint16_t origin=0; };
 struct VdHardwareBoundary:std::runtime_error {
   using std::runtime_error::runtime_error;
 };
@@ -20,10 +22,20 @@ public:
   std::function<void(uint16_t,uint8_t,const std::string&)> instruction;
   std::function<void(uint16_t,bool,uint8_t)> external;
   std::function<void(uint8_t,bool,uint8_t)> specialRegister;
+  std::function<void(int)> coreDiagnostic;
   bool deferSfr8eWrite=false;
   std::function<void(uint8_t)> deferredSfr8e;
   bool deferResetKeyWrites=false;
   std::function<void(uint16_t,uint8_t)> deferredResetKey;
+  std::function<std::optional<VdByte>(uint16_t)> busRead;
+  std::function<bool(uint16_t,VdByte)> busWrite;
+  bool standardInterrupts=false;
+  void resetProgram(VdMcuProgram& program);
+  void step();
+  void requestInt0();
+  bool running()const;
+  uint64_t totalInstructions()const;
+  uint64_t interruptEntries()const;
   void startup(VdMcuProgram& program,uint64_t cycleBudget=10000);
   uint64_t instructions()const;
   uint64_t cycles()const;

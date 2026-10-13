@@ -22,6 +22,7 @@
 #include "inputs/scart.hpp"
 #include "video/pq_sram.hpp"
 #include "peripherals/vd_mcu_program.hpp"
+#include "peripherals/avd_mcu_program.hpp"
 #include "cpu/vd_mcu.hpp"
 #include <set>
 namespace manta {
@@ -31,7 +32,17 @@ struct RiuByte {
 class Riu {
   int exploratoryFetchRevisionByte_=-1;
   VdMcuProgram vdMcuProgram_;
+  AvdMcuProgram avdMcuProgram_;
   VdMcuCpu vdMcuCpu_;
+  RiuByte vdFiqMask_;
+  std::array<RiuByte,2> vdVersionBytes_{};
+  std::array<RiuByte,1024> vdPrivateRam_{};
+  uint64_t vdTick_=0,vdMailboxReads_=0,vdMailboxWrites_=0;
+  std::set<uint16_t> vdVisited_;
+  std::map<uint16_t,VdByte> vdLastMailboxReads_;
+  void advanceVd(uint64_t tick);
+  std::optional<VdByte> vdRead(uint16_t address);
+  bool vdWrite(uint16_t address,VdByte value);
   bool vdMcuSuspended_=false;
   std::string vdMcuBoundaryReason_;
   std::map<uint32_t, RiuByte> bytes_;
@@ -98,13 +109,19 @@ class Riu {
 
 public:
   bool candidateVdMcuProgram=false;
+  bool candidateAvdMcuProgram=false;
   bool exploratoryVdMcuStartup=false;
   bool deferVdSfr8eWrite=false;
   bool exploratoryVdSuspendedBoundary=false;
   bool deferVdResetKeyWrites=false;
+  bool exploratoryVdSharedRun=false;
+  uint64_t vdDispatchDivider=4,vdInstructionBudget=20000000;
+  uint64_t vdMailboxReads()const{return vdMailboxReads_;}
+  uint64_t vdMailboxWrites()const{return vdMailboxWrites_;}
   bool vdMcuSuspended()const{return vdMcuSuspended_;}
   const std::string& vdMcuBoundaryReason()const{return vdMcuBoundaryReason_;}
   const VdMcuProgram& vdMcuProgram()const{return vdMcuProgram_;}
+  const AvdMcuProgram& avdMcuProgram()const{return avdMcuProgram_;}
   const VdMcuCpu& vdMcuCpu()const{return vdMcuCpu_;}
   bool candidateTsp=false;
   void configureExploratoryTspCpu();

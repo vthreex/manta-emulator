@@ -11,28 +11,41 @@ struct VdMcuCpu::Impl {
   std::array<uint8_t,128> upper{};
   uint64_t executed=0,ticks=0;
   unsigned deferredKeyCount=0;
+  VdMcuProgram* program=nullptr;
+  bool running=false;
+  uint64_t total=0,interrupts=0;
+  uint8_t aKnown=255;
+  uint16_t aOrigin=0;
+  bool parityUnknown=false;
   static Impl& self(em8051* cpu){return *reinterpret_cast<Context*>(cpu)->owner;}
   static uint8_t xread(em8051* cpu,uint16_t address){
-    auto& m=self(cpu);if(m.outer->external)m.outer->external(address,false,0);
+    auto& m=self(cpu);
+    if(m.outer->busRead)if(auto v=m.outer->busRead(address)){
+      m.aKnown=v->known;m.aOrigin=v->origin;m.parityUnknown=v->known!=255;
+      return v->value;
+    }
+    if(m.outer->external)m.outer->external(address,false,0);
     std::ostringstream s;s<<"VD MCU XDATA read unsupported at PC 0x"<<std::hex<<cpu->mPC<<", address 0x"<<address;
     throw VdHardwareBoundary(s.str());
   }
   static void xwrite(em8051* cpu,uint16_t address,uint8_t value){
     auto& m=self(cpu);
-    if(m.outer->deferResetKeyWrites && m.deferredKeyCount<4 &&
-       address==0x1080+m.deferredKeyCount && value==(m.deferredKeyCount&1?0x55:0xaa)){
+    if(m.outer->deferResetKeyWrites &&
+       address==0x1080+(m.deferredKeyCount%4) && value==(m.deferredKeyCount&1?0x55:0xaa)){
       ++m.deferredKeyCount;
       if(m.outer->deferredResetKey)m.outer->deferredResetKey(address,value);
-      // Only the observed four writes are deferred. Their hardware effects
-      // and every later XDATA read remain unresolved.
+      // Each complete original sequence re-arms its first address. Unknown
+      // effects and every key-register read remain unresolved.
       return;
     }
+    if(m.outer->busWrite && m.outer->busWrite(address,{value,m.aKnown,m.aOrigin}))return;
     if(m.outer->external)m.outer->external(address,true,value);
     std::ostringstream s;s<<"VD MCU XDATA write unsupported at PC 0x"<<std::hex<<cpu->mPC<<", address 0x"<<address;
     throw VdHardwareBoundary(s.str());
   }
   static uint8_t unknownSfrRead(em8051* cpu,uint8_t address){
-    auto& m=self(cpu);if(m.outer->specialRegister)m.outer->specialRegister(address,false,0);
+    auto& m=self(cpu);
+    if(m.outer->specialRegister)m.outer->specialRegister(address,false,0);
     std::ostringstream s;s<<"VD MCU nonstandard SFR read unsupported at PC 0x"<<std::hex<<cpu->mPC<<", SFR 0x"<<unsigned(address);
     throw VdHardwareBoundary(s.str());
   }
@@ -52,16 +65,66 @@ struct VdMcuCpu::Impl {
   static void interruptEnable(em8051* cpu,uint8_t){
     // EA alone cannot admit an interrupt while all individually enabled
     // sources are disabled in this explicitly selected standard reset model.
+    auto& m=self(cpu);
+    if(m.outer->standardInterrupts){
+      if(cpu->mSFR[REG_IE]&0x7c)
+        throw VdHardwareBoundary("VD MCU interrupt source other than INT0/Timer0 unsupported");
+      return;
+    }
     if((cpu->mSFR[REG_IE]&0x80) && (cpu->mSFR[REG_IE]&0x7f))
       throw std::runtime_error("VD MCU interrupt-source enable requires verified MStar interrupt/clock wiring");
   }
-  static void exception(em8051*,int code){throw std::runtime_error("VD MCU architecture exception "+std::to_string(code));}
+  static void boundary(em8051* cpu){
+    auto& m=self(cpu);auto pc=cpu->mPC;auto& p=*m.program;
+    if(!p.byteKnown(pc))throw VdHardwareBoundary("VD MCU instruction fetch from unwritten program memory");
+    char text[128];auto size=decode(cpu,pc,text);
+    if(!size)throw VdHardwareBoundary("VD MCU invalid instruction decode");
+    for(unsigned i=0;i<size;++i)if(!p.byteKnown(uint16_t(pc+i)))
+      throw VdHardwareBoundary("VD MCU operand outside uploaded program");
+    auto opcode=cpu->mCodeMem[pc];
+    if(m.aKnown!=255){
+      bool independent=opcode==0 || opcode==0x22 || opcode==0x32 || opcode==0x02 ||
+        opcode==0x12 || opcode==0x80 || opcode==0x90 || opcode==0xa3 || opcode==0xf0;
+      if(opcode==0x54 || opcode==0x44){
+        auto bits=cpu->mCodeMem[uint16_t(pc+1)];
+        m.aKnown|=opcode==0x54?uint8_t(~bits):bits;
+        m.parityUnknown=m.aKnown!=255;independent=true;
+      }
+      bool overwrite=opcode==0xe4 || opcode==0x74 || opcode==0xe6 || opcode==0xe7 ||
+        (opcode>=0xe8 && opcode<=0xef) || opcode==0xe0 ||
+        (opcode==0xe5 && cpu->mCodeMem[uint16_t(pc+1)]!=0xd0 && cpu->mCodeMem[uint16_t(pc+1)]!=0xe0);
+      if(overwrite){m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;independent=true;}
+      if(opcode==0x20 || opcode==0x30){
+        auto bit=cpu->mCodeMem[uint16_t(pc+1)];
+        independent=bit>=0xe0 && bit<=0xe7 && (m.aKnown&(1u<<(bit-0xe0)));
+      }
+      if(!independent)throw VdHardwareBoundary("VD MCU unknown XDATA bits affect instruction/decision/address");
+    }
+    if(m.parityUnknown && ((opcode==0xc0 || opcode==0xe5) && cpu->mCodeMem[uint16_t(pc+1)]==0xd0))
+      throw VdHardwareBoundary("VD MCU unknown parity consumed through PSW");
+    if(opcode==0x83 || opcode==0x93){
+      auto base=opcode==0x83?uint16_t(pc+1):uint16_t(cpu->mSFR[REG_DPL]|(cpu->mSFR[REG_DPH]<<8));
+      if(!p.byteKnown(uint16_t(base+cpu->mSFR[REG_ACC])))throw VdHardwareBoundary("VD MCU MOVC reads unwritten code byte");
+    }
+    if((pc==3 || pc==0xb) && cpu->mInterruptActive)++m.interrupts;
+    if(m.outer->instruction)m.outer->instruction(pc,opcode,text);
+  }
+  static void exception(em8051* cpu,int code){
+    // Upstream ISR register-preservation checks are debugger heuristics,
+    // not 8051 architectural exceptions. ISR code may intentionally change
+    // ACC, PSW or SP. Preserve the actual RETI semantics and report them.
+    if(code==EXCEPTION_IRET_PSW_MISMATCH || code==EXCEPTION_IRET_SP_MISMATCH || code==EXCEPTION_IRET_ACC_MISMATCH){
+      if(self(cpu).outer->coreDiagnostic)self(cpu).outer->coreDiagnostic(code);
+      return;
+    }
+    throw std::runtime_error("VD MCU unsupported CPU operation "+std::to_string(code));
+  }
 };
 VdMcuCpu::VdMcuCpu():impl_(std::make_unique<Impl>()){
   impl_->outer=this;impl_->context.owner=impl_.get();
 }
 VdMcuCpu::~VdMcuCpu()=default;
-void VdMcuCpu::startup(VdMcuProgram& program,uint64_t budget){
+void VdMcuCpu::resetProgram(VdMcuProgram& program){
   auto& m=*impl_;auto& cpu=m.context.cpu;
   if(!program.writes)throw std::runtime_error("VD MCU startup without original uploaded program");
   cpu.mCodeMem=program.codeStorage().data();cpu.mCodeMemMaxIdx=65535;
@@ -76,27 +139,26 @@ void VdMcuCpu::startup(VdMcuProgram& program,uint64_t budget){
     cpu.sfrread[address-128]=nullptr;cpu.sfrwrite[address-128]=nullptr;
   }
   cpu.sfrwrite[REG_IE]=Impl::interruptEnable;
+  cpu.instruction_boundary=Impl::boundary;
   m.executed=m.ticks=0;m.deferredKeyCount=0;
-  while(m.ticks<budget){
-    // Upstream tick decrements delay before testing for a new operation.
-    // A delay of one therefore also fetches in this tick: validate/trace it.
-    if(cpu.mTickDelay<=1){
-      auto pc=cpu.mPC;
-      if(!program.byteKnown(pc))throw std::runtime_error("VD MCU instruction fetch from unwritten program memory");
-      char text[128];auto size=decode(&cpu,pc,text);
-      if(!size)throw std::runtime_error("VD MCU idle/powerdown reached without modeled interrupt source");
-      for(unsigned i=0;i<size;++i)if(!program.byteKnown(uint16_t(pc+i)))
-        throw std::runtime_error("VD MCU instruction operand outside uploaded program");
-      auto opcode=cpu.mCodeMem[pc];
-      if(opcode==0x83 || opcode==0x93){
-        auto base=opcode==0x83?uint16_t(pc+1):uint16_t(cpu.mSFR[REG_DPL]|(cpu.mSFR[REG_DPH]<<8));
-        if(!program.byteKnown(uint16_t(base+cpu.mSFR[REG_ACC])))throw std::runtime_error("VD MCU MOVC reads unwritten program byte");
-      }
-      if(instruction)instruction(pc,opcode,text);
-    }
-    if(tick(&cpu))++m.executed;
-    ++m.ticks;
-  }
+  m.program=&program;m.running=true;m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;
+}
+void VdMcuCpu::step(){
+  auto& m=*impl_;
+  if(!m.running)throw VdHardwareBoundary("VD MCU dispatch while stopped");
+  try{if(tick(&m.context.cpu)){++m.executed;++m.total;}++m.ticks;}
+  catch(...){m.running=false;throw;}
+}
+void VdMcuCpu::requestInt0(){
+  if(!standardInterrupts)throw VdHardwareBoundary("VD MCU INT0 input unavailable");
+  impl_->context.cpu.mSFR[REG_TCON]|=TCONMASK_IE0;
+}
+bool VdMcuCpu::running()const{return impl_->running;}
+uint64_t VdMcuCpu::totalInstructions()const{return impl_->total;}
+uint64_t VdMcuCpu::interruptEntries()const{return impl_->interrupts;}
+void VdMcuCpu::startup(VdMcuProgram& program,uint64_t budget){
+  resetProgram(program);
+  while(impl_->ticks<budget)step();
   throw std::runtime_error("VD MCU bounded startup cycle budget reached; no readiness inferred");
 }
 uint64_t VdMcuCpu::instructions()const{return impl_->executed;}

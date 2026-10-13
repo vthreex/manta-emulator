@@ -46,9 +46,11 @@ struct Options {
   bool exploratoryPqSramIdle=false;
   bool exploratoryPqDisabledPorts=false;
   bool candidateVdMcuProgram=false;
+  bool candidateAvdMcuProgram=false;
   bool exploratoryVdMcuStartup=false;
   bool deferVdSfr8eWrite=false;
   bool deferVdResetKeyWrites=false;
+  bool exploratoryVdSharedRun=false;
   bool exploratoryVdSuspendedBoundary=false;
   bool exploratoryCiDetectHigh=false;
   uint64_t orBudget=10000000;

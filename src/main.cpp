@@ -80,9 +80,11 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--graphics-probes")o.graphicsProbes=true;
       else if (a == "--osd-probes")o.osdProbes=true;
       else if (a == "--candidate-vd-mcu-program")o.candidateVdMcuProgram=true;
+      else if (a == "--candidate-avd-mcu-program")o.candidateAvdMcuProgram=true;
       else if (a == "--exploratory-vd-mcu-startup")o.exploratoryVdMcuStartup=true;
       else if (a == "--defer-vd-sfr8e-write")o.deferVdSfr8eWrite=true;
       else if (a == "--defer-vd-reset-key-writes")o.deferVdResetKeyWrites=true;
+      else if (a == "--exploratory-vd-shared-run")o.exploratoryVdSharedRun=true;
       else if (a == "--exploratory-vd-suspended-boundary")o.exploratoryVdSuspendedBoundary=true;
       else if (a == "--exploratory-fetch-revision-byte"){
         auto v=std::stoul(value(i),nullptr,0);
@@ -197,9 +199,11 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-scmi-format-byte N: hypothetical initial main/sub bank12 format low byte; upper fields remain unknown\n"
                "--exploratory-fetch-revision-byte N: explicit unverified immutable BF003C05 byte; not a validated Titania4 stepping\n"
                "--candidate-vd-mcu-program: shared MCU upload/readback ports; current original payload is DVB-T; no synthetic acknowledgment\n"
+               "--candidate-avd-mcu-program: original analog-video MCU programming/readback port; auxiliary execution and ready signaling unsupported\n"
                "--exploratory-vd-mcu-startup: execute original upload with standard 8052 reset/RAM hypothesis; all XDATA stops unresolved\n"
                "--defer-vd-sfr8e-write: separate diagnostic write-effect deferral; SFR identity/effects unknown and reads forbidden\n"
                "--defer-vd-reset-key-writes: defer only original AA/55/AA/55 XDATA 1080..1083 writes; effects unverified, no ready response\n"
+               "--exploratory-vd-shared-run: original MCU on verified mailbox aliases; provisional divider4, private XRAM and INT0/Timer0 wiring; unknown data consumption stops\n"
                "--exploratory-vd-suspended-boundary: explicit stalled-MCU experiment; unresolved transaction has no effect/reply; MIPS continues only until unknown inputs\n"
                 "--osd-probes: original ZUI state, graphics context, font renderer and window-creation entry traces\n"
                 "--exploratory-ci-detect-high: external CI detect bit2 high fixture; board polarity unverified, no module or acknowledgment\n"
