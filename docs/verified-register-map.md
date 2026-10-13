@@ -94,3 +94,11 @@ DSP2 system-code startup. The trace has no MIPS producer write to this
 byte. Audio IDMA/processor completion and its reset value remain unknown.
 No E3 or arbitrary initial failure value is returned. See the
 [current continuation](shared-mcu-continuation.md).
+
+The [audio/AVD continuation](audio-avd-continuation.md) now models the
+original 2D04/2D02/2D03 write-address/data phases and 2D08/2D00/2D0C..0E
+readback sequence as addressed 24-bit transfers. 2D00 bits 3/4 completion
+is causal to actual transfers, with atomic functional timing; unrelated
+fields remain unknown. BF225AB4 is still an unresolved DSP2 load-code
+acknowledgment. Original AVD executes to PC 0802, XDATA C008 write55;
+the register identity/effect is unknown and its write does not complete.

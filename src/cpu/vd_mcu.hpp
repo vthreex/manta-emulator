@@ -1,5 +1,6 @@
 #pragma once
 #include "peripherals/vd_mcu_program.hpp"
+#include "peripherals/avd_mcu_program.hpp"
 #include <functional>
 #include <memory>
 #include <string>
@@ -15,6 +16,8 @@ struct VdHardwareBoundary:std::runtime_error {
 class VdMcuCpu {
   struct Impl;
   std::unique_ptr<Impl> impl_;
+  void resetProgramStorage(std::vector<uint8_t>& code,
+    std::function<bool(uint16_t)> byteKnown,uint64_t writes);
 public:
   VdMcuCpu();
   ~VdMcuCpu();
@@ -31,6 +34,7 @@ public:
   std::function<bool(uint16_t,VdByte)> busWrite;
   bool standardInterrupts=false;
   void resetProgram(VdMcuProgram& program);
+  void resetProgram(AvdMcuProgram& program);
   void step();
   void requestInt0();
   bool running()const;

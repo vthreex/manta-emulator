@@ -24,6 +24,7 @@
 #include "peripherals/vd_mcu_program.hpp"
 #include "peripherals/avd_mcu_program.hpp"
 #include "cpu/vd_mcu.hpp"
+#include "audio/idma.hpp"
 #include <set>
 namespace manta {
 struct RiuByte {
@@ -34,6 +35,10 @@ class Riu {
   VdMcuProgram vdMcuProgram_;
   AvdMcuProgram avdMcuProgram_;
   VdMcuCpu vdMcuCpu_;
+  VdMcuCpu avdMcuCpu_;
+  AudioIdma audioIdma_[2];
+  bool avdMcuSuspended_=false;
+  std::string avdMcuBoundaryReason_;
   RiuByte vdFiqMask_;
   std::array<RiuByte,2> vdVersionBytes_{};
   std::array<RiuByte,1024> vdPrivateRam_{};
@@ -110,6 +115,12 @@ class Riu {
 public:
   bool candidateVdMcuProgram=false;
   bool candidateAvdMcuProgram=false;
+  bool candidateAudioIdma=false;
+  const AudioIdma& audioIdma(unsigned i)const{return audioIdma_[i];}
+  bool exploratoryAvdMcuStartup=false,exploratoryAvdSuspendedBoundary=false;
+  const VdMcuCpu& avdMcuCpu()const{return avdMcuCpu_;}
+  bool avdMcuSuspended()const{return avdMcuSuspended_;}
+  const std::string& avdMcuBoundaryReason()const{return avdMcuBoundaryReason_;}
   bool exploratoryVdMcuStartup=false;
   bool deferVdSfr8eWrite=false;
   bool exploratoryVdSuspendedBoundary=false;

@@ -1,0 +1,6 @@
+{
+  "result": "PASS",
+  "PATH": "Windows System32 only",
+  "exit_code": 0,
+  "stdout": "NATIVE_WINDOW_CREATED; guest display not initialized\n"
+}

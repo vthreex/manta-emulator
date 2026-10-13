@@ -81,6 +81,9 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--osd-probes")o.osdProbes=true;
       else if (a == "--candidate-vd-mcu-program")o.candidateVdMcuProgram=true;
       else if (a == "--candidate-avd-mcu-program")o.candidateAvdMcuProgram=true;
+      else if (a == "--candidate-audio-idma")o.candidateAudioIdma=true;
+      else if (a == "--exploratory-avd-mcu-startup")o.exploratoryAvdMcuStartup=true;
+      else if (a == "--exploratory-avd-suspended-boundary")o.exploratoryAvdSuspendedBoundary=true;
       else if (a == "--exploratory-vd-mcu-startup")o.exploratoryVdMcuStartup=true;
       else if (a == "--defer-vd-sfr8e-write")o.deferVdSfr8eWrite=true;
       else if (a == "--defer-vd-reset-key-writes")o.deferVdResetKeyWrites=true;
@@ -199,7 +202,10 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-scmi-format-byte N: hypothetical initial main/sub bank12 format low byte; upper fields remain unknown\n"
                "--exploratory-fetch-revision-byte N: explicit unverified immutable BF003C05 byte; not a validated Titania4 stepping\n"
                "--candidate-vd-mcu-program: shared MCU upload/readback ports; current original payload is DVB-T; no synthetic acknowledgment\n"
-               "--candidate-avd-mcu-program: original analog-video MCU programming/readback port; auxiliary execution and ready signaling unsupported\n"
+                 "--candidate-avd-mcu-program: original analog-video MCU programming/readback port; no ready signaling\n"
+                 "--candidate-audio-idma: observed 24-bit addressed upload/readback protocol, atomic functional timing; no DSP ISA/ready replies\n"
+                 "--exploratory-avd-mcu-startup: bounded original AVD execution under standard 8052 reset hypothesis; unknown XDATA/SFR stops\n"
+                 "--exploratory-avd-suspended-boundary: suspend only AVD on an unknown transaction; no side effect or reply, other CPUs remain guarded\n"
                "--exploratory-vd-mcu-startup: execute original upload with standard 8052 reset/RAM hypothesis; all XDATA stops unresolved\n"
                "--defer-vd-sfr8e-write: separate diagnostic write-effect deferral; SFR identity/effects unknown and reads forbidden\n"
                "--defer-vd-reset-key-writes: defer only original AA/55/AA/55 XDATA 1080..1083 writes; effects unverified, no ready response\n"

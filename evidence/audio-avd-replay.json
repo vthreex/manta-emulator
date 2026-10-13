@@ -1,0 +1,124 @@
+{
+  "result": "PASS",
+  "emulator_sha256": "86cb4b74fd809aa5de16775244e7c0fe1c4b0514c6557d047f00bbbb27d285c6",
+  "scope": "full original CPU replay",
+  "full_dual_CPU_trace_replay": "PASS",
+  "full_three_CPU_trace_replay": "PASS",
+  "full_four_CPU_trace_replay": "PASS",
+  "original_instruction_words_verified": 193276894,
+  "AVD_actual_uploaded_and_verified_bytes": 13312,
+  "audio_IDMA_original_readback_bytes": 8343,
+  "audio_IDMA_addressed_storage": [
+    {
+      "word_uploads": 2781,
+      "word_reads": 2781,
+      "initialized_words": 2781,
+      "addressed_memory_sha256": "f25cba069289823a8165f3d22dbbd90f58c83bbdc49aeff90f6476faad7da2df"
+    },
+    {
+      "word_uploads": 0,
+      "word_reads": 0,
+      "initialized_words": 0,
+      "addressed_memory_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "original_OSD_routine_entries": {
+    "0x8040440c": 1,
+    "0x80522d5c": 1
+  },
+  "full_report": "audio-avd-full-replay.json.gz",
+  "full_report_sha256": "4bd2dfe382391aecf1150c043305bb946ec9374bc59d3f08c323a739ad82c686",
+  "final_summary_sha256": "1f7e358615c69eabdc0a603160e6bd2dc1d39762e18e56541851c095abf02fc9",
+  "AVD_original_instruction_attempts": [
+    {
+      "tick": 1332432682,
+      "pc": "0x805048f4",
+      "kind": "avd_mcu_instruction",
+      "address": "0x0",
+      "width": 1,
+      "value": "0x2",
+      "ra": "0x80504924",
+      "sp": "0x8072d890",
+      "detail": "original AVD uploaded code: LJMP  #0003h"
+    },
+    {
+      "tick": 1332432682,
+      "pc": "0x805048f4",
+      "kind": "avd_mcu_instruction",
+      "address": "0x3",
+      "width": 1,
+      "value": "0x75",
+      "ra": "0x80504924",
+      "sp": "0x8072d890",
+      "detail": "original AVD uploaded code: MOV   SP, #ACh"
+    },
+    {
+      "tick": 1332432682,
+      "pc": "0x805048f4",
+      "kind": "avd_mcu_instruction",
+      "address": "0x6",
+      "width": 1,
+      "value": "0x2",
+      "ra": "0x80504924",
+      "sp": "0x8072d890",
+      "detail": "original AVD uploaded code: LJMP  #0219h"
+    },
+    {
+      "tick": 1332432682,
+      "pc": "0x805048f4",
+      "kind": "avd_mcu_instruction",
+      "address": "0x219",
+      "width": 1,
+      "value": "0xf1",
+      "ra": "0x80504924",
+      "sp": "0x8072d890",
+      "detail": "original AVD uploaded code: ACALL 07FDh"
+    },
+    {
+      "tick": 1332432682,
+      "pc": "0x805048f4",
+      "kind": "avd_mcu_instruction",
+      "address": "0x7fd",
+      "width": 1,
+      "value": "0x90",
+      "ra": "0x80504924",
+      "sp": "0x8072d890",
+      "detail": "original AVD uploaded code: MOV   DPTR, #0C008h"
+    },
+    {
+      "tick": 1332432682,
+      "pc": "0x805048f4",
+      "kind": "avd_mcu_instruction",
+      "address": "0x800",
+      "width": 1,
+      "value": "0x74",
+      "ra": "0x80504924",
+      "sp": "0x8072d890",
+      "detail": "original AVD uploaded code: MOV   A, #55h"
+    },
+    {
+      "tick": 1332432682,
+      "pc": "0x805048f4",
+      "kind": "avd_mcu_instruction",
+      "address": "0x802",
+      "width": 1,
+      "value": "0xf0",
+      "ra": "0x80504924",
+      "sp": "0x8072d890",
+      "detail": "original AVD uploaded code: MOVX  @DPTR, A"
+    }
+  ],
+  "AVD_unresolved_XDATA": [
+    {
+      "tick": 1332432682,
+      "pc": "0x805048f4",
+      "kind": "avd_mcu_external_unresolved",
+      "address": "0xc008",
+      "width": 1,
+      "value": "0x55",
+      "ra": "0x80504924",
+      "sp": "0x8072d890",
+      "detail": "write from original AVD MCU; PC=2050; XDATA wiring/effects unverified, no transaction completed"
+    }
+  ]
+}

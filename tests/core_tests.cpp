@@ -958,6 +958,56 @@ void vdSharedExecutionTests(){
 }
 void tspProvenanceTests() {
   {
+    manta::AudioIdma p;
+    require(!p.read(0x18) && !p.statusKnown(),"IDMA never invents reset data or completion");
+    rejects([&]{p.data(0,1);});
+    p.address(false,0x1234);p.data(0,0x34);p.data(1,0x56);p.data(0,0x12);
+    require(p.wordWrites==0 && !p.statusKnown(),"partial IDMA port word cannot signal completed transfer");
+    p.data(1,0);
+    require(p.wordWrites==1 && p.statusKnown()==0x10,"four original upload phases initialize a real 24-bit word");
+    p.address(true,0x1234);p.command(8,255);
+    require(p.read(0x1c)==0x12 && p.read(0x18)==0x34 && p.read(0x19)==0x56,
+      "IDMA readback lane order matches original low/middle/high verification routine");
+    p.command(8,255);
+    require(!p.read(0x18) && p.wordReads==2,"auto-incremented IDMA read of unwritten word remains unknown");
+    p.address(false,0x1234);rejects([&]{p.data(1,0);});
+    manta::Riu r;r.candidateAudioIdma=true;r.event=[](auto,auto,auto,auto,auto){};
+    uint64_t tick=0;auto w=[&](unsigned off,unsigned n,unsigned v){r.write(0x1f225a00+off,n,v,0,n==1?255:65535,++tick);};
+    w(8,2,0x21);w(4,1,0x34);w(5,1,0x56);w(4,1,0x12);w(5,1,0);w(0x10,2,0x21);w(0,1,8);
+    require(r.read(0x1f225a00,1,0,8,++tick)==0,"IDMA request completion replaces a software request latch with transfer state");
+    require(r.read(0x1f225a1c,1,0,255,++tick)==0x12 && r.read(0x1f225a18,1,0,255,++tick)==0x34 && r.read(0x1f225a19,1,0,255,++tick)==0x56,
+      "RIU IDMA readback returns bytes actually transferred through original MMIO ports");
+    require(r.knownBits(0x1f225ab4,1)==0 && r.knownBits(0x1f225c18,1)==0,
+      "IDMA transfers cannot produce DSP2 alive or another DSP's memory contents");
+    manta::Riu guarded;guarded.candidateAudioIdma=true;guarded.symbolicInit=true;guarded.event=[](auto,auto,auto,auto,auto){};
+    auto gw=[&](unsigned off,unsigned n,unsigned v){guarded.write(0x1f225a00+off,n,v,0,n==1?255:65535,++tick);};
+    guarded.prepareRmw(0x1f225a00,3);gw(0,1,3);gw(8,2,0x11ff);
+    gw(4,1,0x88);gw(5,1,0x77);gw(4,1,0x99);gw(5,1,0);gw(0x10,2,0x11ff);
+    guarded.prepareRmw(0x1f225a00,8);
+    require(guarded.read(0x1f225a00,1,0x804f92a8,255,++tick)==3 && guarded.stopReason.empty(),
+      "live IDMA status preserves the original same-origin RMW of unrelated unknown fields");
+    gw(0,1,11);guarded.prepareMaskedRead(0x1f225a00,8);
+    require((guarded.read(0x1f225a00,1,0x804f9098,255,++tick)&8)==0 && guarded.stopReason.empty(),
+      "original byte-verified destructive mask consumes only the actual IDMA completion bit");
+    require(guarded.knownBits(0x1f225a00,1)!=255 && guarded.knownBits(0x1f225ab4,1)==0,
+      "IDMA command completion leaves unrelated unknown status fields and DSP alive invalid");
+  }
+  for(bool suspend:{false,true}){
+    manta::Riu r;r.event=[](auto,auto,auto,auto,auto){};r.candidateAvdMcuProgram=true;
+    r.exploratoryAvdMcuStartup=true;r.exploratoryAvdSuspendedBoundary=suspend;
+    uint64_t tick=0;auto w=[&](unsigned off,unsigned v){r.write(0x1f2068c0+off,1,v,0,255,++tick);};
+    w(1,0);w(5,0x51);w(8,0);w(9,0);
+    // Actual AVD reset, stack and first transaction instructions, arranged
+    // contiguously here; full original image is exercised separately.
+    for(auto v:{0x02,0x00,0x03,0x75,0x81,0xac,0x90,0xc0,0x08,0x74,0x55,0xf0})w(0x18,v);
+    w(5,0);bool failed=false;try{w(1,1);}catch(const manta::VdHardwareBoundary&){failed=true;}
+    require(failed!=suspend && r.avdMcuSuspended()==suspend,"only explicit AVD suspension continues an unresolved auxiliary transaction");
+    require(r.avdMcuCpu().totalInstructions()==4 && r.avdMcuCpu().pc()==11 && !r.avdMcuCpu().running(),
+      "original instruction core retains AVD at actual MOVX boundary without producing a ready reply");
+    require(r.knownBits(0x1f225ab4,1)==0 && r.knownBits(0x1f206ba8,1)==0,
+      "AVD startup cannot manufacture audio DSP2 readiness or video status");
+  }
+  {
     manta::AvdMcuProgram avd;
     require(!avd.readable(),"AVD readback is unknown until original programming");
     rejects([&]{avd.read();});

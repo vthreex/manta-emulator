@@ -1,5 +1,17 @@
 # Evidence still needed
 
+Latest [audio/AVD checkpoint](audio-avd-continuation.md): addressed IDMA
+readback works, but DSP2 load-code acknowledgment `BF225AB4` is still
+unknown. Candidate ADSP-21xx decoding does not explain reset-entry word
+`040040`, the `0780xx` family or calls to unuploaded `3FDE/3FC1` targets.
+Exact MStar DSP extensions and ROM/external mappings must be established
+before original audio execution can produce the expected acknowledgment.
+Original AVD stops at `0802 / XDATA C008` write55; the subsequent C009
+key, SFR D8/8E and XDATA mappings remain unmodeled. The separate DVB-T
+MCU is stopped at `4AE0 / XDATA 2200`. No host acknowledgments are
+fabricated. Strict POR/CF and exploratory clock/reset assumptions persist.
+Earlier checkpoint paragraphs below are historical.
+
 Latest boot dependencies: `BF003C05` likely reports chip revision, but the Manta byte is unmeasured; `BF206891` is a PCMCIA detect input whose board polarity is unverified; `BF224C38` bit 0 blocks original MIPS decision making at `804F496C`; the original DVB-T 8051 blocks on unmapped XDATA `2F00` at `55B9` after an explicitly deferred four-byte key sequence. SFR `8E`, those key-write effects, reset timing, and MIPS-to-MCU interrupt routing also remain unverified. See [current execution evidence](revision-and-vd-mcu-continuation.md). A matching MSD309/Titania4 register definition or safe read-only capture is needed before these values can become strict hardware behavior. Strict POR `BF200A38` and the undocumented Winbond `CF` response remain separate unresolved prerequisites.
 
 Historical stop: `806006D4 / BF003C05`. The original full-byte `<2` predicate changes a capped fetch-size parameter, consistent with a related named OPM-fetch patch. Exact byte identity and value are unresolved; neither Marlon's constant-false implementation nor other CHIPTOP revision fields establish it. See [current evidence and capture method](application-display-continuation.md). SCART zero-code, SCMI initial low byte, no-input detection/reset, SRAM idle/port reset and transfer clock remain explicitly experimental. Strict POR and undocumented CF are unchanged. Historical boundaries below remain evidence, not current-stop claims.

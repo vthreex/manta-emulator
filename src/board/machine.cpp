@@ -33,6 +33,13 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     throw std::runtime_error("VD SFR write-effect deferral requires the explicit bounded startup experiment");
   riu_.deferVdSfr8eWrite=o.deferVdSfr8eWrite;
   riu_.candidateAvdMcuProgram=o.candidateAvdMcuProgram;
+  riu_.candidateAudioIdma=o.candidateAudioIdma;
+  if(o.exploratoryAvdMcuStartup && (!o.candidateAvdMcuProgram || !o.symbolicInit || !o.deferDiagnosticReads))
+    throw std::runtime_error("AVD original startup experiment requires the original programming port and guarded exploration");
+  if(o.exploratoryAvdSuspendedBoundary && !o.exploratoryAvdMcuStartup)
+    throw std::runtime_error("AVD boundary suspension requires original auxiliary instruction execution");
+  riu_.exploratoryAvdMcuStartup=o.exploratoryAvdMcuStartup;
+  riu_.exploratoryAvdSuspendedBoundary=o.exploratoryAvdSuspendedBoundary;
   if(o.deferVdResetKeyWrites && (!o.deferVdSfr8eWrite || !o.exploratoryVdMcuStartup))
     throw std::runtime_error("VD reset-key write deferral requires explicit SFR deferral and original startup experiment");
   riu_.deferVdResetKeyWrites=o.deferVdResetKeyWrites;
@@ -1378,7 +1385,16 @@ std::string Msd309Machine::summary() const {
       <<",\n  \"avd_mcu_program_reads\": "<<riu_.avdMcuProgram().reads
       <<",\n  \"avd_mcu_start_requests\": "<<riu_.avdMcuProgram().startRequests
       <<",\n  \"avd_mcu_program_bytes\": "<<image.size()<<",\n  \"avd_mcu_program_sha256\": \""<<sha256(image)<<"\""
-      <<",\n  \"avd_mcu_instructions\": 0";
+      <<",\n  \"avd_mcu_instructions\": "<<riu_.avdMcuCpu().totalInstructions();
+    if(options_.exploratoryAvdMcuStartup)s<<",\n  \"exploratory_avd_mcu_startup\": true,\n  \"avd_mcu_pc\": \""<<hex(riu_.avdMcuCpu().pc())
+      <<"\",\n  \"avd_mcu_suspended\": "<<(riu_.avdMcuSuspended()?"true":"false");
+  }
+  if(options_.candidateAudioIdma){
+    s<<",\n  \"candidate_audio_idma\": true,\n  \"audio_idma_ports\": [";
+    for(unsigned i=0;i<2;++i){const auto& p=riu_.audioIdma(i);if(i)s<<',';
+      s<<"{\"word_uploads\":"<<p.wordWrites<<",\"word_reads\":"<<p.wordReads<<",\"initialized_words\":"<<p.initializedWords()
+        <<",\"addressed_memory_sha256\":\""<<sha256(p.stateBytes())<<"\"}";}
+    s<<']';
   }
   if(options_.exploratoryVdMcuStartup)s<<",\n  \"exploratory_vd_mcu_startup\": true,\n  \"vd_mcu_instructions\": "<<riu_.vdMcuCpu().instructions()
     <<",\n  \"vd_mcu_upstream_ticks\": "<<riu_.vdMcuCpu().cycles()<<",\n  \"vd_mcu_pc\": \""<<hex(riu_.vdMcuCpu().pc())<<"\",\n  \"vd_mcu_stack\": "<<unsigned(riu_.vdMcuCpu().stack());

@@ -1,0 +1,91 @@
+{
+  "scope": "original guest-uploaded addressed 24-bit words; auxiliary ISA unconfirmed",
+  "ports": [
+    {
+      "port": 0,
+      "initialized_words": 2781,
+      "addressed_memory_sha256": "f25cba069289823a8165f3d22dbbd90f58c83bbdc49aeff90f6476faad7da2df",
+      "segments": [
+        {
+          "start": 4607,
+          "tick": 1399091099,
+          "pc": "0x804f9150",
+          "bytes": 33,
+          "words": 11,
+          "sha256": "b1c815145472702845deba3c6bcdb86bb33d4e1198089abcf8c26c5b4da93630",
+          "path": "port-0-segment-0-11ff.bin"
+        },
+        {
+          "start": 1984,
+          "tick": 1404089291,
+          "pc": "0x804f9150",
+          "bytes": 60,
+          "words": 20,
+          "sha256": "0e69c2f5e7ab50343fe982c97f9f5e913a99d922370edd455c6205f82ad07cd6",
+          "path": "port-0-segment-1-07c0.bin"
+        },
+        {
+          "start": 11437,
+          "tick": 1409093586,
+          "pc": "0x804f9150",
+          "bytes": 30,
+          "words": 10,
+          "sha256": "0679246d6c4216de0daa08e5523fb2674db2b6599c3b72ff946b488a15290b62",
+          "path": "port-0-segment-2-2cad.bin"
+        },
+        {
+          "start": 3136,
+          "tick": 1414082995,
+          "pc": "0x804f9150",
+          "bytes": 24,
+          "words": 8,
+          "sha256": "f0c711ac203c9a7d1d2a00c3e6fa5be8c9c2e0ddff6c12f5e2e816f4ba324ece",
+          "path": "port-0-segment-3-0c40.bin"
+        },
+        {
+          "start": 3551,
+          "tick": 1419085522,
+          "pc": "0x804f9150",
+          "bytes": 2436,
+          "words": 812,
+          "sha256": "cd7eef1478b60dcd2c74e62a5d27fc774a6dc66a4a49f144dfb3a74441d798cb",
+          "path": "port-0-segment-4-0ddf.bin"
+        },
+        {
+          "start": 8,
+          "tick": 1424195551,
+          "pc": "0x804f9150",
+          "bytes": 5736,
+          "words": 1912,
+          "sha256": "9a4bf2ddad8dc334c2d20d2f386f91ee99e562b4e4ca356565f004d151e29cd5",
+          "path": "port-0-segment-5-0008.bin"
+        },
+        {
+          "start": 1,
+          "tick": 1429426063,
+          "pc": "0x804f9150",
+          "bytes": 21,
+          "words": 7,
+          "sha256": "93391ff79d11ddb00a2c70245f279e29315d82906666366aa41cb4b924c7a19c",
+          "path": "port-0-segment-6-0001.bin"
+        },
+        {
+          "start": 0,
+          "tick": 1434382562,
+          "pc": "0x804f9150",
+          "bytes": 3,
+          "words": 1,
+          "sha256": "1b1ed06264476f7681bda533230af914a72ecd4efc9628c9fef49241d457bc33",
+          "path": "port-0-segment-7-0000.bin"
+        }
+      ]
+    },
+    {
+      "port": 1,
+      "initialized_words": 0,
+      "addressed_memory_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "segments": []
+    }
+  ],
+  "private_images_redistributed": false
+}

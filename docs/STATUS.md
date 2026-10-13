@@ -1,5 +1,26 @@
 # Status of the research build
 
+The latest [audio/AVD continuation](audio-avd-continuation.md) implements
+actual addressed audio IDMA upload/readback. Original firmware verifies
+**2,781 24-bit words**, and all three prior IDMA timeout messages disappear.
+It prints successful code-load completion for `SE dec_none`, `SE adv_none`
+and `T4 SE system`. The corrected exploratory boot executes **1,439,384,052
+MIPS**, **193,276,894 OpenRISC**, **468,999 DVB-T MCU** and **six AVD MCU**
+instructions, with **4,320 main timer** and **52 DVB-T MCU** ISR entries.
+Audio DSP2 readiness remains unknown at `804F9098 / BF225AB4`; the original
+ZUI initializer still has not executed. No authentic framebuffer or pixels
+are demonstrated. Lower instruction counts reflect fewer timeout loops.
+
+| Latest capability | Status | Evidence and limits |
+|---|---|---|
+| Addressed audio IDMA transfer and verification | demonstrated | 2,781 original words written/read through guest routines; atomic functional timing, no DSP ready response |
+| Separate original AVD instruction execution | partially implemented | Six original 8051-family instructions retire; next MOVX at 0802 to C008 stops; standard reset/RAM experiment |
+| Audio DSP ISA investigation | partially implemented | Native candidate disassembler; ADSP-like vectors, unsupported 040040/0780xx words, possible unuploaded ROM targets; zero DSP instructions executed |
+| Audio DSP2 acknowledgment | unsupported | E3 expected by original guest; no observed/modeled producer, no fabricated response |
+| ZUI, active GOP framebuffer, GE raster and scan-out | unsupported | GOP init twice, six disabled-window programming calls; no enabled descriptor or authentic frame |
+
+The following paragraphs and tables retain historical checkpoint evidence.
+
 The latest [shared MCU and AVD continuation](shared-mcu-continuation.md) executes **1,788,854,952 original MIPS dispatches**, **280,644,619 OpenRISC instructions**, **468,999 DVB-T 8051 instructions**, and **5,439 original main timer ISR entries** in exploratory mode. The original MCU supplies the previously unknown shared mailbox byte. Its real handler completes supported diagnostic requests, but the normal boot still suspends that MCU at `4AE0 / XDATA 2200` without acknowledgment. Original MIPS code uploads and verifies a separate **13,312-byte AVD MCU program**, prints `DSP code loaded successfully`, returns from AVD initialization, and reaches audio startup. The main stop is now `804F9098 / BF225AB4`: an unknown DSP2 response compared with `E3`. No host response is invented. The AVD auxiliary CPU is not executing. ZUI, an enabled framebuffer, GE raster drawing and authentic pixels remain **unsupported**. Strict POR and SPI-CF uncertainties remain unresolved. The older evidence table records historical milestones rather than the latest stopping state.
 
 | New capability | Status | Evidence and limits |

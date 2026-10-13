@@ -47,6 +47,8 @@ struct Options {
   bool exploratoryPqDisabledPorts=false;
   bool candidateVdMcuProgram=false;
   bool candidateAvdMcuProgram=false;
+  bool candidateAudioIdma=false;
+  bool exploratoryAvdMcuStartup=false,exploratoryAvdSuspendedBoundary=false;
   bool exploratoryVdMcuStartup=false;
   bool deferVdSfr8eWrite=false;
   bool deferVdResetKeyWrites=false;

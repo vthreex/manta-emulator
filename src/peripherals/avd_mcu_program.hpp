@@ -42,6 +42,11 @@ public:
     ++reads;return code_[cursor_++];
   }
   uint16_t cursor()const{return cursor_;}
+  // The auxiliary CPU fetches the exact storage filled by the MIPS upload;
+  // an unwritten byte is never treated as a zero/NOP instruction.
+  std::vector<uint8_t>& codeStorage(){return code_;}
+  bool byteKnown(uint16_t address)const{return valid_[address]!=0;}
+  bool held()const{return hold_!=0;}
   std::vector<uint8_t> contiguousImage()const{
     unsigned end=0;while(end<valid_.size() && valid_[end])++end;
     return {code_.begin(),code_.begin()+end};

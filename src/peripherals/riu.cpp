@@ -260,6 +260,12 @@ uint32_t Riu::storageKey(uint32_t a) const {
   return a;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(candidateAudioIdma && (a>=0x1f225a00 && a<0x1f225d00)){
+    const auto base=a>=0x1f225c00?0x1f225c00u:0x1f225a00u;
+    const auto& port=audioIdma_[base==0x1f225c00];
+    if(n==1 && AudioIdma::readPort(a-base))return port.read(a-base)?255:0;
+    if(a==base && n==1){auto it=bytes_.find(a);return (it==bytes_.end()?0:it->second.known)|port.statusKnown();}
+  }
   if(candidateAvdMcuProgram && a==0x1f2068e0 && n==1)return avdMcuProgram_.readable()?255:0;
   if(candidateVdMcuProgram && a==0x1f206920 && n==1)return vdMcuProgram_.readable()?255:0;
   if(a==0x1f204b15 && n==1 && scart_.sample()){
@@ -333,6 +339,16 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
   advanceTsp(tick);
   advanceVd(tick);
+  if(candidateAudioIdma && n==1 && a>=0x1f225a00 && a<0x1f225d00){
+    auto base=a>=0x1f225c00?0x1f225c00u:0x1f225a00u;auto& port=audioIdma_[base==0x1f225c00];
+    if(auto v=port.read(a-base)){
+      event("audio_idma_readback",a,n,*v,"byte from actual guest-uploaded 24-bit word, not DSP ready/status");return *v;
+    }
+    if(AudioIdma::readPort(a-base)){
+      stopReason="audio IDMA readback before an initialized addressed memory transfer";
+      event("blocked_read",a,n,0xa5,stopReason);return 0xa5;
+    }
+  }
   if(candidateAvdMcuProgram && a==0x1f2068e0){
     if(n!=1)throw std::runtime_error("AVD MCU program readback requires byte width");
     auto cursor=avdMcuProgram_.cursor();auto value=unsigned(avdMcuProgram_.read());
@@ -511,6 +527,11 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   const bool rmw = pc == 0xbfc00c60 || pc == 0xbfc02804 || pc == 0xbfc02818 || pc == 0xbfc0282c ||
                    pc == 0xbfc02858 || pc == 0x81000408 || runtimeRmw;
   auto v = get(a, n);
+  if(candidateAudioIdma && n==1 && (a==0x1f225a00 || a==0x1f225c00))
+    v&=~audioIdma_[a==0x1f225c00].statusKnown();
+  // Keep the usual one-shot consumed-mask and same-origin RMW guards.
+  // A live IDMA field must not turn unrelated unknown control bits into
+  // valid data, nor reject an original masked configuration restore.
   if (candidateGamma && a == 0x1f205fb4 && n == 1 && get(0x1f205e00, 1) == 0x10) {
     auto before = gamma_.commits;
     auto &b = bytes_[storageKey(a)];
@@ -631,12 +652,55 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(candidateAudioIdma && a>=0x1f225a00 && a<0x1f225d00){
+    auto base=a>=0x1f225c00?0x1f225c00u:0x1f225a00u;auto& port=audioIdma_[base==0x1f225c00];auto offset=a-base;
+    if((offset==8 || offset==0x10) && n==2){
+      if(knownBits(a,n)!=65535)throw std::runtime_error("audio IDMA address contains unknown bits");
+      port.address(offset==0x10,uint16_t(v));
+      event("audio_idma_address",a,n,v,offset==0x10?"original guest readback word address":"original guest upload word address");
+    }else if((offset==4 || offset==5) && n==1){
+      if(knownBits(a,n)!=255)throw std::runtime_error("audio IDMA payload contains unknown bits");
+      if(port.data(offset-4,uint8_t(v)))event("audio_idma_word_upload",a,3,v,"original four byte-port phases committed one 24-bit word; no DSP execution or readiness");
+    }else if(offset==0 && n==1 && port.command(uint8_t(v),uint8_t(knownBits(a,n)))){
+      event("audio_idma_read_request",a,n,v,"original request copied addressed uploaded word to readback lanes; unwritten data remains unknown");
+    }
+  }
   if(candidateAvdMcuProgram && (a==0x1f2068c1 || a==0x1f2068c5 || a==0x1f2068c8 || a==0x1f2068c9 || a==0x1f2068d8)){
     if(n!=1)throw std::runtime_error("AVD MCU programming requires byte access");
     auto cursor=avdMcuProgram_.cursor();
     auto start=avdMcuProgram_.write(a-0x1f2068c0,uint8_t(v),uint8_t(knownBits(a,n)));
     if(a==0x1f2068d8)event("avd_mcu_program_write",a,n,v,"actual original MIPS program-port upload; address="+std::to_string(cursor));
-    if(start)event("avd_mcu_start_request",a,n,v,"original guest releases program execution; auxiliary AVD CPU/hardware not yet executing, no ready/ack/status response inferred");
+    if(start){
+      event("avd_mcu_start_request",a,n,v,exploratoryAvdMcuStartup?
+        "original guest releases uploaded program; bounded standard 8052 startup experiment, no ready/ack/status inferred":
+        "original guest releases program execution; auxiliary AVD CPU/hardware not yet executing, no ready/ack/status response inferred");
+      if(exploratoryAvdMcuStartup){
+        avdMcuSuspended_=false;avdMcuBoundaryReason_.clear();
+        avdMcuCpu_.instruction=[this](uint16_t pc,uint8_t opcode,const std::string& text){
+          event("avd_mcu_instruction",pc,1,opcode,"original AVD uploaded code: "+text);
+        };
+        avdMcuCpu_.external=[this](uint16_t address,bool write,uint8_t value){
+          event("avd_mcu_external_unresolved",address,1,value,
+            std::string(write?"write":"read")+" from original AVD MCU; PC="+std::to_string(avdMcuCpu_.pc())+"; XDATA wiring/effects unverified, no transaction completed");
+        };
+        avdMcuCpu_.specialRegister=[this](uint8_t address,bool write,uint8_t value){
+          event("avd_mcu_sfr_unresolved",address,1,value,std::string(write?"write":"read")+"; original AVD nonstandard SFR remains unmodeled");
+        };
+        avdMcuCpu_.resetProgram(avdMcuProgram_);
+        try{
+          // Bounded startup diagnostic only: no unsupported clock ratio or
+          // peripheral reset value is installed. Stop at the first boundary.
+          for(unsigned i=0;i<10000;++i)avdMcuCpu_.step();
+          throw std::runtime_error("AVD startup diagnostic budget exhausted");
+        }catch(const VdHardwareBoundary& boundary){
+          avdMcuBoundaryReason_=boundary.what();
+          if(!exploratoryAvdSuspendedBoundary)throw;
+          avdMcuSuspended_=true;
+          event("exploratory_avd_boundary_suspension",0,0,avdMcuCpu_.pc(),
+            "original AVD CPU stopped with no peripheral side effect/acknowledgment: "+avdMcuBoundaryReason_);
+        }
+      }
+    }
   }
   if(candidateVdMcuProgram && (a==0x1f206900 || a==0x1f206901 || a==0x1f206905 ||
       a==0x1f206908 || a==0x1f206909 || a==0x1f206918)){

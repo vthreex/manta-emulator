@@ -15,6 +15,9 @@ mailbox_doorbells=[];mailbox_reads=[];mailbox_command=None;ci_samples=[];pcmcia_
 shared=ref.get('exploratory_vd_shared_run',False);shared_writes=[];shared_alias_reads=[];unused_decoder=[]
 avd_written=bytearray();avd_readback=bytearray();avd_starts=[];avd_cached=[];shared_status=None
 audio_reset_writes=[];audio_status_writes=[];audio_status_blocks=[]
+avd_instructions=[];avd_external=[];avd_suspensions=[]
+idma=[{'memory':{},'phase':[],'address':None,'read_address':None,'readback':None,'writes':0,'reads':0} for _ in range(2)]
+idma_readbacks=0
 assert ref['exploratory_tsp_cpu'] and ref['or1k_instructions']>459000
 assert ref['instruction_dispatches']>666736000 and ref['gop_initializer_entries']>=2
 assert ref['guest_decompressed_sha256']=='149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236'
@@ -27,6 +30,29 @@ with Path(a.reference_trace).open() as f:
   # millions of unchanged original polling-loop memory events.
   if '"kind":"or1k_' in line and '"kind":"or1k_instruction"' not in line and '"kind":"or1k_register_write"' not in line:continue
   e=json.loads(line)
+  if e['kind']=='avd_mcu_instruction':avd_instructions.append(e)
+  if e['kind']=='avd_mcu_external_unresolved':avd_external.append(e)
+  if e['kind']=='exploratory_avd_boundary_suspension':avd_suspensions.append(e)
+  if ref.get('candidate_audio_idma'):
+   address=int(e['address'],16)
+   if e['kind']=='write' and (0x1f225a00<=address<0x1f225b00 or 0x1f225c00<=address<0x1f225d00):
+    base=0x1f225c00 if address>=0x1f225c00 else 0x1f225a00;port=idma[base==0x1f225c00];offset=address-base;value=int(e['value'],16)
+    if offset==8 and e['width']==2:port['address']=value;port['phase']=[]
+    if offset==0x10 and e['width']==2:port['read_address']=value
+    if offset in (4,5) and e['width']==1:
+     assert offset==(4,5,4,5)[len(port['phase'])] and port['address'] is not None
+     port['phase'].append(value)
+     if len(port['phase'])==4:
+      middle,high,low,padding=port['phase'];assert padding==0
+      port['memory'][port['address']]=bytes((low,middle,high));port['address']=(port['address']+1)&65535
+      port['phase']=[];port['writes']+=1
+    if offset==0 and e['width']==1 and value&8:
+     assert port['read_address'] is not None
+     port['readback']=port['memory'].get(port['read_address']);port['read_address']=(port['read_address']+1)&65535;port['reads']+=1
+   if e['kind']=='audio_idma_readback':
+    base=0x1f225c00 if address>=0x1f225c00 else 0x1f225a00;port=idma[base==0x1f225c00];offset=address-base
+    assert port['readback'] is not None and int(e['value'],16)==port['readback'][{0x18:1,0x19:2,0x1c:0}[offset]],'readback must equal the actual addressed original upload'
+    idma_readbacks+=1
   if e['kind']=='mcu_mailbox_doorbell':mailbox_doorbells.append(e)
   if e['kind']=='exploratory_ci_detect_sample':ci_samples.append(e)
   if e['kind']=='deferred_pcmcia_initial_observation':pcmcia_dummy.append(e)
@@ -129,13 +155,25 @@ if ref.get('candidate_avd_mcu_program'):
  assert len(avd)==13312 and hashlib.sha256(avd).hexdigest()=='48ab58a5689d3135b2cdf78fa77da92fa912776f741c33c7afa97fdcfc4ee4fd'
  assert avd_written==avd_readback==avd,'original MIPS must upload and verify the actual AVD program, not a host-returned success'
  assert len(avd_written)==ref['avd_mcu_program_writes']==ref['avd_mcu_program_reads']==ref['avd_mcu_program_bytes']
- assert len(avd_starts)==ref['avd_mcu_start_requests']==1 and ref['avd_mcu_instructions']==0,'release alone does not demonstrate auxiliary execution'
+ assert len(avd_starts)==ref['avd_mcu_start_requests']==1
+ if ref.get('exploratory_avd_mcu_startup'):
+  assert [int(e['address'],16) for e in avd_instructions]==[0,3,6,0x219,0x7fd,0x800,0x802]
+  assert all(int(e['value'],16)==avd[int(e['address'],16)] for e in avd_instructions),'AVD fetched opcodes must belong to the original uploaded image'
+  assert ref['avd_mcu_instructions']==6 and ref['avd_mcu_pc']=='0x802' and ref['avd_mcu_suspended']
+  assert len(avd_external)==len(avd_suspensions)==1 and avd_external[0]['address']=='0xc008' and avd_external[0]['value']=='0x55'
+ else:assert ref['avd_mcu_instructions']==0,'release alone does not demonstrate auxiliary execution'
  assert unused_decoder and '0x805048a4' in coverage and '0x8050491c' in coverage
 if ref['stop_address']=='0x1f225ab4':
  assert [(e['pc'],e['value']) for e in audio_reset_writes[:2]]==[('0x804fa418','0x3'),('0x804fa434','0x0')]
  assert audio_reset_writes[1]['tick']>audio_reset_writes[0]['tick'],'the original reset delay must execute'
  assert not audio_status_writes and len(audio_status_blocks)==1,'unknown DSP2 response must not be fabricated by a host ready write'
  assert avd_cached and ref['preserved_bit_unknown_ram_bytes']>=9,'AVD cache provenance must survive the independent audio initialization'
+if ref.get('candidate_audio_idma'):
+ for port,observed in zip(idma,ref['audio_idma_ports']):
+  state=b''.join(struct.pack('<H',a)+v for a,v in sorted(port['memory'].items()))
+  assert observed['word_uploads']==port['writes'] and observed['word_reads']==port['reads']
+  assert observed['initialized_words']==len(port['memory']) and observed['addressed_memory_sha256']==hashlib.sha256(state).hexdigest()
+ assert idma_readbacks,'original addressed memory verification must execute'
 if ref.get('exploratory_vd_suspended_boundary'):
  assert ref['vd_mcu_suspended'] and ref['vd_mcu_boundary_reason'] and ref['mcu_mailbox_interrupt_pending']
  assert len(mailbox_doorbells)==ref['mcu_mailbox_interrupt_requests']>0 and all(e['value']=='0x2' for e in mailbox_doorbells)
@@ -214,6 +252,8 @@ if ref.get('exploratory_scmi_format_byte') is not None:flags+=['--exploratory-sc
 if ref.get('exploratory_fetch_revision_byte') is not None:flags+=['--exploratory-fetch-revision-byte',str(ref['exploratory_fetch_revision_byte'])]
 if ref.get('candidate_vd_mcu_program'):flags+=['--candidate-vd-mcu-program']
 if ref.get('candidate_avd_mcu_program'):flags+=['--candidate-avd-mcu-program']
+if ref.get('candidate_audio_idma'):flags+=['--candidate-audio-idma']
+if ref.get('exploratory_avd_mcu_startup'):flags+=['--exploratory-avd-mcu-startup','--exploratory-avd-suspended-boundary']
 if ref.get('exploratory_vd_mcu_startup'):flags+=['--exploratory-vd-mcu-startup']
 if ref.get('deferred_vd_sfr8e_write_enabled'):flags+=['--defer-vd-sfr8e-write']
 if ref.get('deferred_vd_reset_key_writes_enabled'):flags+=['--defer-vd-reset-key-writes']
@@ -247,6 +287,9 @@ Path(a.report).write_text(json.dumps({'result':'PASS','emulator_sha256':hashlib.
  'full_three_CPU_trace_replay':('NOT RUN' if a.validate_only else 'PASS') if shared else None,'original_MCU_shared_writes':shared_writes,
  'original_MCU_status_alias_reads':shared_alias_reads,'guarded_unused_decoder_reads':unused_decoder,
  'AVD_actual_uploaded_and_verified_bytes':len(avd_written),'AVD_original_release_requests':avd_starts,
+ 'AVD_original_instruction_attempts':avd_instructions,'AVD_unresolved_XDATA':avd_external,
+ 'full_four_CPU_trace_replay':('NOT RUN' if a.validate_only else 'PASS') if ref.get('exploratory_avd_mcu_startup') else None,
+ 'audio_IDMA_original_readback_bytes':idma_readbacks,'audio_IDMA_addressed_storage':ref.get('audio_idma_ports'),
  'guarded_AVD_unknown_cache_observations':avd_cached,
  'original_audio_reset_writes':audio_reset_writes,'unsupported_DSP2_status_observations':audio_status_blocks,
  'original_OSD_routine_entries':dict(osd_entries),

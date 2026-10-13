@@ -11,7 +11,8 @@ struct VdMcuCpu::Impl {
   std::array<uint8_t,128> upper{};
   uint64_t executed=0,ticks=0;
   unsigned deferredKeyCount=0;
-  VdMcuProgram* program=nullptr;
+  std::function<bool(uint16_t)> byteKnown;
+  const char* name="VD MCU";
   bool running=false;
   uint64_t total=0,interrupts=0;
   uint8_t aKnown=255;
@@ -25,7 +26,7 @@ struct VdMcuCpu::Impl {
       return v->value;
     }
     if(m.outer->external)m.outer->external(address,false,0);
-    std::ostringstream s;s<<"VD MCU XDATA read unsupported at PC 0x"<<std::hex<<cpu->mPC<<", address 0x"<<address;
+    std::ostringstream s;s<<m.name<<" XDATA read unsupported at PC 0x"<<std::hex<<cpu->mPC<<", address 0x"<<address;
     throw VdHardwareBoundary(s.str());
   }
   static void xwrite(em8051* cpu,uint16_t address,uint8_t value){
@@ -40,13 +41,13 @@ struct VdMcuCpu::Impl {
     }
     if(m.outer->busWrite && m.outer->busWrite(address,{value,m.aKnown,m.aOrigin}))return;
     if(m.outer->external)m.outer->external(address,true,value);
-    std::ostringstream s;s<<"VD MCU XDATA write unsupported at PC 0x"<<std::hex<<cpu->mPC<<", address 0x"<<address;
+    std::ostringstream s;s<<m.name<<" XDATA write unsupported at PC 0x"<<std::hex<<cpu->mPC<<", address 0x"<<address;
     throw VdHardwareBoundary(s.str());
   }
   static uint8_t unknownSfrRead(em8051* cpu,uint8_t address){
     auto& m=self(cpu);
     if(m.outer->specialRegister)m.outer->specialRegister(address,false,0);
-    std::ostringstream s;s<<"VD MCU nonstandard SFR read unsupported at PC 0x"<<std::hex<<cpu->mPC<<", SFR 0x"<<unsigned(address);
+    std::ostringstream s;s<<m.name<<" nonstandard SFR read unsupported at PC 0x"<<std::hex<<cpu->mPC<<", SFR 0x"<<unsigned(address);
     throw VdHardwareBoundary(s.str());
   }
   static void unknownSfrWrite(em8051* cpu,uint8_t address){
@@ -59,7 +60,7 @@ struct VdMcuCpu::Impl {
       return;
     }
     if(m.outer->specialRegister)m.outer->specialRegister(address,true,value);
-    std::ostringstream s;s<<"VD MCU nonstandard SFR write unsupported at PC 0x"<<std::hex<<cpu->mPC<<", SFR 0x"<<unsigned(address)<<", value 0x"<<unsigned(value);
+    std::ostringstream s;s<<m.name<<" nonstandard SFR write unsupported at PC 0x"<<std::hex<<cpu->mPC<<", SFR 0x"<<unsigned(address)<<", value 0x"<<unsigned(value);
     throw VdHardwareBoundary(s.str());
   }
   static void interruptEnable(em8051* cpu,uint8_t){
@@ -75,11 +76,11 @@ struct VdMcuCpu::Impl {
       throw std::runtime_error("VD MCU interrupt-source enable requires verified MStar interrupt/clock wiring");
   }
   static void boundary(em8051* cpu){
-    auto& m=self(cpu);auto pc=cpu->mPC;auto& p=*m.program;
-    if(!p.byteKnown(pc))throw VdHardwareBoundary("VD MCU instruction fetch from unwritten program memory");
+    auto& m=self(cpu);auto pc=cpu->mPC;
+    if(!m.byteKnown(pc))throw VdHardwareBoundary("VD MCU instruction fetch from unwritten program memory");
     char text[128];auto size=decode(cpu,pc,text);
     if(!size)throw VdHardwareBoundary("VD MCU invalid instruction decode");
-    for(unsigned i=0;i<size;++i)if(!p.byteKnown(uint16_t(pc+i)))
+    for(unsigned i=0;i<size;++i)if(!m.byteKnown(uint16_t(pc+i)))
       throw VdHardwareBoundary("VD MCU operand outside uploaded program");
     auto opcode=cpu->mCodeMem[pc];
     if(m.aKnown!=255){
@@ -104,7 +105,7 @@ struct VdMcuCpu::Impl {
       throw VdHardwareBoundary("VD MCU unknown parity consumed through PSW");
     if(opcode==0x83 || opcode==0x93){
       auto base=opcode==0x83?uint16_t(pc+1):uint16_t(cpu->mSFR[REG_DPL]|(cpu->mSFR[REG_DPH]<<8));
-      if(!p.byteKnown(uint16_t(base+cpu->mSFR[REG_ACC])))throw VdHardwareBoundary("VD MCU MOVC reads unwritten code byte");
+      if(!m.byteKnown(uint16_t(base+cpu->mSFR[REG_ACC])))throw VdHardwareBoundary("VD MCU MOVC reads unwritten code byte");
     }
     if((pc==3 || pc==0xb) && cpu->mInterruptActive)++m.interrupts;
     if(m.outer->instruction)m.outer->instruction(pc,opcode,text);
@@ -125,9 +126,19 @@ VdMcuCpu::VdMcuCpu():impl_(std::make_unique<Impl>()){
 }
 VdMcuCpu::~VdMcuCpu()=default;
 void VdMcuCpu::resetProgram(VdMcuProgram& program){
+  impl_->name="VD MCU";
+  resetProgramStorage(program.codeStorage(),[&program](uint16_t a){return program.byteKnown(a);},program.writes);
+}
+void VdMcuCpu::resetProgram(AvdMcuProgram& program){
+  impl_->name="AVD MCU";
+  if(program.held())throw VdHardwareBoundary("AVD MCU startup while held/reset");
+  resetProgramStorage(program.codeStorage(),[&program](uint16_t a){return program.byteKnown(a);},program.writes);
+}
+void VdMcuCpu::resetProgramStorage(std::vector<uint8_t>& code,
+    std::function<bool(uint16_t)> byteKnown,uint64_t writes){
   auto& m=*impl_;auto& cpu=m.context.cpu;
-  if(!program.writes)throw std::runtime_error("VD MCU startup without original uploaded program");
-  cpu.mCodeMem=program.codeStorage().data();cpu.mCodeMemMaxIdx=65535;
+  if(!writes || code.size()!=65536)throw std::runtime_error("MCU startup without complete uploaded-program storage");
+  cpu.mCodeMem=code.data();cpu.mCodeMemMaxIdx=65535;
   cpu.mUpperData=m.upper.data();cpu.xread=Impl::xread;cpu.xwrite=Impl::xwrite;cpu.except=Impl::exception;
   // Never use reset(true): that would erase the guest's own uploaded code.
   reset(&cpu,false);
@@ -141,7 +152,7 @@ void VdMcuCpu::resetProgram(VdMcuProgram& program){
   cpu.sfrwrite[REG_IE]=Impl::interruptEnable;
   cpu.instruction_boundary=Impl::boundary;
   m.executed=m.ticks=0;m.deferredKeyCount=0;
-  m.program=&program;m.running=true;m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;
+  m.byteKnown=std::move(byteKnown);m.running=true;m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;
 }
 void VdMcuCpu::step(){
   auto& m=*impl_;
