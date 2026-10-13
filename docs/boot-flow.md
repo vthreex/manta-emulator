@@ -1,6 +1,8 @@
 # Observed boot flow
 
-The latest [application/display continuation](application-display-continuation.md) demonstrates the original dual-CPU alive handshake, two original Y coefficient tables and further SCMI configuration under explicit experiments. It stops at `806006D4 / BF003C05` before an unknown fetch-patch decision. No authentic OSD frame is demonstrated. Earlier checkpoints below remain historical observations.
+Latest original control-flow path under explicitly exploratory hardware fixtures: MIPS reset and guest inflate → original runtime → scaler/panel, GE and two GOP initializer entries → original OpenRISC TSP download and firmware-produced startup reply → MIPS DVB-T MCU upload/readback of 22,026 bytes → original MCS-51 startup, then an original second hold/release and startup → original CI/PCMCIA initialization → DVB-T mailbox setup. The MIPS CPU now stops at `804F496C / BF224C38`, bit-0 status read. Each original MCS-51 startup independently stops at `55B9 / XDATA 2F00` after explicitly deferred effects. ZUI state initialization has not executed and there is no authentic display frame. See [current trace analysis](revision-and-vd-mcu-continuation.md).
+
+The historical [application/display continuation](application-display-continuation.md) demonstrates the original dual-CPU alive handshake, two original Y coefficient tables and further SCMI configuration under explicit experiments. It stops at `806006D4 / BF003C05` before an unknown fetch-patch decision. No authentic OSD frame is demonstrated. Earlier checkpoints below remain historical observations.
 
 Reset mapping `0xBFC00000` is conventional MIPS KSEG1 and consistent with this image's absolute branches and flash pointers. Physical boot wiring is not independently confirmed. Unicorn translates these accesses to physical `0x1FC00000`.
 

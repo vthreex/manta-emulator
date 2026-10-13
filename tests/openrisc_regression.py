@@ -9,6 +9,8 @@ assert len(stock)==0x800010 and hashlib.sha256(stock).hexdigest()=='d60645b549a4
 image=stock[0x1e7838:0x1ebc40]
 assert hashlib.sha256(image).hexdigest()=='69785f9a58c2927ceb9e92cd0fb5d8b39c9978a3c2971a7e9e6fbd9a09df189a'
 ref=json.loads(Path(a.reference_summary).read_text());pcs=collections.Counter();replies=[];boundaries=[];scart=[];scmi=[];windows=[];euro=[];rmw=[];rmw_reads=[];pq=[];pq_sources=[];pq_commits=[];conditional_reads=[];conditional_writes=[];dummy=[]
+revision_reads=[];fetch_decisions=[];fetch_parameters=[];vd_written=bytearray();vd_readback=bytearray();vd_attempts=[];vd_xdata=[];osd_entries=collections.Counter()
+mailbox_doorbells=[];mailbox_reads=[];mailbox_command=None;ci_samples=[];pcmcia_dummy=[];deferred_keys=[];vd_starts=[]
 assert ref['exploratory_tsp_cpu'] and ref['or1k_instructions']>459000
 assert ref['instruction_dispatches']>666736000 and ref['gop_initializer_entries']>=2
 assert ref['guest_decompressed_sha256']=='149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236'
@@ -17,6 +19,27 @@ assert not ref['osd_demonstrated'],'test does not turn a blank unconfigured host
 with Path(a.reference_trace).open() as f:
  for line in f:
   e=json.loads(line)
+  if e['kind']=='mcu_mailbox_doorbell':mailbox_doorbells.append(e)
+  if e['kind']=='exploratory_ci_detect_sample':ci_samples.append(e)
+  if e['kind']=='deferred_pcmcia_initial_observation':pcmcia_dummy.append(e)
+  if e['kind']=='deferred_vd_reset_key_write':deferred_keys.append(e)
+  if e['kind']=='vd_mcu_start_request':vd_starts.append(e)
+  if ref.get('exploratory_vd_suspended_boundary') and e['address']=='0x1f224c00':
+   if e['kind']=='write':mailbox_command=int(e['value'],16)
+   if e['kind']=='read':
+    assert mailbox_command is not None and int(e['value'],16)==mailbox_command,'stalled DVB-T MCU must never invent an FF acknowledgment'
+    mailbox_reads.append(e)
+  if e['kind']=='exploratory_fetch_revision_read':revision_reads.append(e)
+  if e['kind']=='guest_fetch_patch_decision':fetch_decisions.append(e)
+  if e['kind']=='guest_fetch_parameter':fetch_parameters.append(e)
+  if e['kind'] in ('vd_mcu_program_write','vd_mcu_program_read'):
+   import re
+   output=vd_written if e['kind']=='vd_mcu_program_write' else vd_readback
+   index=int(re.search(r'address=(\d+)',e['detail'])[1]);assert index==len(output),'VD address cursor must advance through the actual guest upload/readback'
+   output.append(int(e['value'],16));assert e['width']==1
+  if e['kind']=='vd_mcu_instruction':vd_attempts.append(e)
+  if e['kind'] in ('vd_mcu_blocked_xdata','vd_mcu_blocked_sfr'):vd_xdata.append(e)
+  if e['kind']=='guest_osd_routine_entry':osd_entries[e['address']]+=1
   if e['kind']=='or1k_instruction':
    address=int(e['address'],16);assert int(e['value'],16)==struct.unpack_from('<I',image,address)[0]
    pcs[address]+=1
@@ -42,6 +65,39 @@ assert pcs[0x100]==pcs[0x1dbc]==pcs[0xd94]==1
 assert any(e['address']=='0x21033c' and e['value']=='0x1000000' for e in replies)
 assert any(e['address']=='0x210330' and e['value']=='0x0' for e in replies)
 coverage=set(Path(a.reference_coverage).read_text().split())
+if ref.get('exploratory_fetch_revision_byte') is not None:
+ assert revision_reads and all(int(e['value'],16)==ref['exploratory_fetch_revision_byte'] for e in revision_reads)
+ assert len(fetch_decisions)==len(revision_reads)==len(fetch_parameters)
+ assert all(int(e['value'],16)==int(ref['exploratory_fetch_revision_byte']<2) for e in fetch_decisions),'original predicate must execute, not a host-returned workaround decision'
+ assert '0x806006dc' in coverage and '0x805f4b44' in coverage
+if ref.get('candidate_vd_mcu_program'):
+ import zlib
+ main=zlib.decompress(stock[0x23880:0x16124e],-15)
+ vd=main[0x806a4a04-0x803b3980:0x806aa00e-0x803b3980]
+ assert len(vd)==22026 and hashlib.sha256(vd).hexdigest()=='2bdb82e863899ea863f63bb4596235615c8f5aa5f77bdc465bec2d465bde22a5'
+ assert vd_written==vd_readback==vd,'original MIPS writes and reads every actual MCU byte; a fake successful verification cannot satisfy this check'
+ assert len(vd_written)==ref['vd_mcu_program_writes']==ref['vd_mcu_program_reads']==ref['vd_mcu_contiguous_program_bytes']
+ assert ref['vd_mcu_program_sha256']==hashlib.sha256(vd).hexdigest()
+ assert len(vd_starts)==ref['vd_mcu_start_requests']>=1 and vd_starts[0]['pc']=='0x804f57cc'
+ if len(vd_starts)==2:assert vd_starts[1]['pc']=='0x804f48d8','the second original hold/release must restart the uploaded MCU image'
+ assert '0x804f5784' in coverage and '0x804f57cc' in coverage
+ if ref.get('exploratory_vd_mcu_startup'):
+  per_start=ref['vd_mcu_instructions']+1
+  assert len(vd_attempts)==per_start*len(vd_starts) and all(vd_attempts[i*per_start]['address']=='0x0' for i in range(len(vd_starts)))
+  assert all(int(e['value'],16)==vd[int(e['address'],16)] for e in vd_attempts)
+  assert vd_attempts[-1]['address']==ref['vd_mcu_pc'] and len(vd_xdata)==len(vd_starts),'each original auxiliary reset must reach an unresolved hardware operation'
+if ref.get('osd_probes_enabled'):assert dict(osd_entries)==ref['osd_routine_entries']
+if ref.get('exploratory_vd_suspended_boundary'):
+ assert ref['vd_mcu_suspended'] and ref['vd_mcu_boundary_reason'] and ref['mcu_mailbox_interrupt_pending']
+ assert len(mailbox_doorbells)==ref['mcu_mailbox_interrupt_requests']>0 and all(e['value']=='0x2' for e in mailbox_doorbells)
+ assert mailbox_reads and '0x804f2f10' in coverage,'original bounded mailbox timeout must return failure, not a host-generated success'
+if ref.get('exploratory_ci_detect_high'):
+ assert len(ci_samples)==ref['ci_detect_reads']>0 and all(e['value']=='0x4' for e in ci_samples)
+ assert pcmcia_dummy and all(e['value']=='0x0' for e in pcmcia_dummy),'discarded PCMCIA pre-read remains an invalid observation'
+ assert '0x8051e980' in coverage,'original firmware must execute its card-detect bit mask'
+if ref.get('deferred_vd_reset_key_writes_enabled'):
+ assert [(int(e['address'],16),int(e['value'],16)) for e in deferred_keys]==[
+  (0x1080,0xaa),(0x1081,0x55),(0x1082,0xaa),(0x1083,0x55)]*len(vd_starts),'only four original MCU reset-key writes per CPU reset may be deferred'
 assert '0x805d5f88' in coverage,'original MIPS Alive-success branch must actually execute'
 if ref.get('exploratory_scart_grounded'):
  assert len(scart)==ref['scart_input_reads'] and scart
@@ -105,6 +161,14 @@ if ref.get('exploratory_ir_dma_reset'):flags+=['--exploratory-ir-dma-reset']
 if ref.get('exploratory_gop_reset_windows'):flags+=['--exploratory-gop-reset-windows']
 if ref.get('exploratory_scart_grounded'):flags+=['--exploratory-scart-grounded']
 if ref.get('exploratory_scmi_format_byte') is not None:flags+=['--exploratory-scmi-format-byte',str(ref['exploratory_scmi_format_byte'])]
+if ref.get('exploratory_fetch_revision_byte') is not None:flags+=['--exploratory-fetch-revision-byte',str(ref['exploratory_fetch_revision_byte'])]
+if ref.get('candidate_vd_mcu_program'):flags+=['--candidate-vd-mcu-program']
+if ref.get('exploratory_vd_mcu_startup'):flags+=['--exploratory-vd-mcu-startup']
+if ref.get('deferred_vd_sfr8e_write_enabled'):flags+=['--defer-vd-sfr8e-write']
+if ref.get('deferred_vd_reset_key_writes_enabled'):flags+=['--defer-vd-reset-key-writes']
+if ref.get('exploratory_vd_suspended_boundary'):flags+=['--exploratory-vd-suspended-boundary']
+if ref.get('exploratory_ci_detect_high'):flags+=['--exploratory-ci-detect-high']
+if ref.get('osd_probes_enabled'):flags+=['--osd-probes']
 if ref.get('graphics_probes'):flags+=['--graphics-probes']
 if ref.get('exploratory_analog_disconnected'):flags+=['--exploratory-analog-disconnected']
 if ref.get('exploratory_pq_sram_idle'):flags+=['--exploratory-pq-sram-idle']
@@ -123,6 +187,12 @@ Path(a.report).write_text(json.dumps({'result':'PASS','emulator_sha256':hashlib.
  'full_dual_CPU_trace_replay':'PASS','original_TSP_SHA256':hashlib.sha256(image).hexdigest(),
  'original_instruction_words_verified':ref['or1k_original_word_fetches'],'original_unique_OR_PCs':len(pcs),
  'MIPS_Alive_success_branch_executed':True,'original_auxiliary_replies':replies,
+ 'original_fetch_revision_observations':revision_reads,'original_fetch_decisions':fetch_decisions,'original_fetch_parameters':fetch_parameters,
+ 'VD_MCU_actual_uploaded_and_verified_bytes':len(vd_written),'VD_MCU_original_instruction_attempts':len(vd_attempts),'VD_MCU_blocked_hardware':vd_xdata,
+ 'original_OSD_routine_entries':dict(osd_entries),
+ 'original_DVB_MCU_mailbox_doorbells':mailbox_doorbells,'original_DVB_mailbox_reads_without_fabricated_ack':len(mailbox_reads),
+ 'exploratory_CI_detect_samples':ci_samples,'discarded_PCMCIA_observations':pcmcia_dummy,
+ 'original_MCU_deferred_reset_key_writes':deferred_keys,
  'SCART_original_predicate_samples':scart,'SCMI_partial_known_readback':scmi,'original_GOP_window_programming_entries':len(windows),
  'disconnected_analog_detection_observations':euro,
  'original_masked_bit0_stores':rmw,'original_PQ_table_sources':pq_sources,

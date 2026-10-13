@@ -1,0 +1,482 @@
+{
+  "result": "PASS",
+  "emulator_sha256": "c6596280623e006c578a6a42f5a21f765b93f78488e31f4c7280a382483a9b7a",
+  "full_dual_CPU_trace_replay": "PASS",
+  "original_TSP_SHA256": "69785f9a58c2927ceb9e92cd0fb5d8b39c9978a3c2971a7e9e6fbd9a09df189a",
+  "original_instruction_words_verified": 71104864,
+  "original_unique_OR_PCs": 207,
+  "MIPS_Alive_success_branch_executed": true,
+  "original_auxiliary_replies": [
+    {
+      "tick": 666736114,
+      "pc": "0x805d7c5c",
+      "kind": "or1k_register_write",
+      "address": "0x21033c",
+      "width": 4,
+      "value": "0x1000000",
+      "ra": "0x805d5f38",
+      "sp": "0x8072d888",
+      "detail": "original auxiliary instruction writes shared TSP register backing; validity preserved"
+    },
+    {
+      "tick": 666736114,
+      "pc": "0x805d7c5c",
+      "kind": "or1k_register_write",
+      "address": "0x210330",
+      "width": 4,
+      "value": "0x0",
+      "ra": "0x805d5f38",
+      "sp": "0x8072d888",
+      "detail": "original auxiliary instruction writes shared TSP register backing; validity preserved"
+    }
+  ],
+  "original_fetch_revision_observations": [
+    {
+      "tick": 933062691,
+      "pc": "0x806006d4",
+      "kind": "exploratory_fetch_revision_read",
+      "address": "0x1f003c05",
+      "width": 1,
+      "value": "0x2",
+      "ra": "0x805f4b18",
+      "sp": "0x8072d7b8",
+      "detail": "EXPLORATORY immutable byte hypothesis; original predicate compares unsigned byte < 2; register identity and board silicon stepping unverified"
+    }
+  ],
+  "original_fetch_decisions": [
+    {
+      "tick": 933062694,
+      "pc": "0x805f4b18",
+      "kind": "guest_fetch_patch_decision",
+      "address": "0x805f4b18",
+      "width": 0,
+      "value": "0x0",
+      "ra": "0x805f4b18",
+      "sp": "0x8072d7b8",
+      "detail": "original byte predicate returned; pre-patch fetch parameter s0=0x384"
+    }
+  ],
+  "original_fetch_parameters": [
+    {
+      "tick": 933062696,
+      "pc": "0x805f4b44",
+      "kind": "guest_fetch_parameter",
+      "address": "0x805f4b44",
+      "width": 0,
+      "value": "0x384",
+      "ra": "0x805f4b18",
+      "sp": "0x8072d7b8",
+      "detail": "original caller reached selected branch join; no PC change or parameter override"
+    }
+  ],
+  "VD_MCU_actual_uploaded_and_verified_bytes": 22026,
+  "VD_MCU_original_instruction_attempts": 800,
+  "VD_MCU_blocked_hardware": [
+    {
+      "tick": 946931182,
+      "pc": "0x804f57cc",
+      "kind": "vd_mcu_blocked_xdata",
+      "address": "0x2f00",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f567c",
+      "sp": "0x8072d8f0",
+      "detail": "write from original VD MCU; MCU PC=21945; MStar XDATA-to-RIU/private-memory mapping unverified, no byte fabricated"
+    },
+    {
+      "tick": 948742386,
+      "pc": "0x804f48d8",
+      "kind": "vd_mcu_blocked_xdata",
+      "address": "0x2f00",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804f48cc",
+      "sp": "0x8072d8d0",
+      "detail": "write from original VD MCU; MCU PC=21945; MStar XDATA-to-RIU/private-memory mapping unverified, no byte fabricated"
+    }
+  ],
+  "original_OSD_routine_entries": {
+    "0x8040440c": 1,
+    "0x80522d5c": 1
+  },
+  "original_DVB_mailbox_reads_without_fabricated_ack": 12289,
+  "exploratory_CI_detect_samples": [
+    {
+      "tick": 950694992,
+      "pc": "0x8051ef94",
+      "kind": "exploratory_ci_detect_sample",
+      "address": "0x1f206891",
+      "width": 1,
+      "value": "0x4",
+      "ra": "0x8051d794",
+      "sp": "0x8072d8d8",
+      "detail": "EXPLORATORY external CI detect line high, original driver consumes bit2 only; polarity/board wiring unverified, no module/IRQ/transaction acknowledgment"
+    },
+    {
+      "tick": 950695080,
+      "pc": "0x8051ef94",
+      "kind": "exploratory_ci_detect_sample",
+      "address": "0x1f206891",
+      "width": 1,
+      "value": "0x4",
+      "ra": "0x8051d794",
+      "sp": "0x8072d8f0",
+      "detail": "EXPLORATORY external CI detect line high, original driver consumes bit2 only; polarity/board wiring unverified, no module/IRQ/transaction acknowledgment"
+    },
+    {
+      "tick": 950695160,
+      "pc": "0x8051ef94",
+      "kind": "exploratory_ci_detect_sample",
+      "address": "0x1f206891",
+      "width": 1,
+      "value": "0x4",
+      "ra": "0x8051d794",
+      "sp": "0x8072d8f0",
+      "detail": "EXPLORATORY external CI detect line high, original driver consumes bit2 only; polarity/board wiring unverified, no module/IRQ/transaction acknowledgment"
+    },
+    {
+      "tick": 950695240,
+      "pc": "0x8051ef94",
+      "kind": "exploratory_ci_detect_sample",
+      "address": "0x1f206891",
+      "width": 1,
+      "value": "0x4",
+      "ra": "0x8051d794",
+      "sp": "0x8072d8f0",
+      "detail": "EXPLORATORY external CI detect line high, original driver consumes bit2 only; polarity/board wiring unverified, no module/IRQ/transaction acknowledgment"
+    },
+    {
+      "tick": 950695322,
+      "pc": "0x8051ef94",
+      "kind": "exploratory_ci_detect_sample",
+      "address": "0x1f206891",
+      "width": 1,
+      "value": "0x4",
+      "ra": "0x8051d794",
+      "sp": "0x8072d8d8",
+      "detail": "EXPLORATORY external CI detect line high, original driver consumes bit2 only; polarity/board wiring unverified, no module/IRQ/transaction acknowledgment"
+    }
+  ],
+  "discarded_PCMCIA_observations": [
+    {
+      "tick": 950692333,
+      "pc": "0x8051ef94",
+      "kind": "deferred_pcmcia_initial_observation",
+      "address": "0x1f2068a0",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x8051d794",
+      "sp": "0x8072d8f0",
+      "detail": "INVALID original initialization pre-read: wrapper copies to caller stack, caller overwrites with 0x51; read side effects unverified, any unknown consumption still stops"
+    }
+  ],
+  "original_MCU_deferred_reset_key_writes": [
+    {
+      "tick": 946931182,
+      "pc": "0x804f57cc",
+      "kind": "deferred_vd_reset_key_write",
+      "address": "0x1080",
+      "width": 1,
+      "value": "0xaa",
+      "ra": "0x804f567c",
+      "sp": "0x8072d8f0",
+      "detail": "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated"
+    },
+    {
+      "tick": 946931182,
+      "pc": "0x804f57cc",
+      "kind": "deferred_vd_reset_key_write",
+      "address": "0x1081",
+      "width": 1,
+      "value": "0x55",
+      "ra": "0x804f567c",
+      "sp": "0x8072d8f0",
+      "detail": "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated"
+    },
+    {
+      "tick": 946931182,
+      "pc": "0x804f57cc",
+      "kind": "deferred_vd_reset_key_write",
+      "address": "0x1082",
+      "width": 1,
+      "value": "0xaa",
+      "ra": "0x804f567c",
+      "sp": "0x8072d8f0",
+      "detail": "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated"
+    },
+    {
+      "tick": 946931182,
+      "pc": "0x804f57cc",
+      "kind": "deferred_vd_reset_key_write",
+      "address": "0x1083",
+      "width": 1,
+      "value": "0x55",
+      "ra": "0x804f567c",
+      "sp": "0x8072d8f0",
+      "detail": "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated"
+    },
+    {
+      "tick": 948742386,
+      "pc": "0x804f48d8",
+      "kind": "deferred_vd_reset_key_write",
+      "address": "0x1080",
+      "width": 1,
+      "value": "0xaa",
+      "ra": "0x804f48cc",
+      "sp": "0x8072d8d0",
+      "detail": "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated"
+    },
+    {
+      "tick": 948742386,
+      "pc": "0x804f48d8",
+      "kind": "deferred_vd_reset_key_write",
+      "address": "0x1081",
+      "width": 1,
+      "value": "0x55",
+      "ra": "0x804f48cc",
+      "sp": "0x8072d8d0",
+      "detail": "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated"
+    },
+    {
+      "tick": 948742386,
+      "pc": "0x804f48d8",
+      "kind": "deferred_vd_reset_key_write",
+      "address": "0x1082",
+      "width": 1,
+      "value": "0xaa",
+      "ra": "0x804f48cc",
+      "sp": "0x8072d8d0",
+      "detail": "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated"
+    },
+    {
+      "tick": 948742386,
+      "pc": "0x804f48d8",
+      "kind": "deferred_vd_reset_key_write",
+      "address": "0x1083",
+      "width": 1,
+      "value": "0x55",
+      "ra": "0x804f48cc",
+      "sp": "0x8072d8d0",
+      "detail": "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated"
+    }
+  ],
+  "SCART_original_predicate_samples": [
+    {
+      "tick": 932954776,
+      "pc": "0x804f0c48",
+      "kind": "exploratory_scart_grounded_sample",
+      "address": "0x1f204b15",
+      "width": 1,
+      "value": "0xa0",
+      "ra": "0x803e29d4",
+      "sp": "0x8072d858",
+      "detail": "HYPOTHETICAL low-nibble code zero for explicitly grounded SCART FB after original ADC config; related-board pull-down evidence, exact Titania4 ADC transfer unknown; upper bits remain invalid"
+    }
+  ],
+  "SCMI_partial_known_readback": [
+    {
+      "tick": 932958110,
+      "pc": "0x805f8a28",
+      "kind": "guarded_scmi_format_read",
+      "address": "0x1f205e08",
+      "width": 2,
+      "value": "0xff",
+      "ra": "0x805f89f4",
+      "sp": "0x8072d7c0",
+      "detail": "original shared read routine; configured initial low byte only; unknown upper byte retains origin, first decision/address/foreign-device use stops"
+    }
+  ],
+  "original_GOP_window_programming_entries": 6,
+  "disconnected_analog_detection_observations": [
+    {
+      "tick": 932958220,
+      "pc": "0x805f1ca4",
+      "kind": "analog_input_detection",
+      "address": "0x1f205ea4",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x805f7590",
+      "sp": "0x8072d818",
+      "detail": "explicitly disconnected analog input: NORMAL/no Euro or Australia HDTV detected, original mask 0Ch and named reference enum corroborate two status bits; positive-pattern detection/timing unsupported"
+    }
+  ],
+  "original_masked_bit0_stores": [
+    {
+      "tick": 932959456,
+      "pc": "0x806001e4",
+      "kind": "write",
+      "address": "0x1f205e4c",
+      "width": 2,
+      "value": "0xa5a4",
+      "ra": "0x805f5788",
+      "sp": "0x8072d7d8",
+      "detail": "recorded register storage; not a complete device"
+    }
+  ],
+  "original_PQ_table_sources": [
+    {
+      "tick": 932962404,
+      "pc": "0x803c8250",
+      "kind": "guest_pq_table_upload",
+      "address": "0x8065f368",
+      "width": 640,
+      "value": "0x1",
+      "ra": "0x803c62a8",
+      "sp": "0x8072d700",
+      "detail": "original Y/C SRAM writer entry; immutable guest-source payload SHA256=754eaf4b027fd439926c919f883ff2d03db2e13376f4bfe1be9c2525e87ebeb4"
+    },
+    {
+      "tick": 933012383,
+      "pc": "0x803c8250",
+      "kind": "guest_pq_table_upload",
+      "address": "0x8065e464",
+      "width": 640,
+      "value": "0x0",
+      "ra": "0x803c6284",
+      "sp": "0x8072d700",
+      "detail": "original Y/C SRAM writer entry; immutable guest-source payload SHA256=754eaf4b027fd439926c919f883ff2d03db2e13376f4bfe1be9c2525e87ebeb4"
+    }
+  ],
+  "original_PQ_payload_submissions": 256,
+  "original_PQ_payload_commits": 256,
+  "original_known_branch_RMW_stores": [
+    {
+      "tick": 933062196,
+      "pc": "0x805fdd1c",
+      "kind": "write",
+      "address": "0x1f205e0c",
+      "width": 2,
+      "value": "0x85a5",
+      "ra": "0x805f4c9c",
+      "sp": "0x8072d7b8",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 933062204,
+      "pc": "0x805fdd3c",
+      "kind": "write",
+      "address": "0x1f205e0c",
+      "width": 2,
+      "value": "0x8585",
+      "ra": "0x805f4c9c",
+      "sp": "0x8072d7b8",
+      "detail": "recorded register storage; not a complete device"
+    }
+  ],
+  "unused_PQ_SAR_observations": [
+    {
+      "tick": 933061537,
+      "pc": "0x805f87dc",
+      "kind": "deferred_pq_dummy_observation",
+      "address": "0x1f002880",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x803be8b0",
+      "sp": "0x8072d7f0",
+      "detail": "INVALID unused byte from SAR aperture in original PQ configuration; value discarded before next device access, first data use stops; hardware meaning/read side effects unvalidated"
+    }
+  ],
+  "hardware_assumptions_remain_explicit": true,
+  "boundaries": [
+    {
+      "tick": 666276473,
+      "pc": "0x805d6bac",
+      "kind": "exploratory_or1k_enable",
+      "address": "0x1f202be8",
+      "width": 2,
+      "value": "0x4b",
+      "ra": "0x805d5ee0",
+      "sp": "0x8072d890",
+      "detail": "HYPOTHETICAL reset PC 100, SR 8001, zero unprogrammed QMEM fields, little-endian buses, configured auxiliary dispatch divider; no alive response supplied"
+    },
+    {
+      "tick": 666748015,
+      "pc": "0x80500278",
+      "kind": "deferred_platform_identity",
+      "address": "0x1f200198",
+      "width": 4,
+      "value": "0x0",
+      "ra": "0x80500234",
+      "sp": "0x8072d920",
+      "detail": "INVALID original cache observation; no hardware identity or authorization bits supplied; every decision/address/new-device use must stop"
+    },
+    {
+      "tick": 666748016,
+      "pc": "0x8050027c",
+      "kind": "deferred_platform_identity",
+      "address": "0x1f20019c",
+      "width": 4,
+      "value": "0x0",
+      "ra": "0x80500234",
+      "sp": "0x8072d920",
+      "detail": "INVALID original cache observation; no hardware identity or authorization bits supplied; every decision/address/new-device use must stop"
+    },
+    {
+      "tick": 666748020,
+      "pc": "0x8050028c",
+      "kind": "deferred_platform_identity",
+      "address": "0x1f20019c",
+      "width": 4,
+      "value": "0x0",
+      "ra": "0x80500234",
+      "sp": "0x8072d920",
+      "detail": "INVALID original cache observation; no hardware identity or authorization bits supplied; every decision/address/new-device use must stop"
+    },
+    {
+      "tick": 666748116,
+      "pc": "0x80404bd8",
+      "kind": "exploratory_pm_boot_reason",
+      "address": "0x1f001cdd",
+      "width": 1,
+      "value": "0xff",
+      "ra": "0x804698e4",
+      "sp": "0x8072d948",
+      "detail": "EXPLORATORY external PM boundary with applied AC power: documented ACON enum ff; no PM51 code, ready ACK or wake key fabricated"
+    },
+    {
+      "tick": 773960293,
+      "pc": "0x80404bd8",
+      "kind": "exploratory_pm_boot_reason",
+      "address": "0x1f001cdd",
+      "width": 1,
+      "value": "0xff",
+      "ra": "0x80469a18",
+      "sp": "0x8072d948",
+      "detail": "EXPLORATORY external PM boundary with applied AC power: documented ACON enum ff; no PM51 code, ready ACK or wake key fabricated"
+    },
+    {
+      "tick": 773960310,
+      "pc": "0x80404bd8",
+      "kind": "exploratory_pm_boot_reason",
+      "address": "0x1f001cdd",
+      "width": 1,
+      "value": "0xff",
+      "ra": "0x80469a44",
+      "sp": "0x8072d948",
+      "detail": "EXPLORATORY external PM boundary with applied AC power: documented ACON enum ff; no PM51 code, ready ACK or wake key fabricated"
+    },
+    {
+      "tick": 950695929,
+      "pc": "0x804f496c",
+      "kind": "blocked_read",
+      "address": "0x1f224c38",
+      "width": 1,
+      "value": "0xa5",
+      "ra": "0x804f4d44",
+      "sp": "0x8072d8c0",
+      "detail": "unknown reset/status bits; value is poison, execution stops"
+    }
+  ],
+  "replayed_summary": {
+    "stop_pc": "0x804f496c",
+    "stop_address": "0x1f224c38",
+    "instruction_dispatches": 950695929,
+    "or1k_instructions": 71104864,
+    "guest_exception_vector_entries": 2755,
+    "vd_mcu_pc": "0x55b9",
+    "vd_mcu_instructions": 399,
+    "osd_demonstrated": false
+  },
+  "raw_full_report_available_as_gzip": "revision-final-dual.full.json.gz",
+  "original_full_sha256": "d78b595bfad86f864daa30544e2260d6ea8650fef728710c1b3acb70c185aeaf"
+}

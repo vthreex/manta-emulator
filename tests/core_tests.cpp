@@ -878,6 +878,38 @@ void gopPaletteTests() {
       "GOP observed mode2 raw color remains separate from mode3; no pixel format conversion invented");
 }
 void tspProvenanceTests() {
+  {
+    manta::Riu ci;ci.event=[](auto,auto,auto,auto,auto){};
+    require(ci.knownBits(0x1f206891,1)==0,"strict CI detection has no invented absent-card default");
+    ci.configureExploratoryCiDetectHigh();
+    require(ci.knownBits(0x1f206891,1)==4 && ci.read(0x1f206891,1,0,4,1)==4,
+      "explicit external CI line defines only the original driver's bit2");
+    require(ci.ciDetectReads==1 && ci.knownBits(0x1f20689d,1)==0,
+      "CI input sample cannot validate interrupt status or complete a card transaction");
+    rejects([&]{ci.write(0x1f206891,1,0,0,255,2);});
+    manta::PreservedBits input;std::array<uint32_t,32> registers{};registers[4]=0xa5;
+    input.seed(4,1,4,[](unsigned){return 0x1f206891;});
+    auto step=[&](uint32_t w){return input.observe(w,[&](unsigned r){return registers[r];},
+      [](uint32_t a){return a;},[](uint32_t,unsigned,uint32_t){});};
+    require(!step(0x10800001).empty(),"full CI register still cannot drive an unknown-data branch");
+    require(step(0x30840004).empty() && input.mask(4)==0,
+      "original CI ANDI bit2 discards all unrelated invalid input fields");
+  }
+  {
+    manta::PreservedBits discarded;std::array<uint32_t,32> registers{};
+    registers[16]=0x8072d918;registers[29]=0x8072d908;registers[2]=0xa5;
+    auto observe=[&](uint32_t w){return discarded.observe(w,[&](unsigned r){return registers[r];},
+      [](uint32_t a){return a;},[](uint32_t,unsigned,uint32_t){});};
+    discarded.seed(2,1,0,[](unsigned){return 0x1f2068a0;});
+    require(observe(0xa2020000).empty() && discarded.memoryUnknown(0x8072d918),
+      "original PCMCIA read wrapper may copy an invalid byte to RAM without validating hardware state");
+    require(!observe(0x10400001).empty(),"a changed PCMCIA caller cannot branch on the deferred unknown byte");
+    require(observe(0x24020051).empty() && discarded.mask(2)==0,
+      "original caller replaces its temporary with immediate 0x51, independent of the pre-read");
+    registers[2]=0x51;
+    require(observe(0xa3a20010).empty() && !discarded.memoryUnknown(0x8072d918),
+      "original overwrite removes provenance only from the overwritten stack byte");
+  }
   manta::PreservedBits p;std::array<uint32_t,32> regs{};
   regs[8]=0x1f202a00;regs[2]=0xa5a5;unsigned restores=0;uint32_t retained=0;
   auto step=[&](uint32_t word) {return p.observe(word,[&](unsigned r){return regs[r];},
@@ -1121,6 +1153,207 @@ int main() {
     cUnknown.write(0x1f205f0c,2,0x0201,0,255,3);cUnknown.write(0x1f205f10,2,0x0403,0,255,4);cUnknown.write(0x1f205f14,2,5,0,255,5);
     bool unknownCRejected=false;try{cUnknown.write(0x1f205f04,2,0x102,0,255,6);}catch(const std::exception&){unknownCRejected=true;}
     require(unknownCRejected && cUnknown.pqSram().submissions==0,"C writer low-byte mask cannot silently discard an unknown ninth address bit");
+    manta::Riu revision;revision.event=[](auto,auto,auto,auto,auto){};
+    require(revision.knownBits(0x1f003c05,1)==0,"fetch revision register is unknown without an explicit experiment");
+    revision.read(0x1f003c05,1,0x806006d4,255,1);
+    require(!revision.stopReason.empty(),"strict fetch predicate cannot consume unverified silicon identity");
+    revision.stopReason.clear();revision.configureExploratoryFetchRevisionByte(1);
+    require(revision.knownBits(0x1f003c04,2)==0xff00 && revision.knownBits(0x1f003c00,4)==0,
+      "revision fixture supplies one high byte only; no nearby chip IDs are invented");
+    require(revision.read(0x1f003c05,1,0x806006d4,255,2)==1 && revision.read(0x1f003c05,1,0x806006d4,255,3)==1,
+      "explicit immutable revision fixture is stable, not read-driven status");
+    revision.prepareMaskedRead(0x1f003c04,0xff00);
+    require((revision.read(0x1f003c04,2,0,255,4)>>8)==1,"word high-byte alias shares the same revision fixture");
+    rejects([&]{revision.write(0x1f003c04,2,0,0,0xffff,5);});
+    rejects([&]{revision.configureExploratoryFetchRevisionByte(256);});
+    for(unsigned byte:{0u,1u,2u,255u}){
+      manta::Riu bus;bus.event=[](auto,auto,auto,auto,auto){};bus.configureExploratoryFetchRevisionByte(byte);
+      manta::Engine engine;engine.map(0x00600000,0x1000);engine.map(0x006b9000,0x1000);
+      // Exact original five-instruction predicate at 806006CC..DC.
+      const uint32_t original[]={0x3c02806c,0x8c43963c,0x90623c05,0x03e00008,0x2c420002};
+      const uint32_t base=0xbf000000;engine.write(0x006006cc,original,sizeof(original));
+      engine.write(0x006b963c,&base,4);engine.reg(UC_MIPS_REG_RA,0x80600700);
+      manta::check(uc_mmio_map(engine.handle,0x1f003000,0x1000,
+        [](uc_engine*,uint64_t offset,unsigned size,void* data)->uint64_t{
+          return static_cast<manta::Riu*>(data)->read(0x1f003000+uint32_t(offset),size,0x806006d4,255,0);
+        },&bus,nullptr,nullptr));
+      manta::check(engine.run(0x806006cc,5));
+      require(engine.reg(UC_MIPS_REG_2)==unsigned(byte<2),"original MIPS load, JR delay slot and unsigned threshold choose the actual experimental branch");
+      engine.map(0x005f4000,0x1000);engine.map(0x00601000,0x1000);
+      // Exact caller 805F4B10..40: original JAL, conditional branch, add-two,
+      // cap comparison and MOVZ. Stop at its branch join, never alter the PC.
+      const uint32_t caller[]={0x0c1801b3,0,0x1040000a,0x02551021,0x00541021,0x00021080,
+        0x03c21021,0x8c440078,0x26030002,0x3062ffff,0x3090ffff,0x0083182b,0x0043800a};
+      engine.write(0x005f4b10,caller,sizeof(caller));
+      engine.reg(UC_MIPS_REG_18,0);engine.reg(UC_MIPS_REG_21,0);engine.reg(UC_MIPS_REG_20,0);
+      engine.reg(UC_MIPS_REG_30,0x80601000);
+      uc_hook joinHook;
+      manta::check(uc_hook_add(engine.handle,&joinHook,UC_HOOK_CODE,
+        reinterpret_cast<void*>(+[](uc_engine* cpu,uint64_t,uint32_t,void*){uc_emu_stop(cpu);}),
+        nullptr,0x805f4b44,0x805f4b44));
+      for(uint32_t cap:{1000u,901u}){
+        engine.write(0x00601078,&cap,4);engine.reg(UC_MIPS_REG_16,900);
+        manta::check(engine.run(0x805f4b10,100));
+        require(engine.reg(UC_MIPS_REG_PC)==0x805f4b44 &&
+          engine.reg(UC_MIPS_REG_16)==(byte<2?std::min(902u,cap):900u),
+          "original caller selects the revision workaround, applies two and saturates at its guest parameter cap");
+      }
+    }
+    manta::VdMcuProgram vd;
+    require(vd.contiguousImage().empty(),"VD MCU program begins unwritten; no substitute firmware installed");
+    rejects([&]{vd.read();});rejects([&]{vd.write(0x18,2);});
+    vd.write(0,1);vd.write(1,0);vd.write(5,0x50);vd.write(5,0x51);vd.write(8,0);vd.write(9,0);
+    const std::vector<uint8_t> originalVector={2,0x4d,0xf3,2,0x4a,0x8a};
+    for(auto b:originalVector)vd.write(0x18,b);
+    require(vd.writes==6 && vd.cursor()==6 && vd.contiguousImage()==originalVector,
+      "sequential VD port stores actual guest bytes at incremented addresses");
+    rejects([&]{vd.read();});
+    vd.write(8,0);vd.write(9,0);
+    for(auto b:originalVector)require(vd.read()==b,"VD readback returns the uploaded byte, not a successful comparison constant");
+    require(vd.reads==6 && vd.cursor()==6,"VD verification advances the shared address exactly once per read");
+    vd.write(8,1);vd.write(9,0);vd.write(0x18,0x99);vd.write(8,1);vd.write(9,0);
+    require(vd.read()==0x99 && vd.contiguousImage()[1]==0x99,"changed guest program bytes alter readback; immutable source is never secretly recopied");
+    vd.write(5,0x50);rejects([&]{vd.read();});vd.write(5,0);vd.write(1,1);
+    require(vd.write(0,0) && vd.startRequests==1,"original release sequence requests auxiliary execution; no CPU ready response produced");
+    rejects([&]{vd.write(5,0x52);});
+    manta::Riu vdBus;vdBus.event=[](auto,auto,auto,auto,auto){};vdBus.candidateVdMcuProgram=true;
+    uint64_t vdTick=0;auto vb=[&](unsigned port,unsigned value){vdBus.write(0x1f206900+port,1,value,0,255,++vdTick);};
+    vb(0,1);vb(1,0);vb(5,0x50);vb(5,0x51);vb(8,0);vb(9,0);vb(0x18,2);vb(0x18,0x4d);
+    vb(8,0);vb(9,0);
+    require(vdBus.read(0x1f206920,1,0x804f5760,255,++vdTick)==2 &&
+      vdBus.read(0x1f206920,1,0x804f5760,255,++vdTick)==0x4d,"RIU data ports share the addressed VD program storage");
+    vb(5,0x50);vb(5,0);vb(1,1);rejects([&]{vb(0,0);});
+    require(vdBus.vdMcuProgram().startRequests==1 && vdBus.vdMcuProgram().reads==2,
+      "native bus stops at original VD start instead of fabricating an executed auxiliary CPU");
+    manta::VdMcuProgram boot8051;boot8051.write(0,1);boot8051.write(1,0);boot8051.write(5,0x51);boot8051.write(8,0);boot8051.write(9,0);
+    // Architectural fixture with the original Keil reset clear loop followed
+    // by MOVX. All external memory is deliberately undefined.
+    const std::vector<uint8_t> clearLoop={2,0,3,0x78,3,0xe4,0xf6,0xd8,0xfd,0x75,0x81,0xa5,0x90,0x2f,0,0xe0};
+    for(auto b:clearLoop)boot8051.write(0x18,b);
+    manta::VdMcuCpu aux8051;unsigned attempted8051=0,external8051=0;
+    aux8051.instruction=[&](uint16_t pc,uint8_t opcode,const std::string&){
+      require(pc<clearLoop.size() && clearLoop[pc]==opcode,"auxiliary 8051 engine fetches the uploaded program storage");++attempted8051;
+    };
+    aux8051.external=[&](uint16_t address,bool write,uint8_t){
+      require(address==0x2f00 && !write,"8051 MOVX uses the actual guest DPTR address");++external8051;
+    };
+    std::string auxStop;
+    try{aux8051.startup(boot8051,100);}catch(const std::exception& error){auxStop=error.what();}
+    if(aux8051.instructions()!=11 || attempted8051!=12 || external8051!=1)
+      std::cerr<<"VD fixture completed="<<aux8051.instructions()<<" attempts="<<attempted8051<<" external="<<external8051<<" pc="<<aux8051.pc()<<" reason="<<auxStop<<'\n';
+    require(aux8051.instructions()==11 && attempted8051==12 && external8051==1,
+      "8051 reset branch and RAM loop execute; rejected MOVX is excluded from completed instructions");
+    require(aux8051.pc()==15 && aux8051.stack()==0xa5 && auxStop.find("XDATA read unsupported")!=std::string::npos,
+      "8051 stops on the exact unsupported external access with original stack initialization intact");
+    require(boot8051.contiguousImage()==clearLoop,"auxiliary reset never erases or replaces uploaded firmware");
+    auto test8051=[&](const std::vector<uint8_t>& code,auto inspect){
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      for(auto b:code)p.write(0x18,b);
+      manta::VdMcuCpu c;std::string reason;
+      try{c.startup(p,100);}catch(const std::exception& error){reason=error.what();}
+      require(reason.find("XDATA read unsupported")!=std::string::npos,"8051 core fixture must stop on the final external read, never silently advance");
+      inspect(c);
+    };
+    test8051({0x75,0x81,0xa5,0x12,0,12,0x90,0x2f,0,0xe0,0,0,0x74,0x55,0x22},[&](auto& c){
+      require(c.stack()==0xa5 && c.accumulator()==0x55 && c.pc()==9 && c.instructions()==5,
+        "LCALL/RET use upper internal RAM above 7F and preserve the return address, rather than treating stack bytes as SFRs");
+    });
+    {
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      const std::vector<uint8_t> code={2,0,3,0x90,0x10,0x80,0x74,0xaa,0xf0,0xa3,0x74,0x55,0xf0,
+        0xa3,0x74,0xaa,0xf0,0xa3,0x74,0x55,0xf0,0x90,0x2f,0,0xe0};
+      for(auto b:code)p.write(0x18,b);
+      manta::VdMcuCpu c;c.deferResetKeyWrites=true;
+      std::vector<std::pair<uint16_t,uint8_t>> deferred;
+      c.deferredResetKey=[&](uint16_t address,uint8_t value){deferred.emplace_back(address,value);};
+      std::string stop;try{c.startup(p,100);}catch(const std::exception& e){stop=e.what();}
+      require(deferred==std::vector<std::pair<uint16_t,uint8_t>>{{0x1080,0xaa},{0x1081,0x55},{0x1082,0xaa},{0x1083,0x55}} &&
+        c.pc()==0x18 && stop.find("XDATA read unsupported")!=std::string::npos,
+        "original key-write pattern may retire only under explicit deferral; first unmapped read still stops");
+      p.codeStorage()[7]=0xab;deferred.clear();stop.clear();
+      manta::VdMcuCpu altered;altered.deferResetKeyWrites=true;
+      altered.deferredResetKey=[&](uint16_t address,uint8_t value){deferred.emplace_back(address,value);};
+      try{altered.startup(p,100);}catch(const std::exception& e){stop=e.what();}
+      require(deferred.empty() && altered.pc()==8 && stop.find("XDATA write unsupported")!=std::string::npos,
+        "different original key data cannot pass the narrow deferred sequence");
+    }
+    for(auto [a,op,ac]:std::array<std::array<unsigned,3>,4>{{{7,0x24,0},{15,0x24,1},{8,0x94,0},{16,0x94,1}}}){
+      test8051({0x74,uint8_t(a),uint8_t(op),1,0x90,0x2f,0,0xe0},[&](auto& c){
+        require(bool(c.status()&0x40)==bool(ac) && c.accumulator()==(op==0x24?a+1:a-1),
+          "8051 auxiliary carry/borrow uses bit3 carry into bit4, not the three-bit boundary");
+      });
+    }
+    for(bool readBack:{false,true}){
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      const std::vector<uint8_t> code=readBack?std::vector<uint8_t>{0x75,0x8e,2,0xe5,0x8e}:
+        std::vector<uint8_t>{0x75,0x8e,2,0x75,0xa8,0x80,0x90,0x2f,0,0xe0};
+      for(auto b:code)p.write(0x18,b);
+      manta::VdMcuCpu c;c.deferSfr8eWrite=true;unsigned deferred=0;
+      c.deferredSfr8e=[&](uint8_t v){require(v==2,"deferred SFR write records the original CPU operand");++deferred;};
+      std::string reason;try{c.startup(p);}catch(const std::exception& error){reason=error.what();}
+      require(deferred==1 && c.instructions()==(readBack?1u:3u),"explicit deferral executes the original write; EA alone admits no disabled interrupt source");
+      require(reason.find(readBack?"SFR read unsupported":"XDATA read unsupported")!=std::string::npos,
+        "deferred SFR effects never fabricate valid readback or an external hardware response");
+    }
+    {
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      for(auto b:{0x75u,0xa8u,0x81u})p.write(0x18,uint8_t(b));
+      manta::VdMcuCpu c;std::string reason;try{c.startup(p);}catch(const std::exception& error){reason=error.what();}
+      require(c.instructions()==0 && reason.find("interrupt-source enable")!=std::string::npos,
+        "enabling an actual MCU interrupt source remains blocked without verified MStar wiring");
+    }
+    for(bool suspend:{false,true}){
+      manta::Riu r;r.event=[](auto,auto,auto,auto,auto){};
+      r.candidateVdMcuProgram=true;r.exploratoryVdMcuStartup=true;r.exploratoryVdSuspendedBoundary=suspend;
+      uint64_t tick=0;auto w=[&](unsigned p,unsigned v){r.write(0x1f206900+p,1,v,0,255,++tick);};
+      w(0,1);w(1,0);w(5,0x51);w(8,0);w(9,0);
+      const std::vector<uint8_t> code={2,0,3,0x75,0x8e,2};for(auto v:code)w(0x18,v);
+      w(8,0);w(9,0);for(auto v:code)require(r.read(0x1f206920,1,0,255,++tick)==v,"stalled-device experiment still requires actual uploaded bytes");
+      w(5,0x50);w(5,0);w(1,1);bool rejected=false;
+      try{w(0,0);}catch(const manta::VdHardwareBoundary&){rejected=true;}
+      require(rejected!=suspend && r.vdMcuSuspended()==suspend,"only explicit auxiliary suspension lets the original main-CPU store retire");
+      require(r.vdMcuCpu().instructions()==1 && r.vdMcuCpu().pc()==3,"suspension retains actual original CPU execution at its unresolved instruction");
+      if(suspend){
+        r.write(0x1f224c00,1,2,0,255,++tick);w(5,2);w(5,0);
+        require(r.vdMcuProgram().interruptRequests==1 && r.vdMcuProgram().interruptPending,
+          "original high/low mailbox doorbell retains a pending request to the suspended MCU");
+        require(r.read(0x1f224c00,1,0,255,++tick)==2,
+          "interrupt request cannot become a fabricated FF mailbox completion");
+        w(5,2);w(5,0);
+        require(r.vdMcuProgram().interruptRequests==2 && r.vdMcuProgram().interruptPending,
+          "each rising doorbell edge is counted; no polling-driven acknowledgment is invented");
+        manta::Engine e;e.map(0x004f2000,0x1000);e.map(0x006b8000,0x1000);
+        const uint32_t base=0xbf000000;e.write(0x006b8d0c,&base,4);
+        // Exact original mailbox write function 804F2E5C..2F10.
+        const uint32_t original[]={0x3c08806c,0x8d068d0c,0x3c070022,0x34e24c04,0x00c23021,0x7c833a00,
+          0xa0c30000,0x8d028d0c,0x34e34c01,0x308400ff,0x00431021,0xa0440000,0x8d038d0c,0x34e24c05,
+          0x30a500ff,0x00621821,0xa0650000,0x8d028d0c,0x34e74c00,0x24050002,0x00471021,0xa0450000,
+          0x8d038d0c,0x3c040020,0x34846905,0x00641821,0xa0650000,0x8d028d0c,0x00002821,0x240600ff,
+          0x00441021,0xa0400000,0x8d038d0c,0x0813cbbc,0x00671821,0x10a60008,0x3085ffff,0x90620000,
+          0x304200ff,0x1446fffb,0x24a40001,0xa0600000,0x03e00008,0x24020001,0x03e00008,0x00001021};
+        e.write(0x004f2e5c,original,sizeof(original));
+        struct BusContext{manta::Riu* bus;uint32_t base;uint64_t* tick;};
+        BusContext control{&r,0x1f206000,&tick},mailbox{&r,0x1f224000,&tick};
+        auto read=+[](uc_engine*,uint64_t off,unsigned n,void* p)->uint64_t{
+          auto& c=*static_cast<BusContext*>(p);return c.bus->read(c.base+uint32_t(off),n,0,255,++*c.tick);
+        };
+        auto write=+[](uc_engine*,uint64_t off,unsigned n,uint64_t v,void* p){
+          auto& c=*static_cast<BusContext*>(p);c.bus->write(c.base+uint32_t(off),n,uint32_t(v),0,255,++*c.tick);
+        };
+        manta::check(uc_mmio_map(e.handle,control.base,0x1000,read,&control,write,&control));
+        manta::check(uc_mmio_map(e.handle,mailbox.base,0x1000,read,&mailbox,write,&mailbox));
+        e.reg(UC_MIPS_REG_4,0x2200);e.reg(UC_MIPS_REG_5,255);e.reg(UC_MIPS_REG_RA,0x804f2100);
+        uc_hook returnHook;manta::check(uc_hook_add(e.handle,&returnHook,UC_HOOK_CODE,
+          reinterpret_cast<void*>(+[](uc_engine* cpu,uint64_t,uint32_t,void*){uc_emu_stop(cpu);}),nullptr,0x804f2100,0x804f2100));
+        manta::check(e.run(0x804f2e5c,4000));
+        require(e.reg(UC_MIPS_REG_PC)==0x804f2100 && e.reg(UC_MIPS_REG_2)==0 &&
+          r.vdMcuProgram().interruptRequests==3 && r.read(0x1f224c00,1,0,255,++tick)==2,
+          "original MIPS mailbox routine executes its finite timeout and failure return when the real MCU cannot acknowledge");
+      }
+      require(r.knownBits(0x1f206600,1)==0 && r.knownBits(0x1f20667c,1)==0,"stalled auxiliary CPU produces no invented decoder status or reply");
+      r.read(0x1f20667c,1,0,255,++tick);
+      require(!r.stopReason.empty(),"main-CPU use of unknown decoder output still stops in the suspended-device experiment");
+    }
     flashTests();
     riuTests();
     gpioTests();

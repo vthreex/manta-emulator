@@ -78,7 +78,19 @@ static int appMain(const std::vector<std::string> &args) {
         o.cp0Timer = true;
       else if (a == "--exploratory-scart-grounded")o.exploratoryScartGrounded=true;
       else if (a == "--graphics-probes")o.graphicsProbes=true;
+      else if (a == "--osd-probes")o.osdProbes=true;
+      else if (a == "--candidate-vd-mcu-program")o.candidateVdMcuProgram=true;
+      else if (a == "--exploratory-vd-mcu-startup")o.exploratoryVdMcuStartup=true;
+      else if (a == "--defer-vd-sfr8e-write")o.deferVdSfr8eWrite=true;
+      else if (a == "--defer-vd-reset-key-writes")o.deferVdResetKeyWrites=true;
+      else if (a == "--exploratory-vd-suspended-boundary")o.exploratoryVdSuspendedBoundary=true;
+      else if (a == "--exploratory-fetch-revision-byte"){
+        auto v=std::stoul(value(i),nullptr,0);
+        if(v>255)throw std::runtime_error("Fetch revision hypothesis byte must be 0..255");
+        o.exploratoryFetchRevisionByte=int(v);
+      }
       else if(a=="--exploratory-analog-disconnected")o.exploratoryAnalogDisconnected=true;
+      else if(a=="--exploratory-ci-detect-high")o.exploratoryCiDetectHigh=true;
       else if(a=="--exploratory-pq-sram-idle")o.exploratoryPqSramIdle=true;
       else if(a=="--exploratory-pq-disabled-ports")o.exploratoryPqDisabledPorts=true;
       else if (a == "--exploratory-scmi-format-byte"){
@@ -183,6 +195,14 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-scart-grounded: explicit grounded FB input and hypothetical ADC zero code after original config; exact Titania4 transfer/pin mapping unverified\n"
                "--graphics-probes: trace original GOP window-programming entries and report valid guest register descriptors; does not fabricate pixels\n"
                "--exploratory-scmi-format-byte N: hypothetical initial main/sub bank12 format low byte; upper fields remain unknown\n"
+               "--exploratory-fetch-revision-byte N: explicit unverified immutable BF003C05 byte; not a validated Titania4 stepping\n"
+               "--candidate-vd-mcu-program: shared MCU upload/readback ports; current original payload is DVB-T; no synthetic acknowledgment\n"
+               "--exploratory-vd-mcu-startup: execute original upload with standard 8052 reset/RAM hypothesis; all XDATA stops unresolved\n"
+               "--defer-vd-sfr8e-write: separate diagnostic write-effect deferral; SFR identity/effects unknown and reads forbidden\n"
+               "--defer-vd-reset-key-writes: defer only original AA/55/AA/55 XDATA 1080..1083 writes; effects unverified, no ready response\n"
+               "--exploratory-vd-suspended-boundary: explicit stalled-MCU experiment; unresolved transaction has no effect/reply; MIPS continues only until unknown inputs\n"
+                "--osd-probes: original ZUI state, graphics context, font renderer and window-creation entry traces\n"
+                "--exploratory-ci-detect-high: external CI detect bit2 high fixture; board polarity unverified, no module or acknowledgment\n"
                "--exploratory-analog-disconnected: external no-analog-input fixture supplies NORMAL Euro/Australia detection status only; positive patterns/timing unsupported\n"
                "--exploratory-pq-sram-idle: unvalidated initial idle state; original Y/C coefficient writes store real payloads with provisional deterministic latency\n"
                "--exploratory-pq-disabled-ports: separate unvalidated reset fixture with Y/C write-enable bits initially cleared\n"

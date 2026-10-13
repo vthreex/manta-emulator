@@ -1,0 +1,33 @@
+{
+  "commit": "5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8",
+  "files": {
+    "core.c": {
+      "size": 16789,
+      "sha256": "8f11018c38f6bdd5754cb9cb420d9ed3f07c3c4c71e18c68a37965e544c432d6"
+    },
+    "opcodes.c": {
+      "size": 49387,
+      "sha256": "76e33619b88d60042f5275f62af6599a2b5495186d43ad18be477543b2f34263"
+    },
+    "emu8051.h": {
+      "size": 7932,
+      "sha256": "3cf6f070b8cd51791aeb2555dcfdcb75220b3931f1617c7e2a6148c0628a7a63"
+    },
+    "LICENSE": {
+      "size": 1068,
+      "sha256": "3c05d81f8d97faa7f8acc73af3e1a41491d9cea7f7ed01e5b03ec5c4e9566751"
+    },
+    "README.md": {
+      "size": 5141,
+      "sha256": "6b086761428d950a167234ba897f3e7d61c6af23158ca5b251190ced23deb160"
+    },
+    "Makefile": {
+      "size": 721,
+      "sha256": "13480c21f3a84366c3413c297e150764735babcdac1f0c3b5f1b171889995b42"
+    },
+    "disasm.c": {
+      "size": 33045,
+      "sha256": "0ea5dddc11310d8f1fcff475ff3e3f177ce8b0163b71444c2b937ad55021601e"
+    }
+  }
+}

@@ -1,5 +1,7 @@
 # Status of the research build
 
+The latest [revision and DVB-T MCU continuation](revision-and-vd-mcu-continuation.md) executes 950,695,929 original MIPS dispatches, 71,104,864 original OpenRISC instructions and two original DVB-T 8051 startup bursts of 399 completed instructions each in **exploratory** mode. It passes original PCMCIA/CI initialization with only an explicitly configured detect-bit fixture, then stops at `804F496C / BF224C38` because mailbox bit 0 is unknown. The 8051 separately stops at `55B9 / XDATA 2F00`; no mailbox acknowledgment is invented. The low-level GOP initializer executes, but ZUI state setup, a usable graphics window, GE raster drawing, and an authentic OSD frame remain **unsupported / undemonstrated**. Strict POR and SPI-CF boundaries remain unresolved. The linked continuation and its evidence describe the exact distinctions; the older evidence table below records prior milestones and is not the latest stopping state.
+
 The requested complete TV emulator is **not achieved**. No authentic OSD has been displayed. The native application executes original guest code and stops at explicit unmodeled hardware boundaries.
 
 | Capability | Status | Evidence and limits |

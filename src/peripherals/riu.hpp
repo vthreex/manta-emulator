@@ -21,12 +21,19 @@
 #include "peripherals/ir_dma.hpp"
 #include "inputs/scart.hpp"
 #include "video/pq_sram.hpp"
+#include "peripherals/vd_mcu_program.hpp"
+#include "cpu/vd_mcu.hpp"
 #include <set>
 namespace manta {
 struct RiuByte {
   uint8_t value = 0xa5, known = 0;
 };
 class Riu {
+  int exploratoryFetchRevisionByte_=-1;
+  VdMcuProgram vdMcuProgram_;
+  VdMcuCpu vdMcuCpu_;
+  bool vdMcuSuspended_=false;
+  std::string vdMcuBoundaryReason_;
   std::map<uint32_t, RiuByte> bytes_;
   uint64_t bdmaComplete_ = 0;
   bool bdmaPending_ = false;
@@ -90,11 +97,29 @@ class Riu {
   void updateOutputTiming(uint64_t tick);
 
 public:
+  bool candidateVdMcuProgram=false;
+  bool exploratoryVdMcuStartup=false;
+  bool deferVdSfr8eWrite=false;
+  bool exploratoryVdSuspendedBoundary=false;
+  bool deferVdResetKeyWrites=false;
+  bool vdMcuSuspended()const{return vdMcuSuspended_;}
+  const std::string& vdMcuBoundaryReason()const{return vdMcuBoundaryReason_;}
+  const VdMcuProgram& vdMcuProgram()const{return vdMcuProgram_;}
+  const VdMcuCpu& vdMcuCpu()const{return vdMcuCpu_;}
   bool candidateTsp=false;
   void configureExploratoryTspCpu();
   void configureExploratoryPmAcOn(){pmBoot_.acApplied();}
   void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}
   void configureExploratoryScartGrounded(){scart_.ground();}
+  void configureExploratoryFetchRevisionByte(unsigned byte){
+    if(byte>255)throw std::runtime_error("Fetch revision hypothesis byte must be 0..255");
+    exploratoryFetchRevisionByte_=int(byte);
+  }
+  bool exploratoryCiDetectHigh=false;
+  uint64_t ciDetectReads=0;
+  void configureExploratoryCiDetectHigh(){
+    exploratoryCiDetectHigh=true;bytes_[0x1f206891]={4,4};
+  }
   void configureExploratoryPqSramIdle(){pqSram_.exploratoryIdle();}
   void configureExploratoryPqDisabledPorts(){
     auto &b=bytes_[0x81000000u+(0x23u<<10)+0x104];

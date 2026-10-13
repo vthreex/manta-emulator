@@ -182,6 +182,7 @@ uint32_t Riu::storageKey(uint32_t a) const {
   return a;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(candidateVdMcuProgram && a==0x1f206920 && n==1)return vdMcuProgram_.readable()?255:0;
   if(a==0x1f204b15 && n==1 && scart_.sample()){
     auto it=bytes_.find(storageKey(a));return 15|(it==bytes_.end()?0:it->second.known);
   }
@@ -193,6 +194,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag()?0xffff:0;
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
+    if(a+i==0x1f003c05 && exploratoryFetchRevisionByte_>=0){v|=255u<<(8*i);continue;}
     auto it = bytes_.find(storageKey(a + i));
     if (it != bytes_.end())
       v |= uint32_t(it->second.known) << (8 * i);
@@ -219,6 +221,7 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
   if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag().value_or(0xa5a5);
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
+    if(a+i==0x1f003c05 && exploratoryFetchRevisionByte_>=0){v|=uint32_t(exploratoryFetchRevisionByte_)<<(8*i);continue;}
     auto it = bytes_.find(storageKey(a + i));
     v |= uint32_t(it == bytes_.end() ? 0xa5 : it->second.value) << (i * 8);
   }
@@ -250,6 +253,22 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
   advanceTsp(tick);
+  if(exploratoryCiDetectHigh && a==0x1f206891 && n==1){
+    ++ciDetectReads;
+    event("exploratory_ci_detect_sample",a,n,4,
+      "EXPLORATORY external CI detect line high, original driver consumes bit2 only; polarity/board wiring unverified, no module/IRQ/transaction acknowledgment");
+  }
+  if(candidateVdMcuProgram && a==0x1f206920){
+    if(n!=1)throw std::runtime_error("VD MCU program read width unsupported");
+    auto cursor=vdMcuProgram_.cursor();auto value=vdMcuProgram_.read();
+    event("vd_mcu_program_read",a,n,value,"original uploaded program byte; address="+std::to_string(cursor)+"; sequential read port, not a CPU status/ready response");
+    return value;
+  }
+  if(a==0x1f003c05 && n==1 && exploratoryFetchRevisionByte_>=0){
+    event("exploratory_fetch_revision_read",a,n,unsigned(exploratoryFetchRevisionByte_),
+      "EXPLORATORY immutable byte hypothesis; original predicate compares unsigned byte < 2; register identity and board silicon stepping unverified");
+    return unsigned(exploratoryFetchRevisionByte_);
+  }
   if(pqSram_.advance(tick))event("pq_sram_commit",0x1f205f04,2,uint32_t(pqSram_.commits),"original five-byte coefficient payload stored in SRAM; deterministic provisional transfer latency elapsed");
   if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c))if(auto cursor=irDma_.producer()){
     auto v=(*cursor>>(a==0x1f206e79?0:8))&255;
@@ -455,6 +474,12 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   advanceTsp(tick);
+  if(exploratoryCiDetectHigh && a<=0x1f206891 && uint64_t(a)+n>0x1f206891)
+    throw std::runtime_error("CI detect-input register write unsupported; external line is not guest-controlled storage");
+  if(candidateVdMcuProgram && a<=0x1f206920 && uint64_t(a)+n>0x1f206920)
+    throw std::runtime_error("VD MCU program read port is not writable");
+  if(a<=0x1f003c05 && uint64_t(a)+n>0x1f003c05 && exploratoryFetchRevisionByte_>=0)
+    throw std::runtime_error("Write overlaps hypothetical immutable fetch revision byte; register writability remains unsupported");
   if(pqSram_.advance(tick))event("pq_sram_commit",0x1f205f04,2,uint32_t(pqSram_.commits),"original five-byte coefficient payload stored in SRAM; deterministic provisional transfer latency elapsed");
   if(a<=0x1f001cdd && uint64_t(a)+n>0x1f001cdd && pmBoot_.cause())
     throw std::runtime_error("PM PowerOnMode writer unsupported under external AC-on boundary; mode not silently changed or acknowledged");
@@ -518,6 +543,52 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(candidateVdMcuProgram && (a==0x1f206900 || a==0x1f206901 || a==0x1f206905 ||
+      a==0x1f206908 || a==0x1f206909 || a==0x1f206918)){
+    if(n!=1 || knownBits(a,n)!=255)throw std::runtime_error("VD MCU program control/data requires fully known byte access");
+    auto cursor=vdMcuProgram_.cursor();auto irqs=vdMcuProgram_.interruptRequests;
+    auto start=vdMcuProgram_.write(a-0x1f206900,uint8_t(v));
+    if(vdMcuProgram_.interruptRequests!=irqs)
+      event("mcu_mailbox_doorbell",a,n,v,"original mailbox command precedes high/low interrupt request pulse; pending request retained; MCU routing/acknowledgment not fabricated");
+    if(a==0x1f206918)event("vd_mcu_program_write",a,n,v,"original guest program-port upload; address="+std::to_string(cursor));
+    if(start){
+      event("vd_mcu_start_request",a,n,v,exploratoryVdMcuStartup?
+        "original program readback complete; bounded original 8051/8052 startup experiment; no ready response fabricated":
+        "original DVB-T program readback complete; auxiliary CPU execution disabled; no ready response fabricated");
+      if(exploratoryVdMcuStartup){
+        vdMcuCpu_.deferSfr8eWrite=deferVdSfr8eWrite;
+        vdMcuCpu_.deferResetKeyWrites=deferVdResetKeyWrites;
+        vdMcuCpu_.deferredResetKey=[this](uint16_t address,uint8_t value){
+          event("deferred_vd_reset_key_write",address,1,value,
+            "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated");
+        };
+        vdMcuCpu_.deferredSfr8e=[this](uint8_t value){
+          event("deferred_vd_sfr8e_write",0x8e,1,value,
+            "EXPLORATORY write-effect deferral only; original instruction executes; identity/clock/memory-mode effects unresolved; read remains forbidden, no peripheral response generated");
+        };
+        vdMcuCpu_.instruction=[this](uint16_t pc,uint8_t opcode,const std::string& text){
+          event("vd_mcu_instruction",pc,1,opcode,"original uploaded MCU instruction attempt: "+text+"; standard 8052 reset/RAM experiment, bounded synchronous startup burst");
+        };
+        vdMcuCpu_.external=[this](uint16_t address,bool write,uint8_t value){
+          event("vd_mcu_blocked_xdata",address,1,value,
+            std::string(write?"write":"read")+" from original VD MCU; MCU PC="+std::to_string(vdMcuCpu_.pc())+"; MStar XDATA-to-RIU/private-memory mapping unverified, no byte fabricated");
+        };
+        vdMcuCpu_.specialRegister=[this](uint8_t address,bool write,uint8_t value){
+          event("vd_mcu_blocked_sfr",address,1,value,
+            std::string(write?"write":"read")+" from original VD MCU; MCU PC="+std::to_string(vdMcuCpu_.pc())+"; nonstandard MStar SFR definition unresolved");
+        };
+        vdMcuSuspended_=false;vdMcuBoundaryReason_.clear();
+        try{vdMcuCpu_.startup(vdMcuProgram_);}
+        catch(const VdHardwareBoundary& boundary){
+          if(!exploratoryVdSuspendedBoundary)throw;
+          vdMcuSuspended_=true;vdMcuBoundaryReason_=boundary.what();
+          event("exploratory_vd_boundary_suspension",a,n,v,
+            "EXPLORATORY stalled auxiliary device: pending transaction has no effect/completion/reply; original MIPS store can retire; "+vdMcuBoundaryReason_);
+        }
+      }
+      if(!vdMcuSuspended_)throw std::runtime_error("MCU reset released after genuine program upload/readback; original auxiliary CPU execution unsupported");
+    }
+  }
   if(exploratorySarFullscale_ && (a==0x1f002800 || a==0x1f002801 || a==0x1f002804)){
     sar_.configure(uint8_t(get(0x1f002800,1)),uint8_t(knownBits(0x1f002800,1)),
       uint8_t(get(0x1f002801,1)),uint8_t(knownBits(0x1f002801,1)),

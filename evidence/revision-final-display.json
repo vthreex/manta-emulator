@@ -1,0 +1,54 @@
+{
+  "result": "PASS",
+  "original_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "runs": 9,
+  "assumptions_not_hardware_validation": true,
+  "cases": {
+    "unknown-subwindow": {
+      "stop_pc": "0x805fe070",
+      "stop_address": "0x1f205e40",
+      "instruction_dispatches": 194157756
+    },
+    "subwindow-enabled": {
+      "stop_pc": "0x805fe080",
+      "stop_address": "0x0",
+      "instruction_dispatches": 194157760
+    },
+    "unknown-dlc-request": {
+      "stop_pc": "0x805e39f0",
+      "stop_address": "0x1f205e10",
+      "instruction_dispatches": 204559942
+    },
+    "dlc-request-pending": {
+      "stop_pc": "0x805e3a00",
+      "stop_address": "0x1f205e10",
+      "instruction_dispatches": 204559946
+    },
+    "unknown-dlc-completion": {
+      "stop_pc": "0x805e3d14",
+      "stop_address": "0x1f205e10",
+      "instruction_dispatches": 204562256
+    },
+    "unknown-comb-selector": {
+      "stop_pc": "0x805f87dc",
+      "stop_address": "0x1f206c00",
+      "instruction_dispatches": 279467165
+    },
+    "comb-high-byte-guard": {
+      "stop_pc": "0x805f883c",
+      "stop_address": "0x1f206d1c",
+      "instruction_dispatches": 279469882
+    },
+    "full-display-replay": {
+      "stop_pc": "0x805f883c",
+      "stop_address": "0x1f206d1c",
+      "instruction_dispatches": 279469882
+    },
+    "half-output-clock": {
+      "stop_pc": "0x805fe070",
+      "stop_address": "0x1f205e40",
+      "instruction_dispatches": 214888446
+    }
+  },
+  "original_full_sha256": "744bb19fbbdff2d4ab144d4009452b66f49f7dfe30caf9bb45b9c160e2163b90"
+}

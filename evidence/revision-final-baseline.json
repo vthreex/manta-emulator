@@ -1,0 +1,99 @@
+{
+  "result": "PASS",
+  "streams_verified": 12,
+  "guest_inflate_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+  "runs": 18,
+  "cases": {
+    "strict_reset": {
+      "stop_pc": "0xbfc00c60",
+      "stop_address": "0x1f001c74",
+      "instruction_dispatches": 116
+    },
+    "strict_replay": {
+      "stop_pc": "0xbfc00c60",
+      "stop_address": "0x1f001c74",
+      "instruction_dispatches": 116
+    },
+    "cpu_disabled_checkpoint": {
+      "stop_pc": "0xbfc00000",
+      "stop_address": "0x0",
+      "instruction_dispatches": 1
+    },
+    "diagnostic_stage2": {
+      "stop_pc": "0x8054ab34",
+      "stop_address": "0x1f20164d",
+      "instruction_dispatches": 90030942
+    },
+    "without_gpio": {
+      "stop_pc": "0x8053bde4",
+      "stop_address": "0x1f203d05",
+      "instruction_dispatches": 90206965
+    },
+    "firmware_from_reset": {
+      "stop_pc": "0x80469898",
+      "stop_address": "0x1f200a38",
+      "instruction_dispatches": 90220219
+    },
+    "stuck_sda_fixture": {
+      "stop_pc": "0x80469898",
+      "stop_address": "0x1f200a38",
+      "instruction_dispatches": 90229262
+    },
+    "invalid_diagnostic_cache": {
+      "stop_pc": "0x8054843c",
+      "stop_address": "0x1f002420",
+      "instruction_dispatches": 90234133
+    },
+    "guest_timer": {
+      "stop_pc": "0x804f1094",
+      "stop_address": "0x1f207578",
+      "instruction_dispatches": 93330611
+    },
+    "utmi_init": {
+      "stop_pc": "0x8053c1c4",
+      "stop_address": "0x1f00105c",
+      "instruction_dispatches": 104577325
+    },
+    "spi_probe": {
+      "stop_pc": "0x8053c6ec",
+      "stop_address": "0x1f001030",
+      "instruction_dispatches": 104577852
+    },
+    "guarded_spi_identification": {
+      "stop_pc": "0x8053dd14",
+      "stop_address": "0x72d8e8",
+      "instruction_dispatches": 104578783
+    },
+    "miu1_alias": {
+      "stop_pc": "0x8054cdcc",
+      "stop_address": "0x1f003d98",
+      "instruction_dispatches": 173426090
+    },
+    "exploratory_gamma": {
+      "stop_pc": "0x805fd41c",
+      "stop_address": "0x0",
+      "instruction_dispatches": 174323630
+    },
+    "exploratory_gamma_replay": {
+      "stop_pc": "0x805fd41c",
+      "stop_address": "0x0",
+      "instruction_dispatches": 174323630
+    },
+    "exploratory_gamma_enable1": {
+      "stop_pc": "0x805fd41c",
+      "stop_address": "0x0",
+      "instruction_dispatches": 174323689
+    },
+    "clock_table_continuation": {
+      "stop_pc": "0x805fbc8c",
+      "stop_address": "0x1f205e78",
+      "instruction_dispatches": 175471842
+    },
+    "clock_table_continuation_replay": {
+      "stop_pc": "0x805fbc8c",
+      "stop_address": "0x1f205e78",
+      "instruction_dispatches": 175471842
+    }
+  },
+  "original_full_sha256": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+}

@@ -28,6 +28,29 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateGe=o.candidateGe;
   riu_.candidateGopPalette=o.candidateGopPalette;
   riu_.candidateTsp=o.candidateTsp;
+  riu_.candidateVdMcuProgram=o.candidateVdMcuProgram;
+  if(o.deferVdSfr8eWrite && !o.exploratoryVdMcuStartup)
+    throw std::runtime_error("VD SFR write-effect deferral requires the explicit bounded startup experiment");
+  riu_.deferVdSfr8eWrite=o.deferVdSfr8eWrite;
+  if(o.deferVdResetKeyWrites && (!o.deferVdSfr8eWrite || !o.exploratoryVdMcuStartup))
+    throw std::runtime_error("VD reset-key write deferral requires explicit SFR deferral and original startup experiment");
+  riu_.deferVdResetKeyWrites=o.deferVdResetKeyWrites;
+  if(o.exploratoryVdSuspendedBoundary && (!o.exploratoryVdMcuStartup || !o.symbolicInit || !o.deferDiagnosticReads))
+    throw std::runtime_error("Suspended VD boundary experiment requires original startup and guarded exploration");
+  riu_.exploratoryVdSuspendedBoundary=o.exploratoryVdSuspendedBoundary;
+  if(o.exploratoryVdMcuStartup){
+    if(!o.candidateVdMcuProgram || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("VD MCU standard-reset startup experiment requires candidate program port and guarded exploration");
+    riu_.exploratoryVdMcuStartup=true;
+  }
+  if(o.exploratoryFetchRevisionByte>=0){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("Fetch revision hypothesis requires guarded exploration");
+    riu_.configureExploratoryFetchRevisionByte(unsigned(o.exploratoryFetchRevisionByte));
+  }
+  if(o.exploratoryCiDetectHigh){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("CI detect fixture requires guarded exploration");
+    riu_.configureExploratoryCiDetectHigh();
+  }
   riu_.executionStopped=[this]{return stopped_;};
   if(o.exploratoryPqSramIdle){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("PQ SRAM idle fixture requires guarded exploration");
@@ -272,6 +295,22 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
+  if(m.options_.osdProbes && (a==0x804e0d48 || a==0x804e0dc4 || a==0x80536274 ||
+      a==0x80522d5c || a==0x80520a84 || a==0x8040440c)){
+    ++m.osdProbeEntries_[uint32_t(a)];
+    m.event("guest_osd_routine_entry",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_4),
+      "original routine entry; a1="+hex(m.cpu_.reg(UC_MIPS_REG_5))+", a2="+hex(m.cpu_.reg(UC_MIPS_REG_6))+
+      ", a3="+hex(m.cpu_.reg(UC_MIPS_REG_7))+"; 804E0D48=ZUI state initialization, 804E0DC4=state dispatch, 80536274=GOP CreateWinImpl2, 80520A84=font callback renderer; no host invocation");
+  }
+  if(m.options_.exploratoryFetchRevisionByte>=0 && a==0x805f4b18){
+    auto enabled=m.cpu_.reg(UC_MIPS_REG_2);
+    if(enabled)++m.fetchPatchEnabled_;else ++m.fetchPatchDisabled_;
+    m.event("guest_fetch_patch_decision",uint32_t(a),0,enabled,
+      "original byte predicate returned; pre-patch fetch parameter s0="+hex(m.cpu_.reg(UC_MIPS_REG_16)));
+  }
+  if(m.options_.exploratoryFetchRevisionByte>=0 && a==0x805f4b44)
+    m.event("guest_fetch_parameter",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_16),
+      "original caller reached selected branch join; no PC change or parameter override");
   if (m.options_.cp0Timer && (m.dispatches_ & 1) == 0)
     m.cpu_.tickCount(1);
   if (m.options_.cp0Timer && a == 0x803b0180) {
@@ -613,6 +652,42 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
         m.preservedBits_.seed(16,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
         m.riu_.prepareOpaqueRead(a);
         m.event("guarded_pq_sram_read",a,n,m.riu_.knownBits(a,n),"original SRAM busy read; bit8 comes from pending coefficient transfer, unrelated fields retain unknown provenance");
+      }
+    }
+    if(m.options_.exploratoryCiDetectHigh && pc==0x8051ef94 && a==0x1f206891 && n==1 &&
+       m.cpu_.reg(UC_MIPS_REG_RA)==0x8051d794){
+      uint32_t parentReturn=0;
+      m.cpu_.read((m.cpu_.reg(UC_MIPS_REG_SP)+0x14)&0x1fffffff,&parentReturn,4);
+      std::vector<uint8_t> caller(0x164),wrapper(0x38),reader(0x24);
+      m.cpu_.read(0x0051e94c,caller.data(),caller.size());
+      m.cpu_.read(0x0051d770,wrapper.data(),wrapper.size());
+      m.cpu_.read(0x0051ef78,reader.data(),reader.size());
+      if(parentReturn==0x8051e964 &&
+         sha256(caller)=="890094d9c6368720d8a426928ad481fd34a5dc0256f879cceb9ac401194d25ad" &&
+         sha256(wrapper)=="bcb69c22ceada71fafe0906ad14cfeafa9411b7fb41a9996e266ae1bf147907a" &&
+         sha256(reader)=="f7baf2797d6b3e857d99128c6c11caba5dd4b109a0f7d794f680c0256587e104"){
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("guarded_ci_detect_read",a,n,m.riu_.knownBits(a,n),
+          "original PCMCIA detect wrapper; configured bit2 only, unrelated fields remain invalid until original ANDI discards them");
+      }
+    }
+    if(m.options_.deferDiagnosticReads && m.options_.symbolicInit &&
+       pc==0x8051ef94 && a==0x1f2068a0 && n==1 && m.cpu_.reg(UC_MIPS_REG_RA)==0x8051d794){
+      uint32_t parentReturn=0;
+      m.cpu_.read((m.cpu_.reg(UC_MIPS_REG_SP)+0x14)&0x1fffffff,&parentReturn,4);
+      std::vector<uint8_t> caller(0xcc),wrapper(0x38),reader(0x24);
+      m.cpu_.read(0x0051ee70,caller.data(),caller.size());
+      m.cpu_.read(0x0051d770,wrapper.data(),wrapper.size());
+      m.cpu_.read(0x0051ef78,reader.data(),reader.size());
+      if(parentReturn==0x8051eed0 &&
+         sha256(caller)=="d7e642fa2af8abcd87b7ab59cd1209da95b76eed7ee0517259cb1f07cdc84a02" &&
+         sha256(wrapper)=="bcb69c22ceada71fafe0906ad14cfeafa9411b7fb41a9996e266ae1bf147907a" &&
+         sha256(reader)=="f7baf2797d6b3e857d99128c6c11caba5dd4b109a0f7d794f680c0256587e104"){
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_pcmcia_initial_observation",a,n,0,
+          "INVALID original initialization pre-read: wrapper copies to caller stack, caller overwrites with 0x51; read side effects unverified, any unknown consumption still stops");
       }
     }
     if(m.options_.exploratoryScmiFormat>=0 && pc==0x805f8a28 && n==2 && m.riu_.scBank()==0x12 &&
@@ -1245,9 +1320,33 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryPmAcOn)s<<",\n  \"exploratory_pm_ac_on\": true";
   if(options_.exploratoryScartGrounded)s<<",\n  \"exploratory_scart_grounded\": true,\n  \"scart_input_reads\": "<<riu_.scartReads();
   if(options_.exploratoryScmiFormat>=0)s<<",\n  \"exploratory_scmi_format_byte\": "<<options_.exploratoryScmiFormat;
+  if(options_.exploratoryFetchRevisionByte>=0)s<<",\n  \"exploratory_fetch_revision_byte\": "<<options_.exploratoryFetchRevisionByte
+    <<",\n  \"fetch_patch_enabled_decisions\": "<<fetchPatchEnabled_<<",\n  \"fetch_patch_disabled_decisions\": "<<fetchPatchDisabled_;
   if(options_.exploratoryAnalogDisconnected)s<<",\n  \"exploratory_analog_disconnected\": true";
+  if(options_.exploratoryCiDetectHigh)s<<",\n  \"exploratory_ci_detect_high\": true,\n  \"ci_detect_reads\": "<<riu_.ciDetectReads;
   if(options_.exploratoryPqSramIdle)s<<",\n  \"exploratory_pq_sram_idle\": true,\n  \"pq_sram_submissions\": "<<riu_.pqSram().submissions<<",\n  \"pq_sram_commits\": "<<riu_.pqSram().commits<<",\n  \"pq_sram_state_sha256\": \""<<sha256(riu_.pqSram().stateBytes())<<"\"";
   if(options_.exploratoryPqDisabledPorts)s<<",\n  \"exploratory_pq_disabled_ports\": true";
+  if(options_.candidateVdMcuProgram){
+    auto image=riu_.vdMcuProgram().contiguousImage();
+    s<<",\n  \"candidate_vd_mcu_program\": true,\n  \"vd_mcu_program_writes\": "<<riu_.vdMcuProgram().writes
+      <<",\n  \"vd_mcu_program_reads\": "<<riu_.vdMcuProgram().reads<<",\n  \"vd_mcu_start_requests\": "<<riu_.vdMcuProgram().startRequests
+      <<",\n  \"vd_mcu_contiguous_program_bytes\": "<<image.size()<<",\n  \"vd_mcu_program_sha256\": \""<<sha256(image)<<"\"";
+    if(options_.exploratoryVdSuspendedBoundary)s<<",\n  \"mcu_mailbox_interrupt_requests\": "<<riu_.vdMcuProgram().interruptRequests
+      <<",\n  \"mcu_mailbox_interrupt_pending\": "<<(riu_.vdMcuProgram().interruptPending?"true":"false");
+  }
+  if(options_.exploratoryVdMcuStartup)s<<",\n  \"exploratory_vd_mcu_startup\": true,\n  \"vd_mcu_instructions\": "<<riu_.vdMcuCpu().instructions()
+    <<",\n  \"vd_mcu_upstream_ticks\": "<<riu_.vdMcuCpu().cycles()<<",\n  \"vd_mcu_pc\": \""<<hex(riu_.vdMcuCpu().pc())<<"\",\n  \"vd_mcu_stack\": "<<unsigned(riu_.vdMcuCpu().stack());
+  if(options_.deferVdSfr8eWrite)s<<",\n  \"deferred_vd_sfr8e_write_enabled\": true";
+  if(options_.deferVdResetKeyWrites)s<<",\n  \"deferred_vd_reset_key_writes_enabled\": true";
+  if(options_.exploratoryVdSuspendedBoundary)s<<",\n  \"exploratory_vd_suspended_boundary\": true,\n  \"vd_mcu_suspended\": "<<(riu_.vdMcuSuspended()?"true":"false")
+    <<",\n  \"vd_mcu_boundary_reason\": \""<<riu_.vdMcuBoundaryReason()<<"\"";
+  if(options_.osdProbes){
+    s<<",\n  \"osd_probes_enabled\": true";
+    s<<",\n  \"osd_routine_entries\": {";
+    bool firstProbe=true;
+    for(auto [pc,count]:osdProbeEntries_){if(!firstProbe)s<<',';firstProbe=false;s<<'\"'<<hex(pc)<<"\":"<<count;}
+    s<<"}";
+  }
   if(options_.graphicsProbes){
     s<<",\n  \"graphics_probes\": {\"window_program_entries\":"<<gopWindowProgramEntries_<<",\"write32_entries\":"<<gopWrite32Entries_<<",\"decoded_windows\":[";
     bool first=true;

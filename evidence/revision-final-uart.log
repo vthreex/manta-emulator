@@ -1,0 +1,42 @@
+UART_115200
+
+BIST0-OK
+
+BIST1-OK
+
+[0123456789ABCDEF][0123456789ABCDEF]-77
+
+[0123456789ABCDEF][0123456789ABCDEF]-77
+
+_snPD @@@ Hello T4
+
+
+
+
+ USB_Init_ConfigureUSB port 0 enter power save done
+
+done
+
+USB_Init_Configure done...
+
+
+
+sar input test...
+
+
+
+====================
+
+First GOP driver instance, flush GWIN HW
+
+====================
+
+
+
+[HAL_TSP_CPU_SetBase][1708] load firmware (address, size) = (0x0072DB00, 0x00004408)
+
+firmware 111 0x0072DB00 0x00010000 0x0000CB6C
+
+DVB-T Load DSP Code OK
+
+

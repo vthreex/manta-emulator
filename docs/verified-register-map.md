@@ -1,6 +1,16 @@
 # Register evidence and model scope
 
-The latest [application continuation](application-display-continuation.md) supersedes historical checkpoint statements below. Bank23 reg41 at `BF205F04` controls original five-byte Y/C coefficient SRAM transfers through reg42..45; bit8 is write/busy. Two Y tables are demonstrated, with experimental initial idle/disabled-port states and provisional latency. Original C indices differ from Marlon. The new byte `BF003C05` feeds `(byte < 2)` in a fetch-workaround predicate; identity/producer/value remain unverified and execution stops.
+The latest [revision, DVB-T MCU and CI continuation](revision-and-vd-mcu-continuation.md) supersedes historical stopping points below. Addresses and bit tests in the next table are directly observed in original firmware; exact Titania4 reset values, external wiring, and timing are stated separately.
+
+| Address / path | Observed original firmware use | Current supported interpretation and limit |
+|---|---|---|
+| `BF003C05` | `806006CC..DC` returns `byte < 2`; caller adjusts capped fetch parameter | Related SYS library labels this byte `ChipRev`; exact Manta stepping unknown. A chosen byte is opt-in only. |
+| `BF206900/01/05/08/09/18/20` | `804F565C` holds/releases auxiliary MCU, writes 22,026 original bytes via `18`, rewinds address via `08/09`, compares every `20` read; later pulses `05=2→0` | Shared addressed program store and pulse count are modeled. The UART identifies this selected program as DVB-T. Execution depends on unresolved SFR/XDATA effects. |
+| `BF2068A0` | `8051EF94` PCMCIA byte read; original `8051EEC8` caller overwrites its copy with `51` before use | Guarded unknown pre-read only; no reset value or side effect assumed. |
+| `BF206891` | PCMCIA index 9; original `8051E980` masks bit 2 | Related named PCMCIA driver uses the same address formula and bit-2 card test. Optional external high-line fixture defines bit 2 only; connector polarity unknown. |
+| `BF224C00` | Original MIPS command byte and finite polling; `BF206905` pulses request | Original 8051 is suspended, so the command remains pending and timeout returns failure; no `FF` acknowledgment generated. |
+| `BF224C38` | `804F496C` tests bit 0 before a second mailbox transaction | Initial busy/status state and producer unknown. Strict and exploratory modes stop rather than choose the branch. |
+| 8051 XDATA `1080..1083`, `2F00` | Original `AA/55/AA/55` writes, then write `00` to `2F00` at MCU `55B9` | Only the first four writes can be explicitly deferred for diagnosis; their effects, `2F00` mapping and MCU interrupt routing remain unsupported. |
 
 "Verified" here means an address/access/formula or use is directly present in this firmware. It does not establish every register's electrical or timing semantics.
 

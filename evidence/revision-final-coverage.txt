@@ -1,0 +1,16 @@
+Original guest PC coverage: 41216 unique MIPS PCs
+Full list: revision-final-coverage.full.txt.gz
+0xbfc00000 covered
+0x803b0180 covered
+0x80539ce4 covered
+0x8040440c covered
+0x80522d5c covered
+0x804e0d48 not covered
+0x80536274 not covered
+0x80520a84 not covered
+0x804f57cc covered
+0x804f48d8 covered
+0x8051ef94 covered
+0x8051e980 covered
+0x804f2f10 covered
+0x804f496c covered
