@@ -1292,6 +1292,52 @@ void tspDownloadTests() {
       "original poll sees done only after the actual SRAM effect");
   rejects([&]{r.write(0x1f202be8,2,3,0,0xffff,15);});
 }
+void pmPowerInputTests(){
+  manta::PmPowerGood p;
+  require(!p.configured() && p.sample().known==0,"PM power-good has no implicit reset value");
+  p.input(false);require(p.sample().known==7 && (p.sample().value&7)==0 && p.transitions==1,"explicit absent power retains a nonready aggregate input");
+  for(unsigned i=0;i<100;++i)p.sample();
+  require(p.transitions==1,"PM power-good cannot become ready by polling");
+  p.input(false);require(p.transitions==1,"repeated identical power input is not a transition");
+  p.input(true);require((p.sample().value&7)==7 && p.sample().known==7 && p.transitions==2,"explicit stable-power hypothesis changes only the aggregate predicate");
+  p.disconnect();require(!p.configured() && p.sample().known==0 && p.transitions==3,"disconnect invalidates unknown detector wiring");
+  manta::Riu r;r.symbolicInit=true;r.event=[](auto,auto,auto,auto,auto){};
+  require(r.knownBits(0x1f001d84,2)==0,"strict RIU power-good and unused high byte stay invalid");
+  r.configureExploratoryPmPowerGood(false);
+  require(r.knownBits(0x1f001d84,2)==7 && (r.read(0x1f001d84,2,0,7,1)&7)==0,"RIU word read exposes only configured low input bits");
+  r.configureExploratoryPmPowerGood(true);
+  require((r.read(0x1f001d84,1,0,7,2)&7)==7 && r.knownBits(0x1f001d85,1)==0,"RIU byte and word paths agree without inventing unused high status");
+}
+void r8051UartConfigTests(){
+  auto run=[&](const std::vector<uint8_t>& code,bool candidate,auto inspect){
+    manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+    for(auto byte:code)p.write(0x18,byte);
+    manta::VdMcuCpu c;c.candidateR8051Uart=candidate;unsigned writes=0;
+    c.specialRegister=[&](uint8_t,bool write,uint8_t){if(write)++writes;};
+    std::string reason;try{c.startup(p,100);}catch(const std::exception& e){reason=e.what();}
+    require(!reason.empty(),"UART configuration fixture must reach a genuine unsupported boundary");
+    inspect(c,reason,writes);
+  };
+  run({0x43,0xd8,0x80,0xe5,0xd8,0x54,0x80,0x60,2,0x78,0x2a,0x90,0x2f,0,0xe0},true,[&](auto& c,const auto& reason,unsigned writes){
+    require(c.instructions()==6 && c.pc()==14 && reason.find("XDATA read unsupported")!=std::string::npos,"original UART baud select ORL preserves unknown bits, masking permits a known decision");
+    require(writes==1 && c.accumulatorKnown()==255 && c.accumulator()==0x80,"guest-written baud selector is observable without a guessed SFR reset");
+  });
+  run({0x43,0xd8,0x80,0xe5,0xd8,0x60,0},true,[&](auto& c,const auto& reason,unsigned){
+    require(c.pc()==5 && c.accumulatorKnown()==0x80 && reason.find("unknown XDATA bits")!=std::string::npos,"unmasked reserved UART control bits cannot affect a branch");
+  });
+  run({0x75,0xaa,0xf6,0xe5,0xaa,0x90,0x2f,0,0xe0},true,[&](auto& c,const auto& reason,unsigned writes){
+    require(c.pc()==8 && writes==1 && c.accumulator()==0xf6 && reason.find("XDATA read unsupported")!=std::string::npos,"baud low register reads its actual programmed value");
+  });
+  run({0x75,0xba,3,0xe5,0xba,0x54,3,0x60,0,0x90,0x2f,0,0xe0},true,[&](auto& c,const auto& reason,unsigned){
+    require(c.pc()==12 && c.accumulator()==3 && reason.find("XDATA read unsupported")!=std::string::npos,"ten-bit reload high field requires masking reserved bits");
+  });
+  run({0x75,0x98,0x50,0x75,0x99,0x2a,0x30,0x99,0xfd},true,[&](auto& c,const auto& reason,unsigned writes){
+    require(c.pc()==6 && writes==1 && reason.find("TX completion")!=std::string::npos,"guest UART transmit queues a byte; unsupported baud-clock completion is not fabricated");
+  });
+  run({0x43,0xd8,0x80},false,[&](auto& c,const auto& reason,unsigned){
+    require(c.instructions()==0 && reason.find("SFR read unsupported")!=std::string::npos,"unchanged CPU mode still rejects unmodeled R8051 extensions");
+  });
+}
 int main() {
   try {
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
@@ -1301,6 +1347,8 @@ int main() {
     require(manta::sha256({}) == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             "SHA empty");
     cpuTests();
+    pmPowerInputTests();
+    r8051UartConfigTests();
     openRiscTests();
     irDmaTests();
     gopResetTests();

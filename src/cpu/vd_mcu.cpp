@@ -22,6 +22,11 @@ struct VdMcuCpu::Impl {
   std::array<uint8_t,32> registerKnown{};
   std::array<uint16_t,32> registerOrigin{};
   bool parityUnknown=false;
+  std::array<VdByte,128> uartRegisters{};
+  bool uartTxPending=false;
+  static bool uartRegister(uint8_t a){
+    return a==0xd8 || a==0xaa || a==0xba || a==0x9d || a==0xbb || a==0x9b || a==0x9c;
+  }
   static Impl& self(em8051* cpu){return *reinterpret_cast<Context*>(cpu)->owner;}
   static uint8_t xread(em8051* cpu,uint16_t address){
     auto& m=self(cpu);
@@ -50,12 +55,49 @@ struct VdMcuCpu::Impl {
   }
   static uint8_t unknownSfrRead(em8051* cpu,uint8_t address){
     auto& m=self(cpu);
+    if(m.outer->candidateR8051Uart && uartRegister(address)){
+      auto v=m.uartRegisters[address-128];auto op=cpu->mCodeMem[cpu->mPC];
+      // An immediate read/modify/write preserves invalid bits locally; they
+      // cannot affect a branch/address or leak into a foreign register.
+      if((op==0x43 || op==0x53) && cpu->mCodeMem[uint16_t(cpu->mPC+1)]==address)return v.value;
+      if(op==0xe5 && address!=0x9b && address!=0x9c){
+        m.aKnown=v.known;m.aOrigin=uint16_t(0xff00u|address);m.parityUnknown=v.known!=255;return v.value;
+      }
+      if(v.known==255 && address!=0x9b && address!=0x9c)return v.value;
+      throw VdHardwareBoundary("R8051 UART uninitialized/configuration or unmodeled live status consumed");
+    }
     if(m.outer->specialRegister)m.outer->specialRegister(address,false,0);
     std::ostringstream s;s<<m.name<<" nonstandard SFR read unsupported at PC 0x"<<std::hex<<cpu->mPC<<", SFR 0x"<<unsigned(address);
     throw VdHardwareBoundary(s.str());
   }
+  static void uart0Write(em8051* cpu,uint8_t address){
+    auto& m=self(cpu);m.uartTxPending=true;
+    // The upstream Timer1 UART path is not the R8051 dedicated generator.
+    // Queue the actual guest byte, but stop on its completion consumer until
+    // that generator's clock relationship has been established.
+    cpu->serial_out_remaining_bits=0;
+    if(m.outer->specialRegister)m.outer->specialRegister(address,true,cpu->mSFR[REG_SBUF]);
+  }
+  static uint8_t uart0ControlRead(em8051* cpu,uint8_t){
+    if(self(cpu).uartTxPending)
+      throw VdHardwareBoundary("R8051 UART TX completion requires unimplemented dedicated baud clock");
+    return cpu->mSFR[REG_SCON];
+  }
   static void unknownSfrWrite(em8051* cpu,uint8_t address){
     auto& m=self(cpu);auto value=cpu->mSFR[address-128];
+    if(m.outer->candidateR8051Uart && uartRegister(address)){
+      auto op=cpu->mCodeMem[cpu->mPC];auto& v=m.uartRegisters[address-128];
+      if(op==0x75){v={value,255,0};}
+      else if((op==0x43 || op==0x53) && cpu->mCodeMem[uint16_t(cpu->mPC+1)]==address){
+        auto bits=cpu->mCodeMem[uint16_t(cpu->mPC+2)];
+        v.value=value;v.known|=op==0x43?bits:uint8_t(~bits);
+      }else throw VdHardwareBoundary("R8051 UART store form has no validity model");
+      if(address==0xd8)v.known&=0x80; // only baud-generator selection established
+      if(address==0xba || address==0xbb)v.known&=3; // ten-bit reload, reserved bits unknown
+      if(address==0x9c)m.uartTxPending=true;
+      if(m.outer->specialRegister)m.outer->specialRegister(address,true,value);
+      return;
+    }
     if(address==0x8e && m.outer->deferSfr8eWrite){
       if(m.outer->deferredSfr8e)m.outer->deferredSfr8e(value);
       // Side effects remain unresolved. Reading this SFR still throws.
@@ -242,10 +284,12 @@ void VdMcuCpu::resetProgramStorage(std::span<const uint8_t> code,
     cpu.sfrread[address-128]=nullptr;cpu.sfrwrite[address-128]=nullptr;
   }
   cpu.sfrwrite[REG_IE]=Impl::interruptEnable;
+  if(candidateR8051Uart){cpu.sfrwrite[REG_SBUF]=Impl::uart0Write;cpu.sfrread[REG_SCON]=Impl::uart0ControlRead;}
   cpu.instruction_boundary=Impl::boundary;
   m.executed=m.ticks=0;m.deferredKeyCount=0;
   m.byteKnown=std::move(byteKnown);m.running=true;m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;
   m.registerKnown.fill(255);m.registerOrigin.fill(0);
+  m.uartRegisters.fill({});m.uartTxPending=false;
 }
 void VdMcuCpu::step(){
   auto& m=*impl_;
@@ -291,6 +335,10 @@ std::vector<uint8_t> VdMcuCpu::stateBytes()const{
   append(m.aKnown,1);append(m.aOrigin,2);append(m.parityUnknown,1);
   b.insert(b.end(),m.registerKnown.begin(),m.registerKnown.end());
   for(auto origin:m.registerOrigin)append(origin,2);
+  if(candidateR8051Uart){
+    append(1,1);append(m.uartTxPending,1);
+    for(const auto& v:m.uartRegisters){append(v.value,1);append(v.known,1);append(v.origin,2);}
+  }
   return b;
 }
 }

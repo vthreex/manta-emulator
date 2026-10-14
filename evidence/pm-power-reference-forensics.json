@@ -1,0 +1,43 @@
+{
+  "result": "PASS",
+  "stock_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "PM_sha256": "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c",
+  "original_status_reader": "0x9B17..0x9B29, low byte of XDATA 0x0EC2",
+  "equivalent_predicate_for_all_low_bit_combinations": true,
+  "best_supported_interpretation": "aggregate power-good poll; individual bit producers unverified",
+  "original_UART_initializer": "0x936C..0x9389; R8051-like ADCON, S0/S1 reload and control writes",
+  "next_unknown_write": "0x574F XDATA 0x0E6A clears bit7, lower bits preserved invalid",
+  "subsequent_unknown_predicate": "0x575B waits for XDATA 0x0EC2 bit3; not covered by named CheckPowerGood source",
+  "references": [
+    {
+      "path": "sboot/src/amber5/boot.S",
+      "sha256": "f1ba5f428118e3362af2b8729e784885188ea1678579c53547d6a8d8379b7733",
+      "url": "https://github.com/neuschaefer/mstar-mboot/blob/master/sboot/src/amber5/boot.S",
+      "supports": "same XDATA address, mask and all-set predicate named CheckPowerGood",
+      "does_not_establish": "individual MSD309 detectors, thresholds, reset values, fourth status bit"
+    },
+    {
+      "path": "sboot/src/kronus/boot.S",
+      "sha256": "c3d66572b6e582bfbafd5a37ea611fd36072f5d6164fa3894c70a038855ebfd1",
+      "url": "https://github.com/neuschaefer/mstar-mboot/blob/master/sboot/src/kronus/boot.S",
+      "supports": "same XDATA address, mask and all-set predicate named CheckPowerGood",
+      "does_not_establish": "individual MSD309 detectors, thresholds, reset values, fourth status bit"
+    },
+    {
+      "path": "sboot/src/amber5/drvPadConf.c",
+      "sha256": "f5fd7d01acdfeb57cddb94fe484bb609a2264e302991fad0db6c88b3619f8655",
+      "url": "https://github.com/neuschaefer/mstar-mboot/blob/master/sboot/src/amber5/drvPadConf.c",
+      "supports": "related UART receive/select configuration",
+      "does_not_establish": "exact Titania4 pad routing or reset configuration"
+    },
+    {
+      "path": "sboot/src/kaiser/drvPadConf.c",
+      "sha256": "6bc267a81057a0636f33e38130eb9edd720b24ac238546a5f60d97dd33f3f9ca",
+      "url": "https://github.com/neuschaefer/mstar-mboot/blob/master/sboot/src/kaiser/drvPadConf.c",
+      "supports": "related UART receive/select configuration",
+      "does_not_establish": "exact Titania4 pad routing or reset configuration"
+    }
+  ],
+  "strict_mode_status_producer_verified": false,
+  "guest_execution_claim": "none; this is static cross-reference evidence only"
+}

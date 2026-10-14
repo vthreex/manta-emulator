@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "scope": "original AVD auxiliary diagnostic, not complete startup or TV boot",
+  "program_sha256": "48ab58a5689d3135b2cdf78fa77da92fa912776f741c33c7afa97fdcfc4ee4fd",
+  "upload_bytes": 13312,
+  "instructions": 6,
+  "pc": "0x0802",
+  "unknown_xdata": "0xC008",
+  "attempted_write": "0x55",
+  "hardware_side_effects": false,
+  "stdout": "0000 02 LJMP  #0003h\n0003 75 MOV   SP, #ACh\n0006 02 LJMP  #0219h\n0219 f1 ACALL 07FDh\n07fd 90 MOV   DPTR, #0C008h\n0800 74 MOV   A, #55h\n0802 f0 MOVX  @DPTR, A\nAVD_XDATA write 0xc008 value 0x55\nAVD_BOUNDARY AVD MCU XDATA write unsupported at PC 0x802, address 0xc008\nAVD_ORIGINAL_INSTRUCTIONS 6 PC 0x802 SP 0xae\n",
+  "probe_sha256": "0c5128cba8daa78bf4920c5c6aacafeebd78cf66731b73f817b705cd42c2269b",
+  "PM51_candidate_static_disassembly": "PASS; reset LJMP 60D8 and truncated-range rejection; no PM execution",
+  "PM51_candidate_sha256": "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c"
+}

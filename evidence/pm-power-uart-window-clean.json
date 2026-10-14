@@ -1,0 +1,7 @@
+{
+  "result": "PASS",
+  "return_code": 0,
+  "stdout": "NATIVE_WINDOW_CREATED; guest display not initialized\n",
+  "emulator_sha256": "300c57b8dddc3e1b0149b7e47c3646be3ba770f4ca0901adb3e3bb49fa541c16",
+  "PATH_scope": "Windows System32 only"
+}

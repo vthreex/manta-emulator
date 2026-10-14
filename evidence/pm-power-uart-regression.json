@@ -1,0 +1,145 @@
+{
+  "result": "PASS",
+  "scope": "original PM51 isolated/shared-RIU diagnostics; not completed PM board boot",
+  "aggregate_power_good_hypothesis": {
+    "instructions": 3441,
+    "pc": "0x5727",
+    "MSD309_individual_detectors_verified": false
+  },
+  "power_good_and_UART_hypothesis": {
+    "instructions": 3474,
+    "pc": "0x574f",
+    "boundary": "XDATA 0x0E6A bit7-clear write; side effect unsupported",
+    "original_UART_initializer_returned": true,
+    "marker_writes": 0,
+    "main_activity_byte_known": 0,
+    "stdout_sha256": "5c9c313b410653c8e56a6a998907f821bae40b5f777a479ebfb9aba7e4c699d9"
+  },
+  "stock_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "flash_start": "0x10000",
+  "flash_end": "0x20000",
+  "program_sha256": "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c",
+  "program_bytes": 65536,
+  "architecture": "8051-family original instructions",
+  "bounded_instructions": 3,
+  "bounded_PC": "0x60DD",
+  "bounded_XDATA": "0x1018 write 02",
+  "exploratory_instructions": 3406,
+  "exploratory_PC": "0x6DC7",
+  "exploratory_XDATA": "0x0EC3 read",
+  "original_RAM_writes": 1032,
+  "original_RAM_reads": 7,
+  "deferred_unknown_writes": 1,
+  "private_RAM_range_hypothesis": "0x4000..0x43ff",
+  "candidate_SPI_control_writes": 1,
+  "candidate_SPI_deferred_writes": 0,
+  "SPI_control_interpretation": "related Amber3/Kaiser ROM_CODE_CTRL=1018 / SPI_ENABLE=02; corroborated original reset write, exact chip mapping remains candidate",
+  "standard_8051_reset_hypothesis": true,
+  "real_SPI_boot_mapping_validated": false,
+  "PM_marker_writer_executed": false,
+  "main_machine_attached": false,
+  "hardware_reply_produced": false,
+  "deterministic_isolated_replay": "PASS",
+  "modified_and_truncated_input_rejected": true,
+  "shared_RIU_symbolic_instructions": 3435,
+  "shared_RIU_PC": "0x9B27",
+  "required_unknown_source": "0x0EC2 bits0..2",
+  "unused_high_byte_preserved_invalid": true,
+  "shared_RIU_state_sha256": "cadcb434fea5d892392a7b9c4f7755d4372603e2a3ff07f9aa8e9c0b9de23862",
+  "shared_RIU_replay": "PASS",
+  "nonready_status_fixture_instructions": 15625,
+  "nonready_status_fixture_scope": "explicit test-only lower-three-bits=4; original program keeps polling, no ready/default inference",
+  "shared_marker_writes": 0,
+  "main_MIPS_executed_by_probe": false,
+  "shared_RIU_attached": true,
+  "bounded_PM_history": {
+    "instructions": 256,
+    "bus_observations": 64,
+    "original_opcodes_verified": true,
+    "unexecuted_boundary_included": true,
+    "unknown_masks_preserved": true,
+    "deterministic": "PASS"
+  },
+  "status_counterfactuals": [
+    {
+      "synthetic_low_bits": 0,
+      "original_instructions": 15625,
+      "pc": "0xbce",
+      "next_boundary": null,
+      "marker_writes": 0,
+      "physical_producer_established": false,
+      "stdout_sha256": "5df11db02f146abab0e18525ef9f7a121b3fbbd923bd567aed34805863f821f3"
+    },
+    {
+      "synthetic_low_bits": 1,
+      "original_instructions": 15625,
+      "pc": "0xbce",
+      "next_boundary": null,
+      "marker_writes": 0,
+      "physical_producer_established": false,
+      "stdout_sha256": "cdfed512dae50139307710b5a309b93f948968ea1c88271cd4c2af0154dea30c"
+    },
+    {
+      "synthetic_low_bits": 2,
+      "original_instructions": 15625,
+      "pc": "0xbce",
+      "next_boundary": null,
+      "marker_writes": 0,
+      "physical_producer_established": false,
+      "stdout_sha256": "7e49ec343f13e027ed1a988bdabf90828bd26044b75047399b1cf6cdbb6fb8b8"
+    },
+    {
+      "synthetic_low_bits": 3,
+      "original_instructions": 15625,
+      "pc": "0xbce",
+      "next_boundary": null,
+      "marker_writes": 0,
+      "physical_producer_established": false,
+      "stdout_sha256": "d83ddf2a9dc02f021861edc1d41302800e458f6a1acced2a2acdd6cd1c6f8324"
+    },
+    {
+      "synthetic_low_bits": 4,
+      "original_instructions": 15625,
+      "pc": "0xbce",
+      "next_boundary": null,
+      "marker_writes": 0,
+      "physical_producer_established": false,
+      "stdout_sha256": "2cbbdc2f692080fa149a58ebd09525073434d1b4c3ebb20fd22dab9c26ab625e"
+    },
+    {
+      "synthetic_low_bits": 5,
+      "original_instructions": 15625,
+      "pc": "0xbce",
+      "next_boundary": null,
+      "marker_writes": 0,
+      "physical_producer_established": false,
+      "stdout_sha256": "4674a196ae51af5fef6bac235eca51b50e282662466232ffa274ccc22a2b5a34"
+    },
+    {
+      "synthetic_low_bits": 6,
+      "original_instructions": 15625,
+      "pc": "0xbce",
+      "next_boundary": null,
+      "marker_writes": 0,
+      "physical_producer_established": false,
+      "stdout_sha256": "e33334abf83703ca5230869f1de72fdeebab10a4c51619a896afb52c82156f44"
+    },
+    {
+      "synthetic_low_bits": 7,
+      "original_instructions": 3441,
+      "pc": "0x5727",
+      "next_boundary": "XDATA 0x0E13 write 0x10, effects unsupported",
+      "marker_writes": 0,
+      "physical_producer_established": false,
+      "stdout_sha256": "6200defdb4b77f028817b1ef8dc08cd6c010542108e2229331bd0d0e47b63e78"
+    }
+  ],
+  "counterfactual_scope": "isolated synthetic input sensitivity, not hardware model, ready response or MIPS/TV boot; no override exists in manta.exe",
+  "power_reason_alias_test": "PASS; bridge-only injected values, zero original PM instructions, no firmware response claim",
+  "all_instruction_bus_trace_sha256": {
+    "bounded": "793bb6e720ad48ae53860ee3aaae4d7ed1c8552dcb0db4af483bd59dfd2758cd",
+    "exploratory": "abfa4aec0fc1b0982acffcfbda9b7a2341fd5cbd035bcda3448400790e125571",
+    "candidate_SPI": "abfa4aec0fc1b0982acffcfbda9b7a2341fd5cbd035bcda3448400790e125571"
+  },
+  "probe_sha256": "202585149235cae5e7c1866048e3651c7cfb6a1ee431f100c34353d278bed1e3"
+}

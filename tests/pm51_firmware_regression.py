@@ -105,6 +105,28 @@ with tempfile.TemporaryDirectory(prefix='manta-original-pm51-') as directory:
     for invalid in ('8','-1','7extra'):
         result=subprocess.run([probe,str(image),'--status-counterfactual',invalid],capture_output=True,text=True)
         assert result.returncode==1 and 'exactly 0..7' in result.stderr
+    powered=run('--shared-riu-power-good-hypothesis')
+    assert 'NOT validated MSD309 detector mapping' in powered
+    assert 'PM_CONNECTED_INSTRUCTIONS 3441 PC 0x5727' in powered
+    assert 'MARKER_WRITES 0 MAIN_BYTE_KNOWN 0' in powered
+    assert run('--shared-riu-power-good-hypothesis')==powered
+    uart=run('--shared-riu-power-good-uart-hypothesis')
+    assert 'PM_CONNECTED_INSTRUCTIONS 3474 PC 0x574f' in uart
+    assert 'MARKER_WRITES 0 MAIN_BYTE_KNOWN 0' in uart
+    assert 'XDATA write unsupported at PC 0x574f, address 0xe6a' in uart
+    assert run('--shared-riu-power-good-uart-hypothesis')==uart
+    rows=history_rows(uart)
+    ins=[v for v in rows if v['kind']=='instruction']
+    accesses=[v for v in rows if v['kind']=='bus']
+    assert all(v['opcode']==pm[v['pc']] for v in ins)
+    assert any(v['pc']==0x936c and v['dispatched'] for v in ins)
+    assert any(v['pc']==0x9389 and v['dispatched'] for v in ins), 'original serial initializer must return'
+    assert any(v['address']==0xe13 and v['write'] and v['accepted'] and v['value']==0x10 for v in accesses)
+    assert any(v['address']==0x1e03 and v['page']==0x10 and v['accepted'] and v['value']==4 for v in accesses)
+    assert any(v['address']==0xe1e and v['write'] and v['known']==0x10 for v in accesses), 'GPIO direction RMW must preserve invalid lower bits'
+    assert any(v['address']==0xec3 and v['known']==0 for v in accesses)
+    assert ins[-1]['pc']==0x574f and not ins[-1]['dispatched']
+    assert accesses[-1]['address']==0xe6a and accesses[-1]['known']==0x80 and not accesses[-1]['accepted']
     image.write_bytes(pm[:-1])
     truncated = subprocess.run([probe, str(image)], capture_output=True, text=True)
     assert truncated.returncode == 1 and 'size/hash mismatch' in truncated.stderr
@@ -117,6 +139,10 @@ with tempfile.TemporaryDirectory(prefix='manta-original-pm51-') as directory:
 assert hashlib.sha256(firmware.read_bytes()).hexdigest() == stock_sha
 report = {
     'result': 'PASS', 'scope': 'original PM51 isolated/shared-RIU diagnostics; not completed PM board boot',
+    'aggregate_power_good_hypothesis':{'instructions':3441,'pc':'0x5727','MSD309_individual_detectors_verified':False},
+    'power_good_and_UART_hypothesis':{'instructions':3474,'pc':'0x574f','boundary':'XDATA 0x0E6A bit7-clear write; side effect unsupported',
+      'original_UART_initializer_returned':True,'marker_writes':0,'main_activity_byte_known':0,
+      'stdout_sha256':hashlib.sha256(uart.encode()).hexdigest()},
     'stock_sha256': stock_sha, 'flash_start': '0x10000', 'flash_end': '0x20000',
     'program_sha256': pm_sha, 'program_bytes': len(pm), 'architecture': '8051-family original instructions',
     'bounded_instructions': 3, 'bounded_PC': '0x60DD', 'bounded_XDATA': '0x1018 write 02',

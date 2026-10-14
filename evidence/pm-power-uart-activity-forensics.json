@@ -1,0 +1,32 @@
+{
+  "result": "PASS",
+  "scope": "static original-code evidence only; no writer invocation, PM reply or reset inference",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "PM_sha256": "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c",
+  "MIPS_predicate": "(BF001CD1 & 0x0F) == 8; optional restoration, both paths join at 80469CB8",
+  "eight_producer": "5EB8 -> 9B96 -> 956B -> 8AAF -> 724E/MOVX729A",
+  "producer_conditions": [
+    "sampled 0E1C bit4 is set",
+    "0E1E bit4 is clear"
+  ],
+  "producer_effect": "replace 0E69 low nibble with 8, preserving upper nibble; RTC bank1200 bit7 command follows",
+  "interpretation": "RTC0-related wake-event reason, supported by original bank1200 access; exact interrupt wiring unverified",
+  "cold_clear_path": "reset pre-C initializer5717 must return; C initialization6136 -> 60FB -> 7038 -> 7061 -> 9E49 -> 934D",
+  "cold_clear_effect": "original writer prepares 0E69=0, 0E6F=FF; not executed and not a hardware reset specification",
+  "status_0EC2_bit_names": null,
+  "status_0EC2_producer": null,
+  "writer_executed": false,
+  "disassembler_sha256": "0c5128cba8daa78bf4920c5c6aacafeebd78cf66731b73f817b705cd42c2269b",
+  "disassembly": {
+    "event_sample": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n9d48 MOV   R7, #14h\n9d4a MOV   R6, #0Eh\n9d4c MOV   R5, #00h\n9d4e MOV   R4, #00h\n9d50 LCALL #6D84h\n9d53 RET\n9d54 MOV   R7, #1Ch\n9d56 MOV   R6, #0Eh\n9d58 MOV   R5, #00h\n9d5a MOV   R4, #00h\n9d5c LCALL #7380h\n9d5f RET\n",
+    "event_dispatch": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n5ea3 MOV   DPTR, #040A3h\n5ea6 MOVX  A, @DPTR\n5ea7 JZ    #+57\n5ea9 MOVX  A, @DPTR\n5eaa ANL   A, #01h\n5eac MOV   R7, A\n5ead LCALL #985Ch\n5eb0 MOV   DPTR, #040A3h\n5eb3 MOVX  A, @DPTR\n5eb4 SWAP  A\n5eb5 ANL   A, #01h\n5eb7 MOV   R7, A\n5eb8 LCALL #9B96h\n",
+    "eight_producer": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n9b96 MOV   A, R7\n9b97 JZ    #+14\n9b99 LCALL #9E7Ah\n9b9c MOV   A, R7\n9b9d JZ    #+5\n9b9f MOV   R7, #08h\n9ba1 LCALL #956Bh\n9ba4 LCALL #9438h\n9ba7 RET\n",
+    "activity_gate": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n99e4 MOV   R7, #1Eh\n99e6 MOV   R6, #0Eh\n99e8 MOV   R5, #00h\n99ea MOV   R4, #00h\n99ec LCALL #7380h\n99ef MOV   A, R7\n99f0 MOV   R7, #00h\n99f2 JB   ACC.4, #+2\n99f5 MOV   R7, #01h\n99f7 RET\n",
+    "wake_transition": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n956b LCALL #8AAFh\n956e MOV   R7, #01h\n9570 LCALL #9E31h\n9573 CLR   A\n9574 MOV   R7, A\n9575 LCALL #9BDEh\n9578 LCALL #9EC7h\n957b LCALL #6A14h\n957e LCALL #9DF4h\n9581 MOV   R7, #01h\n9583 LJMP  #8D5Ch\n",
+    "masked_writer": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n8aaf MOV   DPTR, #042E4h\n8ab2 MOV   A, R7\n8ab3 MOVX  @DPTR, A\n8ab4 INC   DPTR\n8ab5 MOV   A, #0Fh\n8ab7 MOVX  @DPTR, A\n8ab8 MOV   R7, #69h\n8aba MOV   R6, #0Eh\n8abc MOV   R5, #00h\n8abe MOV   R4, #00h\n8ac0 LCALL #7380h\n8ac3 MOV   DPTR, #042E4h\n8ac6 MOVX  A, @DPTR\n8ac7 MOV   R6, A\n8ac8 INC   DPTR\n8ac9 MOVX  A, @DPTR\n8aca MOV   R5, A\n8acb CPL   A\n8acc ANL   A, R7\n8acd MOV   R7, A\n8ace MOV   A, R5\n8acf ANL   A, R6\n8ad0 ORL   A, R7\n8ad1 MOV   DPTR, #04292h\n8ad4 MOVX  @DPTR, A\n8ad5 MOV   R7, #69h\n8ad7 MOV   R6, #0Eh\n8ad9 MOV   R5, #00h\n8adb MOV   R4, #00h\n8add LJMP  #724Eh\n",
+    "RTC_bank_access": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n9438 MOV   R7, #00h\n943a MOV   R6, #12h\n943c MOV   R5, #00h\n943e MOV   R4, #00h\n9440 LCALL #7380h\n9443 MOV   A, R7\n9444 ORL   A, #80h\n9446 MOV   DPTR, #04292h\n9449 MOVX  @DPTR, A\n944a MOV   R7, #00h\n944c MOV   R6, #12h\n944e MOV   R5, #00h\n9450 MOV   R4, #00h\n9452 LJMP  #724Eh\n",
+    "cold_clear": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n934d CLR   A\n934e MOV   DPTR, #04292h\n9351 MOVX  @DPTR, A\n9352 MOV   R7, #69h\n9354 MOV   R6, #0Eh\n9356 MOV   R5, A\n9357 MOV   R4, A\n9358 LCALL #724Eh\n935b MOV   DPTR, #04292h\n935e MOV   A, #FFh\n9360 MOVX  @DPTR, A\n9361 MOV   R7, #6Fh\n9363 MOV   R6, #0Eh\n9365 MOV   R5, #00h\n9367 MOV   R4, #00h\n9369 LJMP  #724Eh\n",
+    "cold_clear_caller": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n9e49 LCALL #934Dh\n9e4c MOV   R7, #01h\n9e4e RET\n",
+    "low_status_wait": "STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c\n9b17 MOV   R7, #C2h\n9b19 MOV   R6, #0Eh\n9b1b MOV   R5, #00h\n9b1d MOV   R4, #00h\n9b1f LCALL #6D84h\n9b22 MOV   A, R7\n9b23 ANL   A, #07h\n9b25 XRL   A, #07h\n9b27 JNZ   #-18\n9b29 RET\n"
+  }
+}

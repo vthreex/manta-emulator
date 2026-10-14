@@ -1,5 +1,18 @@
 # Register evidence and model scope
 
+Newest [PM cross-reference](pm51-power-good-and-uart.md) separates original
+access evidence from candidate fields and hypothetical physical inputs:
+
+| Address / path | Observed original use | Supported interpretation and limit |
+|---|---|---|
+| PM `0EC2` / `BF001D84` bits0..2 | `9B17` waits for all three set | Exact related boot predicate named CheckPowerGood; aggregate interpretation corroborated, individual MSD309 detectors/reset unknown; named input experiment only |
+| PM `0EC2` bit3 | Unexecuted `575B` waits for set | Producer unsupported; low-bit CheckPowerGood does not establish this bit |
+| PM `0E13` / `BF001C25` | Original startup writes `10` | Related UART RX/select fields, candidate configuration latch only; pad routing unverified |
+| PM page10 `1E03` / `BF203C05` bit2 | Original startup writes `04` | Candidate UART RX gate; Titania4 source has a removal caveat; no receiver/IRQ generated |
+| PM `0E1E` / `BF001C3C` | Original startup sets bit4 | Titania4 PM GPIO direction/OEN backing; unrelated reset bits remain invalid |
+| PM SFR `D8/AA/BA/9D/BB/9B` | Original serial initializer | R8051-style baud/control configuration subset; no dedicated clock completion supplied |
+| PM `0E6A` / `BF001CD4` bit7 | `574F` attempts to clear bit7 | Side effect unverified; store does not retire |
+
 The latest [revision, DVB-T MCU and CI continuation](revision-and-vd-mcu-continuation.md) supersedes historical stopping points below. Addresses and bit tests in the next table are directly observed in original firmware; exact Titania4 reset values, external wiring, and timing are stated separately.
 
 | Address / path | Observed original firmware use | Current supported interpretation and limit |

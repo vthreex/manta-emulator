@@ -205,10 +205,13 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.event = [this](auto &k, auto a, auto n, auto v, auto &d) { event(k, a, n, v, d); };
   if(!o.pm51History.empty() && !o.exploratoryPm51SpiStartup)
     throw std::runtime_error("PM history requires original PM SPI startup experiment");
+  if((o.exploratoryPmPowerGood || o.candidatePm51Uart) && !o.exploratoryPm51SpiStartup)
+    throw std::runtime_error("PM power-good input hypothesis requires original PM startup experiment");
+  if(o.exploratoryPmPowerGood)riu_.configureExploratoryPmPowerGood(true);
   if(o.exploratoryPm51SpiStartup){
     if(!o.symbolicInit || !o.deferDiagnosticReads || o.stage2 || o.initPrefix)
       throw std::runtime_error("PM SPI startup requires guarded original cold boot; reset/clock wiring remains exploratory");
-    riu_.configureExploratoryPm51(std::span<const uint8_t>(flash_.stock()).subspan(0x10000,65536),o.pm51Divider,!o.pm51History.empty());
+    riu_.configureExploratoryPm51(std::span<const uint8_t>(flash_.stock()).subspan(0x10000,65536),o.pm51Divider,!o.pm51History.empty(),o.candidatePm51Uart);
   }
   if (!o.trace.empty()) {
     trace_.open(o.trace);
@@ -1507,6 +1510,10 @@ std::string Msd309Machine::summary() const {
     <<",\n  \"vd_dispatch_divider\": "<<riu_.vdDispatchDivider;
   if(options_.exploratoryPm51SpiStartup){
     const auto& p=riu_.pm51();
+    if(options_.exploratoryPmPowerGood || options_.candidatePm51Uart)
+      s<<",\n  \"exploratory_pm_power_good\": "<<(options_.exploratoryPmPowerGood?"true":"false")
+       <<",\n  \"candidate_pm51_uart\": "<<(options_.candidatePm51Uart?"true":"false")
+       <<",\n  \"pm_power_good_input_transitions\": "<<riu_.pmPowerGood().transitions;
     s<<",\n  \"exploratory_pm51_spi_startup\": true,\n  \"pm51_connected\": true"
       <<",\n  \"pm51_instructions\": "<<p.cpu().totalInstructions()
       <<",\n  \"pm51_ticks\": "<<p.cpu().cycles()<<",\n  \"pm51_pc\": \""<<hex(p.cpu().pc())<<"\""

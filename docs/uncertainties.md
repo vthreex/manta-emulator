@@ -1,5 +1,12 @@
 # Evidence still needed
 
+Latest [PM power-good/UART cross-reference](pm51-power-good-and-uart.md):
+related boot source names the exact `0EC2 & 7 == 7` predicate CheckPowerGood.
+Individual MSD309 detectors and reset state remain unverified. The named
+powered/UART experiment reaches original `574F / 0E6A` bit7-clear write;
+its side effect remains unsupported. Later `0EC2` bit3 is also unresolved.
+Default PM still stops at `9B27`; no activity marker or ZUI is supplied.
+
 Current main boundary is `80404BF4 / BF001CD1`, the PM background-activity
 predicate. Original audio failure paths return under an explicit symbolic
 non-acknowledgment experiment; both reply bytes stay invalid. Strict execution

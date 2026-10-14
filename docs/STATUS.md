@@ -1,11 +1,21 @@
 # Status of the research build
 
-Latest [PM status/producer investigation](pm51-status-producer.md) identifies
+Latest [power-good and UART investigation](pm51-power-good-and-uart.md) finds
+primary MStar sources naming the exact `0EC2 & 7 == 7` wait CheckPowerGood.
+Individual MSD309 inputs/reset values remain **unsupported**. A named
+aggregate powered-input hypothesis plus candidate UART configuration executes
+the original serial initializer and reaches `574F / XDATA 0E6A` after 3,474 PM
+instructions. Its bit7-clear side effect remains **unsupported**; no marker,
+ZUI, enabled framebuffer, GE raster drawing or authentic pixels are demonstrated.
+Default guarded execution retains the prior 3,435-instruction PM boundary.
+
+Previous [PM status/producer investigation](pm51-status-producer.md) identifies
 the original RTC-related activity-eight path statically, adds bounded native
 PM histories and isolated status sensitivity tests. The real `0EC2` producer
 is still **unsupported**. Main and PM boundaries remain unchanged; no ZUI,
 enabled framebuffer or authentic pixels are demonstrated. Synthetic status
-input is confined to the probe and is not a television boot option.
+bit-pattern sensitivity input is confined to the probe. The newer named
+power-good hypothesis is a separate opt-in television experiment.
 
 Current [shared PM51 continuation](pm51-shared-continuation.md) executes
 3,435 original PM instructions on the machine's shared flash/RIU view.

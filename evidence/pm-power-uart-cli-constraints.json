@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "cases": [
+    {
+      "option": "--exploratory-pm-power-good",
+      "return_code": 1,
+      "stderr": "ERROR: PM power-good input hypothesis requires original PM startup experiment\n"
+    },
+    {
+      "option": "--candidate-pm51-uart",
+      "return_code": 1,
+      "stderr": "ERROR: PM power-good input hypothesis requires original PM startup experiment\n"
+    }
+  ]
+}

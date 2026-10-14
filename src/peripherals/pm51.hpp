@@ -45,6 +45,7 @@ public:
   bool captureHistory=false; // bounded diagnostics only; never part of hardware state
   std::function<VdByte(uint16_t)> sharedRead;
   std::function<bool(uint16_t,VdByte)> sharedWrite;
+  std::function<bool(uint8_t,uint16_t,VdByte)> extendedWrite;
   std::function<bool(uint16_t,uint8_t)> codeSourceValid;
   std::function<bool()> executionStopped;
   std::function<void(const std::string&,uint32_t,unsigned,uint32_t,const std::string&)> event;
@@ -74,8 +75,11 @@ public:
       if(a>=0x4000 && a<0x4400){
         ram_[a-0x4000]=v;written_[a-0x4000]=true;++ramWrites;observeBus(a,v,true,true);return true;
       }
-      if((a==0x0e69 || a==0x0e6f) && cpu_.port2()==0 && sharedWrite(a,v)){
+      if((a==0x0e69 || a==0x0e6f || (cpu_.candidateR8051Uart && (a==0x0e13 || a==0x0e1e))) && cpu_.port2()==0 && sharedWrite(a,v)){
         ++riuWrites;if(a==0x0e69)++markerWrites;observeBus(a,v,true,true);return true;
+      }
+      if(extendedWrite && extendedWrite(cpu_.port2(),a,v)){
+        ++riuWrites;observeBus(a,v,true,true);return true;
       }
       observeBus(a,v,true,false);
       return false;
@@ -113,6 +117,10 @@ public:
     }
   }
   const VdMcuCpu& cpu()const{return cpu_;}
+  void configureCandidateUart(bool enable){
+    if(started_)throw std::runtime_error("PM UART configuration changed after reset");
+    cpu_.candidateR8051Uart=enable;
+  }
   bool started()const{return started_;}
   bool suspended()const{return suspended_;}
   const std::string& boundary()const{return boundary_;}

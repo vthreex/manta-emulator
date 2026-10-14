@@ -1,6 +1,13 @@
 # Manta LCD4214 firmware execution research build
 
-Latest [PM producer/status investigation](docs/pm51-status-producer.md):
+Latest [PM power-good/UART investigation](docs/pm51-power-good-and-uart.md)
+cross-references the exact low-bit wait with MStar's `CheckPowerGood` code.
+A separately configured aggregate input and candidate UART subset execute
+the original serial initializer and reach PM `574F / XDATA 0E6A` after 3,474
+instructions. Individual MSD309 detectors and the next write remain unknown.
+Default guarded behavior is preserved. **No ZUI/framebuffer/OSD is demonstrated.**
+
+Previous [PM producer/status investigation](docs/pm51-status-producer.md):
 original RTC-related activity-eight writer traced statically; bounded
 `--pm51-history FILE` diagnostics implemented. Required status remains
 unknown and **no authentic OSD/framebuffer is demonstrated**.

@@ -1,0 +1,97 @@
+{
+  "result": "PASS",
+  "cases": [
+    {
+      "option": "--pm51-history",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--pm51-history",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--pm51-history",
+      "alias": "hard-link.bin",
+      "rejected": true
+    },
+    {
+      "option": "--summary",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--summary",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--summary",
+      "alias": "hard-link.bin",
+      "rejected": true
+    },
+    {
+      "option": "--coverage",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--coverage",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--coverage",
+      "alias": "hard-link.bin",
+      "rejected": true
+    },
+    {
+      "option": "--record-trace",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--record-trace",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--record-trace",
+      "alias": "hard-link.bin",
+      "rejected": true
+    },
+    {
+      "option": "--tsp-firmware-dump",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--tsp-firmware-dump",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--tsp-firmware-dump",
+      "alias": "hard-link.bin",
+      "rejected": true
+    },
+    {
+      "option": "--nvram",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--nvram",
+      "alias": "original.bin",
+      "rejected": true
+    },
+    {
+      "option": "--nvram",
+      "alias": "hard-link.bin",
+      "rejected": true
+    }
+  ],
+  "scope": "file identity protection before guest execution; policy fixture is not original firmware",
+  "emulator_sha256": "300c57b8dddc3e1b0149b7e47c3646be3ba770f4ca0901adb3e3bb49fa541c16"
+}

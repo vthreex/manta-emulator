@@ -9,6 +9,8 @@ p.add_argument('--summary', default='pm51-checkpoint.json')
 p.add_argument('--trace', help='Optional full trace; the current checkpoint produces about 10 GB')
 p.add_argument('--coverage')
 p.add_argument('--pm51-history', help='Bounded original PM instruction and bus observations in JSON Lines')
+p.add_argument('--exploratory-pm-power-good', action='store_true', help='Explicit related-source aggregate power-good hypothesis; not verified MSD309 detector wiring')
+p.add_argument('--candidate-pm51-uart', action='store_true', help='Candidate R8051 UART configuration; no unsupported completion')
 p.add_argument('--window', action='store_true', help='Use the existing native window; no authentic frame is demonstrated')
 p.add_argument('--max-instructions', type=int, default=2000000000)
 p.add_argument('--print-command', action='store_true')
@@ -43,6 +45,10 @@ if a.coverage:
     flags += ['--coverage', a.coverage]
 if a.pm51_history:
     flags += ['--pm51-history', a.pm51_history]
+if a.exploratory_pm_power_good:
+    flags += ['--exploratory-pm-power-good']
+if a.candidate_pm51_uart:
+    flags += ['--candidate-pm51-uart']
 command = [a.emulator] + flags
 if a.print_command:
     print(json.dumps(command, indent=2))

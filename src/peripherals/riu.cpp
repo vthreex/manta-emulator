@@ -6,6 +6,12 @@ namespace manta {
 VdByte Riu::pmRead(uint16_t address){
   auto physical=0x1f000000u+(uint32_t(address&~1u)<<1)+(address&1u);
   VdByte v{uint8_t(get(physical,1)),uint8_t(knownBits(physical,1)),address};
+  if(address==0x0ec2 && pmPowerGood_.configured()){
+    const auto input=pmPowerGood_.sample();
+    v.value=uint8_t((v.value&~7u)|(input.value&7));v.known|=7;
+    event("exploratory_pm_power_good",physical,1,v.value,
+      "EXPLORATORY aggregate external power-good input; related boot.S CheckPowerGood predicate, individual MSD309 detector wiring unverified; upper bits stay invalid");
+  }
   if(address==0x0e6f && !pmPowerReasonWritten_ && pmBoot_.cause())v.value=*pmBoot_.cause();
   event("pm51_riu_read",physical,1,v.value,"original PM XDATA="+std::to_string(address)+
     " PC="+std::to_string(pm51_.cpu().pc())+" shared MIPS RIU backing; known="+std::to_string(v.known)+"; invalid bits are not status responses");
@@ -14,11 +20,14 @@ VdByte Riu::pmRead(uint16_t address){
 bool Riu::pmWrite(uint16_t address,VdByte value){
   if(value.known!=255 && value.origin!=address)
     throw VdHardwareBoundary("PM unknown observation stored to foreign RIU origin");
-  if(address!=0x0e69 && address!=0x0e6f)return false;
+  if(address!=0x0e13 && address!=0x0e1e && address!=0x0e69 && address!=0x0e6f)return false;
   if(address==0x0e6f)pmPowerReasonWritten_=true;
   auto physical=0x1f000000u+(uint32_t(address&~1u)<<1)+(address&1u);
-  bytes_[physical]={value.value,value.known};
-  event("pm51_marker_write",physical,1,value.value,"original PM MOVX PC="+std::to_string(pm51_.cpu().pc())+
+  // UART RX enable/select are corroborated by related pad tables. Other
+  // fields of this register are not promoted to known configuration.
+  auto known=address==0x0e13?uint8_t(value.known&0x18):value.known;
+  bytes_[physical]={value.value,known};
+  event(address==0x0e13?"pm51_uart_config_write":address==0x0e1e?"pm51_gpio_direction_write":"pm51_marker_write",physical,1,value.value,"original PM MOVX PC="+std::to_string(pm51_.cpu().pc())+
     " updates shared byte; known="+std::to_string(value.known)+"; no host-generated marker");
   return true;
 }
@@ -28,6 +37,16 @@ void Riu::advancePm(uint64_t tick){
     pm51_.event=[this](const auto& k,auto a,auto n,auto v,const auto& d){event(k,a,n,v,d);};
     pm51_.sharedRead=[this](uint16_t a){return pmRead(a);};
     pm51_.sharedWrite=[this](uint16_t a,VdByte v){return pmWrite(a,v);};
+    pm51_.extendedWrite=[this](uint8_t page,uint16_t a,VdByte v){
+      // Original pre-C startup sets the non-PM UART RX gate. Related T4
+      // chip_setup.c writes BF203C04 |= 0400; it also notes this field may
+      // be removed on T4. Retain only that configuration bit, no RX/IRQ.
+      if(!pm51_.cpu().candidateR8051Uart || page!=0x10 || a!=0x1e03 || v.known!=255 || (v.value&~4u))return false;
+      bytes_[0x1f203c05]={v.value,4};
+      event("pm51_uart_rx_gate_write",0x1f203c05,1,v.value,
+        "original PM page10 MOVX; candidate UART RX enable bit10 of word BF203C04, no input/IRQ or readiness generated; T4 implementation uncertain");
+      return true;
+    };
     pm51_.executionStopped=[this]{return executionStopped && executionStopped();};
     pm51_.codeSourceValid=[this](uint16_t a,uint8_t v){
       if(!flashRead)throw VdHardwareBoundary("PM CODE view has no shared SPI backing");
@@ -313,6 +332,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag()?0xffff:0;
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
+    if(a+i==0x1f001d84 && pmPowerGood_.configured())v|=7u<<(8*i);
     if(a+i==0x1f003c05 && exploratoryFetchRevisionByte_>=0){v|=255u<<(8*i);continue;}
     auto it = bytes_.find(storageKey(a + i));
     if (it != bytes_.end())
@@ -342,7 +362,9 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
   for (unsigned i = 0; i < n; ++i) {
     if(a+i==0x1f003c05 && exploratoryFetchRevisionByte_>=0){v|=uint32_t(exploratoryFetchRevisionByte_)<<(8*i);continue;}
     auto it = bytes_.find(storageKey(a + i));
-    v |= uint32_t(it == bytes_.end() ? 0xa5 : it->second.value) << (i * 8);
+    auto byte=uint32_t(it == bytes_.end() ? 0xa5 : it->second.value);
+    if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
+    v |= byte << (i * 8);
   }
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.done())v|=8;
@@ -374,6 +396,12 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   advancePm(tick);
   advanceTsp(tick);
   advanceVd(tick);
+  if(a==0x1f001d84 && n==1 && pmPowerGood_.configured()){
+    auto input=pmPowerGood_.sample();
+    event("exploratory_pm_power_good",a,n,input.value,
+      "EXPLORATORY aggregate input; no per-read transition, upper status bits unresolved");
+    return (get(a,1)&~7u)|(input.value&7);
+  }
   if(candidateAudioIdma && n==1 && a>=0x1f225a00 && a<0x1f225d00){
     auto base=a>=0x1f225c00?0x1f225c00u:0x1f225a00u;auto& port=audioIdma_[base==0x1f225c00];
     if(auto v=port.read(a-base)){

@@ -34,6 +34,7 @@ public:
   std::function<std::optional<VdByte>(uint16_t)> busRead;
   std::function<bool(uint16_t,VdByte)> busWrite;
   bool standardInterrupts=false;
+  bool candidateR8051Uart=false; // configuration only; no guessed RX/TX completion
   void resetProgram(VdMcuProgram& program);
   void resetProgram(AvdMcuProgram& program);
   // Isolated standard-reset experiment; not a board SPI fetch mapping.
