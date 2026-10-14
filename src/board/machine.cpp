@@ -15,6 +15,9 @@ static std::string hex(uint64_t n) {
 Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options_(o), virtualTime_(o.exploratoryCpi) {
   if(o.exploratoryCpi!=1 && (!o.cp0Timer || !o.symbolicInit || !o.deferDiagnosticReads || o.stage2 || o.initPrefix))
     throw std::runtime_error("Uncalibrated CPI experiment requires guarded reset execution and CP0 timers; unavailable in strict/direct-boot modes");
+  if(o.exploratoryGopVsyncLatch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.exploratoryDisplayClock))
+    throw std::runtime_error("GOP sync-latch hypothesis requires guarded execution and explicit output clock; no strict reset/ACK default");
+  riu_.exploratoryGopVsyncLatch=o.exploratoryGopVsyncLatch;
   if (o.cp0Timer)
     cpu_.tickCount(0); // reject unavailable engine extension at launch
   riu_.symbolicInit = o.symbolicInit;
@@ -280,11 +283,43 @@ void Msd309Machine::stop(std::string why, uint32_t a) {
 }
 void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t v,
                           const std::string &d) {
+  std::string knowledgeDetail;
+  const std::string* recordedDetail=&d;
+  if(options_.orRegisterLogChanges && k=="or1k_internal_read" && n==4){
+    uint64_t key=(uint64_t(riu_.tspCpuPc())<<32)|a;
+    auto mask=riu_.tspStoredWordKnownMask(a);
+    auto sample=std::pair{v,mask};auto it=lastOrStoredRead_.find(key);
+    if(it!=lastOrStoredRead_.end() && it->second==sample && !(options_.pauseMmio && options_.pauseMmio==a)){
+      ++suppressedOrStoredReads_;return;
+    }
+    lastOrStoredRead_[key]=sample;
+    knowledgeDetail=d+"; known-mask="+hex(mask)+"; identical value/mask repeats summarized; invalid bits stay invalid";
+    recordedDetail=&knowledgeDetail;
+  }
+  if(options_.orIdlePollChanges){
+    if((k=="write" && a>=0x1f202b00 && a<=0x1f202b05) ||
+       (k=="or1k_register_write" && a==0x210330))lastOrIdlePollPc_=UINT32_MAX;
+    if(k=="or1k_register_read" && a==0x210330 && n==4){
+      if(v==0 && riu_.knownBits(0x1f202b00,2)==0xffff && riu_.knownBits(0x1f202b04,2)==0xffff){
+        auto pc=riu_.tspCpuPc();
+        if(lastOrIdlePollPc_==pc && !(options_.pauseMmio && options_.pauseMmio==a)){
+          ++suppressedOrIdlePolls_;return;
+        }
+        lastOrIdlePollPc_=pc;
+      }else lastOrIdlePollPc_=UINT32_MAX;
+    }
+  }
+  // Observation filter only: Riu has already performed the actual original
+  // auxiliary CPU store. Mailboxes/MMIO/CPU execution and pause points stay on.
+  if(options_.noOrQmemTrace && k=="or1k_qmem_write" &&
+     !(options_.pauseMmio && options_.pauseMmio==a)){
+    ++suppressedOrQmemTrace_;return;
+  }
   std::ostringstream s;
   s << "{\"tick\":" << dispatches_ << ",\"pc\":\"" << hex(cpu_.reg(UC_MIPS_REG_PC))
     << "\",\"kind\":\"" << k << "\",\"address\":\"" << hex(a) << "\",\"width\":" << n
     << ",\"value\":\"" << hex(v) << "\",\"ra\":\"" << hex(cpu_.reg(UC_MIPS_REG_RA))
-    << "\",\"sp\":\"" << hex(cpu_.reg(UC_MIPS_REG_SP)) << "\",\"detail\":\"" << d << "\"";
+    << "\",\"sp\":\"" << hex(cpu_.reg(UC_MIPS_REG_SP)) << "\",\"detail\":\"" << *recordedDetail << "\"";
   if(virtualTime_.cpi()!=1)s << ",\"virtual_cpu_cycles\":" << virtualTime_.cycles(dispatches_);
   s << '}';
   auto line = s.str();
@@ -404,18 +439,21 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       }
     } else m.event("tsp_original_firmware_buffer",source,size,0,"unverified/invalid source arguments; no host firmware bytes read or output");
   }
-  if(m.options_.coproProbes && a==0x80545a40 && m.cpu_.reg(UC_MIPS_REG_RA)==0x803edf14 &&
-     !m.preservedBits_.mask(16) && m.cpu_.reg(UC_MIPS_REG_16)==0x61){
-    ++m.coproLoadInspections_;
+  if(m.options_.coproProbes && a==0x80545a40 && m.cpu_.reg(UC_MIPS_REG_RA)==0x803edf14){
     auto physical=PreservedBits::backingAddress(m.cpu_.reg(UC_MIPS_REG_4));
     constexpr unsigned size=1253416;
     bool valid=!m.preservedBits_.mask(4) && uint64_t(physical)+size<=m.dramBacking_.size();
     for(unsigned i=0;valid && i<size;++i)
       if(m.preservedBits_.memoryUnknown(physical+i) || m.unknownObservations_.bytes().contains(physical+i))valid=false;
     if(valid){
-      std::vector<uint8_t> image(size);m.cpu_.read(physical,image.data(),size);m.coproLoadedSha_=sha256(image);
-      m.event("guest_copro_loader_output",physical,size,0,"original COPRO Init_End caller; guest RAM SHA256="+m.coproLoadedSha_+
-        "; processor entry/reset/bus mapping remain unverified; no acknowledgment supplied");
+      std::vector<uint8_t> image(size);m.cpu_.read(physical,image.data(),size);auto digest=sha256(image);
+      // S0 is already a destination-end pointer here, not the resource ID.
+      // Recognize only the actual resource61 bytes, not an assumed ABI value.
+      if(digest=="bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1"){
+        ++m.coproLoadInspections_;m.coproLoadedSha_=digest;
+        m.event("guest_copro_loader_output",physical,size,0,"original COPRO Init_End caller; matching resource61 guest RAM SHA256="+digest+
+          "; processor entry/reset/bus mapping remain unverified; no acknowledgment supplied");
+      }else m.event("guest_copro_other_loader_output",physical,size,0,"other/unidentified loader content; RAM SHA256="+digest+"; no resource61 match claimed");
     }else m.event("guest_copro_loader_output",physical,size,0,"invalid original loader output; no code/hash supplied");
   }
   if(a==0x805f8300) {
@@ -1678,6 +1716,17 @@ std::string Msd309Machine::summary() const {
       << ",\n  \"copro_guest_loaded_sha256\": \"" << coproLoadedSha_ << "\""
       << ",\n  \"copro_original_program_match\": "
       << (coproLoadedSha_=="bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1"?"true":"false");
+  if(options_.noOrQmemTrace)
+    s << ",\n  \"or1k_qmem_trace_disabled\": true,\n  \"or1k_qmem_trace_records_suppressed\": " << suppressedOrQmemTrace_;
+  if(options_.orIdlePollChanges)
+    s << ",\n  \"or1k_idle_poll_log_changes_only\": true,\n  \"or1k_idle_poll_records_suppressed\": " << suppressedOrIdlePolls_;
+  if(options_.orRegisterLogChanges)
+    s << ",\n  \"or1k_stored_read_log_changes_only\": true,\n  \"or1k_stored_read_records_suppressed\": " << suppressedOrStoredReads_;
+  if(options_.exploratoryGopVsyncLatch)
+    s << ",\n  \"exploratory_gop_sync_latch\": true,\n  \"gop_update_requests\": "<<riu_.gopUpdate().requests
+      << ",\n  \"gop_force_latches\": "<<riu_.gopUpdate().forced<<",\n  \"gop_register_latches\": "<<riu_.gopUpdate().latches
+      << ",\n  \"gop_ack_known_mask\": "<<riu_.gopUpdate().known()<<",\n  \"gop_active_register_bytes\": "<<riu_.gopActiveBytes()
+      << ",\n  \"gop_latch_clock_domain_hardware_verified\": false";
   s << "\n}";
   return s.str();
 }

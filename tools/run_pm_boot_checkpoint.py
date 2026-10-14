@@ -18,6 +18,10 @@ p.add_argument('--max-or1k-instructions', type=int, default=400000000)
 p.add_argument('--exploratory-cpi', type=int, choices=(1,2,4,8,16), default=1,
                help='UNVERIFIED average instruction cost; shared Count/peripheral cycles; default unchanged')
 p.add_argument('--copro-probes',action='store_true',help='Inspect actual original multimedia loader output; no ready response')
+p.add_argument('--or1k-no-qmem-trace',action='store_true',help='Filter QMEM write log records, never actual CPU/memory effects')
+p.add_argument('--or1k-idle-poll-log-changes',action='store_true',help='Filter duplicate known-zero command poll logs, never reads or nonzero commands/replies')
+p.add_argument('--or1k-register-log-changes',action='store_true',help='Log first/changed internal values and validity masks; duplicate observations summarized; actual reads remain active')
+p.add_argument('--exploratory-gop-vsync-latch',action='store_true',help='PROVISIONAL global GOP shadow-register/output-VSYNC transaction model; no reset ACK default')
 p.add_argument('--print-command', action='store_true')
 a = p.parse_args()
 if a.max_instructions < 1 or a.max_or1k_instructions < 1:
@@ -60,6 +64,14 @@ if a.exploratory_cpi!=1:
     flags += ['--exploratory-cpi',str(a.exploratory_cpi)]
 if a.copro_probes:
     flags += ['--copro-probes']
+if a.or1k_no_qmem_trace:
+    flags += ['--or1k-no-qmem-trace']
+if a.or1k_idle_poll_log_changes:
+    flags += ['--or1k-idle-poll-log-changes']
+if a.or1k_register_log_changes:
+    flags += ['--or1k-register-log-changes']
+if a.exploratory_gop_vsync_latch:
+    flags += ['--exploratory-gop-vsync-latch']
 command = [a.emulator] + flags
 if a.print_command:
     print(json.dumps(command, indent=2))

@@ -663,6 +663,42 @@ void displayHardwareTests() {
   require(g.gammaCommits()==1 && g.knownBits(0x1f205fb4,1)==0xe0,
           "gamma completion leaves unrelated control bits unknown");
 }
+void gopUpdateTests() {
+  manta::GopUpdate u;
+  require(u.known()==0 && !u.advance(10),"GOP ACK reset remains unknown without a transaction");
+  u.write(0,0xffff,10);
+  require(u.known()==0,"software zero alone cannot manufacture GOP ACK readiness");
+  u.write(0x100,0xffff,10);u.write(0,0xffff,10);
+  require(u.pending() && u.busy()==0xf000 && u.requests==1,"complete original GOP pulse requests a pending latch");
+  require(!u.advance(10) && !u.advance({}),"repeated reads and absent clock cannot complete a GOP update");
+  require(u.advance(11) && u.busy()==0 && u.latches==1,"next sync edge completes the actual pending latch");
+  u.write(0x200,0xffff,{});
+  require(u.write(0,0xffff,{}) && u.forced==1 && u.latches==2,"complete original force pulse latches independently of sync");
+  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};
+  r.exploratoryGopVsyncLatch=true;r.configureExploratoryDisplayClock(148500000);
+  r.configureExploratoryScBank(0x10);r.write(0x1f20174c,1,0x1c,0,0,0);
+  auto panel=[&](unsigned off,unsigned value){r.write(0x1f205e00+off,2,value,0,0,0);};
+  panel(0x30,2199);panel(0x34,1124);panel(0x10,112);panel(0x14,2031);
+  panel(0x18,0);panel(0x1c,1079);panel(8,1101);panel(12,1109);panel(0x40,0);
+  r.write(0x1f203ffc,2,1,0,0,0);
+  auto word=[&](unsigned index,uint16_t value,uint64_t tick=0){r.write(0x1f203e00+index*4,2,value,0,0,tick);};
+  word(0,0x51);word(1,0x1234);word(2,1);word(9,960);word(4,0);word(5,960);word(6,0);word(7,1080);
+  require(!manta::readGopWindow(r,1,0,true),"unlatched guest shadow descriptor cannot authorize scan-out");
+  r.write(0x1f203ffc,2,0x101,0,0,0);r.write(0x1f203ffc,2,1,0,0,0);
+  require(r.gopUpdate().pending() && r.gopActiveBytes()==0,"RIU strobe remains busy before a programmed sync edge");
+  r.prepareMaskedRead(0x1f203ffc,0x2000);r.read(0x1f203ffc,2,0,0,1);
+  require(r.gopUpdate().pending(),"same-frame RIU polling cannot toggle ACK");
+  auto edge=(uint64_t(1101)*2200*312000000+148499999)/148500000;
+  r.prepareMaskedRead(0x1f203ffc,0x2000);r.read(0x1f203ffc,2,0,0,edge);
+  auto active=manta::readGopWindow(r,1,0,true);
+  require(active && active->miuRelativeAddress==0x891a0 && r.gopUpdate().latches==1,
+          "programmed sync latches actual guest framebuffer address and dimensions");
+  word(1,0x7777,edge+1);
+  require(manta::readGopWindow(r,1,0,true)->miuRelativeAddress==0x891a0,"later shadow writes cannot change active scan-out before another latch");
+  r.write(0x1f203ffc,2,0x201,0,0,edge+2);r.write(0x1f203ffc,2,1,0,0,edge+3);
+  require(manta::readGopWindow(r,1,0,true)->miuRelativeAddress==0xbbbb8,"force latch transfers updated guest shadow bytes");
+  require((r.knownBits(0x1f203ffc,2)&0x00f0)==0,"GOP latch never validates unrelated interrupt fields");
+}
 void scalerTimingTests() {
   manta::ScalerTiming s;
   manta::PanelTiming t{2200,1125,112,2031,0,1079,1101,1109,false};
@@ -1285,6 +1321,8 @@ void tspIndirectTests() {
     r.write(0x1f202b28,2,target>>17,0,0xffff,4);};
   auto command=[&](uint16_t v){r.write(0x1f202b20,2,v,0,0xffff,5);};
   select(0x420000);command(0x21);
+  require(!r.tspStoredWordKnown(0x210000) && !r.tspStoredWordKnown(0x210001) &&
+      !r.tspStoredWordKnown(0x218000),"read-log observer cannot classify absent/unaligned/outside internal storage as known");
   require(r.tspIndirectReads()==1 && r.knownBits(0x1f202b34,2)==0 && r.knownBits(0x1f202b38,2)==0,
       "original indirect read command retains unknown filter SRAM reset contents");
   require(r.controlByteKey(0x1f202b34)==r.preservedStoreKey(0x1f202b2c) &&
@@ -1293,6 +1331,9 @@ void tspIndirectTests() {
   r.write(0x1f202b2c,2,0x5678,0,0xffff,6);r.write(0x1f202b30,2,0x1234,0,0xffff,7);
   command(0x21);require(r.knownBits(0x1f202b34,2)==0,"data staging without a write command cannot change filter SRAM");
   command(0x23);command(0x21);
+  auto originalReads=r.tspIndirectReads(),cpuReads=r.tspCpuReads();
+  require(r.tspStoredWordKnown(0x210000) && r.tspIndirectReads()==originalReads && r.tspCpuReads()==cpuReads,
+      "known-state trace inspection uses actual uploaded metadata without executing a device read or changing counters");
   require(r.knownBits(0x1f202b34,2)==65535 && r.knownBits(0x1f202b38,2)==65535 &&
       r.read(0x1f202b34,2,0,0xffff,8)==0x5678 && r.read(0x1f202b38,2,0,0xffff,9)==0x1234,
       "original address/data/write/read sequence has actual guest-visible storage effects");
@@ -1307,6 +1348,8 @@ void tspIndirectTests() {
   command(0x23);command(0x21);
   require(r.knownBits(0x1f202b34,2)==1 && r.knownBits(0x1f202b38,2)==0,
       "masked guest filter update defines only its explicit bit, not poison or prior write-buffer bits");
+  require(!r.tspStoredWordKnown(0x210004),"partial valid internal bits cannot be classified as a fully known internal word");
+  require(r.tspStoredWordKnownMask(0x210004)==1,"changes-only logging retains the exact partial validity mask without filling unknown bits");
   rejects([&]{command(0x25);});
   select(0x430000);rejects([&]{command(0x21);});
   select(0x420002);rejects([&]{command(0x21);});
@@ -1314,6 +1357,8 @@ void tspIndirectTests() {
   rejects([&]{command(0x21);});
   select(0x420660);r.write(0x1f202b2c,2,0,0,0xffff,14);r.write(0x1f202b30,2,0x100,0,0xffff,15);
   command(0x23);
+  require(!r.tspStoredWordKnown(0x210330) && !r.tspStoredWordKnown(0x21033c),
+      "generic stored-register log filter cannot hide command/reply mailbox observations");
   require(r.read(0x1f202b00,2,0,0xffff,16)==0 && r.read(0x1f202b04,2,0,0xffff,17)==0x100,
       "OR command mailbox, MIPS direct access and indirect address share one backing");
   r.write(0x1f202c00,2,0x5678,0,0xffff,18);r.write(0x1f202c04,2,0x1234,0,0xffff,19);
@@ -1350,6 +1395,28 @@ void tspDownloadTests() {
   require((r.read(0x1f202be8,2,0,0xffff,14)&8) && r.tspQmemByte(63)==source[63],
       "original poll sees done only after the actual SRAM effect");
   rejects([&]{r.write(0x1f202be8,2,3,0,0xffff,15);});
+}
+void tspMappingBurstTests(){
+  manta::Riu r;r.event=[](auto,auto,auto,auto,auto){};r.symbolicInit=true;r.candidateTsp=true;
+  r.configureExploratoryTspResetLow();r.configureExploratoryTspCpu();r.configureOrTraceBudget(true,1000,4);
+  std::vector<uint8_t> code(0x200);const uint32_t words[]={0x18000000,0x9c200123,0,0x15000000};
+  for(unsigned i=0;i<4;++i)for(unsigned b=0;b<4;++b)code[0x100+4*i+b]=uint8_t(words[i]>>(8*b));
+  r.dramRead=[&](uint32_t,size_t n){require(n==code.size(),"mapping fixture DMA copies actual instruction bytes");return code;};
+  uint64_t tick=0;auto w=[&](unsigned off,unsigned v){r.write(0x1f202b00+off,2,v,0,65535,tick);};
+  w(0xe8,0);w(0xe8,2);
+  for(unsigned off:{0x88,0x8c,0x98,0x9c})w(off,0);
+  for(unsigned off:{0x90,0xa0})w(off,0xc000);
+  for(unsigned off:{0x94,0xa4})w(off,0xffff);
+  w(0xe0,0xcb6c);w(0xe4,unsigned(code.size()/4));r.write(0x1f202c1c,2,1,0,65535,tick);
+  tick=100;w(0xe8,6);tick=132;r.read(0x1f202be8,2,0,8,tick);tick=133;w(0xe8,3);
+  tick=173;r.read(0x1f202be8,2,0,1,tick);
+  require(r.tspCpuInstructions()==10 && r.tspCpuPc()==0x108,"actual OR instructions and delay-slot loop execute within a burst");
+  w(0x88,0x4000);tick=177;
+  rejects([&]{r.read(0x1f202be8,2,0,1,tick);});
+  require(r.tspCpuInstructions()==10 && r.tspCpuPc()==0x108,"mapping changes between bursts cannot reuse stale executable translations");
+  w(0x88,0);r.preparePreservedWrite(0x1f202b90,2,65535);w(0x90,0xc000);tick=181;
+  rejects([&]{r.read(0x1f202be8,2,0,1,tick);});
+  require(r.knownBits(0x1f202b90,2)==0 && r.tspCpuInstructions()==10,"unchanged map values with invalidated provenance still block fetch");
 }
 void pmPowerInputTests(){
   manta::PmPowerGood p;
@@ -1788,6 +1855,7 @@ int main() {
     displayHardwareTests();
     gopGuestBankTests();
     scalerTimingTests();
+    gopUpdateTests();
     preservedBitsTests();
     combRestoreTests();
     preservedRegisterRestoreTests();
@@ -1800,6 +1868,7 @@ int main() {
     tspQueueTests();
     tspIndirectTests();
     tspDownloadTests();
+    tspMappingBurstTests();
     dlcStatusTests();
     combBankTests();
 #ifdef UC_MIPS_MANTA_TIMER_API

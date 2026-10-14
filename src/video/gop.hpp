@@ -10,15 +10,16 @@ struct GopWindow {
 // Original 80538948/A43C window programming, not a host-generated display.
 // MIU selection, active shadow latches, palette, scaling and IRQs remain
 // unresolved. A decoded descriptor alone never authorizes an authentic frame.
-inline std::optional<GopWindow> readGopWindow(const Riu &riu, unsigned bank, unsigned window) {
+inline std::optional<GopWindow> readGopWindow(const Riu &riu, unsigned bank, unsigned window, bool active=false) {
   if ((bank != 1 && bank != 4) || window >= (bank == 1 ? 4u : 2u)) return {};
+  auto byte = [&](unsigned offset) { return active ? riu.gopActiveByte(bank,offset) : riu.gopByte(bank,offset); };
   auto word = [&](unsigned index) -> std::optional<uint16_t> {
-    auto lo = riu.gopByte(bank, window * 0x80 + index * 4);
-    auto hi = riu.gopByte(bank, window * 0x80 + index * 4 + 1);
+    auto lo = byte(window * 0x80 + index * 4);
+    auto hi = byte(window * 0x80 + index * 4 + 1);
     if (lo.known != 255 || hi.known != 255) return {};
     return uint16_t(lo.value | (uint16_t(hi.value) << 8));
   };
-  auto controlByte = riu.gopByte(bank, window * 0x80);
+  auto controlByte = byte(window * 0x80);
   std::optional<uint16_t> control;
   if ((controlByte.known & 0xf1) == 0xf1) control = controlByte.value;
   auto low = word(1), high = word(2), pitch = word(9);

@@ -14,6 +14,7 @@
 #include "video/scaler_timing.hpp"
 #include "video/ge_queue.hpp"
 #include "video/gop_palette.hpp"
+#include "video/gop_update.hpp"
 #include "peripherals/tsp.hpp"
 #include "cpu/openrisc.hpp"
 #include "peripherals/pm_boot.hpp"
@@ -33,6 +34,12 @@ struct RiuByte {
   uint8_t value = 0xa5, known = 0;
 };
 class Riu {
+  GopUpdate gopUpdate_;
+  std::map<uint32_t,RiuByte> gopActive_;
+  std::optional<uint64_t> gopSyncEdge(uint64_t tick)const;
+  void publishGopAck();
+  void latchGopRegisters(uint64_t tick,const char* cause);
+  void advanceGopUpdate(uint64_t tick);
   int exploratoryFetchRevisionByte_=-1;
   VdMcuProgram vdMcuProgram_;
   AvdMcuProgram avdMcuProgram_;
@@ -100,6 +107,9 @@ class Riu {
   uint64_t orDivider_=1;
   std::set<uint32_t> orVisited_;
   uint64_t tspCpuTick_=0,tspCpuReads_=0,tspCpuWrites_=0;
+  struct TspMapping {uint32_t base=0,mask=0;bool known=false;};
+  std::array<TspMapping,2> tspBurstMapping_{};
+  bool tspBurstMappingActive_=false;
   void advanceTsp(uint64_t tick);
   OrWord tspCpuRead(uint32_t address,unsigned width,bool fetch);
   void tspCpuWrite(uint32_t address,unsigned width,OrWord value);
@@ -203,6 +213,8 @@ public:
   std::string tspCoreStateSha()const;
   uint64_t tspCpuInstructions()const{return tspCpu_.instructions();}
   uint32_t tspCpuPc()const{return tspCpu_.pc();}
+  bool tspStoredWordKnown(uint32_t address)const; // observer metadata, no read/counter/effect
+  uint32_t tspStoredWordKnownMask(uint32_t address)const;
   uint64_t tspCpuReads()const{return tspCpuReads_;}
   uint64_t tspCpuWrites()const{return tspCpuWrites_;}
   bool tspCpuRunning()const{return tspCpu_.running();}
@@ -264,6 +276,10 @@ public:
   }
   std::optional<PanelTiming> panelTiming() const;
   uint64_t displayFrames(uint64_t tick) const { return scaler_.frames(tick); }
+  bool exploratoryGopVsyncLatch=false;
+  const GopUpdate& gopUpdate()const{return gopUpdate_;}
+  size_t gopActiveBytes()const{return gopActive_.size();}
+  RiuByte gopActiveByte(unsigned bank,unsigned offset)const;
   uint64_t outputSyncReads() const { return outputSyncReads_; }
   uint64_t outputSyncTransitions() const { return outputSyncTransitions_; }
   void configureExploratoryScBank(unsigned bank) {

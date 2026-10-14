@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "scope": "reported complete state, MIPS coverage and bounded PM history; trace logging differs; NOT full RAM snapshot equivalence",
+  "summary_sha256": "5caff4854df40fced2c4fecf840bc0127b27de75dcdc643e8d2c1332e70f486d",
+  "instruction_dispatches": 747047384,
+  "or1k_instructions": 2207628796,
+  "stop_pc": "0x80538468",
+  "ZUI_entries": {
+    "0x8040440c": 1,
+    "0x804e0d48": 1,
+    "0x80522d5c": 1
+  },
+  "byte_identical_files": {
+    ".coverage": "b51a18b3481c92df3d980b13353d0e18927f90378189e61149a2b7d3089d9d36",
+    "-history.jsonl": "d5366f766c3c7962f68627ae1be4ab485aa31e5ed552ac1b107ffee1cc4b7487"
+  },
+  "strict_boot_proven": false,
+  "authentic_frame_proven": false
+}

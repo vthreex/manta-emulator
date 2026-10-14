@@ -78,6 +78,10 @@ static int appMain(const std::vector<std::string> &args) {
         o.cp0Timer = true;
       else if (a == "--exploratory-cpi")o.exploratoryCpi=std::stoull(value(i),nullptr,0);
       else if (a == "--copro-probes")o.coproProbes=true;
+      else if (a == "--or1k-no-qmem-trace")o.noOrQmemTrace=true;
+      else if (a == "--or1k-idle-poll-log-changes")o.orIdlePollChanges=true;
+      else if (a == "--or1k-register-log-changes")o.orRegisterLogChanges=true;
+      else if (a == "--exploratory-gop-vsync-latch")o.exploratoryGopVsyncLatch=true;
       else if (a == "--exploratory-scart-grounded")o.exploratoryScartGrounded=true;
       else if (a == "--graphics-probes")o.graphicsProbes=true;
       else if (a == "--osd-probes")o.osdProbes=true;
@@ -187,6 +191,10 @@ static int appMain(const std::vector<std::string> &args) {
                "--cp0-timer: source-built engine Count/Compare and guest interrupt entry\n"
                "--exploratory-cpi N: UNCALIBRATED average cycles/instruction 1(default),2,4,8,16; shared peripheral/Count clock; guarded exploration only\n"
                "--copro-probes: inspect original multimedia loader output in guest RAM; no processor/reset/status emulation\n"
+               "--or1k-no-qmem-trace: filter repetitive auxiliary QMEM write records only; memory effects, MMIO, mailbox events and pause points remain active\n"
+               "--or1k-idle-poll-log-changes: filter repeated fully-known zero command polls at the same OR PC; all reads execute; commands, replies and pause points retained\n"
+               "--or1k-register-log-changes: log first/changed internal values AND validity masks at each OR PC; duplicate records summarized; all reads execute; mailbox traffic and pause points retained\n"
+               "--exploratory-gop-vsync-latch: PROVISIONAL global shadow-register update at programmed output VSYNC;200h force pulse; reset ACK/IRQ fields remain unknown\n"
                "--candidate-utmi: calibration handshake; analogue data unknown\n"
                "--candidate-chip-id: Titania4 identity 18h inferred from stock HAL identity check\n"
                "--candidate-spi: ISP read/status subset; unknown responses stop\n"

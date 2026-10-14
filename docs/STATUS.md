@@ -1,13 +1,20 @@
 # Status of the research build
 
+Latest [ZUI and GOP update investigation](zui-gop-update.md) demonstrates original
+ZUI entry through normal control flow in a named exploratory run. The next stop
+is80538468: bank-update ACK bit13 atBF203FFC is unknown. A separately enabled
+sync-latch model is unit-tested; its global bank scope and clock domain remain
+hypotheses. No authentic frame is demonstrated. Earlier checkpoints below retain
+historical evidence and do not describe the latest exploratory application path.
+
 Latest [multimedia program and startup-image investigation](multimedia-copro-startup.md)
 demonstrates the original mailbox timeout/reset/error return and, under an
 explicit CPI4 timing hypothesis, the original image timer-expiry/cleanup paths.
 The original resource directory and actual multimedia/JPEG bytes in guest RAM
 are verified. Original mailbox framing is class2B, command index12, count0;
 the older class18 interpretation was corrected by executing the original sender.
-PM hardware status, multimedia CP integration, ZUI and authentic display remain
-unsupported. Isolated CP prefix execution is conditional and supplies no reply.
+PM hardware status, multimedia CP integration and authentic display remain
+unsupported. ZUI entry is now demonstrated only under explicit exploratory inputs. Isolated CP prefix execution is conditional and supplies no reply.
 
 | Latest capability | Status | Evidence and limit |
 |---|---|---|
@@ -17,9 +24,10 @@ unsupported. Isolated CP prefix execution is conditional and supplies no reply.
 | Original timeout and image cleanup | demonstrated |4B default-timing diagnostic coverage; additional CPI4 expiry/cleanup coverage; no fabricated reply |
 | Multimedia OpenRISC startup subset | partially implemented | Existing interpreter executes1,5 or9 instructions in independently labeled isolated reset/write-effect scenarios; CP is not integrated |
 | Configurable cycle domain | implemented | Five prefix replays; physical CPI/clock calibration unsupported; default preserves prior format and timing |
-| ZUI, active GOP framebuffer, GE raster and native guest pixels | unsupported | No authentic frame demonstrated |
+| Original ZUI entry | demonstrated | Exploratory CPI16 run naturally enters804E0D48 after original startup-image failure recovery; strict cold boot unproven |
+| Active GOP framebuffer, GE raster and native guest pixels | unsupported | No authentic frame demonstrated |
 
-Latest [PM/application and original logo-transfer investigation](pm-application-logo-transfer.md) adds an explicit symbolic non-resume path and actual guest-requested flash-to-MIU0 copying. The original logo JPEG reaches guest RAM; decoding, ZUI and authentic scan-out remain unsupported. PM hardware state is still unknown. This diagnostic path is not verified cold boot.
+Latest [PM/application and original logo-transfer investigation](pm-application-logo-transfer.md) adds an explicit symbolic non-resume path and actual guest-requested flash-to-MIU0 copying. The original logo JPEG reaches guest RAM; decoding and authentic scan-out remain unsupported. Exploratory ZUI entry is documented below. PM hardware state is still unknown. This diagnostic path is not verified cold boot.
 
 
 Latest [power-good and UART investigation](pm51-power-good-and-uart.md) finds

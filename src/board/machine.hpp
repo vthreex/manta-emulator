@@ -43,6 +43,10 @@ struct Options {
   bool explorePmNonresumeBranch=false;
   uint64_t exploratoryCpi=1;
   bool coproProbes=false;
+  bool noOrQmemTrace=false;
+  bool orIdlePollChanges=false;
+  bool orRegisterLogChanges=false;
+  bool exploratoryGopVsyncLatch=false;
   uint64_t pm51Divider=32;
   bool exploratorySarFullscale=false,orFirstVisits=false;
   bool exploratoryIrDmaReset=false;
@@ -82,6 +86,11 @@ class Msd309Machine {
   VirtualTime virtualTime_;
   uint64_t coproLoadInspections_=0;
   std::string coproLoadedSha_;
+  uint64_t suppressedOrQmemTrace_=0;
+  uint64_t suppressedOrIdlePolls_=0;
+  uint32_t lastOrIdlePollPc_=UINT32_MAX;
+  uint64_t suppressedOrStoredReads_=0;
+  std::map<uint64_t,std::pair<uint32_t,uint32_t>> lastOrStoredRead_;
   std::ofstream trace_;
   std::ifstream replay_;
   std::set<uint32_t> coverage_;

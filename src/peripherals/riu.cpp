@@ -157,6 +157,19 @@ void Riu::configureExploratoryTspCpu(){
 }
 void Riu::advanceTsp(uint64_t tick){
   if(!exploratoryTspCpu_ || !tspCpu_.running())return;
+  if(tick-tspCpuTick_<orDivider_)return;
+  // During this deterministic burst MIPS is suspended in its bus callback.
+  // OR writes reach QMEM or internal storage, not these controller registers.
+  // Snapshot mapping metadata only; actual code/data bytes remain live.
+  for(unsigned i=0;i<2;++i){
+    auto base=i?0x1f202b98u:0x1f202b88u,mask=i?0x1f202ba0u:0x1f202b90u;
+    auto& map=tspBurstMapping_[i];
+    map.known=knownBits(base,2)==0xffff && knownBits(base+4,2)==0xffff &&
+      knownBits(mask,2)==0xffff && knownBits(mask+4,2)==0xffff;
+    map.base=get(base,2)|(get(base+4,2)<<16);map.mask=get(mask,2)|(get(mask+4,2)<<16);
+  }
+  tspBurstMappingActive_=true;
+  struct Scope{bool& active;~Scope(){active=false;}}scope{tspBurstMappingActive_};
   // One auxiliary dispatch per MIPS dispatch is provisional, not a measured
   // frequency. Scheduling uses the same monotonically increasing guest tick.
   while(tick-tspCpuTick_>=orDivider_){
@@ -167,10 +180,14 @@ void Riu::advanceTsp(uint64_t tick){
 }
 OrWord Riu::tspCpuRead(uint32_t a,unsigned n,bool fetch){
   uint32_t base=fetch?0x1f202b88:0x1f202b98,mask=fetch?0x1f202b90:0x1f202ba0;
-  if(knownBits(base,2)!=0xffff || knownBits(base+4,2)!=0xffff || knownBits(mask,2)!=0xffff || knownBits(mask+4,2)!=0xffff)
+  const auto& cached=tspBurstMapping_[fetch?0:1];
+  bool known=tspBurstMappingActive_?cached.known:
+    knownBits(base,2)==0xffff && knownBits(base+4,2)==0xffff && knownBits(mask,2)==0xffff && knownBits(mask+4,2)==0xffff;
+  if(!known)
     throw std::runtime_error("OpenRISC QMEM mapping contains unknown bits");
   auto combine=[&](uint32_t p){return get(p,2)|(get(p+4,2)<<16);};
-  if((a&combine(mask))==combine(base)){
+  auto baseValue=tspBurstMappingActive_?cached.base:combine(base),maskValue=tspBurstMappingActive_?cached.mask:combine(mask);
+  if((a&maskValue)==baseValue){
     auto offset=a&0x3fff;if(offset+n>0x4000)throw std::runtime_error("OpenRISC QMEM boundary crossing");
     uint32_t value=0;for(unsigned i=0;i<n;++i)value|=uint32_t(tspDownload_.byte(offset+i))<<(i*8);
     if(fetch){bool original=true;for(unsigned i=0;i<n;++i){auto b=tspDownload_.originalByte(offset+i);if(!b||*b!=uint8_t(value>>(i*8)))original=false;}
@@ -196,9 +213,24 @@ OrWord Riu::tspCpuRead(uint32_t a,unsigned n,bool fetch){
   }
   throw std::runtime_error("OpenRISC data bus address unsupported");
 }
+bool Riu::tspStoredWordKnown(uint32_t a)const{
+  return tspStoredWordKnownMask(a)==0xffffffffu;
+}
+uint32_t Riu::tspStoredWordKnownMask(uint32_t a)const{
+  // Only the generic storage-backed internal aperture, not live device reads
+  // or mailbox aliases. Match the provenance used by tspCpuRead above.
+  if(a<0x210000 || a>=0x218000 || (a&3) || a==0x210330 || a==0x21033c)return 0;
+  uint32_t mask=0;
+  for(unsigned i=0;i<4;++i){
+    auto it=bytes_.find(tspPayloadKey(a<<1,i));
+    if(it!=bytes_.end())mask|=uint32_t(it->second.known)<<(8*i);
+  }
+  return mask;
+}
 void Riu::tspCpuWrite(uint32_t a,unsigned n,OrWord v){
   ++tspCpuWrites_;
-  auto dbase=get(0x1f202b98,2)|(get(0x1f202b9c,2)<<16),dmask=get(0x1f202ba0,2)|(get(0x1f202ba4,2)<<16);
+  auto dbase=tspBurstMappingActive_?tspBurstMapping_[1].base:get(0x1f202b98,2)|(get(0x1f202b9c,2)<<16);
+  auto dmask=tspBurstMappingActive_?tspBurstMapping_[1].mask:get(0x1f202ba0,2)|(get(0x1f202ba4,2)<<16);
   uint32_t wanted=n==4?0xffffffffu:(1u<<(n*8))-1;
   if((a&dmask)==dbase){
     if((v.known&wanted)!=wanted)throw std::runtime_error("OpenRISC unknown bits stored in QMEM unsupported");
@@ -392,7 +424,35 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
     crc = (crc << 8) ^ t[((crc >> 24) ^ c) & 255];
   return crc;
 }
+std::optional<uint64_t> Riu::gopSyncEdge(uint64_t tick)const{
+  if(!scaler_.outputVsync(tick).has_value())return {};
+  const auto& t=*scaler_.timing();auto pixels=scaler_.pixels(tick);
+  auto phase=uint64_t(t.htotal)*t.vsyncStart,period=uint64_t(t.htotal)*t.vtotal;
+  return pixels<phase?0:1+(pixels-phase)/period;
+}
+void Riu::publishGopAck(){
+  auto mask=uint8_t(gopUpdate_.known()>>8);auto& high=bytes_[0x1f203ffd];
+  high.value=uint8_t((high.value&~mask)|(uint8_t(gopUpdate_.busy()>>8)&mask));high.known|=mask;
+}
+void Riu::latchGopRegisters(uint64_t tick,const char* cause){
+  gopActive_.clear();
+  for(const auto& [key,value]:bytes_)if(key>=0x80000000u && key<0x80004000u)gopActive_[key]=value;
+  event("exploratory_gop_register_latch",0x1f203ffc,2,gopUpdate_.busy(),
+    std::string(cause)+"; actual shadow bytes latched="+std::to_string(gopActive_.size())+
+    "; global-bank scope/output-sync domain provisional; virtual tick="+std::to_string(tick));
+}
+void Riu::advanceGopUpdate(uint64_t tick){
+  if(!exploratoryGopVsyncLatch)return;
+  if(gopUpdate_.advance(gopSyncEdge(tick)))latchGopRegisters(tick,"programmed output VSYNC edge");
+  publishGopAck();
+}
+RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
+  if(bank>=16 || offset>=0x1fc)throw std::runtime_error("GOP active register out of bounds");
+  auto it=gopActive_.find(0x80000000u+(bank<<10)+offset);
+  return it==gopActive_.end()?RiuByte{}:it->second;
+}
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  advanceGopUpdate(tick);
   advancePm(tick);
   advanceTsp(tick);
   advanceVd(tick);
@@ -649,6 +709,9 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  // Also invalidate if an observer ever performs a nested controller write.
+  tspBurstMappingActive_=false;
+  advanceGopUpdate(tick); // latch the old shadow state before this timestamped write
   advancePm(tick);
   advanceTsp(tick);
   advanceVd(tick);
@@ -930,7 +993,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       if(!gopResetHeld_[plane]){
         ++gopResetPulses_;auto bank=plane?4u:1u;auto windows=plane?2u:4u;
         for(unsigned w=0;w<windows;++w){auto &b=bytes_[0x80000000u+(bank<<10)+w*0x80];
-          b.value&=0xfe;b.known|=1;}
+          b.value&=0xfe;b.known|=1;
+          if(exploratoryGopVsyncLatch){auto &active=gopActive_[0x80000000u+(bank<<10)+w*0x80];active.value&=0xfe;active.known|=1;}}
         event("exploratory_gop_reset_windows",gopBank(),2,v,"HYPOTHETICAL original top-bank bit0 reset pulse disables corresponding GWIN enable bits only; format/address/IRQ/other reset fields remain unknown");
       }
       gopResetHeld_[plane]=true;
@@ -955,6 +1019,14 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     for (unsigned i=0; i<n; ++i)
       if (a+i == 0x1f203ffc || a+i == 0x1f203ffd)
         bytes_[a+i].known &= 0x0f;
+    if(exploratoryGopVsyncLatch){
+      auto before=gopUpdate_.requests;
+      bool force=gopUpdate_.write(uint16_t(get(0x1f203ffc,2)),uint16_t(knownBits(0x1f203ffc,2)),gopSyncEdge(tick));
+      if(gopUpdate_.requests!=before)
+        event("exploratory_gop_update_request",0x1f203ffc,2,0x100,"original complete100h pulse; pending actual shadow-register latch; ACK bits are hardware-owned; global scope/sync domain provisional");
+      if(force)latchGopRegisters(tick,"original complete200h force pulse");
+      publishGopAck();
+    }
   }
   event("write", a, n, v, "recorded register storage; not a complete device");
   if(closingComb) {
