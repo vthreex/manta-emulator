@@ -5,6 +5,7 @@
 #include "board/unknown_observations.hpp"
 #include "board/preserved_bits.hpp"
 #include "board/audio_no_ack.hpp"
+#include "board/pm_activity_scenario.hpp"
 #include "board/mmio_read_mask.hpp"
 #include "video/gop.hpp"
 #include <array>
@@ -185,6 +186,33 @@ void flashTests() {
   require(g.read(4096) == 0xf0, "overlay reload");
   require(g.read(0) == 255, "erased sector reload");
   std::filesystem::remove(path);
+}
+void bdmaCopyTests() {
+  manta::Riu r;r.candidateBdma=true;
+  std::vector<uint8_t> flash(0x100,0xff),ram(0x100,0xcc);
+  flash[0x20]=0xff;flash[0x21]=0xd8;flash[0x22]=0x31;flash[0x23]=0x80;
+  unsigned writes=0;
+  r.event=[](const auto&,auto,auto,auto,const auto&){};
+  r.flashRead=[&](uint32_t a,size_t n){return std::vector<uint8_t>(flash.begin()+a,flash.begin()+a+n);};
+  r.dramWrite=[&](uint32_t a,std::span<const uint8_t> b){
+    if(uint64_t(a)+b.size()>ram.size())throw std::runtime_error("fixture DRAM bounds");
+    std::copy(b.begin(),b.end(),ram.begin()+a);++writes;
+  };
+  auto set=[&](uint32_t a,unsigned n,uint32_t v){r.write(a,n,v,0,0,0);};
+  set(0x1f201208,2,0x3035);set(0x1f201210,2,0x20);set(0x1f201214,2,0);
+  set(0x1f201218,2,0x40);set(0x1f20121c,2,0);set(0x1f201220,2,4);set(0x1f201224,2,0);
+  set(0x1f201228,2,0x40);set(0x1f20122c,2,0);set(0x1f201230,2,0);set(0x1f201234,2,0);
+  set(0x1f20120c,2,0x400);
+  r.write(0x1f201200,1,1,0x80547350,0,100);
+  require(r.stopReason.empty() && writes==0 && ram[0x40]==0xcc,"BDMA schedules actual copy, not immediate readiness");
+  require(r.read(0x1f201204,1,0,255,163)==1 && writes==0,"BDMA remains busy before deadline");
+  require(r.read(0x1f201204,1,0,255,164)==8 && writes==1,"BDMA DONE follows committed destination bytes");
+  require(std::equal(flash.begin()+0x20,flash.begin()+0x24,ram.begin()+0x40) && ram[0x3f]==0xcc && ram[0x44]==0xcc,
+          "BDMA copies exact original bytes and preserves adjacent memory");
+  r.read(0x1f201204,1,0,255,200);require(writes==1,"BDMA completion is not repeated");
+  set(0x1f201210,2,0xffff);set(0x1f201214,2,0x7f);
+  r.write(0x1f201200,1,1,0,0,300);
+  require(!r.stopReason.empty() && writes==1,"BDMA rejects chip-capacity overrun without fabricated completion");
 }
 void riuTests() {
   manta::Riu r;
@@ -1308,6 +1336,65 @@ void pmPowerInputTests(){
   r.configureExploratoryPmPowerGood(true);
   require((r.read(0x1f001d84,1,0,7,2)&7)==7 && r.knownBits(0x1f001d85,1)==0,"RIU byte and word paths agree without inventing unused high status");
 }
+void pmActivityScenarioTests(){
+  for(unsigned value=0;value<16;++value){
+    manta::PmActivityScenario p;
+    require(p.arm(0x80404bf4,0x1f001cd1,1,0x8046a198,0),"symbolic PM predicate arms only an invalid original observation");
+    require(p.xorPredicate(0x80404bfc,0x38420008,value,true)==(value!=8),"nonresume assumption cannot override an inconsistent representative or manufacture marker eight");
+    if(value!=8){
+      require(p.resolvePredicate(0x80404c04,0x2c420001,value^8,true),"exact original SLTIU resolves only the constrained boolean");
+      require(p.observeBranch(0x8046a198,0x1040fec7,0,0),"original branch result must already be zero and valid, no host register assignment");
+    }
+    require(!p.arm(0x80404bf4,0x1f001cd1,1,0x8046a198,0),"one predicate assumption never becomes a permanent PM register default");
+  }
+  manta::PmActivityScenario bad;
+  require(!bad.arm(0x80404bf4,0x1f001cd1,1,0,0) && !bad.arm(0x80404bf4,0x1f001cd1,1,0x8046a198,15),"wrong caller or real known status cannot enter symbolic scenario");
+  manta::PreservedBits bits;
+  bits.seed(2,1,0,[](unsigned){return 0x1f001cd1u;});
+  auto reg=[](unsigned){return 0u;};auto key=[](uint32_t a){return a;};
+  bits.observe(0x3042000f,reg,key,[](auto,auto,auto){});
+  require(bits.exactFieldOrigin(2,0x1f001cd1,15),"masked predicate retains exact low-field identities");
+  bits.scenarioXorImmediate(2,8);
+  require(bits.exactFieldOrigin(2,0x1f001cd1,15,8) && !bits.exactFieldOrigin(2,0x1f001cd1,15),"symbolic XOR must retain inverted-bit provenance");
+  auto storeRegs=[](unsigned r){return r==3?0xbf001cd1u:0u;};
+  require(!bits.observe(0xa0620000,storeRegs,key,[](auto,auto,auto){}).empty(),"inverted unknown bit cannot be laundered as a same-origin device write");
+  for(bool explore:{false,true}){
+    manta::Engine e;e.map(0x00404000,0x1000);e.map(0x00469000,0x2000);e.map(0x006b8000,0x1000);
+    const uint32_t helper[]={0x3c02806c,0x8c438d0c,0x90621cd1,0x3042000f,0x38420008,0x03e00008,0x2c420001};
+    const uint32_t caller[]={0x0c1012fb,0,0x1040fec7,0};const uint32_t base=0xbf000000;
+    e.write(0x00404bec,helper,sizeof(helper));e.write(0x0046a190,caller,sizeof(caller));e.write(0x006b8d0c,&base,4);
+    struct Context{manta::Engine* e;manta::PreservedBits bits;manta::PmActivityScenario scenario;bool explore,guarded=false;unsigned reads=0;};
+    Context c{&e,{}, {},explore};
+    auto read=+[](uc_engine*,uint64_t off,unsigned n,void* data)->uint64_t{
+      auto& c=*static_cast<Context*>(data);++c.reads;
+      if(off!=0xcd1 || n!=1 || !c.scenario.arm(c.e->reg(UC_MIPS_REG_PC),0x1f001cd1,n,c.e->reg(UC_MIPS_REG_RA),0))
+        {c.guarded=true;uc_emu_stop(c.e->handle);}
+      c.bits.seed(2,1,0,[](unsigned){return 0x1f001cd1u;});
+      return 0xa5; // INVALID representative, not a physical PM value
+    };
+    manta::check(uc_mmio_map(e.handle,0x1f001000,0x1000,read,&c,nullptr,nullptr));
+    uc_hook hook;manta::check(uc_hook_add(e.handle,&hook,UC_HOOK_CODE,reinterpret_cast<void*>(+[](uc_engine* cpu,uint64_t pc,uint32_t,void* data){
+      auto& c=*static_cast<Context*>(data);
+      if(pc==0x80469cb8){uc_emu_stop(cpu);return;}
+      uint32_t w=0;c.e->read(uint32_t(pc)&0x1fffffff,&w,4);
+      auto reg=[&](unsigned r){return c.e->reg(UC_MIPS_REG_0+int(r));};
+      bool symbolic=c.explore && c.scenario.xorPredicate(uint32_t(pc),w,reg(2),c.bits.exactFieldOrigin(2,0x1f001cd1,15));
+      if(symbolic)c.bits.scenarioXorImmediate(2,8);
+      auto why=symbolic?std::string{}:c.bits.observe(w,reg,[](uint32_t a){return a;},[](auto,auto,auto){});
+      if(!why.empty() && c.explore && c.scenario.resolvePredicate(uint32_t(pc),w,reg(2),c.bits.exactFieldOrigin(2,0x1f001cd1,15,8))){
+        c.bits.seed(2,4,0xffffffffu,[](unsigned){return 0u;});why.clear();
+      }
+      if(!why.empty()){c.guarded=true;uc_emu_stop(cpu);return;}
+      c.scenario.observeBranch(uint32_t(pc),w,reg(2),c.bits.mask(2));
+    }),&c,1,0));
+    manta::check(e.run(0x8046a190,100));
+    require(c.reads==1,"original MIPS getter performs its own byte load through the MMIO engine");
+    require(explore?(!c.guarded && e.reg(UC_MIPS_REG_PC)==0x80469cb8 && e.reg(UC_MIPS_REG_2)==0 && c.scenario.branches==1):
+      (c.guarded && e.reg(UC_MIPS_REG_PC)==0x80404bfc),"original JAL/JR delay-slot SLTIU/BEQ execute unchanged; only explicitly constrained boolean provenance passes");
+    std::array<uint32_t,7> after{};e.read(0x00404bec,after.data(),sizeof(helper));
+    require(std::equal(after.begin(),after.end(),std::begin(helper)),"symbolic branch analysis never patches guest instruction memory");
+  }
+}
 void r8051UartConfigTests(){
   auto run=[&](const std::vector<uint8_t>& code,bool candidate,auto inspect){
     manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
@@ -1348,6 +1435,7 @@ int main() {
             "SHA empty");
     cpuTests();
     pmPowerInputTests();
+    pmActivityScenarioTests();
     r8051UartConfigTests();
     openRiscTests();
     irDmaTests();
@@ -1657,6 +1745,7 @@ int main() {
     vdSharedExecutionTests();
     flashTests();
     riuTests();
+    bdmaCopyTests();
     gpioTests();
     miuTests();
     unknownObservationTests();

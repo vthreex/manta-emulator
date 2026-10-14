@@ -1,0 +1,77 @@
+{
+  "result": "PASS",
+  "scope": "diagnostic non-resume predicate assumption; NOT verified cold boot or display",
+  "full_new_PM_application_replay": "PASS: every event, full summary, coverage and PM history identical",
+  "trace_events": 57495357,
+  "trace_sha256": "92b93942f397bb68fa3404c28fcab7cf93026462f2cdd97c32bf2c4bab37938d",
+  "emulator_sha256": "2e4c6febb28fa1d08e5a36b84610d5367129196b1bb65d7fe4815b4446cd2828",
+  "stock_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "original_JPEG_transfer_sha256": "92b1ccd98f3a02f7dd1a7e5d9a6b0cd73e18e07bdeee9531bf3fbaaf66d2b700",
+  "original_JPEG_encoded_dimensions": [
+    1940,
+    1080
+  ],
+  "guest_transfer_destination": "0x03230000",
+  "observed_events": [
+    {
+      "tick": 1789567273,
+      "pc": "0x80404bf4",
+      "kind": "diagnostic_pm_activity_invalid_sample",
+      "address": "0x1f001cd1",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x8046a198",
+      "sp": "0x8072d948",
+      "detail": "INVALID PM activity observation; one explicitly selected symbolic non-resume predicate may be explored; no register/reset value supplied"
+    },
+    {
+      "tick": 1789567277,
+      "pc": "0x80404c04",
+      "kind": "diagnostic_pm_nonresume_predicate",
+      "address": "0x80404c04",
+      "width": 4,
+      "value": "0x2c420001",
+      "ra": "0x8046a198",
+      "sp": "0x8072d948",
+      "detail": "SYMBOLIC PATH ASSUMPTION ONLY: this activity observation !=8; hardware byte remains invalid; not verified cold boot; no register/PC/instruction modified"
+    },
+    {
+      "tick": 1789567278,
+      "pc": "0x8046a198",
+      "kind": "diagnostic_pm_nonresume_branch",
+      "address": "0x8046a198",
+      "width": 4,
+      "value": "0x1040fec7",
+      "ra": "0x8046a198",
+      "sp": "0x8072d948",
+      "detail": "original BEQ follows assumed non-resume predicate to 80469CB8; no hardware marker produced; diagnostic application path only"
+    },
+    {
+      "tick": 1820725370,
+      "pc": "0x80547350",
+      "kind": "bdma_flash_copy",
+      "address": "0x2d89d8",
+      "width": 45696,
+      "value": "0x3230000",
+      "ra": "0x8054679c",
+      "sp": "0x8072d758",
+      "detail": "original FLASH-to-MIU0 command 3035; bounded byte addresses; pending memory transfer, provisional 64-tick latency"
+    },
+    {
+      "tick": 1820725437,
+      "pc": "0x805477e8",
+      "kind": "bdma_flash_copy_complete",
+      "address": "0x3230000",
+      "width": 45696,
+      "value": "0x0",
+      "ra": "0x80546804",
+      "sp": "0x8072d758",
+      "detail": "programmed flash bytes committed to shared guest MIU0 before DONE; 64-tick latency remains provisional"
+    }
+  ],
+  "instruction_dispatches": 2000000000,
+  "OpenRISC_instructions": 333430881,
+  "PM_marker_generated": false,
+  "ZUI_entries": 0,
+  "authentic_display_demonstrated": false
+}

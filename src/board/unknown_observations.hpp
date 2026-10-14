@@ -22,6 +22,9 @@ public:
   void seedSpiCache(uint32_t address) { seed(4); spiCacheAddress_ = address & 0x1fffffff; spiCacheArmed_ = true; }
   void seed(unsigned reg) { registers_.at(reg) = true; timingRegisters_[reg] = false; clockOrigins_[reg] = 0; }
   const auto &bytes() const { return bytes_; }
+  void overwriteKnownMemory(uint32_t address,size_t size) {
+    for(size_t i=0;i<size;++i)bytes_.erase((address+uint32_t(i))&0x1fffffff);
+  }
   bool registerUnknown(unsigned reg) const { return registers_.at(reg); }
   std::string observe(uint32_t pc, uint32_t w, const std::function<uint32_t(unsigned)> &reg) {
     // Exact identity copies in the stock clock snapshot routine. Other masks,

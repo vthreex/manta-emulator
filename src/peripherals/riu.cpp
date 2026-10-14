@@ -575,6 +575,13 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   }
   if (candidateBdma && a == 0x1f201204 && n == 1) {
     if (bdmaPending_ && tick >= bdmaComplete_) {
+      if(!bdmaCopyBytes_.empty()) {
+        try { dramWrite(bdmaCopyDestination_,bdmaCopyBytes_); }
+        catch(const std::exception& error) { stopReason=error.what();return get(a,1); }
+        event("bdma_flash_copy_complete",bdmaCopyDestination_,unsigned(bdmaCopyBytes_.size()),0,
+              "programmed flash bytes committed to shared guest MIU0 before DONE; 64-tick latency remains provisional");
+        bdmaCopyBytes_.clear();
+      }
       put(a, 1, 8);
       bdmaPending_ = false;
     }
@@ -1124,6 +1131,24 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     auto len = get(0x1f201220, 2) | (get(0x1f201224, 2) << 16);
     auto poly = get(0x1f201228, 2) | (get(0x1f20122c, 2) << 16);
     auto seed = get(0x1f201230, 2) | (get(0x1f201234, 2) << 16);
+    if(mode==0x3035) {
+      auto destination=get(0x1f201218,2)|(get(0x1f20121c,2)<<16);
+      // Original T4 transfer routine selects source device FLASH(5), destination
+      // MIU0(0), and programs byte addresses/length. Width fields are retained
+      // exactly as observed; other SoC variants' width constants are not used.
+      if(bdmaPending_ || !dramWrite || !flashRead || !len || src>=0x800000 || len>0x800000-src ||
+         destination>=0x08000000 || len>0x08000000-destination || poly!=destination || seed!=0 ||
+         get(0x1f20120c,2)!=0x400) {
+        stopReason="unsupported BDMA flash-to-MIU0 framing or bounds";return;
+      }
+      bdmaCopyBytes_=flashRead(src,len);
+      if(bdmaCopyBytes_.size()!=len) {bdmaCopyBytes_.clear();stopReason="incomplete BDMA flash source";return;}
+      bdmaCopyDestination_=destination;
+      put(0x1f201204,1,1);bdmaPending_=true;bdmaComplete_=tick+64;
+      event("bdma_flash_copy",src,len,destination,
+            "original FLASH-to-MIU0 command 3035; bounded byte addresses; pending memory transfer, provisional 64-tick latency");
+      return;
+    }
     if (mode != 0x335 || poly != 0x04c11db7 || src > 0x7fffff || len > 0x800000 - src) {
       stopReason = "unsupported BDMA command or bounds";
       return;

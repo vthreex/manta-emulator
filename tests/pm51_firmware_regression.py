@@ -22,7 +22,7 @@ with tempfile.TemporaryDirectory(prefix='manta-original-pm51-') as directory:
     def run(*flags):
         result = subprocess.run([probe, str(image), *flags], capture_output=True, text=True)
         assert result.returncode == 0, (result.returncode, result.stdout, result.stderr)
-        if flags and (flags[0].startswith('--shared-riu') or flags[0]=='--status-counterfactual'):
+        if flags and (flags[0].startswith('--shared-riu') or flags[0] in ('--status-counterfactual','--probe-pending-startup-configurations')):
             assert 'PM_MAIN_MIPS_EXECUTED false; shared RIU probe only; no PM reply supplied' in result.stdout
         else:
             assert 'PM_MAIN_MACHINE_ATTACHED false' in result.stdout
@@ -127,6 +127,20 @@ with tempfile.TemporaryDirectory(prefix='manta-original-pm51-') as directory:
     assert any(v['address']==0xec3 and v['known']==0 for v in accesses)
     assert ins[-1]['pc']==0x574f and not ins[-1]['dispatched']
     assert accesses[-1]['address']==0xe6a and accesses[-1]['known']==0x80 and not accesses[-1]['accepted']
+    pending=run('--probe-pending-startup-configurations')
+    assert 'not hardware emulation or verified TV boot' in pending
+    assert 'PM_CONNECTED_INSTRUCTIONS 3482 PC 0x575b' in pending
+    assert 'PM_PENDING_CONFIGURATIONS 3 SHARED_PAD_KNOWN 0 SHARED_E26_KNOWN 0' in pending
+    assert 'UNKNOWN_ORIGIN 0xec2 ACC_KNOWN 0x7' in pending
+    assert 'MARKER_WRITES 0 MAIN_BYTE_KNOWN 0' in pending
+    assert run('--probe-pending-startup-configurations')==pending
+    rows=history_rows(pending);ins=[r for r in rows if r['kind']=='instruction'];bus=[r for r in rows if r['kind']=='bus']
+    assert all(r['opcode']==pm[r['pc']] for r in ins)
+    assert ins[-1]['pc']==0x575b and not ins[-1]['dispatched']
+    for pc,address,known in ((0x574f,0xe6a,0x80),(0x5754,0xe26,255),(0x5756,0xe27,255)):
+        assert any(r['pc']==pc and r['dispatched'] for r in ins)
+        assert any(r['pc']==pc and r['address']==address and r['known']==known and r['write'] and r['accepted'] for r in bus)
+    assert 'address 0x934d' not in pending
     image.write_bytes(pm[:-1])
     truncated = subprocess.run([probe, str(image)], capture_output=True, text=True)
     assert truncated.returncode == 1 and 'size/hash mismatch' in truncated.stderr
@@ -139,6 +153,9 @@ with tempfile.TemporaryDirectory(prefix='manta-original-pm51-') as directory:
 assert hashlib.sha256(firmware.read_bytes()).hexdigest() == stock_sha
 report = {
     'result': 'PASS', 'scope': 'original PM51 isolated/shared-RIU diagnostics; not completed PM board boot',
+    'probe_only_pending_configurations':{'instructions':3482,'pc':'0x575b','pending_effects':3,
+      'EC2_bit3_produced':False,'live_configuration_fields_still_unknown':True,'marker_writes':0,
+      'stdout_sha256':hashlib.sha256(pending.encode()).hexdigest()},
     'aggregate_power_good_hypothesis':{'instructions':3441,'pc':'0x5727','MSD309_individual_detectors_verified':False},
     'power_good_and_UART_hypothesis':{'instructions':3474,'pc':'0x574f','boundary':'XDATA 0x0E6A bit7-clear write; side effect unsupported',
       'original_UART_initializer_returned':True,'marker_writes':0,'main_activity_byte_known':0,

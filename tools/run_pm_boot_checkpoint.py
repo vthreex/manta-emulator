@@ -11,6 +11,7 @@ p.add_argument('--coverage')
 p.add_argument('--pm51-history', help='Bounded original PM instruction and bus observations in JSON Lines')
 p.add_argument('--exploratory-pm-power-good', action='store_true', help='Explicit related-source aggregate power-good hypothesis; not verified MSD309 detector wiring')
 p.add_argument('--candidate-pm51-uart', action='store_true', help='Candidate R8051 UART configuration; no unsupported completion')
+p.add_argument('--explore-pm-nonresume-branch', action='store_true', help='Diagnostic single symbolic non-resume predicate; no valid PM byte or cold-boot claim')
 p.add_argument('--window', action='store_true', help='Use the existing native window; no authentic frame is demonstrated')
 p.add_argument('--max-instructions', type=int, default=2000000000)
 p.add_argument('--print-command', action='store_true')
@@ -49,6 +50,8 @@ if a.exploratory_pm_power_good:
     flags += ['--exploratory-pm-power-good']
 if a.candidate_pm51_uart:
     flags += ['--candidate-pm51-uart']
+if a.explore_pm_nonresume_branch:
+    flags += ['--explore-pm-nonresume-branch']
 command = [a.emulator] + flags
 if a.print_command:
     print(json.dumps(command, indent=2))

@@ -85,6 +85,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-pm51-spi-startup")o.exploratoryPm51SpiStartup=true;
       else if (a == "--exploratory-pm-power-good")o.exploratoryPmPowerGood=true;
       else if (a == "--candidate-pm51-uart")o.candidatePm51Uart=true;
+      else if (a == "--explore-pm-nonresume-branch")o.explorePmNonresumeBranch=true;
       else if (a == "--pm51-history")o.pm51History=utf8Path(value(i));
       else if (a == "--pm51-dispatch-divider"){
         o.pm51Divider=std::stoull(value(i),nullptr,0);
@@ -206,6 +207,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-pm51-spi-startup: original PM CODE shares flash, XDATA shares RIU; hypothetical concurrent reset/SPI/RAM wiring; required unknown status stops PM before decisions\n"
                "--exploratory-pm-power-good: explicit aggregate powered-input hypothesis at PM 0EC2 bits0..2; individual detectors unverified, other bits remain invalid; requires PM startup\n"
                "--candidate-pm51-uart: R8051 baud/configuration SFR subset; no unmodeled UART completion or input supplied; requires PM startup\n"
+               "--explore-pm-nonresume-branch: DIAGNOSTIC symbolic !=8 predicate only; PM activity byte stays invalid; no cold-boot/hardware verification claim\n"
                "--pm51-dispatch-divider N: hypothetical MIPS dispatches per PM machine tick (1..4096; default 32); not a measured clock\n"
                "--pm51-history FILE: bounded PM instruction/validity and bus history; requires original PM startup experiment\n"
                "--exploratory-sar-fullscale: 3300mV inputs/reference for SAR0/1; original power/free-run controls and period trigger conversion, board wiring unverified\n"

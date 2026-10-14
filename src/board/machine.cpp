@@ -34,6 +34,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.deferVdSfr8eWrite=o.deferVdSfr8eWrite;
   riu_.candidateAvdMcuProgram=o.candidateAvdMcuProgram;
   riu_.candidateAudioIdma=o.candidateAudioIdma;
+  if(o.explorePmNonresumeBranch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.exploratoryPm51SpiStartup))
+    throw std::runtime_error("PM symbolic branch requires guarded original execution and connected PM; not a power/reset model");
   if(o.exploratoryAudioNoAck && (!o.candidateAudioIdma || !o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("No-ACK predicate scenario requires original IDMA and guarded unknown provenance; no valid DSP response is supplied");
   if(o.exploratoryAvdMcuStartup && (!o.candidateAvdMcuProgram || !o.symbolicInit || !o.deferDiagnosticReads))
@@ -203,6 +205,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     std::vector<uint8_t> bytes(size);cpu_.read(address,bytes.data(),size);return bytes;
   };
   riu_.event = [this](auto &k, auto a, auto n, auto v, auto &d) { event(k, a, n, v, d); };
+  riu_.dramWrite=[this](uint32_t address,std::span<const uint8_t> bytes) {
+    if(!options_.candidateMiu || bytes.empty() || uint64_t(address)+bytes.size()>0x08000000 ||
+       uint64_t(address)+bytes.size()>dramBacking_.size())
+      throw std::runtime_error("BDMA MIU0 destination outside mapped bounds");
+    cpu_.write(address,bytes.data(),bytes.size());
+    preservedBits_.overwriteKnownMemory(address,bytes.size());
+    unknownObservations_.overwriteKnownMemory(address,bytes.size());
+  };
   if(!o.pm51History.empty() && !o.exploratoryPm51SpiStartup)
     throw std::runtime_error("PM history requires original PM SPI startup experiment");
   if((o.exploratoryPmPowerGood || o.candidatePm51Uart) && !o.exploratoryPm51SpiStartup)
@@ -461,13 +471,27 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       auto target=m.cpu_.reg(UC_MIPS_REG_4)&0x1fffffff;
       m.riu_.beginCombRestore(target,m.preservedBits_.mask(2)&0xffff);
     }
-    auto preservedWhy=m.preservedBits_.observe(w,[&](unsigned r){return m.cpu_.reg(UC_MIPS_REG_0+int(r));},
+    const bool scenarioXor=m.options_.explorePmNonresumeBranch &&
+      m.pmActivityScenario_.xorPredicate(uint32_t(a),w,m.cpu_.reg(UC_MIPS_REG_2),
+        m.preservedBits_.exactFieldOrigin(2,0x1f001cd1,15));
+    if(scenarioXor)m.preservedBits_.scenarioXorImmediate(2,8);
+    auto preservedWhy=scenarioXor?std::string{}:m.preservedBits_.observe(w,[&](unsigned r){return m.cpu_.reg(UC_MIPS_REG_0+int(r));},
       [&](uint32_t address){return m.riu_.preservedStoreKey(address);},
       [&](uint32_t address,unsigned width,uint32_t unknown){
         m.riu_.preparePreservedWrite(address,width,unknown);
         m.event("preserved_control_write",address,width,unknown,"original unknown bits return to the same banked byte/bit identities; no decision or new hardware consumer authorized");
       });
     if(!preservedWhy.empty()) {
+      if(m.options_.explorePmNonresumeBranch && m.pmActivityScenario_.resolvePredicate(uint32_t(a),w,
+         m.cpu_.reg(UC_MIPS_REG_2),m.preservedBits_.exactFieldOrigin(2,0x1f001cd1,15,8))){
+        // Resolve only this comparison's result provenance. The engine still
+        // executes the original SLTIU, whose concrete representative yields
+        // zero consistently with the explicit !=8 assumption. No CPU write.
+        m.preservedBits_.seed(2,4,0xffffffffu,[](unsigned){return 0u;});
+        m.event("diagnostic_pm_nonresume_predicate",uint32_t(a),4,w,
+          "SYMBOLIC PATH ASSUMPTION ONLY: this activity observation !=8; hardware byte remains invalid; not verified cold boot; no register/PC/instruction modified");
+        preservedWhy.clear();
+      }
       if(m.options_.exploratoryAudioNoAck &&
          m.audioNoAck_.constrain(uint32_t(a),w,m.cpu_.reg(UC_MIPS_REG_2),m.cpu_.reg(UC_MIPS_REG_18),
            m.preservedBits_.mask(18),m.preservedBits_.exactByteOrigin(2,a==0x804f7b10?0x1f225cb8:0x1f225ab4),m.cpu_.reg(UC_MIPS_REG_16))){
@@ -482,6 +506,10 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       m.stop(preservedWhy,op>=32 && op<=43?target:0);return;
     }
   }
+  if(m.options_.explorePmNonresumeBranch && m.pmActivityScenario_.observeBranch(uint32_t(a),w,
+      m.cpu_.reg(UC_MIPS_REG_2),m.preservedBits_.mask(2)))
+    m.event("diagnostic_pm_nonresume_branch",uint32_t(a),4,w,
+      "original BEQ follows assumed non-resume predicate to 80469CB8; no hardware marker produced; diagnostic application path only");
   auto op = w >> 26;
   if ((op >= 32 && op <= 38) || (op >= 40 && op <= 43) || (op == 46)) {
     auto rs = (w >> 21) & 31;
@@ -543,6 +571,16 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
   try {
     auto a = 0x1f000000 + uint32_t(off);
     auto pc = m.cpu_.reg(UC_MIPS_REG_PC);
+    if(m.options_.explorePmNonresumeBranch && pc==0x80404bf4 && a==0x1f001cd1 && n==1){
+      std::vector<uint8_t> helper(28);m.cpu_.read(0x00404bec,helper.data(),helper.size());
+      if(sha256(helper)=="4405618c6483bb6fc54e12c7132b4713b570cea7f827f6452f0220338bef708c" &&
+         m.pmActivityScenario_.arm(pc,a,n,m.cpu_.reg(UC_MIPS_REG_RA),m.riu_.knownBits(a,n))){
+        m.preservedBits_.seed(2,1,0,[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("diagnostic_pm_activity_invalid_sample",a,n,0,
+          "INVALID PM activity observation; one explicitly selected symbolic non-resume predicate may be explored; no register/reset value supplied");
+      }
+    }
     // Stock boot switches between cached and uncached ROM aliases. The RMW
     // proof address is an instruction identity; traces retain the real PC.
     if ((pc & 0x1fffffff) >= 0x1fc00000 && (pc & 0x1fffffff) < 0x1fc02c60)
@@ -1529,6 +1567,13 @@ std::string Msd309Machine::summary() const {
       <<",\n  \"pm51_unknown_origin\": \""<<hex(p.cpu().accumulatorOrigin())<<"\""
       <<",\n  \"pm51_state_sha256\": \""<<p.stateSha()<<"\"";
   }
+  if(options_.explorePmNonresumeBranch)
+    s<<",\n  \"diagnostic_pm_nonresume_branch\": true"
+     <<",\n  \"pm_activity_invalid_samples\": "<<pmActivityScenario_.samples
+     <<",\n  \"pm_activity_constrained_predicates\": "<<pmActivityScenario_.predicates
+     <<",\n  \"pm_activity_original_branches\": "<<pmActivityScenario_.branches
+     <<",\n  \"pm_activity_byte_known\": "<<riu_.knownBits(0x1f001cd1,1)
+     <<",\n  \"PM_cold_boot_hardware_verified\": false";
   if(options_.exploratoryVdSuspendedBoundary)s<<",\n  \"exploratory_vd_suspended_boundary\": true,\n  \"vd_mcu_suspended\": "<<(riu_.vdMcuSuspended()?"true":"false")
     <<",\n  \"vd_mcu_boundary_reason\": \""<<riu_.vdMcuBoundaryReason()<<"\"";
   if(options_.osdProbes){

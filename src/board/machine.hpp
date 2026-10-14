@@ -5,6 +5,7 @@
 #include "board/unknown_observations.hpp"
 #include "board/preserved_bits.hpp"
 #include "board/audio_no_ack.hpp"
+#include "board/pm_activity_scenario.hpp"
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -38,6 +39,7 @@ struct Options {
   bool exploratoryPm51SpiStartup=false;
   bool exploratoryPmPowerGood=false;
   bool candidatePm51Uart=false;
+  bool explorePmNonresumeBranch=false;
   uint64_t pm51Divider=32;
   bool exploratorySarFullscale=false,orFirstVisits=false;
   bool exploratoryIrDmaReset=false;
@@ -94,6 +96,7 @@ class Msd309Machine {
   UnknownObservations unknownObservations_;
   PreservedBits preservedBits_;
   AudioNoAck audioNoAck_;
+  PmActivityScenario pmActivityScenario_;
   unsigned deferredReads_ = 0;
   uint64_t timerEntries_ = 0, gopEvents_ = 0, geEvents_ = 0, geBlockedEvents_=0;
   bool gopInitializerEntered_ = false;

@@ -1,5 +1,8 @@
 # Manta LCD4214 firmware execution research build
 
+Latest [PM/application and original logo-transfer investigation](docs/pm-application-logo-transfer.md) adds an explicit symbolic non-resume path and actual guest-requested flash-to-MIU0 copying. The original logo JPEG reaches guest RAM; decoding, ZUI and authentic scan-out remain unsupported. PM hardware state is still unknown. This diagnostic path is not verified cold boot.
+
+
 Latest [PM power-good/UART investigation](docs/pm51-power-good-and-uart.md)
 cross-references the exact low-bit wait with MStar's `CheckPowerGood` code.
 A separately configured aggregate input and candidate UART subset execute

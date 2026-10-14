@@ -55,6 +55,8 @@ class Riu {
   std::map<uint32_t, RiuByte> bytes_;
   uint64_t bdmaComplete_ = 0;
   bool bdmaPending_ = false;
+  std::vector<uint8_t> bdmaCopyBytes_;
+  uint32_t bdmaCopyDestination_=0;
   std::map<uint32_t, uint32_t> pendingRmw_;
   std::map<uint32_t, uint32_t> consumedRead_;
   std::map<uint32_t,uint32_t> preservedUnknownWrite_;
@@ -154,6 +156,10 @@ public:
     pm51_.configureCandidateUart(uart);
   }
   const Pm51& pm51()const{return pm51_;}
+  void configureProbePmDeferredConfigurations(){
+    if(pm51_.started())throw std::runtime_error("PM probe configuration changed after startup");
+    pm51_.probeDeferredStartupConfigurations=true;
+  }
   void configureExploratoryPmPowerGood(bool good){pmPowerGood_.input(good);}
   const PmPowerGood& pmPowerGood()const{return pmPowerGood_;}
   void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}
@@ -346,6 +352,7 @@ public:
   std::function<std::vector<uint8_t>(uint32_t, size_t)> flashRead;
   std::function<bool(uint32_t, size_t, uint16_t)> dramTest;
   std::function<std::vector<uint8_t>(uint32_t,size_t)> dramRead;
+  std::function<void(uint32_t,std::span<const uint8_t>)> dramWrite;
   std::function<bool()> executionStopped;
   uint32_t read(uint32_t a, unsigned size, uint32_t pc, uint32_t mask, uint64_t tick);
   void write(uint32_t a, unsigned size, uint32_t value, uint32_t pc, uint32_t mask, uint64_t tick);

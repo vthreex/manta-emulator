@@ -15,6 +15,8 @@ class Pm51 {
   std::array<bool,1024> written_{};
   std::set<uint16_t> visited_;
   std::optional<uint8_t> romControl_;
+  struct DeferredConfiguration {uint16_t pc,address;VdByte payload;};
+  std::vector<DeferredConfiguration> deferredConfigurations_;
   uint64_t tick_=0;
   bool started_=false,suspended_=false;
   std::string boundary_;
@@ -43,6 +45,7 @@ public:
   uint64_t markerWrites=0,controlWrites=0;
   bool firstVisits=true;
   bool captureHistory=false; // bounded diagnostics only; never part of hardware state
+  bool probeDeferredStartupConfigurations=false; // probe-only; no hardware effects/readback
   std::function<VdByte(uint16_t)> sharedRead;
   std::function<bool(uint16_t,VdByte)> sharedWrite;
   std::function<bool(uint8_t,uint16_t,VdByte)> extendedWrite;
@@ -74,6 +77,20 @@ public:
       }
       if(a>=0x4000 && a<0x4400){
         ram_[a-0x4000]=v;written_[a-0x4000]=true;++ramWrites;observeBus(a,v,true,true);return true;
+      }
+      if(probeDeferredStartupConfigurations && cpu_.port2()==0){
+        const auto stage=deferredConfigurations_.size();
+        const bool maskedPad=stage==0 && cpu_.pc()==0x574f && a==0x0e6a &&
+          v.known==0x80 && v.origin==a && !(v.value&0x80);
+        const bool followingZero=(stage==1 && cpu_.pc()==0x5754 && a==0x0e26) ||
+          (stage==2 && cpu_.pc()==0x5756 && a==0x0e27);
+        if(maskedPad || (followingZero && v.known==255 && v.value==0)){
+          deferredConfigurations_.push_back({cpu_.pc(),a,v});observeBus(a,v,true,true);
+          event("probe_pm51_deferred_configuration",a,1,v.value,
+            "PROBE ONLY: original store retired with hardware effects PENDING/UNIMPLEMENTED; payload validity="+
+            std::to_string(v.known)+"; shared RIU output/known bits unchanged, no completion generated");
+          return true;
+        }
       }
       if((a==0x0e69 || a==0x0e6f || (cpu_.candidateR8051Uart && (a==0x0e13 || a==0x0e1e))) && cpu_.port2()==0 && sharedWrite(a,v)){
         ++riuWrites;if(a==0x0e69)++markerWrites;observeBus(a,v,true,true);return true;
@@ -124,6 +141,7 @@ public:
   bool started()const{return started_;}
   bool suspended()const{return suspended_;}
   const std::string& boundary()const{return boundary_;}
+  size_t deferredConfigurationCount()const{return deferredConfigurations_.size();}
   std::string historyJsonLines()const{
     std::ostringstream out;
     // Integers are decimal JSON numbers; validity is independent of poison data.
@@ -146,6 +164,10 @@ public:
     for(unsigned i=0;i<ram_.size();++i){append(ram_[i].value,1);append(ram_[i].known,1);append(ram_[i].origin,2);append(written_[i],1);}
     for(auto count:{tick_,divider,ramReads,ramWrites,riuReads,riuWrites,markerWrites,controlWrites})append(count,8);
     append(started_,1);append(suspended_,1);append(romControl_.has_value(),1);append(romControl_.value_or(0),1);
+    if(probeDeferredStartupConfigurations){
+      append(1,1);append(deferredConfigurations_.size(),1);
+      for(const auto& p:deferredConfigurations_){append(p.pc,2);append(p.address,2);append(p.payload.value,1);append(p.payload.known,1);append(p.payload.origin,2);}
+    }
     return sha256(b);
   }
 };

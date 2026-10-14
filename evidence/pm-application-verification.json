@@ -1,0 +1,19 @@
+{
+  "scope": "full diagnostic non-resume boot through two-billion instruction checkpoint; not verified PM cold boot or display",
+  "source_parent_commit": "1702360",
+  "native_checks": 941,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "full_previous_five_CPU_replay": "PASS",
+  "full_new_PM_application_replay": "PASS through 2000000000 dispatches",
+  "original_stock_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "native_executable_sha256": "2e4c6febb28fa1d08e5a36b84610d5367129196b1bb65d7fe4815b4446cd2828",
+  "CPU_engine_sha256": "0d21f5cf519dd12dae791a7f69dc7af32de17dbee0dad30dcb90afa30673c981",
+  "private_trace_reference": "<private-trace-cache>/trace-cache-2026-10-13/pm-jpeg-dma-cold.jsonl",
+  "private_trace_sha256": "92b93942f397bb68fa3404c28fcab7cf93026462f2cdd97c32bf2c4bab37938d",
+  "extended_original_mailbox_timeout_run": "IN PROGRESS; not counted as a passed boot or replay",
+  "PM_activity_hardware_byte_known": 0,
+  "PM_ready_ack_generated": false,
+  "genuine_OSD_or_scanout_demonstrated": false
+}

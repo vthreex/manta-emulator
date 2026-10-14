@@ -10,7 +10,7 @@ namespace manta {
 // retains its exact banked byte and bit identity. Only a write back to that
 // identity can preserve it. Decisions, addresses and new device uses reject.
 class PreservedBits {
-  struct Bit { uint32_t byte=0; uint8_t bit=0; bool operator==(const Bit &) const=default; };
+  struct Bit { uint32_t byte=0; uint8_t bit=0; bool inverted=false; bool operator==(const Bit &) const=default; };
   using Value=std::array<Bit,32>;
   std::array<Value,32> registers_{};
   std::map<uint32_t,std::array<Bit,8>> memory_;
@@ -34,10 +34,23 @@ public:
     return m;
   }
   bool memoryUnknown(uint32_t address) const { return memory_.contains(backingAddress(address)); }
+  void overwriteKnownMemory(uint32_t address,size_t size) {
+    for(size_t i=0;i<size;++i)memory_.erase(backingAddress(address+uint32_t(i)));
+  }
   bool exactByteOrigin(unsigned rt,uint32_t byte)const {
     if(mask(rt)!=255)return false;
     for(unsigned i=0;i<8;++i)if(registers_.at(rt)[i]!=Bit{byte,uint8_t(i)})return false;
     return true;
+  }
+  bool exactFieldOrigin(unsigned rt,uint32_t byte,uint32_t field,uint32_t inverted=0)const{
+    if(mask(rt)!=field)return false;
+    for(unsigned i=0;i<32;++i)if(field&(uint32_t(1)<<i))
+      if(registers_.at(rt)[i]!=Bit{byte,uint8_t(i),bool(inverted&(uint32_t(1)<<i))})return false;
+    return true;
+  }
+  void scenarioXorImmediate(unsigned rt,uint16_t bits){
+    for(unsigned i=0;i<16;++i)if(registers_.at(rt)[i].byte && (bits&(1u<<i)))
+      registers_.at(rt)[i].inverted=!registers_.at(rt)[i].inverted;
   }
   auto unknownMemoryBytes() const { return memory_.size(); }
   std::string observe(uint32_t w,const std::function<uint32_t(unsigned)> &reg,

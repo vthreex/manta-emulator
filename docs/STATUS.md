@@ -1,5 +1,8 @@
 # Status of the research build
 
+Latest [PM/application and original logo-transfer investigation](pm-application-logo-transfer.md) adds an explicit symbolic non-resume path and actual guest-requested flash-to-MIU0 copying. The original logo JPEG reaches guest RAM; decoding, ZUI and authentic scan-out remain unsupported. PM hardware state is still unknown. This diagnostic path is not verified cold boot.
+
+
 Latest [power-good and UART investigation](pm51-power-good-and-uart.md) finds
 primary MStar sources naming the exact `0EC2 & 7 == 7` wait CheckPowerGood.
 Individual MSD309 inputs/reset values remain **unsupported**. A named

@@ -10,7 +10,8 @@
 int main(int argc,char** argv){try{
   const bool counterfactual=argc==4 && std::string(argv[2])=="--status-counterfactual";
   const bool history=argc==3 && std::string(argv[2])=="--shared-riu-symbolic-history";
-  const bool uart=argc==3 && std::string(argv[2])=="--shared-riu-power-good-uart-hypothesis";
+  const bool deferred=argc==3 && std::string(argv[2])=="--probe-pending-startup-configurations";
+  const bool uart=deferred || (argc==3 && std::string(argv[2])=="--shared-riu-power-good-uart-hypothesis");
   const bool powerGood=uart || (argc==3 && std::string(argv[2])=="--shared-riu-power-good-hypothesis");
   if(counterfactual || history || powerGood || (argc==3 && (std::string(argv[2])=="--shared-riu-symbolic" || std::string(argv[2])=="--shared-riu-status-fixture" || std::string(argv[2])=="--shared-riu-power-alias-fixture"))){
     const bool fixture=std::string(argv[2])=="--shared-riu-status-fixture";
@@ -23,6 +24,8 @@ int main(int argc,char** argv){try{
     r.event=[](const auto& k,auto a,auto n,auto v,const auto& d){
       std::cout<<"PM_CONNECTED_EVENT "<<k<<" address 0x"<<std::hex<<a<<" width "<<n<<" value 0x"<<v<<' '<<d<<'\n';};
     r.configureExploratoryPm51(code,32,history || counterfactual || powerGood,uart);
+    if(deferred){r.configureProbePmDeferredConfigurations();
+      std::cout<<"PM_PROBE_PENDING_CONFIGURATIONS three exact original stores may retire; effects remain unknown, not hardware emulation or verified TV boot\n";}
     if(powerGood){
       r.configureExploratoryPmPowerGood(true);
       std::cout<<"PM_POWER_GOOD_HYPOTHESIS aggregate external powered input from related CheckPowerGood loop; NOT validated MSD309 detector mapping, no marker/ready response\n";
@@ -70,6 +73,9 @@ int main(int argc,char** argv){try{
     std::cout<<"PM_CONNECTED_SUSPENDED "<<(pm.suspended()?"true":"false")<<" MARKER_WRITES "<<pm.markerWrites
       <<" MAIN_BYTE_KNOWN "<<r.knownBits(0x1f001cd1,1)<<'\n';
     std::cout<<"PM_MAIN_MIPS_EXECUTED false; shared RIU probe only; no PM reply supplied\n";
+    if(deferred)std::cout<<"PM_PENDING_CONFIGURATIONS "<<pm.deferredConfigurationCount()
+      <<" SHARED_PAD_KNOWN "<<r.knownBits(0x1f001cd4,1)
+      <<" SHARED_E26_KNOWN "<<r.knownBits(0x1f001c4c,2)<<'\n';
     if(history || counterfactual || powerGood)
       std::cout<<"PM_HISTORY_BEGIN\n"<<pm.historyJsonLines()<<"PM_HISTORY_END\n";
     return 0;

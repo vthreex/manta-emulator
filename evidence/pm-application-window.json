@@ -1,0 +1,7 @@
+{
+  "result": "PASS",
+  "returncode": 0,
+  "stdout": "NATIVE_WINDOW_CREATED; guest display not initialized\n",
+  "stderr": "",
+  "scope": "clean-PATH native HWND startup, no guest framebuffer claim"
+}
