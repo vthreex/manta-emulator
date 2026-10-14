@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "scope": "original auxiliary firmware diagnostic; no MIPS boot claimed",
+  "original_sha256": "2bdb82e863899ea863f63bb4596235615c8f5aa5f77bdc465bec2d465bde22a5",
+  "verified_upload_bytes": 22026,
+  "original_instructions": 27046,
+  "first_visit_opcodes_verified": 343,
+  "original_irq_entries_before_failure": 4,
+  "guest_generated_FF_replies": 2,
+  "original_startup_idle_writes": 1,
+  "unknown_target_stopped_without_ack": true,
+  "blocked_target": "0x2200",
+  "probe_sha256": "93e049e1ff9653f228e91f830bd86b5e28888e0470fbf65adb0e50596df1dce4"
+}

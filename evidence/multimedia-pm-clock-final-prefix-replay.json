@@ -1,0 +1,50 @@
+{
+  "result": "PASS",
+  "hardware_timing_verified": false,
+  "scope": "original connected reset/PM prefix only; no fabricated hardware input or completion",
+  "profiles": [
+    {
+      "cpi": 1,
+      "events": 2960,
+      "MIPS": 300000,
+      "PM": 3474,
+      "full_prefix_replay": "PASS",
+      "trace_sha256": "66f5e952ec4defcfb521684c789394f1b604795e0c267a32f56a72e7bb159b03"
+    },
+    {
+      "cpi": 2,
+      "events": 2926,
+      "MIPS": 300000,
+      "PM": 3474,
+      "full_prefix_replay": "PASS",
+      "trace_sha256": "576d4e166ce83c576ea76d2a6a666ed57d6c3d0fbfc364cfa4170036e2bfd6cb"
+    },
+    {
+      "cpi": 4,
+      "events": 2911,
+      "MIPS": 300000,
+      "PM": 3474,
+      "full_prefix_replay": "PASS",
+      "trace_sha256": "c3692b19c41d4a7f41343e54f4dfb8a8212c4c36e9a8fd945e4e3778008bcea4"
+    },
+    {
+      "cpi": 8,
+      "events": 2903,
+      "MIPS": 300000,
+      "PM": 3474,
+      "full_prefix_replay": "PASS",
+      "trace_sha256": "1ce71a1a083590910a11902f5a1823b6de6b5d4a6b612f106bb4c8b919a2ac9f"
+    },
+    {
+      "cpi": 16,
+      "events": 2901,
+      "MIPS": 300000,
+      "PM": 3474,
+      "full_prefix_replay": "PASS",
+      "trace_sha256": "011520fc3f54d298aaf9f66eca6c90956e1fb6a1c2de1bce95faa1157258e8c1"
+    }
+  ],
+  "strict_and_invalid_profile_rejections": "PASS",
+  "emulator_sha256": "d7701834c23e2e5da7eaa1ae698a76174790f7ab3dfb0c48518c06b9093b61d7",
+  "stock_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9"
+}

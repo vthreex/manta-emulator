@@ -1,5 +1,24 @@
 # Status of the research build
 
+Latest [multimedia program and startup-image investigation](multimedia-copro-startup.md)
+demonstrates the original mailbox timeout/reset/error return and, under an
+explicit CPI4 timing hypothesis, the original image timer-expiry/cleanup paths.
+The original resource directory and actual multimedia/JPEG bytes in guest RAM
+are verified. Original mailbox framing is class2B, command index12, count0;
+the older class18 interpretation was corrected by executing the original sender.
+PM hardware status, multimedia CP integration, ZUI and authentic display remain
+unsupported. Isolated CP prefix execution is conditional and supplies no reply.
+
+| Latest capability | Status | Evidence and limit |
+|---|---|---|
+| Original13-entry resource directory | demonstrated | Original MIPS804F0AF4 executes; independent EOF/trailer/bounds-validated manifest agrees |
+| Original multimedia resource61 and JPEG input in guest RAM | demonstrated | Exact resource SHA256 at physical0 and03230000; compressed JPEG is not a framebuffer |
+| Original mailbox framing and occupied-FIRE rejection | demonstrated | Native execution of original805DB6E8; class/index/count positions and original error9 verified |
+| Original timeout and image cleanup | demonstrated |4B default-timing diagnostic coverage; additional CPI4 expiry/cleanup coverage; no fabricated reply |
+| Multimedia OpenRISC startup subset | partially implemented | Existing interpreter executes1,5 or9 instructions in independently labeled isolated reset/write-effect scenarios; CP is not integrated |
+| Configurable cycle domain | implemented | Five prefix replays; physical CPI/clock calibration unsupported; default preserves prior format and timing |
+| ZUI, active GOP framebuffer, GE raster and native guest pixels | unsupported | No authentic frame demonstrated |
+
 Latest [PM/application and original logo-transfer investigation](pm-application-logo-transfer.md) adds an explicit symbolic non-resume path and actual guest-requested flash-to-MIU0 copying. The original logo JPEG reaches guest RAM; decoding, ZUI and authentic scan-out remain unsupported. PM hardware state is still unknown. This diagnostic path is not verified cold boot.
 
 

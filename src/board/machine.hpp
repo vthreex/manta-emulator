@@ -6,6 +6,7 @@
 #include "board/preserved_bits.hpp"
 #include "board/audio_no_ack.hpp"
 #include "board/pm_activity_scenario.hpp"
+#include "board/virtual_time.hpp"
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -40,6 +41,8 @@ struct Options {
   bool exploratoryPmPowerGood=false;
   bool candidatePm51Uart=false;
   bool explorePmNonresumeBranch=false;
+  uint64_t exploratoryCpi=1;
+  bool coproProbes=false;
   uint64_t pm51Divider=32;
   bool exploratorySarFullscale=false,orFirstVisits=false;
   bool exploratoryIrDmaReset=false;
@@ -76,6 +79,9 @@ class Msd309Machine {
   Flash flash_;
   Riu riu_;
   Options options_;
+  VirtualTime virtualTime_;
+  uint64_t coproLoadInspections_=0;
+  std::string coproLoadedSha_;
   std::ofstream trace_;
   std::ifstream replay_;
   std::set<uint32_t> coverage_;

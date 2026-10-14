@@ -6,6 +6,7 @@
 #include "board/preserved_bits.hpp"
 #include "board/audio_no_ack.hpp"
 #include "board/pm_activity_scenario.hpp"
+#include "board/virtual_time.hpp"
 #include "board/mmio_read_mask.hpp"
 #include "video/gop.hpp"
 #include <array>
@@ -84,6 +85,11 @@ void openRiscTests(){
   };
   cpu.reset(0x100);
   require(cpu.reg(0).known==0,"OR reset does not invent initial GPR values");
+  cpu.reset(0x100,0x8001,0);
+  require(cpu.reg(0).known==0xffffffffu && cpu.reg(0).value==0 && cpu.reg(1).known==0,
+    "explicit platform reset-r0 hypothesis affects only the configured register");
+  cpu.reset(0x100);
+  require(cpu.reg(0).known==0,"subsequent default reset cannot retain the probe's configured initial r0");
   program(0x100,{0x18000000,0x9c200007,0x04000004,0x9c400009,0x9c400063,0x15000000,
     0x9c60000b,0xd4031800});
   cpu.step();cpu.step();cpu.step();
@@ -430,6 +436,31 @@ void timerTests() {
   require(!(e.reg(UC_MIPS_REG_CP0_STATUS) & 2), "ERET restores execution outside exception level");
 }
 #endif
+void virtualTimeTests(){
+  for(auto cpi:{1,2,4,8,16}){
+    manta::VirtualTime t(cpi);uint64_t count=0;
+    for(uint64_t i=1;i<=1001;++i){
+      count+=t.countDelta(i);
+      if(count!=t.cycles(i)/2)throw std::runtime_error("Count/peripheral cycle domains diverged");
+    }
+    require(count==t.cycles(1001)/2,"Count advances at half shared cycles for every dispatch and CPI profile");
+    manta::UtmiCalibration u;u.clock(0xa);u.clock(0x28);u.command(true,0);u.command(false,4000000);
+    const uint64_t deadline=4000064;
+    require(!u.done(t.cycles((deadline-1)/cpi)) && u.done(t.cycles((deadline+cpi-1)/cpi)),
+      "peripheral deadline remains cycle-driven across instruction-cost hypotheses");
+#ifdef UC_MIPS_MANTA_TIMER_API
+    manta::Engine e;e.reg(UC_MIPS_REG_CP0_COUNT,0);e.reg(UC_MIPS_REG_CP0_COMPARE,7);
+    for(uint64_t i=1;t.cycles(i)/2<7;++i)e.tickCount(t.countDelta(i));
+    require(!(e.reg(UC_MIPS_REG_CP0_CAUSE)&0x8000),"profile does not assert native timer before Compare");
+    e.tickCount(t.countDelta((14+cpi-1)/cpi));
+    require((e.reg(UC_MIPS_REG_CP0_CAUSE)&0x8000)!=0,"native timer detects Compare crossing with CPI increments");
+#endif
+  }
+  bool rejected=false;try{manta::VirtualTime t(3);}catch(const std::runtime_error&){rejected=true;}
+  require(rejected,"unsupported cycle factor is rejected");
+  rejected=false;try{manta::VirtualTime(16).cycles(UINT64_MAX);}catch(const std::runtime_error&){rejected=true;}
+  require(rejected,"cycle counter overflow cannot silently wrap peripheral time");
+}
 void utmiTests() {
   manta::UtmiCalibration u;
   u.command(true, 0);
@@ -1751,6 +1782,7 @@ int main() {
     unknownObservationTests();
     rtcTests();
     utmiTests();
+    virtualTimeTests();
     spiTests();
     sharedMiuTests();
     displayHardwareTests();

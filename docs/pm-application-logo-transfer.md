@@ -78,9 +78,11 @@ OpenRISC instructions. It exhausts its instruction budget at805DB954, reading
 BF206700 bit0; this is a real request wait, not a new rejected register read.
 
 Original MBX code names the containing path `_MDrv_MBX_SendMsg`. Guest writes:
-control header2B at6701, class12 at6704, command index0 at6705, then FIRE bit0 at6700.
+class2B at6701, command index12 at6704, parameter count0 at6705, then FIRE bit0 at6700.
 The original role/group table selects the multimedia control-processor mailbox.
-Related drvMBX.h names class18 JPEG. It is not the PM51 activity predicate or the
+Related drvMBX.h names class43 STILLIMAGE_CMD_IO; command index18 is not class18.
+The original805DB6E8 send routine and a native framing regression confirm these
+field positions. It is not the PM51 activity predicate or the
 TSP program-download handshake. COPRO enable writes match related HAL_COPRO_Enable
 (including the1FE0 sequence and67BC write); actual multimedia processor execution,
 code mapping and acknowledgment remain unsupported. No reply is synthesized.

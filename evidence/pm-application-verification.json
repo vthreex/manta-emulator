@@ -12,7 +12,7 @@
   "CPU_engine_sha256": "0d21f5cf519dd12dae791a7f69dc7af32de17dbee0dad30dcb90afa30673c981",
   "private_trace_reference": "<private-trace-cache>/trace-cache-2026-10-13/pm-jpeg-dma-cold.jsonl",
   "private_trace_sha256": "92b93942f397bb68fa3404c28fcab7cf93026462f2cdd97c32bf2c4bab37938d",
-  "extended_original_mailbox_timeout_run": "IN PROGRESS; not counted as a passed boot or replay",
+  "extended_original_mailbox_timeout_run": "PASS: 4000000000 MIPS / 833430808 original OpenRISC instructions; timeout/reset/error9 path executed; budget ended in still-image receive loop, not ZUI; extended run has no full event replay",
   "PM_activity_hardware_byte_known": 0,
   "PM_ready_ack_generated": false,
   "genuine_OSD_or_scanout_demonstrated": false

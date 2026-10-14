@@ -1,0 +1,6 @@
+{
+  "result": "PASS",
+  "code": 0,
+  "stdout": "NATIVE_WINDOW_CREATED; guest display not initialized\n",
+  "scope": "native blank-window startup, no guest frame"
+}

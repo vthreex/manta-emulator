@@ -1,0 +1,30 @@
+{
+  "scope": "READ-ONLY asynchronous raw guest RAM observation; does not establish provenance/known masks or alter execution",
+  "emulator": "<repo-root>\\work\\build-comb\\manta-next.exe",
+  "pid": 20212,
+  "guest_signature_verified": true,
+  "software_clock": [
+    "0x4330"
+  ],
+  "stillimage_timer0_006bf8fc": [
+    "0x0",
+    "0x0",
+    "0x0"
+  ],
+  "stillimage_flags_006bf8b4": [
+    "0x4"
+  ],
+  "mailbox_timeout_006b6d78": [
+    "0x5dc"
+  ],
+  "multimedia_program": {
+    "physical": "0x0",
+    "size": 1253416,
+    "sha256": "bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1"
+  },
+  "original_JPEG_input": {
+    "physical": "0x3230000",
+    "size": 45696,
+    "sha256": "92b1ccd98f3a02f7dd1a7e5d9a6b0cd73e18e07bdeee9531bf3fbaaf66d2b700"
+  }
+}

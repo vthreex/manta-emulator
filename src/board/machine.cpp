@@ -12,7 +12,9 @@ static std::string hex(uint64_t n) {
   s << "0x" << std::hex << n;
   return s.str();
 }
-Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options_(o) {
+Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options_(o), virtualTime_(o.exploratoryCpi) {
+  if(o.exploratoryCpi!=1 && (!o.cp0Timer || !o.symbolicInit || !o.deferDiagnosticReads || o.stage2 || o.initPrefix))
+    throw std::runtime_error("Uncalibrated CPI experiment requires guarded reset execution and CP0 timers; unavailable in strict/direct-boot modes");
   if (o.cp0Timer)
     cpu_.tickCount(0); // reject unavailable engine extension at launch
   riu_.symbolicInit = o.symbolicInit;
@@ -282,7 +284,9 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
   s << "{\"tick\":" << dispatches_ << ",\"pc\":\"" << hex(cpu_.reg(UC_MIPS_REG_PC))
     << "\",\"kind\":\"" << k << "\",\"address\":\"" << hex(a) << "\",\"width\":" << n
     << ",\"value\":\"" << hex(v) << "\",\"ra\":\"" << hex(cpu_.reg(UC_MIPS_REG_RA))
-    << "\",\"sp\":\"" << hex(cpu_.reg(UC_MIPS_REG_SP)) << "\",\"detail\":\"" << d << "\"}";
+    << "\",\"sp\":\"" << hex(cpu_.reg(UC_MIPS_REG_SP)) << "\",\"detail\":\"" << d << "\"";
+  if(virtualTime_.cpi()!=1)s << ",\"virtual_cpu_cycles\":" << virtualTime_.cycles(dispatches_);
+  s << '}';
   auto line = s.str();
   if ((k == "read" || k == "write") && a >= 0x1f203e00 && a < 0x1f204000)
     ++gopEvents_;
@@ -353,8 +357,8 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   if(m.options_.exploratoryFetchRevisionByte>=0 && a==0x805f4b44)
     m.event("guest_fetch_parameter",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_16),
       "original caller reached selected branch join; no PC change or parameter override");
-  if (m.options_.cp0Timer && (m.dispatches_ & 1) == 0)
-    m.cpu_.tickCount(1);
+  if (m.options_.cp0Timer && m.virtualTime_.countDelta(m.dispatches_))
+    m.cpu_.tickCount(m.virtualTime_.countDelta(m.dispatches_));
   if (m.options_.cp0Timer && a == 0x803b0180) {
     ++m.timerEntries_;
     m.event("exception_vector", uint32_t(a), 0, 0,
@@ -400,6 +404,20 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       }
     } else m.event("tsp_original_firmware_buffer",source,size,0,"unverified/invalid source arguments; no host firmware bytes read or output");
   }
+  if(m.options_.coproProbes && a==0x80545a40 && m.cpu_.reg(UC_MIPS_REG_RA)==0x803edf14 &&
+     !m.preservedBits_.mask(16) && m.cpu_.reg(UC_MIPS_REG_16)==0x61){
+    ++m.coproLoadInspections_;
+    auto physical=PreservedBits::backingAddress(m.cpu_.reg(UC_MIPS_REG_4));
+    constexpr unsigned size=1253416;
+    bool valid=!m.preservedBits_.mask(4) && uint64_t(physical)+size<=m.dramBacking_.size();
+    for(unsigned i=0;valid && i<size;++i)
+      if(m.preservedBits_.memoryUnknown(physical+i) || m.unknownObservations_.bytes().contains(physical+i))valid=false;
+    if(valid){
+      std::vector<uint8_t> image(size);m.cpu_.read(physical,image.data(),size);m.coproLoadedSha_=sha256(image);
+      m.event("guest_copro_loader_output",physical,size,0,"original COPRO Init_End caller; guest RAM SHA256="+m.coproLoadedSha_+
+        "; processor entry/reset/bus mapping remain unverified; no acknowledgment supplied");
+    }else m.event("guest_copro_loader_output",physical,size,0,"invalid original loader output; no code/hash supplied");
+  }
   if(a==0x805f8300) {
     ++m.scalerInitializerEntries_;
     m.event("guest_scaler_initializer",uint32_t(a),0,0,"original scaler initialization entry");
@@ -415,8 +433,10 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   if(m.options_.exploratoryDisplayClock && a==0x805f2518)
     m.event("guest_output_vsync_wait_return",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_17),
       "original wait returns remaining pulse count; zero means completed, nonzero means original timer timeout");
-  m.coverage_.insert(uint32_t(a));
-  ++m.pcHits_[uint32_t(a)];
+  // Repeated polling still executes every instruction and increments its hit
+  // count. Only first visits need the ordered-set lookup/insertion.
+  auto& visits=m.pcHits_[uint32_t(a)];
+  if(++visits==1)m.coverage_.insert(uint32_t(a));
   m.history_.push_back(uint32_t(a));
   if (m.history_.size() > 64)
     m.history_.pop_front();
@@ -427,7 +447,14 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   if (a == 0x803b0600)
     m.runtimeReached_ = true;
   uint32_t w = 0;
-  m.cpu_.read(uint32_t(a) & 0x1fffffff, &w, 4);
+  const uint32_t observedPhysical=uint32_t(a)&0x1fffffff;
+  if(uint64_t(observedPhysical)+4<=m.dramBacking_.size()){
+    // This is the same shared backing passed to uc_mem_map_ptr, not a code
+    // cache. Observe every current guest byte, including self-modification.
+    // The existing CPU still fetches/executes the instruction independently.
+    const auto* bytes=m.dramBacking_.data()+observedPhysical;
+    w=uint32_t(bytes[0])|(uint32_t(bytes[1])<<8)|(uint32_t(bytes[2])<<16)|(uint32_t(bytes[3])<<24);
+  }else m.cpu_.read(observedPhysical,&w,4);
   if ((w >> 26) == 16 && ((w >> 21) & 31) == 4 &&
       (((w >> 11) & 31) <= 6 || ((w >> 11) & 31) == 10)) {
     m.event("cp0_mmu_write", (w >> 11) & 31, 4, m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31)),
@@ -1120,14 +1147,14 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
         const uint32_t idPath[] = {0x94e40000,0x02661821,0x24c60001,0x00d2102b,0x1440fff2,0xa0640000};
         if (std::equal(std::begin(path), std::end(path), pc == 0x8053c710 ? cfPath : idPath)) {
           mask = 255; // exact LHU -> SB path discards upper halfword
-          if (pc == 0x8053c710 && m.options_.spiUnknownInput == SpiUnknownInput::Deferred && m.riu_.spiDataUnknown(m.dispatches_)) {
+          if (pc == 0x8053c710 && m.options_.spiUnknownInput == SpiUnknownInput::Deferred && m.riu_.spiDataUnknown(m.virtualTime_.cycles(m.dispatches_))) {
             m.unknownObservations_.seedSpiCache(m.cpu_.reg(UC_MIPS_REG_18) + m.cpu_.reg(UC_MIPS_REG_6));
             m.event("deferred_spi_input", a, n, 0xa5, "INVALID undocumented CF sample; verified SB cache only, first consumption stops");
           }
         }
       }
     }
-    auto v = m.riu_.read(a, n, pc, mask, m.dispatches_);
+    auto v = m.riu_.read(a, n, pc, mask, m.virtualTime_.cycles(m.dispatches_));
     if (!m.riu_.stopReason.empty())
       m.stop(m.riu_.stopReason, a);
     return v;
@@ -1288,7 +1315,7 @@ void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v,
               "original control snapshot restored with original unknown-bit provenance; poison not programmed as a hardware value");
       return;
     }
-    m.riu_.write(a, n, uint32_t(v), pc, m.cpu_.reg(UC_MIPS_REG_3), m.dispatches_);
+    m.riu_.write(a, n, uint32_t(v), pc, m.cpu_.reg(UC_MIPS_REG_3), m.virtualTime_.cycles(m.dispatches_));
     if (a >= 0x1f203e00 && a < 0x1f203ffc && m.riu_.gopBankKnown()) {
       auto bank = m.riu_.gopBank();
       for (unsigned window = 0; window < (bank == 1 ? 4u : 2u); ++window) {
@@ -1460,7 +1487,7 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"exploratory_comb_paired_restore\": " << (options_.exploratoryCombRestore?"true":"false")
     << ",\n  \"comb_paired_restores\": " << riu_.combRestoreCount()
     << ",\n  \"comb_paired_restore_pending\": " << (riu_.combRestorePending()?"true":"false")
-    << ",\n  \"virtual_output_frames\": " << riu_.displayFrames(dispatches_)
+    << ",\n  \"virtual_output_frames\": " << riu_.displayFrames(virtualTime_.cycles(dispatches_))
     << ",\n  \"output_sync_reads\": " << riu_.outputSyncReads()
     << ",\n  \"output_sync_observed_transitions\": " << riu_.outputSyncTransitions()
     << ",\n  \"gop_aperture_events\": " << gopEvents_
@@ -1641,7 +1668,17 @@ std::string Msd309Machine::summary() const {
     first = false;
     s << line;
   }
-  s << "]\n}";
+  s << ']';
+  if(virtualTime_.cpi()!=1)
+    s << ",\n  \"exploratory_average_cpi\": " << virtualTime_.cpi()
+      << ",\n  \"virtual_cpu_cycles\": " << virtualTime_.cycles(dispatches_)
+      << ",\n  \"cpu_cycle_model_hardware_verified\": false";
+  if(options_.coproProbes)
+    s << ",\n  \"copro_loader_inspections\": " << coproLoadInspections_
+      << ",\n  \"copro_guest_loaded_sha256\": \"" << coproLoadedSha_ << "\""
+      << ",\n  \"copro_original_program_match\": "
+      << (coproLoadedSha_=="bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1"?"true":"false");
+  s << "\n}";
   return s.str();
 }
 } // namespace manta

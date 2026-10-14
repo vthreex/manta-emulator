@@ -76,6 +76,8 @@ static int appMain(const std::vector<std::string> &args) {
         o.candidateChipId = true;
       else if (a == "--cp0-timer")
         o.cp0Timer = true;
+      else if (a == "--exploratory-cpi")o.exploratoryCpi=std::stoull(value(i),nullptr,0);
+      else if (a == "--copro-probes")o.coproProbes=true;
       else if (a == "--exploratory-scart-grounded")o.exploratoryScartGrounded=true;
       else if (a == "--graphics-probes")o.graphicsProbes=true;
       else if (a == "--osd-probes")o.osdProbes=true;
@@ -183,6 +185,8 @@ static int appMain(const std::vector<std::string> &args) {
                "--defer-diagnostic-reads: unknown register observations stay invalid; halt at unsafe use\n"
                "--virtual-rtc: guest-programmed counter with deterministic virtual clock\n"
                "--cp0-timer: source-built engine Count/Compare and guest interrupt entry\n"
+               "--exploratory-cpi N: UNCALIBRATED average cycles/instruction 1(default),2,4,8,16; shared peripheral/Count clock; guarded exploration only\n"
+               "--copro-probes: inspect original multimedia loader output in guest RAM; no processor/reset/status emulation\n"
                "--candidate-utmi: calibration handshake; analogue data unknown\n"
                "--candidate-chip-id: Titania4 identity 18h inferred from stock HAL identity check\n"
                "--candidate-spi: ISP read/status subset; unknown responses stop\n"

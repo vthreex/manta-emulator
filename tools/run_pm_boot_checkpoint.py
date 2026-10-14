@@ -14,9 +14,13 @@ p.add_argument('--candidate-pm51-uart', action='store_true', help='Candidate R80
 p.add_argument('--explore-pm-nonresume-branch', action='store_true', help='Diagnostic single symbolic non-resume predicate; no valid PM byte or cold-boot claim')
 p.add_argument('--window', action='store_true', help='Use the existing native window; no authentic frame is demonstrated')
 p.add_argument('--max-instructions', type=int, default=2000000000)
+p.add_argument('--max-or1k-instructions', type=int, default=400000000)
+p.add_argument('--exploratory-cpi', type=int, choices=(1,2,4,8,16), default=1,
+               help='UNVERIFIED average instruction cost; shared Count/peripheral cycles; default unchanged')
+p.add_argument('--copro-probes',action='store_true',help='Inspect actual original multimedia loader output; no ready response')
 p.add_argument('--print-command', action='store_true')
 a = p.parse_args()
-if a.max_instructions < 1:
+if a.max_instructions < 1 or a.max_or1k_instructions < 1:
     p.error('instruction limit must be positive')
 flags = ['--firmware', a.firmware, '--symbolic-init', '--candidate-miu', '--candidate-bdma',
  '--candidate-uart', '--gpio-i2c', '--defer-diagnostic-reads', '--virtual-rtc', '--cp0-timer',
@@ -31,7 +35,7 @@ flags = ['--firmware', a.firmware, '--symbolic-init', '--candidate-miu', '--cand
  '--exploratory-gop-reset-windows', '--exploratory-scart-grounded', '--exploratory-scmi-format-byte', '0',
  '--exploratory-analog-disconnected', '--exploratory-pq-sram-idle', '--exploratory-pq-disabled-ports',
  '--graphics-probes', '--or1k-trace-first-visits', '--or1k-dispatch-divider', '4',
- '--max-or1k-instructions', '400000000', '--exploratory-fetch-revision-byte', '2',
+ '--max-or1k-instructions', str(a.max_or1k_instructions), '--exploratory-fetch-revision-byte', '2',
  '--candidate-vd-mcu-program', '--candidate-avd-mcu-program', '--exploratory-vd-mcu-startup',
  '--osd-probes', '--defer-vd-sfr8e-write', '--defer-vd-reset-key-writes',
  '--exploratory-vd-suspended-boundary', '--exploratory-ci-detect-high', '--exploratory-vd-shared-run',
@@ -52,6 +56,10 @@ if a.candidate_pm51_uart:
     flags += ['--candidate-pm51-uart']
 if a.explore_pm_nonresume_branch:
     flags += ['--explore-pm-nonresume-branch']
+if a.exploratory_cpi!=1:
+    flags += ['--exploratory-cpi',str(a.exploratory_cpi)]
+if a.copro_probes:
+    flags += ['--copro-probes']
 command = [a.emulator] + flags
 if a.print_command:
     print(json.dumps(command, indent=2))

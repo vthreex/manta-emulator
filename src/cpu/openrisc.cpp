@@ -26,9 +26,12 @@ OrWord OpenRisc::logic(OrWord a,OrWord b,unsigned op){
   }
   return v;
 }
-void OpenRisc::reset(uint32_t pc,uint32_t sr){
+void OpenRisc::reset(uint32_t pc,uint32_t sr,std::optional<uint32_t> configuredResetR0){
   if(pc&3)throw std::runtime_error("OpenRISC reset PC misaligned");
   r_={};spr_.clear();branch_.reset();pc_=pc;ppc_=pc;sr_=sr|0x8000;running_=true;
+  // Platform reset configuration is distinct from an instruction result. The
+  // original TSP caller leaves this unset: its uninitialized GPRs stay invalid.
+  if(configuredResetR0)r_[0]={*configuredResetR0,0xffffffffu,{}};
 }
 void OpenRisc::exception(unsigned vector,uint32_t address){
   spr_[32]=branch_?pc_-4:pc_;spr_[48]=address;spr_[64]=sr_|(branch_?0x2000:0);

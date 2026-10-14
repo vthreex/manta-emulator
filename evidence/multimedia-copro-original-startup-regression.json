@@ -1,0 +1,254 @@
+{
+  "result": "PASS",
+  "scope": "isolated original lookup/startup; CP not integrated; no JPEG reply/display",
+  "resource": {
+    "id": "0x61",
+    "table_entry_flash": "0x21f50",
+    "source_flash": "0x242910",
+    "stored_extent": 485816,
+    "guest_rounded_extent": 485816,
+    "type": 4,
+    "stored_sha256": "688495236c6c71f1df6eb13438ff0163f6e546c3b76303c10fbdc9c9d2a55865",
+    "deflate_bytes": 485801,
+    "trailer_flash": "0x2b92b9",
+    "decoded_bytes": 1253416,
+    "decoded_sha256": "bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1",
+    "trailing_padding_bytes": 11
+  },
+  "experiments": [
+    {
+      "scope": "isolated CP reset-entry hypothesis; NOT integrated TV boot or a ready response",
+      "original_MIPS_resource_lookup": true,
+      "resource_id": 97,
+      "flash_source": 2369808,
+      "original_MIPS_mailbox_framing_verified": true,
+      "mailbox_class": 43,
+      "cleanup_command_index": 18,
+      "mailbox_parameter_count": 0,
+      "original_busy_rejection": 9,
+      "compressed_extent": 485816,
+      "resource_type": 4,
+      "payload_sha256": "bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1",
+      "payload_bytes": 1253416,
+      "entry_hypothesis": 256,
+      "reset_r0_zero_hypothesis": false,
+      "original_CP_instructions": 1,
+      "stop_pc": 260,
+      "blocked_address": 0,
+      "pending_unimplemented_writes": 0,
+      "peripheral_effects_applied": 0,
+      "ready_replies_generated": 0,
+      "reason": "OpenRISC consumes unknown register/peripheral bits",
+      "events": [
+        {
+          "kind": "instruction",
+          "pc": 256,
+          "address": 256,
+          "width": 4,
+          "value": 2824863745
+        },
+        {
+          "kind": "instruction",
+          "pc": 260,
+          "address": 260,
+          "width": 4,
+          "value": 3221231633
+        }
+      ]
+    },
+    {
+      "scope": "isolated CP reset-entry hypothesis; NOT integrated TV boot or a ready response",
+      "original_MIPS_resource_lookup": true,
+      "resource_id": 97,
+      "flash_source": 2369808,
+      "original_MIPS_mailbox_framing_verified": true,
+      "mailbox_class": 43,
+      "cleanup_command_index": 18,
+      "mailbox_parameter_count": 0,
+      "original_busy_rejection": 9,
+      "compressed_extent": 485816,
+      "resource_type": 4,
+      "payload_sha256": "bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1",
+      "payload_bytes": 1253416,
+      "entry_hypothesis": 256,
+      "reset_r0_zero_hypothesis": true,
+      "original_CP_instructions": 5,
+      "stop_pc": 276,
+      "blocked_address": 2686459860,
+      "pending_unimplemented_writes": 0,
+      "peripheral_effects_applied": 0,
+      "ready_replies_generated": 0,
+      "reason": "CP peripheral side effect remains unsupported; no effect applied",
+      "events": [
+        {
+          "kind": "instruction",
+          "pc": 256,
+          "address": 256,
+          "width": 4,
+          "value": 2824863745
+        },
+        {
+          "kind": "instruction",
+          "pc": 260,
+          "address": 260,
+          "width": 4,
+          "value": 3221231633
+        },
+        {
+          "kind": "instruction",
+          "pc": 264,
+          "address": 264,
+          "width": 4,
+          "value": 417374240
+        },
+        {
+          "kind": "instruction",
+          "pc": 268,
+          "address": 268,
+          "width": 4,
+          "value": 2831621632
+        },
+        {
+          "kind": "instruction",
+          "pc": 272,
+          "address": 272,
+          "width": 4,
+          "value": 2824925184
+        },
+        {
+          "kind": "instruction",
+          "pc": 276,
+          "address": 276,
+          "width": 4,
+          "value": 3557169620
+        },
+        {
+          "kind": "blocked_write",
+          "pc": 276,
+          "address": 2686459860,
+          "width": 4,
+          "value": 61440
+        }
+      ]
+    },
+    {
+      "scope": "isolated CP reset-entry hypothesis; NOT integrated TV boot or a ready response",
+      "original_MIPS_resource_lookup": true,
+      "resource_id": 97,
+      "flash_source": 2369808,
+      "original_MIPS_mailbox_framing_verified": true,
+      "mailbox_class": 43,
+      "cleanup_command_index": 18,
+      "mailbox_parameter_count": 0,
+      "original_busy_rejection": 9,
+      "compressed_extent": 485816,
+      "resource_type": 4,
+      "payload_sha256": "bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1",
+      "payload_bytes": 1253416,
+      "entry_hypothesis": 256,
+      "reset_r0_zero_hypothesis": true,
+      "original_CP_instructions": 9,
+      "stop_pc": 292,
+      "blocked_address": 2686460928,
+      "pending_unimplemented_writes": 2,
+      "peripheral_effects_applied": 0,
+      "ready_replies_generated": 0,
+      "reason": "unverified CP address map; no register/reset value supplied",
+      "events": [
+        {
+          "kind": "instruction",
+          "pc": 256,
+          "address": 256,
+          "width": 4,
+          "value": 2824863745
+        },
+        {
+          "kind": "instruction",
+          "pc": 260,
+          "address": 260,
+          "width": 4,
+          "value": 3221231633
+        },
+        {
+          "kind": "instruction",
+          "pc": 264,
+          "address": 264,
+          "width": 4,
+          "value": 417374240
+        },
+        {
+          "kind": "instruction",
+          "pc": 268,
+          "address": 268,
+          "width": 4,
+          "value": 2831621632
+        },
+        {
+          "kind": "instruction",
+          "pc": 272,
+          "address": 272,
+          "width": 4,
+          "value": 2824925184
+        },
+        {
+          "kind": "instruction",
+          "pc": 276,
+          "address": 276,
+          "width": 4,
+          "value": 3557169620
+        },
+        {
+          "kind": "pending_unimplemented_write",
+          "pc": 276,
+          "address": 2686459860,
+          "width": 4,
+          "value": 61440
+        },
+        {
+          "kind": "instruction",
+          "pc": 280,
+          "address": 280,
+          "width": 4,
+          "value": 2824908800
+        },
+        {
+          "kind": "instruction",
+          "pc": 284,
+          "address": 284,
+          "width": 4,
+          "value": 3557169628
+        },
+        {
+          "kind": "pending_unimplemented_write",
+          "pc": 284,
+          "address": 2686459868,
+          "width": 4,
+          "value": 45056
+        },
+        {
+          "kind": "instruction",
+          "pc": 288,
+          "address": 288,
+          "width": 4,
+          "value": 2829526016
+        },
+        {
+          "kind": "instruction",
+          "pc": 292,
+          "address": 292,
+          "width": 4,
+          "value": 2489647104
+        },
+        {
+          "kind": "unknown_read",
+          "pc": 292,
+          "address": 2686460928,
+          "width": 2,
+          "value": 0
+        }
+      ]
+    }
+  ],
+  "changed_guest_code_rejected": true,
+  "probe_sha256": "63c2093e02118224730e273971ef6af70241021fb0f5456f4eec2a497e5e42a6"
+}

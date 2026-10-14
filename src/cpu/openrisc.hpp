@@ -25,7 +25,7 @@ public:
   std::function<OrWord(uint32_t,unsigned,bool)> read;
   std::function<void(uint32_t,unsigned,OrWord)> write;
   std::function<void(uint32_t,uint32_t)> trace;
-  void reset(uint32_t pc,uint32_t sr=0x8001);
+  void reset(uint32_t pc,uint32_t sr=0x8001,std::optional<uint32_t> configuredResetR0=std::nullopt);
   void halt(){running_=false;}
   void step();
   uint32_t pc()const{return pc_;}
