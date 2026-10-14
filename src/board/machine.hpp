@@ -4,6 +4,7 @@
 #include "storage/flash.hpp"
 #include "board/unknown_observations.hpp"
 #include "board/preserved_bits.hpp"
+#include "board/audio_no_ack.hpp"
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -48,6 +49,7 @@ struct Options {
   bool candidateVdMcuProgram=false;
   bool candidateAvdMcuProgram=false;
   bool candidateAudioIdma=false;
+  bool exploratoryAudioNoAck=false;
   bool exploratoryAvdMcuStartup=false,exploratoryAvdSuspendedBoundary=false;
   bool exploratoryVdMcuStartup=false;
   bool deferVdSfr8eWrite=false;
@@ -86,6 +88,7 @@ class Msd309Machine {
   std::deque<std::string> recentMmio_;
   UnknownObservations unknownObservations_;
   PreservedBits preservedBits_;
+  AudioNoAck audioNoAck_;
   unsigned deferredReads_ = 0;
   uint64_t timerEntries_ = 0, gopEvents_ = 0, geEvents_ = 0, geBlockedEvents_=0;
   bool gopInitializerEntered_ = false;

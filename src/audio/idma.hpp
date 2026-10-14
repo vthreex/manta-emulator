@@ -20,7 +20,12 @@ public:
   static bool readPort(unsigned offset){return offset==0x18 || offset==0x19 || offset==0x1c;}
   uint64_t wordWrites=0,wordReads=0;
   void address(bool read,uint16_t value){
+    if(!read && phase_)throw std::runtime_error("audio IDMA address changes inside an unfinished word");
     if(read)readAddress_=value;else{writeAddress_=value;phase_=0;}
+  }
+  void invalidateAddress(bool read){
+    if(!read && phase_)throw std::runtime_error("audio IDMA partial address inside an unfinished word");
+    if(read)readAddress_.reset();else writeAddress_.reset();
   }
   bool data(unsigned port,uint8_t value){
     if(!writeAddress_)throw std::runtime_error("audio IDMA data before original write address");

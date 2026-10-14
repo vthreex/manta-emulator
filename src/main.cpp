@@ -82,6 +82,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--candidate-vd-mcu-program")o.candidateVdMcuProgram=true;
       else if (a == "--candidate-avd-mcu-program")o.candidateAvdMcuProgram=true;
       else if (a == "--candidate-audio-idma")o.candidateAudioIdma=true;
+      else if (a == "--exploratory-audio-no-ack")o.exploratoryAudioNoAck=true;
       else if (a == "--exploratory-avd-mcu-startup")o.exploratoryAvdMcuStartup=true;
       else if (a == "--exploratory-avd-suspended-boundary")o.exploratoryAvdSuspendedBoundary=true;
       else if (a == "--exploratory-vd-mcu-startup")o.exploratoryVdMcuStartup=true;
@@ -204,6 +205,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--candidate-vd-mcu-program: shared MCU upload/readback ports; current original payload is DVB-T; no synthetic acknowledgment\n"
                  "--candidate-avd-mcu-program: original analog-video MCU programming/readback port; no ready signaling\n"
                  "--candidate-audio-idma: observed 24-bit addressed upload/readback protocol, atomic functional timing; no DSP ISA/ready replies\n"
+                 "--exploratory-audio-no-ack: constrain only original ack!=E3 predicate; byte remains INVALID, guest executes finite timeout; not a hardware reset-value/ready model\n"
                  "--exploratory-avd-mcu-startup: bounded original AVD execution under standard 8052 reset hypothesis; unknown XDATA/SFR stops\n"
                  "--exploratory-avd-suspended-boundary: suspend only AVD on an unknown transaction; no side effect or reply, other CPUs remain guarded\n"
                "--exploratory-vd-mcu-startup: execute original upload with standard 8052 reset/RAM hypothesis; all XDATA stops unresolved\n"

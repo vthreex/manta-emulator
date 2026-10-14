@@ -34,6 +34,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.deferVdSfr8eWrite=o.deferVdSfr8eWrite;
   riu_.candidateAvdMcuProgram=o.candidateAvdMcuProgram;
   riu_.candidateAudioIdma=o.candidateAudioIdma;
+  if(o.exploratoryAudioNoAck && (!o.candidateAudioIdma || !o.symbolicInit || !o.deferDiagnosticReads))
+    throw std::runtime_error("No-ACK predicate scenario requires original IDMA and guarded unknown provenance; no valid DSP response is supplied");
   if(o.exploratoryAvdMcuStartup && (!o.candidateAvdMcuProgram || !o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("AVD original startup experiment requires the original programming port and guarded exploration");
   if(o.exploratoryAvdSuspendedBoundary && !o.exploratoryAvdMcuStartup)
@@ -313,6 +315,12 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       "original routine entry; a1="+hex(m.cpu_.reg(UC_MIPS_REG_5))+", a2="+hex(m.cpu_.reg(UC_MIPS_REG_6))+
       ", a3="+hex(m.cpu_.reg(UC_MIPS_REG_7))+"; 804E0D48=ZUI state initialization, 804E0DC4=state dispatch, 80536274=GOP CreateWinImpl2, 80520A84=font callback renderer; no host invocation");
   }
+  if(m.options_.exploratoryAudioNoAck && (a==0x804f7a60 || a==0x804f7a84 || a==0x804f7b58 || a==0x804f7b8c)){
+    if(a==0x804f7a60 || a==0x804f7b58){++m.audioNoAck_.timeouts;
+      m.event("guest_audio_ack_timeout",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_16),"original counter reached failure path after original retries/delays; no host timeout or acknowledgment");}
+    else {++m.audioNoAck_.returns;
+      m.event("guest_audio_ack_failure_return",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_2),"original failure path returns to its own caller; PC and return value not set by host");}
+  }
   if(m.options_.exploratoryFetchRevisionByte>=0 && a==0x805f4b18){
     auto enabled=m.cpu_.reg(UC_MIPS_REG_2);
     if(enabled)++m.fetchPatchEnabled_;else ++m.fetchPatchDisabled_;
@@ -446,6 +454,15 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
         m.riu_.preparePreservedWrite(address,width,unknown);
         m.event("preserved_control_write",address,width,unknown,"original unknown bits return to the same banked byte/bit identities; no decision or new hardware consumer authorized");
       });
+    if(!preservedWhy.empty()) {
+      if(m.options_.exploratoryAudioNoAck &&
+         m.audioNoAck_.constrain(uint32_t(a),w,m.cpu_.reg(UC_MIPS_REG_2),m.cpu_.reg(UC_MIPS_REG_18),
+           m.preservedBits_.mask(18),m.preservedBits_.exactByteOrigin(2,a==0x804f7b10?0x1f225cb8:0x1f225ab4),m.cpu_.reg(UC_MIPS_REG_16))){
+        m.event("exploratory_audio_no_ack_predicate",uint32_t(a),4,w,
+          "HYPOTHESIS only: original comparison constrained ack!=E3; observed placeholder is INVALID, reply bits remain unknown; no register/PC/firmware modification");
+        preservedWhy.clear();
+      }
+    }
     if(!preservedWhy.empty()) {
       auto op=w>>26;
       auto target=(m.cpu_.reg(UC_MIPS_REG_0+int((w>>21)&31))+uint32_t(int32_t(int16_t(w))))&0x1fffffff;
@@ -660,6 +677,68 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       }
     }
     auto geCaller=m.cpu_.reg(UC_MIPS_REG_31);
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==2 && pc==0x804f90e8 &&
+       a==0x1f225c40 && geCaller==0x804fde6c){
+      std::vector<uint8_t> reader(0x50),caller(0x10);
+      m.cpu_.read(0x004f90a4,reader.data(),reader.size());m.cpu_.read(0x004fde64,caller.data(),caller.size());
+      if(sha256(reader)=="cc073460e4eef6be5c6f268663fae6157263ce835705baa1eaefc80016b84198" &&
+         sha256(caller)=="006651808aa77069d06051288ffde71a79a654ccd97c38d372c9f85d33dfe07f"){
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_sif_standard_command",a,n,m.riu_.knownBits(a,n),
+          "INVALID original command 87 / 2D20 read; caller masks to byte, retained bits may return only to same command register; unknown decisions or other device uses still stop");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==2 && a==0x1f225a30 &&
+       (pc==0x804f90c4 || pc==0x804f9108)){
+      const bool se=pc==0x804f9108;
+      std::vector<uint8_t> code(se?0x40:0x50);
+      m.cpu_.read(se?0x004f90f4:0x004f90a4,code.data(),code.size());
+      if(sha256(code)==(se?"3bec6d9e4f85425d758f3b7b7759b12f517d1ee81bb053feac8cc6965246aeec":
+          "cc073460e4eef6be5c6f268663fae6157263ce835705baa1eaefc80016b84198")){
+        m.preservedBits_.seed(se?2:6,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_audio_word_selector",a,n,m.riu_.knownBits(a,n),
+          "INVALID selector fields preserved by SHA-verified original halfword getter; only bit0 replaced, same-origin store required; subsequent data read remains independently guarded");
+      }
+    }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x804f9050 &&
+       a==0x1f225dd8 && n==1 && geCaller==0x804fc1bc){
+      uint32_t parentReturn=0;
+      m.cpu_.read((m.cpu_.reg(UC_MIPS_REG_SP)+0x14)&0x1fffffff,&parentReturn,4);
+      std::vector<uint8_t> reader(0x58),wrapper(0xbc);
+      m.cpu_.read(0x004f9004,reader.data(),reader.size());m.cpu_.read(0x004fc1ac,wrapper.data(),wrapper.size());
+      if((parentReturn==0x804fc1f8 || parentReturn==0x804fc224 || parentReturn==0x804fc24c) &&
+         sha256(reader)=="1ca38efb1835870f93e7dfa62d4e7ad5548439c4fe882c6decc70b0d4c34dcfc" &&
+         sha256(wrapper)=="437415d9fdd5d141394d289f9def13ac3903c6b83630dcabbafb2f2d3b0e9556"){
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_audio_mode_preservation",a,n,m.riu_.knownBits(a,n),
+          "INVALID old 2DEC mode bits; SHA-verified original setter preserves same-byte bits only; decisions and copies to another device remain guarded");
+      }
+    }
+    if(m.options_.exploratoryAudioNoAck && pc==0x804f9098 && a==0x1f225ab4 && n==1){
+      std::vector<uint8_t> reader(0x48),caller(0xb4);
+      m.cpu_.read(0x004f905c,reader.data(),reader.size());m.cpu_.read(0x004f79d8,caller.data(),caller.size());
+      if(sha256(reader)=="782cbf8827f91e16b0177f5b1e5b0ad21da8cf6b8b6f3c59a8c61087c29f6dd1" &&
+         sha256(caller)=="93899a94bf07a4f6d0bdd72c9845094de90c138d37e733e36ac0b4b194da5f9c" &&
+         m.audioNoAck_.arm(pc,a,n,geCaller,m.riu_.knownBits(a,n))){
+        m.preservedBits_.seed(2,n,0,[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("exploratory_audio_ack_invalid_sample",a,n,0,"INVALID reply retained; only the exact verified no-ACK comparison may consume its predicate; other unknown use stops");
+      }
+    }
+    if(m.options_.exploratoryAudioNoAck && pc==0x804f9050 && a==0x1f225cb8 && n==1){
+      std::vector<uint8_t> reader(0x58),caller(0x104);
+      m.cpu_.read(0x004f9004,reader.data(),reader.size());m.cpu_.read(0x004f7a8c,caller.data(),caller.size());
+      if(sha256(reader)=="1ca38efb1835870f93e7dfa62d4e7ad5548439c4fe882c6decc70b0d4c34dcfc" &&
+         sha256(caller)=="b31c4969e0e91a2f1eb68d4952b3065a2fe62f769b805b9e8b4793b3d7e61e25" &&
+         m.audioNoAck_.arm(pc,a,n,geCaller,m.riu_.knownBits(a,n))){
+        m.preservedBits_.seed(2,n,0,[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("exploratory_audio_ack_invalid_sample",a,n,0,"INVALID decoder-load reply retained; exact SHA-verified no-ACK predicate only, no valid byte or ready response");
+      }
+    }
     if(m.options_.exploratoryAnalogDisconnected && pc==0x805f1ca4 && a==0x1f205ea4 && n==1 &&
        (m.riu_.scBank()==1 || m.riu_.scBank()==3)){
       std::vector<uint8_t> code(0x7c);m.cpu_.read(0x005f1c6c,code.data(),code.size());
@@ -1390,6 +1469,9 @@ std::string Msd309Machine::summary() const {
       <<"\",\n  \"avd_mcu_suspended\": "<<(riu_.avdMcuSuspended()?"true":"false");
   }
   if(options_.candidateAudioIdma){
+    if(options_.exploratoryAudioNoAck)s<<",\n  \"exploratory_audio_no_ack\": true,\n  \"audio_ack_unknown_samples\": "<<audioNoAck_.samples
+      <<",\n  \"audio_ack_constrained_comparisons\": "<<audioNoAck_.comparisons<<",\n  \"audio_ack_timeouts\": "<<audioNoAck_.timeouts
+      <<",\n  \"audio_ack_failure_returns\": "<<audioNoAck_.returns;
     s<<",\n  \"candidate_audio_idma\": true,\n  \"audio_idma_ports\": [";
     for(unsigned i=0;i<2;++i){const auto& p=riu_.audioIdma(i);if(i)s<<',';
       s<<"{\"word_uploads\":"<<p.wordWrites<<",\"word_reads\":"<<p.wordReads<<",\"initialized_words\":"<<p.initializedWords()

@@ -34,6 +34,11 @@ public:
     return m;
   }
   bool memoryUnknown(uint32_t address) const { return memory_.contains(backingAddress(address)); }
+  bool exactByteOrigin(unsigned rt,uint32_t byte)const {
+    if(mask(rt)!=255)return false;
+    for(unsigned i=0;i<8;++i)if(registers_.at(rt)[i]!=Bit{byte,uint8_t(i)})return false;
+    return true;
+  }
   auto unknownMemoryBytes() const { return memory_.size(); }
   std::string observe(uint32_t w,const std::function<uint32_t(unsigned)> &reg,
       const std::function<uint32_t(uint32_t)> &deviceKey,

@@ -1,14 +1,16 @@
 # Manta LCD4214 firmware execution research build
 
-Latest verified continuation: [audio IDMA and original AVD startup](docs/audio-avd-continuation.md).
-The guest now verifies 2,781 audio words and prints `T4 SE system` load
-completion. AVD retires six original instructions, then stops at an
-unknown XDATA write. DSP2 acknowledgment and the authentic ZUI frame
-remain unsupported; no ready response or TV artwork is supplied by the host.
+Latest continuation: [original audio failure paths and application boot](docs/audio-timeout-continuation.md).
+With the explicit `--exploratory-audio-no-ack` predicate experiment, the
+guest executes both original finite DSP failure paths, prints DSP2/DSP1
+Re-Active, and returns from audio/platform initialization. It reaches
+1,789,567,273 MIPS dispatches and stops at unknown PM byte BF001CD1.
+The DSP reply bytes remain invalid; no DSP or PM readiness response is
+supplied. ZUI, an enabled framebuffer and an authentic frame remain unsupported.
 
 This is the existing native C++20 research emulator that executes the original Manta MIPS firmware and original uploaded OpenRISC TSP firmware. It also executes the original uploaded DVB-T 8051 program in a bounded diagnostic mode. **It does not yet display an authentic TV frame or OSD.** The native window remains blank until guest graphics hardware produces a valid output.
 
-The furthest explicitly exploratory run executes **1,788,854,952 MIPS dispatches**, **280,644,619 OpenRISC instructions**, and **468,999 DVB-T MCU instructions**. Original MCU stores establish the shared mailbox; supported diagnostic replies come from its original IRQ handler. Normal boot still stops that MCU on unresolved XDATA 2200. The MIPS CPU additionally uploads and verifies a separate 13,312-byte AVD program, then stops at **804F9098 / BF225AB4** awaiting an unmodeled audio DSP2 response. GOP initializes twice, but no enabled framebuffer, raster output or ZUI frame is demonstrated. See [STATUS](docs/STATUS.md), [latest continuation](docs/shared-mcu-continuation.md), and [evidence](evidence/shared-final-summary.json). Strict POR and SPI-CF uncertainties remain unresolved.
+A historical shared-MCU exploratory run executes **1,788,854,952 MIPS dispatches**, **280,644,619 OpenRISC instructions**, and **468,999 DVB-T MCU instructions**. Original MCU stores establish the shared mailbox; supported diagnostic replies come from its original IRQ handler. Normal boot still stops that MCU on unresolved XDATA 2200. The MIPS CPU additionally uploads and verifies a separate 13,312-byte AVD program, then stops at **804F9098 / BF225AB4** awaiting an unmodeled audio DSP2 response. GOP initializes twice, but no enabled framebuffer, raster output or ZUI frame is demonstrated. See [STATUS](docs/STATUS.md), [latest continuation](docs/shared-mcu-continuation.md), and [evidence](evidence/shared-final-summary.json). Strict POR and SPI-CF uncertainties remain unresolved.
 
 `T4` is best identified as MStar's **Titania4** platform label, inferred from the original strings and independent MSD309PX hardware research. It does not identify an exact silicon revision or mean the TV finished booting. See [T4 evidence](docs/platform-t4.md).
 

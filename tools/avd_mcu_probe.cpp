@@ -10,6 +10,19 @@
 #include <set>
 static void check(bool c,const char* s){if(!c)throw std::runtime_error(s);}
 int main(int argc,char** argv){try{
+  if(argc==5 && std::string(argv[1])=="--disassemble-only"){
+    std::ifstream f(argv[2],std::ios::binary);std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});
+    check(!code.empty() && code.size()<=65536,"candidate 8051 image must contain 1..65536 bytes");
+    auto pc=std::stoul(argv[3],nullptr,0),end=std::stoul(argv[4],nullptr,0);
+    check(pc<end && end<=code.size(),"disassembly range outside candidate program");
+    auto storage=code;storage.resize(65536);em8051 dis{};
+    dis.mCodeMem=storage.data();dis.mCodeMemMaxIdx=65535;reset(&dis,false);
+    std::cout<<"STATIC_8051_CANDIDATE; no auxiliary instructions executed; image SHA256 "<<manta::sha256(code)<<'\n';
+    for(;pc<end;){char text[128];auto n=decode(&dis,uint16_t(pc),text);
+      check(n && pc+n<=end,"truncated candidate instruction at requested boundary");
+      std::cout<<std::hex<<pc<<' '<<text<<'\n';pc+=n;}
+    return 0;
+  }
   check(argc==2 || argc==4,"supply the original 13312-byte AVD payload [disassembly start end]");
   std::ifstream f(argv[1],std::ios::binary);
   std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});

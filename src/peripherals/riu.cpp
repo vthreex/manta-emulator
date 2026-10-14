@@ -658,6 +658,12 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       if(knownBits(a,n)!=65535)throw std::runtime_error("audio IDMA address contains unknown bits");
       port.address(offset==0x10,uint16_t(v));
       event("audio_idma_address",a,n,v,offset==0x10?"original guest readback word address":"original guest upload word address");
+    }else if(n==1 && (offset==8 || offset==9 || offset==0x10 || offset==0x11)){
+      const bool read=offset>=0x10;const auto address=base+(read?0x10:8);
+      if(knownBits(address,2)==65535)port.address(read,uint16_t(get(address,2)));
+      else port.invalidateAddress(read);
+      event("audio_idma_address_byte",a,n,v,
+        "original low/high address latch write; cursor installed only when both bytes known; encoded memory-selection bit retained");
     }else if((offset==4 || offset==5) && n==1){
       if(knownBits(a,n)!=255)throw std::runtime_error("audio IDMA payload contains unknown bits");
       if(port.data(offset-4,uint8_t(v)))event("audio_idma_word_upload",a,3,v,"original four byte-port phases committed one 24-bit word; no DSP execution or readiness");

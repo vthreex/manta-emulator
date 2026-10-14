@@ -10,7 +10,7 @@ def extract(stock, trace, directory):
     assert len(stock)==0x800010 and hashlib.sha256(stock).hexdigest()=='d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9'
     runtime=zlib.decompress(stock[0x23880:0x16124e],-15)
     assert hashlib.sha256(runtime).hexdigest()=='149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236'
-    ports=[{'address':None,'phase':[],'words':{},'segments':[]} for _ in range(2)]
+    ports=[{'address':None,'phase':[],'words':{},'segments':[],'address_bytes':{}} for _ in range(2)]
     for line in trace:
         if b'"kind":"write"' not in line or not any(x in line for x in (b'"address":"0x1f225a',b'"address":"0x1f225c')):continue
         e=json.loads(line);a=int(e['address'],16);v=int(e['value'],16)
@@ -19,8 +19,15 @@ def extract(stock, trace, directory):
             assert not p['phase'],'new IDMA address inside an unfinished word'
             assert e['pc']=='0x804f9150','unexpected address producer; investigate original caller'
             p['address']=v;p['segments'].append({'start':v,'tick':e['tick'],'pc':e['pc'],'bytes':bytearray()})
+            p['address_bytes']={0:v&255,1:v>>8}
+        if off in (8,9) and e['width']==1:
+            assert not p['phase'],'byte address update inside an unfinished word'
+            assert e['pc']=='0x804f9230','unexpected byte-address producer'
+            p['address_bytes'][off-8]=v
+            p['address']=(p['address_bytes'][0]|p['address_bytes'][1]<<8) if len(p['address_bytes'])==2 else None
+            if p['address'] is not None:p['segments'].append({'start':p['address'],'tick':e['tick'],'pc':e['pc'],'bytes':bytearray()})
         if off in (4,5) and e['width']==1:
-            assert e['pc']=='0x804f91d4','unexpected data producer; investigate original caller'
+            assert e['pc'] in ('0x804f91d4','0x804f9230'),'unexpected data producer; investigate original caller'
             assert p['address'] is not None and off==(4,5,4,5)[len(p['phase'])]
             p['phase'].append(v)
             if len(p['phase'])==4:

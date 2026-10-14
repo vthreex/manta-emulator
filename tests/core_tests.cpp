@@ -4,6 +4,7 @@
 #include "storage/sha256.hpp"
 #include "board/unknown_observations.hpp"
 #include "board/preserved_bits.hpp"
+#include "board/audio_no_ack.hpp"
 #include "board/mmio_read_mask.hpp"
 #include "video/gop.hpp"
 #include <array>
@@ -958,6 +959,63 @@ void vdSharedExecutionTests(){
 }
 void tspProvenanceTests() {
   {
+    manta::AudioNoAck c;
+    require(!c.arm(0x804f9098,0x1f225ab4,1,0x804f7a28,255),"no-ACK hypothesis cannot override known response data");
+    require(!c.arm(0x804f9098,0x1f225ab5,1,0x804f7a28,0),"predicate cannot admit another hardware byte");
+    require(c.arm(0x804f9098,0x1f225ab4,1,0x804f7a28,0),"only verified unknown acknowledgment can arm the scenario");
+    require(!c.constrain(0x804f7a28,0x1452fff7,0xe3,0xe3,0,true,1),"a placeholder matching E3 cannot force a native branch to take failure");
+    require(!c.constrain(0x804f7a28,0x1452fff7,0xa5,0xe3,1,true,1),"unknown expected constant still rejects decision");
+    require(!c.constrain(0x804f7a28,0x1452fff7,0xa5,0xe3,0,false,1),"foreign unknown origin cannot use acknowledgment predicate");
+    require(!c.constrain(0x804f7a28,0x1452fff7,0xa5,0xe3,0,true,101),"original finite retry bound cannot be exceeded");
+    require(c.constrain(0x804f7a28,0x1452fff7,0xa5,0xe3,0,true,1) && !c.pending(),"matching explicit predicate authorizes one comparison without a byte value or PC write");
+    require(!c.constrain(0x804f7a28,0x1452fff7,0xa5,0xe3,0,true,1),"predicate authorization cannot be reused");
+    require(c.arm(0x804f9050,0x1f225cb8,1,0x804f7b10,0),"decoder load uses its separately verified acknowledgment source");
+    require(!c.constrain(0x804f7a28,0x1452fff7,0xa5,0xe3,0,true,1),"decoder observation cannot authorize the SE comparison");
+    require(c.constrain(0x804f7b10,0x1452fff7,0xa5,0xe3,0,true,100),"decoder no-ACK predicate preserves its own original finite retry bound");
+    manta::PreservedBits bits;bits.seed(2,1,0,[](unsigned){return 0x1f225ab4;});
+    require(bits.exactByteOrigin(2,0x1f225ab4) && !bits.exactByteOrigin(2,0x1f225ab5),"predicate source is an exact retained unknown byte origin");
+    require(!bits.observe(0x1452fff7,[](unsigned){return 0;},[](uint32_t a){return a;},[](auto,auto,auto){}).empty() && bits.mask(2)==255,
+      "ordinary provenance still rejects unknown comparisons and retains invalidity");
+  }
+  {
+    manta::PreservedBits bits;uint32_t restored=0;
+    std::array<uint32_t,32> regs{};regs[2]=0xa5;regs[4]=0xbf225dd8;
+    auto observe=[&](uint32_t word){return bits.observe(word,[&](unsigned r){return regs[r];},
+      [](uint32_t address){return address;},[&](auto,auto,uint32_t mask){restored=mask;});};
+    bits.seed(2,1,0,[](unsigned){return 0x1f225dd8;});
+    require(observe(0x30420020).empty() && bits.mask(2)==0x20,"original mode ANDI retains only unknown bit 5");
+    regs[2]&=0x20;
+    require(observe(0x02021025).empty() && bits.mask(2)==0x20,"original mode OR with known zero preserves bit identity");
+    require(observe(0x304600ff).empty() && bits.mask(6)==0x20,"original byte mask does not make mode bit 5 known");
+    require(observe(0xa0860000).empty() && restored==0x20,"unknown mode bit may return only to its same register bit");
+    regs[4]=0xbf225dd9;
+    require(!observe(0xa0860000).empty(),"copying retained mode bit into another byte must stop");
+  }
+  {
+    manta::PreservedBits bits;uint32_t restored=0;std::array<uint32_t,32> regs{};
+    regs[6]=0xa5a4;regs[7]=0xbf225a30;
+    auto observe=[&](uint32_t word){return bits.observe(word,[&](unsigned r){return regs[r];},
+      [](uint32_t address){return address;},[&](auto,auto,uint32_t mask){restored=mask;});};
+    bits.seed(6,2,1,[](unsigned b){return 0x1f225a30+b;});
+    require(observe(0x30c6fffe).empty() && bits.mask(6)==0xfffe,"original word selector clears bit0 without inventing other fields");
+    require(observe(0xa4e60000).empty() && restored==0xfffe,"word selector restore retains both original byte origins");
+    require(!observe(0x14c00001).empty(),"a selector observation still cannot drive an unknown branch");
+  }
+  {
+    manta::PreservedBits bits;uint32_t restored=0;std::array<uint32_t,32> regs{};
+    regs[2]=0xa5a5;regs[3]=0xbf225c40;
+    auto observe=[&](uint32_t word){return bits.observe(word,[&](unsigned r){return regs[r];},
+      [](uint32_t address){return address;},[&](auto,auto,uint32_t mask){restored=mask;});};
+    bits.seed(2,2,0,[](unsigned b){return 0x1f225c40+b;});
+    require(observe(0x305000ff).empty() && bits.mask(16)==255,"original standard-command caller discards unknown upper word byte");
+    regs[16]=0xa5;
+    require(observe(0x02001021).empty() && observe(0x3051000f).empty() && bits.mask(17)==15,"original return and low-nibble mask retain exact command origins");
+    regs[17]=5;
+    require(observe(0x36250010).empty() && bits.mask(5)==15,"standard-command high-nibble change does not invent retained low bits");
+    require(observe(0xa0650000).empty() && restored==15,"standard-command unknown nibble returns only to the same command byte");
+    require(!observe(0x16200001).empty(),"unknown standard-command bits cannot select a branch");
+  }
+  {
     manta::AudioIdma p;
     require(!p.read(0x18) && !p.statusKnown(),"IDMA never invents reset data or completion");
     rejects([&]{p.data(0,1);});
@@ -971,6 +1029,7 @@ void tspProvenanceTests() {
     p.command(8,255);
     require(!p.read(0x18) && p.wordReads==2,"auto-incremented IDMA read of unwritten word remains unknown");
     p.address(false,0x1234);rejects([&]{p.data(1,0);});
+    p.data(0,1);rejects([&]{p.address(false,0x4321);});rejects([&]{p.invalidateAddress(false);});
     manta::Riu r;r.candidateAudioIdma=true;r.event=[](auto,auto,auto,auto,auto){};
     uint64_t tick=0;auto w=[&](unsigned off,unsigned n,unsigned v){r.write(0x1f225a00+off,n,v,0,n==1?255:65535,++tick);};
     w(8,2,0x21);w(4,1,0x34);w(5,1,0x56);w(4,1,0x12);w(5,1,0);w(0x10,2,0x21);w(0,1,8);
@@ -979,6 +1038,16 @@ void tspProvenanceTests() {
       "RIU IDMA readback returns bytes actually transferred through original MMIO ports");
     require(r.knownBits(0x1f225ab4,1)==0 && r.knownBits(0x1f225c18,1)==0,
       "IDMA transfers cannot produce DSP2 alive or another DSP's memory contents");
+    manta::Riu bytes;bytes.candidateAudioIdma=true;bytes.event=[](auto,auto,auto,auto,auto){};
+    auto bw=[&](unsigned off,unsigned n,unsigned v){bytes.write(0x1f225c00+off,n,v,0x804f9230,n==1?255:65535,++tick);};
+    bw(8,1,0x1a);rejects([&]{bw(4,1,0xcd);});
+    require(bytes.audioIdma(1).wordWrites==0,"partial byte address cannot borrow an unknown high address byte");
+    bw(9,1,0x40);bw(4,1,0xcd);bw(5,1,0xab);bw(4,1,0xef);bw(5,1,0);
+    bw(0x10,1,0x1a);bw(0x11,1,0x40);bw(0,1,8);
+    require(bytes.read(0x1f225c1c,1,0,255,++tick)==0xef && bytes.read(0x1f225c18,1,0,255,++tick)==0xcd && bytes.read(0x1f225c19,1,0,255,++tick)==0xab,
+      "original byte-address sequence retains the 4000 memory-selection bit and actual word payload");
+    bw(0x10,2,0x1a);bw(0,1,8);
+    require(bytes.knownBits(0x1f225c18,1)==0,"encoded data-bank write cannot overwrite an uninitialized program-bank address");
     manta::Riu guarded;guarded.candidateAudioIdma=true;guarded.symbolicInit=true;guarded.event=[](auto,auto,auto,auto,auto){};
     auto gw=[&](unsigned off,unsigned n,unsigned v){guarded.write(0x1f225a00+off,n,v,0,n==1?255:65535,++tick);};
     guarded.prepareRmw(0x1f225a00,3);gw(0,1,3);gw(8,2,0x11ff);

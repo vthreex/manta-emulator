@@ -1,5 +1,22 @@
 # Status of the research build
 
+Latest [original audio timeout continuation](audio-timeout-continuation.md):
+**1,789,567,273 MIPS**, **280,822,700 OpenRISC**, **468,999 DVB-T MCU** and
+**six AVD** instructions; **5,441 main timer** and **52 DVB-T MCU** IRQ entries.
+Original audio and platform initializers return to the application. New stop:
+**80404BF4 / BF001CD1**, an unknown PM activity predicate. ZUI and authentic
+graphics remain unsupported. The paragraphs below retain historical evidence.
+
+| Current capability | Status | Evidence and limitations |
+|---|---|---|
+| Original SE and decoder failure returns | demonstrated | Two original 100-check loops, genuine DSP2/DSP1 Re-Active messages and F3 stores; explicit symbolic nonmatch predicates, invalid reply bytes retained |
+| Audio IDMA and decoder upload/readback | demonstrated | 2,781 + 5,560 initial words; 64 later byte-addressed coefficient updates; 2,781 + 5,572 readbacks; no DSP execution or ready output |
+| Audio selector and command-byte provenance | implemented | Verified same-origin selector restores; actual MIPS command-byte producers; unknown upper fields discarded only by original masks |
+| DSP acknowledgment producer / exact ISA | unsupported | No E3 producer identified; candidate entry opcodes and unuploaded targets remain unresolved; zero DSP instructions |
+| PM BF001CD1 execution and reset state | unsupported | Original low-nibble==8 predicate; matching static writers in original flash PM51 candidate; boot mapping/status unresolved, no PM value assigned |
+| Corrected cold boot and multi-CPU replay | demonstrated | 803 native checks, 18 baseline and nine display runs, four forensics tests; [full replay summary](../evidence/audio-timeout-replay.json) |
+| ZUI, enabled GOP framebuffer, raster and native guest pixels | unsupported | Driver initialization remains separate from application drawing; no authentic frame |
+
 The latest [audio/AVD continuation](audio-avd-continuation.md) implements
 actual addressed audio IDMA upload/readback. Original firmware verifies
 **2,781 24-bit words**, and all three prior IDMA timeout messages disappear.
