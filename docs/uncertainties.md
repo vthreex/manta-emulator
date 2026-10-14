@@ -83,3 +83,10 @@ software test requiring seven is not a reset/completion specification.
 The configured external power reason is consistent across CPU views;
 firmware writes take precedence and invalid bits cannot fall back to a
 known external value. [Current report](pm51-shared-continuation.md).
+
+The [status/producer investigation](pm51-status-producer.md) identifies a
+static original writer of activity eight through RTC-related event dispatch:
+0E1C bit4 sampled, 0E1E bit4 clear, 9B96 -> 956B -> 8AAF -> 724E.
+This unexecuted path is not a cold-boot readiness response. Neither the
+0EC2 hardware producer nor cold reset value is established. Synthetic
+low-three-bit inputs are isolated probe experiments, absent from TV boot.

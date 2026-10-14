@@ -203,10 +203,12 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     std::vector<uint8_t> bytes(size);cpu_.read(address,bytes.data(),size);return bytes;
   };
   riu_.event = [this](auto &k, auto a, auto n, auto v, auto &d) { event(k, a, n, v, d); };
+  if(!o.pm51History.empty() && !o.exploratoryPm51SpiStartup)
+    throw std::runtime_error("PM history requires original PM SPI startup experiment");
   if(o.exploratoryPm51SpiStartup){
     if(!o.symbolicInit || !o.deferDiagnosticReads || o.stage2 || o.initPrefix)
       throw std::runtime_error("PM SPI startup requires guarded original cold boot; reset/clock wiring remains exploratory");
-    riu_.configureExploratoryPm51(std::span<const uint8_t>(flash_.stock()).subspan(0x10000,65536),o.pm51Divider);
+    riu_.configureExploratoryPm51(std::span<const uint8_t>(flash_.stock()).subspan(0x10000,65536),o.pm51Divider,!o.pm51History.empty());
   }
   if (!o.trace.empty()) {
     trace_.open(o.trace);
@@ -1293,6 +1295,11 @@ int Msd309Machine::run() {
     for (auto pc : coverage_)
       f << hex(pc) << '\n';
     f.flush();if(!f)throw std::runtime_error("cannot write complete guest PC coverage file");
+  }
+  if(!options_.pm51History.empty()){
+    std::ofstream f(options_.pm51History);
+    f<<riu_.pm51().historyJsonLines();
+    f.flush();if(!f)throw std::runtime_error("cannot write complete bounded PM history");
   }
   auto s = summary();
   if (!options_.summary.empty()) {

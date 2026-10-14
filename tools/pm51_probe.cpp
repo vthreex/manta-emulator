@@ -8,7 +8,9 @@
 #include <iterator>
 #include <set>
 int main(int argc,char** argv){try{
-  if(argc==3 && (std::string(argv[2])=="--shared-riu-symbolic" || std::string(argv[2])=="--shared-riu-status-fixture" || std::string(argv[2])=="--shared-riu-power-alias-fixture")){
+  const bool counterfactual=argc==4 && std::string(argv[2])=="--status-counterfactual";
+  const bool history=argc==3 && std::string(argv[2])=="--shared-riu-symbolic-history";
+  if(counterfactual || history || (argc==3 && (std::string(argv[2])=="--shared-riu-symbolic" || std::string(argv[2])=="--shared-riu-status-fixture" || std::string(argv[2])=="--shared-riu-power-alias-fixture"))){
     const bool fixture=std::string(argv[2])=="--shared-riu-status-fixture";
     const bool powerFixture=std::string(argv[2])=="--shared-riu-power-alias-fixture";
     std::ifstream f(argv[1],std::ios::binary);std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});
@@ -18,7 +20,19 @@ int main(int argc,char** argv){try{
       return std::vector<uint8_t>(code.begin()+a-0x10000,code.begin()+a-0x10000+n);};
     r.event=[](const auto& k,auto a,auto n,auto v,const auto& d){
       std::cout<<"PM_CONNECTED_EVENT "<<k<<" address 0x"<<std::hex<<a<<" width "<<n<<" value 0x"<<v<<' '<<d<<'\n';};
-    r.configureExploratoryPm51(code);
+    r.configureExploratoryPm51(code,32,history || counterfactual);
+    if(counterfactual){
+      auto value=std::string(argv[3]);
+      if(value.size()!=1 || value[0]<'0' || value[0]>'7')
+        throw std::runtime_error("counterfactual low status field must be exactly 0..7");
+      unsigned field=unsigned(value[0]-'0');
+      // Isolated input sensitivity experiment, not a peripheral model. Only
+      // these low three input bits are supplied; the high byte stays invalid.
+      // This option deliberately does not exist in the television executable.
+      r.prepareRmw(0x1f001d84,7);r.write(0x1f001d84,1,0xa0|field,0,7,0);
+      std::cout<<"PM_COUNTERFACTUAL_INPUT low bits="<<field
+        <<"; SYNTHETIC input only, no physical producer/reset claim, not television boot\n";
+    }
     if(powerFixture){
       std::cout<<"PM_POWER_ALIAS_FIXTURE bridge-only test; injected writes below are NOT original PM execution/responses\n";
       r.configureExploratoryPmAcOn();
@@ -50,6 +64,8 @@ int main(int argc,char** argv){try{
     std::cout<<"PM_CONNECTED_SUSPENDED "<<(pm.suspended()?"true":"false")<<" MARKER_WRITES "<<pm.markerWrites
       <<" MAIN_BYTE_KNOWN "<<r.knownBits(0x1f001cd1,1)<<'\n';
     std::cout<<"PM_MAIN_MIPS_EXECUTED false; shared RIU probe only; no PM reply supplied\n";
+    if(history || counterfactual)
+      std::cout<<"PM_HISTORY_BEGIN\n"<<pm.historyJsonLines()<<"PM_HISTORY_END\n";
     return 0;
   }
   const bool candidateSpi=argc==3 && std::string(argv[2])=="--candidate-spi-private-ram";

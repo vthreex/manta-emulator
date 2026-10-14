@@ -272,6 +272,9 @@ uint8_t VdMcuCpu::stack()const{return impl_->context.cpu.mSFR[REG_SP];}
 uint8_t VdMcuCpu::accumulator()const{return impl_->context.cpu.mSFR[REG_ACC];}
 uint8_t VdMcuCpu::status()const{return impl_->context.cpu.mSFR[REG_PSW];}
 uint8_t VdMcuCpu::port2()const{return impl_->context.cpu.mSFR[REG_P2];}
+uint16_t VdMcuCpu::dataPointer()const{
+  return uint16_t(impl_->context.cpu.mSFR[REG_DPL] | (uint16_t(impl_->context.cpu.mSFR[REG_DPH])<<8));
+}
 uint8_t VdMcuCpu::accumulatorKnown()const{return impl_->aKnown;}
 uint16_t VdMcuCpu::accumulatorOrigin()const{return impl_->aOrigin;}
 std::vector<uint8_t> VdMcuCpu::stateBytes()const{

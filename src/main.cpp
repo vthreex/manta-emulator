@@ -83,6 +83,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--candidate-avd-mcu-program")o.candidateAvdMcuProgram=true;
       else if (a == "--candidate-audio-idma")o.candidateAudioIdma=true;
       else if (a == "--exploratory-pm51-spi-startup")o.exploratoryPm51SpiStartup=true;
+      else if (a == "--pm51-history")o.pm51History=utf8Path(value(i));
       else if (a == "--pm51-dispatch-divider"){
         o.pm51Divider=std::stoull(value(i),nullptr,0);
         if(!o.pm51Divider || o.pm51Divider>4096)throw std::runtime_error("PM divider must be 1..4096; relationship remains hypothetical");
@@ -202,6 +203,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-pm-ac-on: external PM boundary models documented ACON cause ff only; no PM51 readiness or input events supplied\n"
                "--exploratory-pm51-spi-startup: original PM CODE shares flash, XDATA shares RIU; hypothetical concurrent reset/SPI/RAM wiring; required unknown status stops PM before decisions\n"
                "--pm51-dispatch-divider N: hypothetical MIPS dispatches per PM machine tick (1..4096; default 32); not a measured clock\n"
+               "--pm51-history FILE: bounded PM instruction/validity and bus history; requires original PM startup experiment\n"
                "--exploratory-sar-fullscale: 3300mV inputs/reference for SAR0/1; original power/free-run controls and period trigger conversion, board wiring unverified\n"
                "--exploratory-ir-dma-reset: original descriptor command commits an empty IR capture ring; 82h reset/index coupling unverified, no keys supplied\n"
                "--exploratory-gop-reset-windows: original top-bank reset pulse clears GWIN enable bits only; exact reset scope unverified\n"
@@ -260,6 +262,15 @@ static int appMain(const std::vector<std::string> &args) {
       firmware = manta::pickFirmware();
       if (firmware.empty())
         return 1;
+    }
+    // Debug exports must never truncate the selected stock image, including
+    // an alias reached through a Windows hard link or symbolic link.
+    for(const auto& output:{o.trace,o.summary,o.coverage,o.tspFirmwareDump,o.pm51History,nvram}){
+      if(output.empty())continue;
+      std::error_code ec;
+      bool alias=std::filesystem::equivalent(firmware,output,ec);
+      if(alias || std::filesystem::weakly_canonical(firmware)==std::filesystem::weakly_canonical(output))
+        throw std::runtime_error("output/NVRAM path aliases immutable firmware input");
     }
     auto flash = manta::Flash::loadOriginal(firmware);
     if (!nvram.empty() && std::filesystem::exists(nvram))

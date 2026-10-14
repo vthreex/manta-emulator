@@ -3,6 +3,8 @@
 #include "storage/sha256.hpp"
 #include <array>
 #include <set>
+#include <deque>
+#include <sstream>
 namespace manta {
 // Explicit housekeeping/SPI reset experiment. Status outputs have no defaults.
 // CODE is a view of original flash; RIU observations use the host CPU's backing.
@@ -16,10 +18,31 @@ class Pm51 {
   uint64_t tick_=0;
   bool started_=false,suspended_=false;
   std::string boundary_;
+  struct InstructionObservation {
+    uint64_t tick, count;
+    uint16_t pc, dptr, origin;
+    uint8_t opcode, accumulator, known, stack, status, page;
+    bool dispatched=false;
+  };
+  struct BusObservation {
+    uint64_t tick;
+    uint16_t pc, address;
+    uint8_t page;
+    VdByte byte;
+    bool write, accepted;
+  };
+  std::deque<InstructionObservation> instructionHistory_;
+  std::deque<BusObservation> busHistory_;
+  void observeBus(uint16_t address,VdByte value,bool write,bool accepted){
+    if(!captureHistory)return;
+    busHistory_.push_back({tick_,cpu_.pc(),address,cpu_.port2(),value,write,accepted});
+    if(busHistory_.size()>64)busHistory_.pop_front();
+  }
 public:
   uint64_t divider=32,budget=1000000,ramReads=0,ramWrites=0,riuReads=0,riuWrites=0;
   uint64_t markerWrites=0,controlWrites=0;
   bool firstVisits=true;
+  bool captureHistory=false; // bounded diagnostics only; never part of hardware state
   std::function<VdByte(uint16_t)> sharedRead;
   std::function<bool(uint16_t,VdByte)> sharedWrite;
   std::function<bool(uint16_t,uint8_t)> codeSourceValid;
@@ -30,29 +53,31 @@ public:
       throw std::runtime_error("PM startup configuration incomplete/repeated");
     code_=code;
     cpu_.busRead=[this](uint16_t a)->std::optional<VdByte>{
-      if(a==0x1018 && romControl_)return VdByte{*romControl_,255,0};
+      if(a==0x1018 && romControl_){auto v=VdByte{*romControl_,255,0};observeBus(a,v,false,true);return v;}
       if(a>=0x4000 && a<0x4400){
-        if(!written_[a-0x4000])throw VdHardwareBoundary("PM private RAM read before original initialization");
-        ++ramReads;return ram_[a-0x4000];
+        if(!written_[a-0x4000]){observeBus(a,{0xa5,0,a},false,false);throw VdHardwareBoundary("PM private RAM read before original initialization");}
+        ++ramReads;auto v=ram_[a-0x4000];observeBus(a,v,false,true);return v;
       }
       if(a>=0x0e00 && a<0x0f00){
-        if(cpu_.port2()!=0)throw VdHardwareBoundary("PM RIU page other than zero unresolved");
-        ++riuReads;return sharedRead(a);
+        if(cpu_.port2()!=0){observeBus(a,{0xa5,0,a},false,false);throw VdHardwareBoundary("PM RIU page other than zero unresolved");}
+        ++riuReads;auto v=sharedRead(a);observeBus(a,v,false,true);return v;
       }
-      return {};
+      observeBus(a,{0xa5,0,a},false,false);return {};
     };
     cpu_.busWrite=[this](uint16_t a,VdByte v){
       if(a==0x1018 && v.known==255 && v.value==2){
         romControl_=v.value;++controlWrites;
+        observeBus(a,v,true,true);
         event("pm51_spi_source",a,1,v.value,"original PM instruction selects configured SPI CODE view; exact board reset mapping remains exploratory");
         return true;
       }
       if(a>=0x4000 && a<0x4400){
-        ram_[a-0x4000]=v;written_[a-0x4000]=true;++ramWrites;return true;
+        ram_[a-0x4000]=v;written_[a-0x4000]=true;++ramWrites;observeBus(a,v,true,true);return true;
       }
       if((a==0x0e69 || a==0x0e6f) && cpu_.port2()==0 && sharedWrite(a,v)){
-        ++riuWrites;if(a==0x0e69)++markerWrites;return true;
+        ++riuWrites;if(a==0x0e69)++markerWrites;observeBus(a,v,true,true);return true;
       }
+      observeBus(a,v,true,false);
       return false;
     };
     cpu_.instruction=[this](uint16_t pc,uint8_t opcode,const std::string& text){
@@ -73,7 +98,15 @@ public:
     try{while(tick-tick_>=divider){
       if(executionStopped && executionStopped())return;
       if(cpu_.totalInstructions()>=budget)throw std::runtime_error("PM original instruction budget reached");
-      tick_+=divider;cpu_.step();
+      tick_+=divider;
+      if(captureHistory){
+        auto pc=cpu_.pc();
+        instructionHistory_.push_back({tick_,cpu_.totalInstructions(),pc,cpu_.dataPointer(),cpu_.accumulatorOrigin(),
+          code_[pc],cpu_.accumulator(),cpu_.accumulatorKnown(),cpu_.stack(),cpu_.status(),cpu_.port2(),false});
+        if(instructionHistory_.size()>256)instructionHistory_.pop_front();
+      }
+      cpu_.step();
+      if(captureHistory)instructionHistory_.back().dispatched=true;
     }}catch(const VdHardwareBoundary& e){
       suspended_=true;boundary_=e.what();
       event("pm51_unknown_boundary",cpu_.pc(),0,0,boundary_);
@@ -83,6 +116,22 @@ public:
   bool started()const{return started_;}
   bool suspended()const{return suspended_;}
   const std::string& boundary()const{return boundary_;}
+  std::string historyJsonLines()const{
+    std::ostringstream out;
+    // Integers are decimal JSON numbers; validity is independent of poison data.
+    for(const auto& i:instructionHistory_)
+      out<<"{\"kind\":\"instruction\",\"tick\":"<<i.tick<<",\"count_before\":"<<i.count
+         <<",\"pc\":"<<i.pc<<",\"opcode\":"<<unsigned(i.opcode)<<",\"dptr\":"<<i.dptr
+         <<",\"a\":"<<unsigned(i.accumulator)<<",\"known\":"<<unsigned(i.known)<<",\"origin\":"<<i.origin
+         <<",\"sp\":"<<unsigned(i.stack)<<",\"psw\":"<<unsigned(i.status)<<",\"page\":"<<unsigned(i.page)
+         <<",\"dispatched\":"<<(i.dispatched?"true":"false")<<"}\n";
+    for(const auto& b:busHistory_)
+      out<<"{\"kind\":\"bus\",\"tick\":"<<b.tick<<",\"pc\":"<<b.pc<<",\"address\":"<<b.address
+         <<",\"page\":"<<unsigned(b.page)<<",\"value\":"<<unsigned(b.byte.value)
+         <<",\"known\":"<<unsigned(b.byte.known)<<",\"origin\":"<<b.byte.origin
+         <<",\"write\":"<<(b.write?"true":"false")<<",\"accepted\":"<<(b.accepted?"true":"false")<<"}\n";
+    return out.str();
+  }
   std::string stateSha()const{
     auto b=cpu_.stateBytes();
     auto append=[&](uint64_t value,unsigned width){for(unsigned i=0;i<width;++i)b.push_back(uint8_t(value>>(8*i)));};

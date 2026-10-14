@@ -883,6 +883,16 @@ void vdSharedExecutionTests(){
     manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
     for(auto b:code)p.write(0x18,b);return p;
   };
+  {
+    // Architectural observation used by the PM history: execute both bytes
+    // of MOV DPTR and the 16-bit rollover, without modifying processor state.
+    auto p=program({0x90,0xff,0xff,0xa3});manta::VdMcuCpu cpu;
+    cpu.resetProgram(p);cpu.step();
+    require(cpu.dataPointer()==0xffff,"8051 history observes the actual little register pair after MOV DPTR");
+    auto state=cpu.stateBytes();(void)cpu.dataPointer();
+    require(cpu.stateBytes()==state,"read-only PM DPTR observation cannot alter execution/provenance state");
+    cpu.step();require(cpu.dataPointer()==0,"8051 INC DPTR rolls over the full 16-bit register pair");
+  }
   for(bool timer:{false,true}){
     std::vector<uint8_t> code(128);code[0]=2;code[2]=0x20;
     code[timer?0xb:3]=2;code[(timer?0xb:3)+2]=0x40;

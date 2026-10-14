@@ -1,6 +1,11 @@
 # Manta LCD4214 firmware execution research build
 
-Current continuation: [original PM51 on the shared machine](docs/pm51-shared-continuation.md).
+Latest [PM producer/status investigation](docs/pm51-status-producer.md):
+original RTC-related activity-eight writer traced statically; bounded
+`--pm51-history FILE` diagnostics implemented. Required status remains
+unknown and **no authentic OSD/framebuffer is demonstrated**.
+
+Previous checkpoint: [original PM51 on the shared machine](docs/pm51-shared-continuation.md).
 `--exploratory-pm51-spi-startup` connects original PM CODE/RIU and executes
 3,435 original instructions. PM stops before an unknown-status decision at
 `9B27 / XDATA 0EC2 bits0..2`; MIPS still stops at `80404BF4 / BF001CD1`.

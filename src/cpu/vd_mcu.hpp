@@ -51,6 +51,7 @@ public:
   uint8_t accumulator()const;
   uint8_t status()const;
   uint8_t port2()const;
+  uint16_t dataPointer()const;
   uint8_t accumulatorKnown()const;
   uint16_t accumulatorOrigin()const;
   std::vector<uint8_t> stateBytes()const; // diagnostic fingerprint, not a restore format

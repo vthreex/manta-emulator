@@ -145,10 +145,10 @@ public:
   bool candidateTsp=false;
   void configureExploratoryTspCpu();
   void configureExploratoryPmAcOn(){pmBoot_.acApplied();}
-  void configureExploratoryPm51(std::span<const uint8_t> code,uint64_t divider=32){
+  void configureExploratoryPm51(std::span<const uint8_t> code,uint64_t divider=32,bool history=false){
     if(code.size()!=65536 || !divider || divider>4096)
       throw std::runtime_error("PM CODE view/divider outside supported experiment");
-    pmCode_=code;pm51_.divider=divider;exploratoryPm51_=true;
+    pmCode_=code;pm51_.divider=divider;pm51_.captureHistory=history;exploratoryPm51_=true;
   }
   const Pm51& pm51()const{return pm51_;}
   void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}

@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "scope": "original AVD auxiliary diagnostic, not complete startup or TV boot",
+  "program_sha256": "48ab58a5689d3135b2cdf78fa77da92fa912776f741c33c7afa97fdcfc4ee4fd",
+  "upload_bytes": 13312,
+  "instructions": 6,
+  "pc": "0x0802",
+  "unknown_xdata": "0xC008",
+  "attempted_write": "0x55",
+  "hardware_side_effects": false,
+  "probe_sha256": "b60cbe6a1b088bfc8a12039f96f3a12b223934d13e21dd8d8463a241c60bda68",
+  "PM51_candidate_static_disassembly": "PASS; reset LJMP 60D8 and truncated-range rejection; no PM execution",
+  "PM51_candidate_sha256": "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c"
+}

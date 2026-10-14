@@ -1,0 +1,7 @@
+{
+  "result": "PASS",
+  "native_window_exit_code": 0,
+  "scope": "frontend creation with clean Windows System32 PATH; no guest/OSD-frame claim",
+  "stdout": "NATIVE_WINDOW_CREATED; guest display not initialized\n",
+  "executable_sha256": "7e98a28d1d8b9b8a265d2e50a1339112b0115b343cb732bf94914392d984275a"
+}

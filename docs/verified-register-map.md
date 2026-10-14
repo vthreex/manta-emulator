@@ -124,3 +124,11 @@ PM now stops before JNZ at 9B27, unknown source 0EC2 bits0..2. Page-zero
 observations share candidate MIPS aliases BF001D85/BF001D84. No hardware
 producer, reset value, completion or activity marker is inferred.
 See [shared PM evidence](pm51-shared-continuation.md).
+
+Original activity-eight producer identified statically: PM sample of logical
+0E1C bit4, gated by clear 0E1E bit4, calls 9B96 -> 956B -> 8AAF. The
+masked byte writer updates logical 0E69 (MIPS BF001CD1) through MOVX729A,
+then bank1200 receives bit7 command. This supports an RTC0-related wake
+reason interpretation, not a reset/readiness value. No execution of this
+producer or hardware IRQ routing is yet demonstrated. 0EC2 bit identities
+remain unknown. [Status/producer analysis](pm51-status-producer.md).

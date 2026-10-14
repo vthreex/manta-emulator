@@ -64,6 +64,7 @@ struct Options {
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage;
   std::filesystem::path tspFirmwareDump;
+  std::filesystem::path pm51History;
 };
 class Msd309Machine {
   std::vector<uint8_t> dramBacking_; // outlives CPU mappings, shared MIU aliases

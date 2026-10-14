@@ -1,5 +1,12 @@
 # Status of the research build
 
+Latest [PM status/producer investigation](pm51-status-producer.md) identifies
+the original RTC-related activity-eight path statically, adds bounded native
+PM histories and isolated status sensitivity tests. The real `0EC2` producer
+is still **unsupported**. Main and PM boundaries remain unchanged; no ZUI,
+enabled framebuffer or authentic pixels are demonstrated. Synthetic status
+input is confined to the probe and is not a television boot option.
+
 Current [shared PM51 continuation](pm51-shared-continuation.md) executes
 3,435 original PM instructions on the machine's shared flash/RIU view.
 The unused high status byte remains invalid; PM reaches `9B27`, requiring
