@@ -1,0 +1,64 @@
+{
+  "original_PM_source": {
+    "flash_start": "0x10000",
+    "flash_end": "0x20000",
+    "bytes": 65536,
+    "sha256": "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c",
+    "private_image_redistributed": false
+  },
+  "reset_vector": "0000 LJMP 60D8",
+  "first_configuration": "60DD MOVX XDATA 1018 = 02",
+  "isolated_boundary": "6DC7 reads XDATA 0EC3; high byte of 0EC2 halfword getter",
+  "startup_status_requirements": [
+    "0EC2 & 07 == 07 at 9B17",
+    "0EC2 bit3 at 575B"
+  ],
+  "status_producer_identified": false,
+  "static_activity_writers": [
+    {
+      "entry": "934D",
+      "operation": "0E69 = 00; 0E6F = FF",
+      "direct_caller": "9E49",
+      "caller_of_wrapper": "7061",
+      "write_helper": "724E",
+      "actual_MOVX": "729A",
+      "executed": false
+    },
+    {
+      "entry": "8AAF",
+      "operation": "replace low nibble of 0E69",
+      "executed": false
+    },
+    {
+      "entry": "8984",
+      "operation": "replace bits4/5 of 0E69",
+      "executed": false
+    },
+    {
+      "entry": "90D8",
+      "operation": "save and clear 0E69",
+      "executed": false
+    }
+  ],
+  "main_reader": {
+    "PC": "80404BF4",
+    "MMIO": "BF001CD1",
+    "predicate": "(byte & 0F) == 8",
+    "caller": "8046A190",
+    "branch_join": "80469CB8",
+    "ZUI_call": "80469E38 -> 804E0D48",
+    "unknown_value_supplied": false
+  },
+  "references": [
+    {
+      "url": "https://github.com/neuschaefer/mstar-mboot/blob/master/sboot/src/amber3/hwreg_AMBER3.h",
+      "evidence": "Historical inactive ROM_CODE_CTRL 1018 / SPI_ENABLE 02 definitions; corroborates candidate first write, no exact Titania4 reset proof"
+    },
+    {
+      "url": "https://github.com/neuschaefer/mstar-mboot/blob/master/sboot/src/kaiser/hwreg_KAISER.h",
+      "evidence": "Same historical definitions; related architecture only"
+    }
+  ],
+  "main_machine_PM_attached": false,
+  "strict_hardware_defaults_added": false
+}

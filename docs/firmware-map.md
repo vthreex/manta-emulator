@@ -1,5 +1,14 @@
 # Firmware and resource map
 
+Original raw flash `10000..20000` is now identified as a coherent PM51
+8051-family candidate: 65,536 bytes, SHA256
+`5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c`.
+Reset jumps to `60D8`; an isolated standard-reset/private-RAM experiment
+executes 3,406 original instructions. Board fetch mapping, startup status and
+integration remain unverified; no PM marker or readiness is produced. This
+refines the earlier unclassified `85C0..20000` region. The raw image remains
+private and immutable; [probe evidence](../evidence/pm51-original-regression.json).
+
 Recent original routines and byte hashes are preserved in [application disassembly](../evidence/application-disassembly.json): Y/C coefficient writers `803C8250`/`803C8424`, conditional SCMI setter `805FDBEC`, unused SAR-aperture observation caller `803BE898`, and unresolved fetch-workaround predicate `806006CC`. They are observed code paths, not a reconstruction of the TV interface. See [current continuation](application-display-continuation.md).
 
 Original: `0x800010` bytes, SHA-256 `d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9`. First 8 MiB SHA-256: `471e1f1c284e3c0fc9af68be0d8a79d0d635e0a1cca31066cd1e6df91e406d83`. The trailer is `bc000000000000000000000000000000`, preserved in private extraction output and never mapped as flash.

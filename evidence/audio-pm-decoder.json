@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "scope": "static candidate ISA decoding only",
+  "original_addressed_word_sha256": "f25cba069289823a8165f3d22dbbd90f58c83bbdc49aeff90f6476faad7da2df",
+  "unknown_entry_word_remains_unknown": true,
+  "DSP_instructions_executed": 0,
+  "malformed_inputs_rejected": 3,
+  "disassembler_sha256": "8b1304c2d347640773c4a469a82bc7168cb7a7d5352ef27f8b76117c1ed6490c"
+}

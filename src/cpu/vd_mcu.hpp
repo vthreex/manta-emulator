@@ -35,6 +35,8 @@ public:
   bool standardInterrupts=false;
   void resetProgram(VdMcuProgram& program);
   void resetProgram(AvdMcuProgram& program);
+  // Isolated standard-reset experiment; not a board SPI fetch mapping.
+  void resetPmCandidate(std::vector<uint8_t>& code);
   void step();
   void requestInt0();
   bool running()const;

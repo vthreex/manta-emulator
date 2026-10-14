@@ -1,0 +1,8 @@
+{
+  "result": "PASS",
+  "window_smoke_exit_code": 0,
+  "PATH_scope": "Windows System32 only",
+  "emulator_sha256": "9344b0ad03cc3ae1d3b9e5b0a9c76ecc5133e853ffd353cb030d3773c7fdf60d",
+  "stdout": "NATIVE_WINDOW_CREATED; guest display not initialized\n",
+  "stderr": ""
+}

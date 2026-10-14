@@ -1,0 +1,169 @@
+{
+  "result": "PASS",
+  "scope": "full original CPU replay",
+  "emulator_sha256": "9344b0ad03cc3ae1d3b9e5b0a9c76ecc5133e853ffd353cb030d3773c7fdf60d",
+  "full_four_CPU_trace_replay": "PASS",
+  "audio_IDMA_original_readback_bytes": 25059,
+  "audio_IDMA_addressed_storage": [
+    {
+      "word_uploads": 2781,
+      "word_reads": 2781,
+      "initialized_words": 2781,
+      "addressed_memory_sha256": "f25cba069289823a8165f3d22dbbd90f58c83bbdc49aeff90f6476faad7da2df"
+    },
+    {
+      "word_uploads": 5624,
+      "word_reads": 5572,
+      "initialized_words": 5560,
+      "addressed_memory_sha256": "ae80d6f58a52877f6cc0aa4d33d19a57e3ca175e1d2c5484e9fc2df69962f355"
+    }
+  ],
+  "original_OSD_routine_entries": {
+    "0x8040440c": 1,
+    "0x80522d5c": 1
+  },
+  "original_audio_timeout_entries": [
+    {
+      "tick": 1533070777,
+      "pc": "0x804f7a60",
+      "kind": "guest_audio_ack_timeout",
+      "address": "0x804f7a60",
+      "width": 0,
+      "value": "0x65",
+      "ra": "0x804f7a10",
+      "sp": "0x8072d898",
+      "detail": "original counter reached failure path after original retries/delays; no host timeout or acknowledgment"
+    },
+    {
+      "tick": 1672047865,
+      "pc": "0x804f7b58",
+      "kind": "guest_audio_ack_timeout",
+      "address": "0x804f7b58",
+      "width": 0,
+      "value": "0x65",
+      "ra": "0x804f7af8",
+      "sp": "0x8072d898",
+      "detail": "original counter reached failure path after original retries/delays; no host timeout or acknowledgment"
+    }
+  ],
+  "original_audio_failure_returns": [
+    {
+      "tick": 1533072342,
+      "pc": "0x804f7a84",
+      "kind": "guest_audio_ack_failure_return",
+      "address": "0x804f7a84",
+      "width": 0,
+      "value": "0x1",
+      "ra": "0x804f7398",
+      "sp": "0x8072d898",
+      "detail": "original failure path returns to its own caller; PC and return value not set by host"
+    },
+    {
+      "tick": 1672049487,
+      "pc": "0x804f7b8c",
+      "kind": "guest_audio_ack_failure_return",
+      "address": "0x804f7b8c",
+      "width": 0,
+      "value": "0x1",
+      "ra": "0x804f748c",
+      "sp": "0x8072d898",
+      "detail": "original failure path returns to its own caller; PC and return value not set by host"
+    }
+  ],
+  "original_audio_recovery_writes": [
+    {
+      "tick": 1533072334,
+      "pc": "0x804f927c",
+      "kind": "write",
+      "address": "0x1f225a70",
+      "width": 1,
+      "value": "0xf3",
+      "ra": "0x804f7a70",
+      "sp": "0x8072d898",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1672049479,
+      "pc": "0x804f9230",
+      "kind": "write",
+      "address": "0x1f225c79",
+      "width": 1,
+      "value": "0xf3",
+      "ra": "0x804f7b78",
+      "sp": "0x8072d898",
+      "detail": "recorded register storage; not a complete device"
+    }
+  ],
+  "original_SIF_command_byte_producers": [
+    {
+      "tick": 1395343027,
+      "pc": "0x804f9230",
+      "kind": "write",
+      "address": "0x1f225c40",
+      "width": 1,
+      "value": "0x4",
+      "ra": "0x804f7390",
+      "sp": "0x8072d8b8",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1734011494,
+      "pc": "0x804f9230",
+      "kind": "write",
+      "address": "0x1f225c40",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804fe158",
+      "sp": "0x8072d8d8",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1737008100,
+      "pc": "0x804f9230",
+      "kind": "write",
+      "address": "0x1f225c40",
+      "width": 1,
+      "value": "0x0",
+      "ra": "0x804fe1d8",
+      "sp": "0x8072d8b8",
+      "detail": "recorded register storage; not a complete device"
+    },
+    {
+      "tick": 1737008256,
+      "pc": "0x804f937c",
+      "kind": "write",
+      "address": "0x1f225c40",
+      "width": 1,
+      "value": "0x4",
+      "ra": "0x804fdfb4",
+      "sp": "0x8072d8c0",
+      "detail": "recorded register storage; not a complete device"
+    }
+  ],
+  "original_SIF_command_byte_reads": [
+    {
+      "tick": 1737008007,
+      "pc": "0x804f90e8",
+      "kind": "read",
+      "address": "0x1f225c40",
+      "width": 2,
+      "value": "0xa500",
+      "ra": "0x804fde6c",
+      "sp": "0x8072d8b8",
+      "detail": "INVALID one-shot sample; machine bit-provenance guard rejects first decision/new-device use"
+    },
+    {
+      "tick": 1737008325,
+      "pc": "0x804f90e8",
+      "kind": "read",
+      "address": "0x1f225c40",
+      "width": 2,
+      "value": "0xa504",
+      "ra": "0x804fde6c",
+      "sp": "0x8072d8a8",
+      "detail": "INVALID one-shot sample; machine bit-provenance guard rejects first decision/new-device use"
+    }
+  ],
+  "full_report": "audio-timeout-full-replay.json.gz",
+  "full_report_sha256": "81f3f58b7381f2ad743ee69cc3d886ccf63b8f4b3c6db21934a71cdfb02abd2a"
+}

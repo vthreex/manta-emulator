@@ -102,3 +102,17 @@ is causal to actual transfers, with atomic functional timing; unrelated
 fields remain unknown. BF225AB4 is still an unresolved DSP2 load-code
 acknowledgment. Original AVD executes to PC 0802, XDATA C008 write55;
 the register identity/effect is unknown and its write does not complete.
+
+The [audio timeout continuation](audio-timeout-continuation.md) observes two
+original finite failure returns without validating either E3 acknowledgment.
+Actual low-byte SIF producers and same-origin preservation retain unknown
+upper fields. IDMA also handles original byte-addressed coefficient transfers;
+an incomplete address latch cannot reuse a stale cursor.
+
+Current main boundary: `80404BF4 / BF001CD1`, low-nibble-equals-eight PM
+activity test. Candidate original PM51 code has static writers to logical
+`0E69`, including zero at `934D` through `724E/729A`. They have not executed.
+The isolated original PM startup stops at `6DC7 / XDATA 0EC3`, before the
+`0EC2` readiness test. Related historical ROM-source definitions corroborate
+the separate candidate `1018=02` SPI-selection interpretation; no Titania4
+reset/status value or PM reply is imported from another platform.

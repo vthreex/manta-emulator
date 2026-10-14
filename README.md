@@ -8,6 +8,13 @@ Re-Active, and returns from audio/platform initialization. It reaches
 The DSP reply bytes remain invalid; no DSP or PM readiness response is
 supplied. ZUI, an enabled framebuffer and an authentic frame remain unsupported.
 
+The separate `pm51_probe` now executes the original flash PM51 candidate
+through the existing 8051 interpreter. It stops after three instructions
+without an XDATA model, or after 3,406 instructions in the isolated candidate
+SPI/private-RAM experiment. PM startup status and board boot mapping remain
+unknown; this probe supplies no PM output to the television emulation.
+See [PM regression](evidence/pm51-original-regression.json).
+
 This is the existing native C++20 research emulator that executes the original Manta MIPS firmware and original uploaded OpenRISC TSP firmware. It also executes the original uploaded DVB-T 8051 program in a bounded diagnostic mode. **It does not yet display an authentic TV frame or OSD.** The native window remains blank until guest graphics hardware produces a valid output.
 
 A historical shared-MCU exploratory run executes **1,788,854,952 MIPS dispatches**, **280,644,619 OpenRISC instructions**, and **468,999 DVB-T MCU instructions**. Original MCU stores establish the shared mailbox; supported diagnostic replies come from its original IRQ handler. Normal boot still stops that MCU on unresolved XDATA 2200. The MIPS CPU additionally uploads and verifies a separate 13,312-byte AVD program, then stops at **804F9098 / BF225AB4** awaiting an unmodeled audio DSP2 response. GOP initializes twice, but no enabled framebuffer, raster output or ZUI frame is demonstrated. See [STATUS](docs/STATUS.md), [latest continuation](docs/shared-mcu-continuation.md), and [evidence](evidence/shared-final-summary.json). Strict POR and SPI-CF uncertainties remain unresolved.

@@ -1,5 +1,6 @@
 #include "cpu/vd_mcu.hpp"
 #include "cpu/third_party/emu8051/emu8051.h"
+#include "storage/sha256.hpp"
 #include <array>
 #include <cstddef>
 #include <sstream>
@@ -133,6 +134,13 @@ void VdMcuCpu::resetProgram(AvdMcuProgram& program){
   impl_->name="AVD MCU";
   if(program.held())throw VdHardwareBoundary("AVD MCU startup while held/reset");
   resetProgramStorage(program.codeStorage(),[&program](uint16_t a){return program.byteKnown(a);},program.writes);
+}
+void VdMcuCpu::resetPmCandidate(std::vector<uint8_t>& code){
+  if(code.size()!=65536 || sha256(code)!=
+     "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c")
+    throw VdHardwareBoundary("original PM51 candidate size/hash mismatch");
+  impl_->name="PM51 candidate";
+  resetProgramStorage(code,[](uint16_t){return true;},code.size());
 }
 void VdMcuCpu::resetProgramStorage(std::vector<uint8_t>& code,
     std::function<bool(uint16_t)> byteKnown,uint64_t writes){

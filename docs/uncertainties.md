@@ -1,5 +1,24 @@
 # Evidence still needed
 
+Current main boundary is `80404BF4 / BF001CD1`, the PM background-activity
+predicate. Original audio failure paths return under an explicit symbolic
+non-acknowledgment experiment; both reply bytes stay invalid. Strict execution
+still rejects unresolved inputs. No ZUI/framebuffer is demonstrated.
+
+Original flash `10000..20000` contains the PM51 candidate. Bounded standard
+8051 reset executes three instructions before XDATA `1018=02`. The isolated
+private-RAM experiment executes 3,406 instructions and stops at
+`6DC7 / XDATA 0EC3`, the high byte of the subsequent `0EC2` status check.
+Related Amber3/Kaiser historical definitions name `1018` ROM_CODE_CTRL and
+`02` SPI_ENABLE. That corroborates a separate candidate SPI-selection model,
+not the exact Titania4 reset/fetch mapping. The PM status producer and bit
+meanings, private RAM/page wiring, reset/clock routing and PM/MIPS scheduling
+remain unknown. Static `934D` clears `0E69`, but it has not executed; no zero
+or marker response is assigned to the main machine. See
+[original PM execution evidence](../evidence/pm51-original-regression.json).
+
+The older paragraphs below describe earlier stops, not the current main PC.
+
 Latest [audio/AVD checkpoint](audio-avd-continuation.md): addressed IDMA
 readback works, but DSP2 load-code acknowledgment `BF225AB4` is still
 unknown. Candidate ADSP-21xx decoding does not explain reset-entry word

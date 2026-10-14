@@ -173,7 +173,7 @@ also manipulate this field through the same helpers. This identifies a
 promising original-code producer, not an executed PM response or a valid
 cold-reset default. SPI boot selection, the PM XDATA/page mapping and the
 startup status producer must be established before relying on this code to
-resolve the main CPU boundary. No PM51 instructions are counted as executed.
+resolve the main CPU boundary. This static-analysis stage did not execute PM51 instructions.
 
 ## Verification
 
@@ -183,3 +183,48 @@ Windows System32 on PATH. Full deterministic replay reproduces the original
 CPU/MMIO trace, both failure paths and addressed IDMA memory. See the
 [replay report](../evidence/audio-timeout-replay.json) and
 [build/firmware provenance](../evidence/audio-timeout-provenance.json).
+The subsequent build with the PM probe repeats the full four-CPU replay,
+baseline/display suites, auxiliary probes and clean-PATH window test:
+[latest replay](../evidence/audio-pm-replay.json),
+[latest source/native provenance](../evidence/audio-pm-provenance.json).
+
+## Bounded original PM execution
+
+`pm51_probe` reuses the existing 8051 engine; the exact original candidate
+size/SHA is required, and the stock image is never modified. Standard reset
+executes three original instructions and stops at `60DD / XDATA 1018=02`.
+An explicit isolated-RAM experiment defers only that unknown write, then
+executes 3,406 original instructions, 1,032 RAM writes and seven RAM reads.
+It stops at `6DC7 / XDATA 0EC3`, the high byte read preceding the `0EC2`
+low-three-bits and bit-three polls. No activity-field writer executes.
+
+A separate candidate mode interprets `1018=02` as SPI-source selection,
+corroborated by the original reset write and related
+[Amber3 historical ROM-source definitions](https://github.com/neuschaefer/mstar-mboot/blob/master/sboot/src/amber3/hwreg_AMBER3.h).
+Those definitions are in an inactive historical block, so they do not prove
+exact Titania4 reset mapping. The configured `10000..20000` SPI view remains
+the original program storage; SRAM/DRAM/cache/banking selections are
+unsupported. It reaches the same boundary with no deferred write.
+
+All modes hash every instruction's PC/opcode/register state and every
+modeled memory transaction. Repeat execution matches the complete digest.
+Modified/truncated PM images are rejected. PM is not attached to the main
+machine, and these isolated instruction counts are not added to cold-boot
+counts. The status producer, boot selection and hardware clock/page mapping
+remain the next dependencies; no value is returned for the unknown read.
+See [PM regression](../evidence/pm51-original-regression.json).
+
+To reproduce the separate PM experiment, extract the original `10000..20000`
+block privately, then run `bin/pm51_probe.exe PRIVATE_PM.bin`. Add
+`--candidate-spi-private-ram` for the explicit configured SPI/RAM hypothesis,
+or `--exploratory-private-ram` for the original deferred-write experiment.
+Neither mode attaches PM to the main machine. The actual board status must
+be researched before promoting these experiments into a normal boot path.
+
+Remaining boundaries are main MIPS `80404BF4 / BF001CD1`, isolated PM
+`6DC7 / XDATA 0EC3`, AVD `0802 / XDATA C008`, and DVB-T `4AE0 / XDATA 2200`.
+The E3 acknowledgment producer and exact audio DSP ISA/ROM remain unresolved;
+strict POR and Winbond CF still stop earlier. A matching Titania4 register
+definition or safe read-only capture of PM logical `0EC2/0EC3` (candidate
+MIPS RIU `BF001D84/BF001D85`), reset/source control and activity `BF001CD1`
+across AC startup is needed. No physical TV or unverified pins were accessed.

@@ -14,7 +14,8 @@ graphics remain unsupported. The paragraphs below retain historical evidence.
 | Audio selector and command-byte provenance | implemented | Verified same-origin selector restores; actual MIPS command-byte producers; unknown upper fields discarded only by original masks |
 | DSP acknowledgment producer / exact ISA | unsupported | No E3 producer identified; candidate entry opcodes and unuploaded targets remain unresolved; zero DSP instructions |
 | PM BF001CD1 execution and reset state | unsupported | Original low-nibble==8 predicate; matching static writers in original flash PM51 candidate; boot mapping/status unresolved, no PM value assigned |
-| Corrected cold boot and multi-CPU replay | demonstrated | 803 native checks, 18 baseline and nine display runs, four forensics tests; [full replay summary](../evidence/audio-timeout-replay.json) |
+| Corrected cold boot and multi-CPU replay | demonstrated | 803 native checks, 18 baseline and nine display runs, four forensics tests; [latest full replay summary](../evidence/audio-pm-replay.json) |
+| Original PM51 isolated startup | partially implemented | Existing 8051 core executes 3,406 original instructions; configured SPI/private-RAM experiment stops at 6DC7 / XDATA 0EC3, disconnected from main PM state; [regression](../evidence/pm51-original-regression.json) |
 | ZUI, enabled GOP framebuffer, raster and native guest pixels | unsupported | Driver initialization remains separate from application drawing; no authentic frame |
 
 The latest [audio/AVD continuation](audio-avd-continuation.md) implements
