@@ -116,3 +116,11 @@ The isolated original PM startup stops at `6DC7 / XDATA 0EC3`, before the
 `0EC2` readiness test. Related historical ROM-source definitions corroborate
 the separate candidate `1018=02` SPI-selection interpretation; no Titania4
 reset/status value or PM reply is imported from another platform.
+
+Current shared PM experiment refines the earlier 0EC3 boundary. Original
+getter 6D84 reads high 0EC3 then low 0EC2 and returns R6/R7; caller 9B17
+uses only R7&7. The high byte remains invalid through register/IRAM copies.
+PM now stops before JNZ at 9B27, unknown source 0EC2 bits0..2. Page-zero
+observations share candidate MIPS aliases BF001D85/BF001D84. No hardware
+producer, reset value, completion or activity marker is inferred.
+See [shared PM evidence](pm51-shared-continuation.md).

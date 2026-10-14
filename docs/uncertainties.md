@@ -73,3 +73,13 @@ historical; strict POR/SPI-CF and all other stated uncertainties persist.
 Current additional boundary: **8052624C / BF205004 bit1**, GE virtual command-queue enable, after original GFX context preservation. Exact reset state, any external producer, clock/reset prerequisites and command-queue processing remain unknown. Genuine FIFO space/busy/tag status must follow queued operations; no constant success response is acceptable. SEM initial ownership and GOP initial bank are explicit experiments. The COMB transaction still assumes absent intermediate analog side effects, with high bits never made valid. See [current continuation and capture requirements](comb-and-ge-continuation.md).
 
 Current original TSP execution resolves the auxiliary-enable software dependency under explicit experiments; it does not validate silicon reset PC/QMEM reset fields or clock ratio. Full auxiliary interrupts/MMU/cache and PM51 execution remain unsupported. The current hardware decision is 804F0C48 / BF204B15 low nibble >=4. Related named HAL code identifies a SCART RGB detection use of the same byte with different bit masks; exact Titania4 input/ADC semantics and absent-input reset value remain unknown. No arbitrary nibble is supplied. Original GOP enters twice but no framebuffer is demonstrated. [Current report](openrisc-continuation.md).
+
+Latest connected PM instructions: 3435. The 0EC3 high byte is unused by the
+startup caller, and remains unknown. Required low 0EC2 bits0..2 now block
+the original JNZ at 9B27. Main still blocks at 80404BF4 / BF001CD1, since
+934D has not executed. Startup ordering, private RAM/page mapping, clocks,
+interrupt routing and required status producer remain unverified. The
+software test requiring seven is not a reset/completion specification.
+The configured external power reason is consistent across CPU views;
+firmware writes take precedence and invalid bits cannot fall back to a
+known external value. [Current report](pm51-shared-continuation.md).

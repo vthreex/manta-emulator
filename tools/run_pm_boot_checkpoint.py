@@ -1,0 +1,48 @@
+"""Reproduce the explicitly exploratory original five-CPU cold-boot checkpoint."""
+import argparse, json, subprocess
+from pathlib import Path
+
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('--firmware', required=True)
+p.add_argument('--emulator', default=str(Path(__file__).resolve().parents[1] / 'bin/manta.exe'))
+p.add_argument('--summary', default='pm51-checkpoint.json')
+p.add_argument('--trace', help='Optional full trace; the current checkpoint produces about 10 GB')
+p.add_argument('--coverage')
+p.add_argument('--window', action='store_true', help='Use the existing native window; no authentic frame is demonstrated')
+p.add_argument('--max-instructions', type=int, default=2000000000)
+p.add_argument('--print-command', action='store_true')
+a = p.parse_args()
+if a.max_instructions < 1:
+    p.error('instruction limit must be positive')
+flags = ['--firmware', a.firmware, '--symbolic-init', '--candidate-miu', '--candidate-bdma',
+ '--candidate-uart', '--gpio-i2c', '--defer-diagnostic-reads', '--virtual-rtc', '--cp0-timer',
+ '--candidate-utmi', '--candidate-spi', '--exploratory-spi-input', 'pull-up', '--candidate-chip-id',
+ '--exploratory-sc-bank', '0', '--candidate-gamma', '--exploratory-gamma-enable', '0',
+ '--exploratory-display-clock', '148500000', '--exploratory-subwindow-enable', '0',
+ '--exploratory-dlc-pending', '0', '--exploratory-dlc-timeout', '--exploratory-comb-bank', '0',
+ '--exploratory-comb-paired-restore', '--exploratory-gop-bank', '0', '--candidate-semaphore',
+ '--exploratory-semaphore-idle', '--candidate-ge', '--exploratory-ge-reset', '--candidate-gop-palette',
+ '--candidate-tsp', '--exploratory-tsp-reset-low', '--exploratory-tsp-cpu', '--defer-platform-identity',
+ '--exploratory-pm-ac-on', '--exploratory-sar-fullscale', '--exploratory-ir-dma-reset',
+ '--exploratory-gop-reset-windows', '--exploratory-scart-grounded', '--exploratory-scmi-format-byte', '0',
+ '--exploratory-analog-disconnected', '--exploratory-pq-sram-idle', '--exploratory-pq-disabled-ports',
+ '--graphics-probes', '--or1k-trace-first-visits', '--or1k-dispatch-divider', '4',
+ '--max-or1k-instructions', '400000000', '--exploratory-fetch-revision-byte', '2',
+ '--candidate-vd-mcu-program', '--candidate-avd-mcu-program', '--exploratory-vd-mcu-startup',
+ '--osd-probes', '--defer-vd-sfr8e-write', '--defer-vd-reset-key-writes',
+ '--exploratory-vd-suspended-boundary', '--exploratory-ci-detect-high', '--exploratory-vd-shared-run',
+ '--candidate-audio-idma', '--exploratory-avd-mcu-startup', '--exploratory-avd-suspended-boundary',
+ '--exploratory-audio-no-ack', '--exploratory-pm51-spi-startup', '--pm51-dispatch-divider', '32',
+ '--max-instructions', str(a.max_instructions), '--summary', a.summary]
+if not a.window:
+    flags.append('--headless')
+if a.trace:
+    flags += ['--record-trace', a.trace]
+if a.coverage:
+    flags += ['--coverage', a.coverage]
+command = [a.emulator] + flags
+if a.print_command:
+    print(json.dumps(command, indent=2))
+else:
+    print('EXPLORATORY hardware/reset/clock/input hypotheses; original firmware executes; essential unknown inputs stay invalid.', flush=True)
+    raise SystemExit(subprocess.call(command))

@@ -1,5 +1,21 @@
 # Status of the research build
 
+Current [shared PM51 continuation](pm51-shared-continuation.md) executes
+3,435 original PM instructions on the machine's shared flash/RIU view.
+The unused high status byte remains invalid; PM reaches `9B27`, requiring
+unknown `0EC2` bits0..2. Main MIPS still stops at `80404BF4 / BF001CD1`.
+No PM marker, ZUI, enabled framebuffer or authentic pixels are demonstrated.
+
+| Current PM capability | Status | Evidence and limits |
+|---|---|---|
+| Original PM CODE and shared RIU connection | partially implemented | 65,536-byte original flash view; page-zero observed mapping; startup/reset/clock/RAM wiring explicit hypotheses |
+| Original PM startup and unused high-byte provenance | demonstrated | 3,435 original instructions; high-byte/register aliases remain invalid; [regression](../evidence/pm51-shared-regression.json) |
+| MCU register/alias/stack validity guards | implemented | Invalid peripheral values cannot become valid through Rn/IRAM reloads or return addresses; failed checks roll metadata back |
+| PM required status and activity response | unsupported | Low-three-bit producer unidentified; no manufactured seven/eight/zero or ready IRQ |
+| ZUI and guest pixels | unsupported | Normal call site not reached; native blank-window startup is separate |
+
+The paragraphs below preserve earlier checkpoint evidence.
+
 Latest [original audio timeout continuation](audio-timeout-continuation.md):
 **1,789,567,273 MIPS**, **280,822,700 OpenRISC**, **468,999 DVB-T MCU** and
 **six AVD** instructions; **5,441 main timer** and **52 DVB-T MCU** IRQ entries.

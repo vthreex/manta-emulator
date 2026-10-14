@@ -17,6 +17,7 @@
 #include "peripherals/tsp.hpp"
 #include "cpu/openrisc.hpp"
 #include "peripherals/pm_boot.hpp"
+#include "peripherals/pm51.hpp"
 #include "peripherals/sar.hpp"
 #include "peripherals/ir_dma.hpp"
 #include "inputs/scart.hpp"
@@ -75,6 +76,13 @@ class Riu {
   OpenRisc tspCpu_;
   bool exploratoryTspCpu_=false;
   PmBootReason pmBoot_;
+  bool pmPowerReasonWritten_=false;
+  Pm51 pm51_;
+  std::span<const uint8_t> pmCode_;
+  bool exploratoryPm51_=false;
+  void advancePm(uint64_t tick);
+  VdByte pmRead(uint16_t address);
+  bool pmWrite(uint16_t address,VdByte value);
   SarAdc sar_;bool exploratorySarFullscale_=false;
   ScartGroundedInput scart_;
   bool analogDisconnected_=false;
@@ -137,6 +145,12 @@ public:
   bool candidateTsp=false;
   void configureExploratoryTspCpu();
   void configureExploratoryPmAcOn(){pmBoot_.acApplied();}
+  void configureExploratoryPm51(std::span<const uint8_t> code,uint64_t divider=32){
+    if(code.size()!=65536 || !divider || divider>4096)
+      throw std::runtime_error("PM CODE view/divider outside supported experiment");
+    pmCode_=code;pm51_.divider=divider;exploratoryPm51_=true;
+  }
+  const Pm51& pm51()const{return pm51_;}
   void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}
   void configureExploratoryScartGrounded(){scart_.ground();}
   void configureExploratoryFetchRevisionByte(unsigned byte){

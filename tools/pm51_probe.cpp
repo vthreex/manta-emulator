@@ -1,12 +1,57 @@
 // Bounded original PM51 execution, independent of main-machine PM readiness.
 #include "cpu/vd_mcu.hpp"
 #include "storage/sha256.hpp"
+#include "peripherals/riu.hpp"
 #include <array>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <set>
 int main(int argc,char** argv){try{
+  if(argc==3 && (std::string(argv[2])=="--shared-riu-symbolic" || std::string(argv[2])=="--shared-riu-status-fixture" || std::string(argv[2])=="--shared-riu-power-alias-fixture")){
+    const bool fixture=std::string(argv[2])=="--shared-riu-status-fixture";
+    const bool powerFixture=std::string(argv[2])=="--shared-riu-power-alias-fixture";
+    std::ifstream f(argv[1],std::ios::binary);std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});
+    manta::Riu r;r.symbolicInit=true;
+    r.flashRead=[&](uint32_t a,size_t n){
+      if(a<0x10000 || uint64_t(a)+n>0x20000)throw std::runtime_error("PM probe SPI source out of range");
+      return std::vector<uint8_t>(code.begin()+a-0x10000,code.begin()+a-0x10000+n);};
+    r.event=[](const auto& k,auto a,auto n,auto v,const auto& d){
+      std::cout<<"PM_CONNECTED_EVENT "<<k<<" address 0x"<<std::hex<<a<<" width "<<n<<" value 0x"<<v<<' '<<d<<'\n';};
+    r.configureExploratoryPm51(code);
+    if(powerFixture){
+      std::cout<<"PM_POWER_ALIAS_FIXTURE bridge-only test; injected writes below are NOT original PM execution/responses\n";
+      r.configureExploratoryPmAcOn();
+      auto first=r.read(0x1f001cdd,1,0,0,0);auto alias=r.pm51().sharedRead(0x0e6f);
+      if(first!=255 || alias.value!=255 || alias.known!=255)throw std::runtime_error("PM/MIPS external power cause views disagree");
+      r.pm51().sharedWrite(0x0e6f,{1,255,0});
+      if(r.read(0x1f001cdd,1,0,0,0)!=1 || r.pm51().sharedRead(0x0e6f).value!=1)
+        throw std::runtime_error("shared power field write hidden behind external fixture");
+      r.pm51().sharedWrite(0x0e6f,{0xa5,0,0x0e6f});
+      if(r.knownBits(0x1f001cdd,1) || r.pm51().sharedRead(0x0e6f).known)
+        throw std::runtime_error("external fixture promoted invalid shared power field");
+      std::cout<<"PM_POWER_ALIAS_FIXTURE_PASS all views coherent, unknown write stays invalid; original instructions="<<r.pm51().cpu().totalInstructions()<<'\n';
+      std::cout<<"PM_MAIN_MIPS_EXECUTED false; shared RIU probe only; no PM reply supplied\n";
+      return 0;
+    }
+    if(fixture){
+      // Bus-coupling/nonready fault fixture, never a stock reset or ready value.
+      r.prepareRmw(0x1f001d84,7);r.write(0x1f001d84,1,0xa4,0,7,0);
+      std::cout<<"PM_STATUS_FIXTURE lower bits=4; NOT a measured reset/ready response\n";
+    }
+    r.read(0x1f001cd1,1,0,0,500000);
+    const auto& pm=r.pm51();
+    std::cout<<"PM_CONNECTED_INSTRUCTIONS "<<std::dec<<pm.cpu().totalInstructions()<<" PC 0x"<<std::hex<<pm.cpu().pc()<<'\n';
+    std::cout<<"PM_CONNECTED_READS "<<std::dec<<pm.riuReads<<" RAM_WRITES "<<pm.ramWrites<<" RAM_READS "<<pm.ramReads<<'\n';
+    std::cout<<"PM_CONNECTED_BOUNDARY "<<pm.boundary()<<'\n';
+    std::cout<<"PM_CONNECTED_UNKNOWN_ORIGIN 0x"<<std::hex<<pm.cpu().accumulatorOrigin()
+      <<" ACC_KNOWN 0x"<<unsigned(pm.cpu().accumulatorKnown())<<'\n';
+    std::cout<<"PM_CONNECTED_STATE_SHA256 "<<pm.stateSha()<<'\n';
+    std::cout<<"PM_CONNECTED_SUSPENDED "<<(pm.suspended()?"true":"false")<<" MARKER_WRITES "<<pm.markerWrites
+      <<" MAIN_BYTE_KNOWN "<<r.knownBits(0x1f001cd1,1)<<'\n';
+    std::cout<<"PM_MAIN_MIPS_EXECUTED false; shared RIU probe only; no PM reply supplied\n";
+    return 0;
+  }
   const bool candidateSpi=argc==3 && std::string(argv[2])=="--candidate-spi-private-ram";
   if(argc!=2 && !(argc==3 && (candidateSpi || std::string(argv[2])=="--exploratory-private-ram")))
     throw std::runtime_error("supply original PM51 candidate [--exploratory-private-ram | --candidate-spi-private-ram]");

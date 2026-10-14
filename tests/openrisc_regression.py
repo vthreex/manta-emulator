@@ -22,6 +22,7 @@ avd_instructions=[];avd_external=[];avd_suspensions=[]
 idma=[{'memory':{},'phase':[],'address':None,'read_address':None,'readback':None,'writes':0,'reads':0} for _ in range(2)]
 idma_addresses=[{} for _ in range(2)]
 idma_byte_addresses=[]
+pm_instructions=[];pm_reads=[];pm_markers=[];pm_boundaries=[];pm_application=[]
 idma_readbacks=0
 assert ref['exploratory_tsp_cpu'] and ref['or1k_instructions']>459000
 assert ref['instruction_dispatches']>666736000 and ref['gop_initializer_entries']>=2
@@ -35,6 +36,11 @@ with Path(a.reference_trace).open() as f:
   # millions of unchanged original polling-loop memory events.
   if '"kind":"or1k_' in line and '"kind":"or1k_instruction"' not in line and '"kind":"or1k_register_write"' not in line:continue
   e=json.loads(line)
+  if e['kind']=='pm51_instruction':pm_instructions.append(e)
+  if e['kind']=='pm51_riu_read':pm_reads.append(e)
+  if e['kind']=='pm51_marker_write':pm_markers.append(e)
+  if e['kind']=='pm51_unknown_boundary':pm_boundaries.append(e)
+  if e['kind']=='guest_pm_application_entry':pm_application.append(e)
   if e['kind']=='avd_mcu_instruction':avd_instructions.append(e)
   if e['kind']=='audio_idma_address_byte':idma_byte_addresses.append(e)
   if e['kind']=='avd_mcu_external_unresolved':avd_external.append(e)
@@ -313,6 +319,21 @@ if ref.get('candidate_vd_mcu_program'):flags+=['--candidate-vd-mcu-program']
 if ref.get('candidate_avd_mcu_program'):flags+=['--candidate-avd-mcu-program']
 if ref.get('candidate_audio_idma'):flags+=['--candidate-audio-idma']
 if ref.get('exploratory_audio_no_ack'):flags+=['--exploratory-audio-no-ack']
+if ref.get('exploratory_pm51_spi_startup'):
+ pm_image=stock[0x10000:0x20000]
+ assert hashlib.sha256(pm_image).hexdigest()=='5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c'
+ assert ref['pm51_connected'] and ref['pm51_instructions']==3435 and ref['pm51_pc']=='0x9b27'
+ assert ref['pm51_suspended'] and ref['pm51_marker_writes']==ref['pm51_interrupt_entries']==0
+ assert ref['pm51_unknown_origin']=='0xec2' and ref['pm51_accumulator_known']==0xf8
+ assert ref['pm51_ram_writes']==1034 and ref['pm51_ram_reads']==11 and ref['pm51_riu_reads']==2
+ assert pm_instructions and all(pm_image[int(e['address'],16)]==int(e['value'],16) for e in pm_instructions)
+ assert [e['address'] for e in pm_reads]==['0x1f001d85','0x1f001d84']
+ assert all('known=0;' in e['detail'] for e in pm_reads) and not pm_markers
+ assert len(pm_boundaries)==1 and pm_boundaries[0]['address']=='0x9b27'
+ assert {e['address'] for e in pm_application}=={'0x8046a190','0x80404bec'}
+ assert ref['stop_pc']=='0x80404bf4' and ref['stop_address']=='0x1f001cd1'
+ assert '0x80469e38' not in coverage and '0x804e0d48' not in coverage
+ flags+=['--exploratory-pm51-spi-startup','--pm51-dispatch-divider',str(ref['pm51_dispatch_divider_hypothesis'])]
 if ref.get('exploratory_avd_mcu_startup'):flags+=['--exploratory-avd-mcu-startup','--exploratory-avd-suspended-boundary']
 if ref.get('exploratory_vd_mcu_startup'):flags+=['--exploratory-vd-mcu-startup']
 if ref.get('deferred_vd_sfr8e_write_enabled'):flags+=['--defer-vd-sfr8e-write']
@@ -349,6 +370,10 @@ Path(a.report).write_text(json.dumps({'result':'PASS','emulator_sha256':hashlib.
  'AVD_actual_uploaded_and_verified_bytes':len(avd_written),'AVD_original_release_requests':avd_starts,
  'AVD_original_instruction_attempts':avd_instructions,'AVD_unresolved_XDATA':avd_external,
  'full_four_CPU_trace_replay':('NOT RUN' if a.validate_only else 'PASS') if ref.get('exploratory_avd_mcu_startup') else None,
+ 'full_five_CPU_trace_replay':('NOT RUN' if a.validate_only else 'PASS') if ref.get('exploratory_pm51_spi_startup') else None,
+ 'original_PM_instruction_first_visits_verified':len(pm_instructions),'original_PM_shared_status_reads':pm_reads,
+ 'original_PM_marker_writes':pm_markers,'original_PM_boundaries':pm_boundaries,
+ 'original_PM_application_entries':pm_application,'PM_state_sha256':ref.get('pm51_state_sha256'),
  'audio_IDMA_original_readback_bytes':idma_readbacks,'audio_IDMA_addressed_storage':ref.get('audio_idma_ports'),
  'audio_IDMA_original_byte_address_writes':idma_byte_addresses,
  'guarded_AVD_unknown_cache_observations':avd_cached,

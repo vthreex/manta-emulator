@@ -3,6 +3,40 @@
 #include <stdexcept>
 #include "storage/sha256.hpp"
 namespace manta {
+VdByte Riu::pmRead(uint16_t address){
+  auto physical=0x1f000000u+(uint32_t(address&~1u)<<1)+(address&1u);
+  VdByte v{uint8_t(get(physical,1)),uint8_t(knownBits(physical,1)),address};
+  if(address==0x0e6f && !pmPowerReasonWritten_ && pmBoot_.cause())v.value=*pmBoot_.cause();
+  event("pm51_riu_read",physical,1,v.value,"original PM XDATA="+std::to_string(address)+
+    " PC="+std::to_string(pm51_.cpu().pc())+" shared MIPS RIU backing; known="+std::to_string(v.known)+"; invalid bits are not status responses");
+  return v;
+}
+bool Riu::pmWrite(uint16_t address,VdByte value){
+  if(value.known!=255 && value.origin!=address)
+    throw VdHardwareBoundary("PM unknown observation stored to foreign RIU origin");
+  if(address!=0x0e69 && address!=0x0e6f)return false;
+  if(address==0x0e6f)pmPowerReasonWritten_=true;
+  auto physical=0x1f000000u+(uint32_t(address&~1u)<<1)+(address&1u);
+  bytes_[physical]={value.value,value.known};
+  event("pm51_marker_write",physical,1,value.value,"original PM MOVX PC="+std::to_string(pm51_.cpu().pc())+
+    " updates shared byte; known="+std::to_string(value.known)+"; no host-generated marker");
+  return true;
+}
+void Riu::advancePm(uint64_t tick){
+  if(!exploratoryPm51_)return;
+  if(!pm51_.started()){
+    pm51_.event=[this](const auto& k,auto a,auto n,auto v,const auto& d){event(k,a,n,v,d);};
+    pm51_.sharedRead=[this](uint16_t a){return pmRead(a);};
+    pm51_.sharedWrite=[this](uint16_t a,VdByte v){return pmWrite(a,v);};
+    pm51_.executionStopped=[this]{return executionStopped && executionStopped();};
+    pm51_.codeSourceValid=[this](uint16_t a,uint8_t v){
+      if(!flashRead)throw VdHardwareBoundary("PM CODE view has no shared SPI backing");
+      auto bytes=flashRead(0x10000u+a,1);return bytes.size()==1 && bytes[0]==v;
+    };
+    pm51_.start(pmCode_);
+  }
+  pm51_.advance(tick);
+}
 std::optional<VdByte> Riu::vdRead(uint16_t address){
   if(address>=0x2f00 && address<0x2f20){
     auto i=uint32_t(address-0x2f00),physical=0x1f224c00+(i<<1)-(i&1);
@@ -272,7 +306,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     auto it=bytes_.find(storageKey(a));return 15|(it==bytes_.end()?0:it->second.known);
   }
   if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c) && irDma_.producer())return 255;
-  if(a==0x1f001cdd && n==1 && pmBoot_.cause())return 255;
+  if(a==0x1f001cdd && n==1 && !pmPowerReasonWritten_ && pmBoot_.cause())return 255;
   if(exploratorySarFullscale_ && n==1 && (a==0x1f002834 || a==0x1f002835) && sar_.result(a-0x1f002834))return 255;
   if(candidateTsp && a==0x1f202afc && n==2)return tsp_.known()?TspQueue::countStatusMask:0;
   if(candidateGe && ge_.initialized() && a==0x1f20501c && n==2)return GeQueue::statusKnown;
@@ -337,6 +371,7 @@ uint32_t Riu::crcMsb(const std::vector<uint8_t> &b, uint32_t poly, uint32_t crc)
   return crc;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  advancePm(tick);
   advanceTsp(tick);
   advanceVd(tick);
   if(candidateAudioIdma && n==1 && a>=0x1f225a00 && a<0x1f225d00){
@@ -381,7 +416,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
       event("exploratory_sar_sample",a,n,*v,"free-running conversion from explicit 3300mV/reference fixture, guest digital/analog power controls and period; keypad wiring and latency unvalidated");return *v;
     }
   }
-  if(a==0x1f001cdd && n==1 && pmBoot_.cause()){
+  if(a==0x1f001cdd && n==1 && !pmPowerReasonWritten_ && pmBoot_.cause()){
     event("exploratory_pm_boot_reason",a,n,*pmBoot_.cause(),"EXPLORATORY external PM boundary with applied AC power: documented ACON enum ff; no PM51 code, ready ACK or wake key fabricated");
     return *pmBoot_.cause();
   }
@@ -579,6 +614,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  advancePm(tick);
   advanceTsp(tick);
   advanceVd(tick);
   if(exploratoryCiDetectHigh && a<=0x1f206891 && uint64_t(a)+n>0x1f206891)

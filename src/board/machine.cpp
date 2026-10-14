@@ -203,6 +203,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     std::vector<uint8_t> bytes(size);cpu_.read(address,bytes.data(),size);return bytes;
   };
   riu_.event = [this](auto &k, auto a, auto n, auto v, auto &d) { event(k, a, n, v, d); };
+  if(o.exploratoryPm51SpiStartup){
+    if(!o.symbolicInit || !o.deferDiagnosticReads || o.stage2 || o.initPrefix)
+      throw std::runtime_error("PM SPI startup requires guarded original cold boot; reset/clock wiring remains exploratory");
+    riu_.configureExploratoryPm51(std::span<const uint8_t>(flash_.stock()).subspan(0x10000,65536),o.pm51Divider);
+  }
   if (!o.trace.empty()) {
     trace_.open(o.trace);
     if (!trace_)
@@ -308,6 +313,9 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
+  if(m.options_.exploratoryPm51SpiStartup && (a==0x80404bec || a==0x8046a190 || a==0x80469e38))
+    m.event("guest_pm_application_entry",uint32_t(a),0,m.riu_.knownBits(0x1f001cd1,1),
+      "original control flow: activity reader/caller or ZUI call site; status validity reported without selecting a branch");
   if(m.options_.osdProbes && (a==0x804e0d48 || a==0x804e0dc4 || a==0x80536274 ||
       a==0x80522d5c || a==0x80520a84 || a==0x8040440c)){
     ++m.osdProbeEntries_[uint32_t(a)];
@@ -1469,6 +1477,7 @@ std::string Msd309Machine::summary() const {
       <<"\",\n  \"avd_mcu_suspended\": "<<(riu_.avdMcuSuspended()?"true":"false");
   }
   if(options_.candidateAudioIdma){
+    // Existing audio diagnostics retain invalid ACK bytes independently of PM.
     if(options_.exploratoryAudioNoAck)s<<",\n  \"exploratory_audio_no_ack\": true,\n  \"audio_ack_unknown_samples\": "<<audioNoAck_.samples
       <<",\n  \"audio_ack_constrained_comparisons\": "<<audioNoAck_.comparisons<<",\n  \"audio_ack_timeouts\": "<<audioNoAck_.timeouts
       <<",\n  \"audio_ack_failure_returns\": "<<audioNoAck_.returns;
@@ -1489,6 +1498,23 @@ std::string Msd309Machine::summary() const {
     <<",\n  \"vd_mailbox_reads\": "<<riu_.vdMailboxReads()
     <<",\n  \"vd_mailbox_writes\": "<<riu_.vdMailboxWrites()
     <<",\n  \"vd_dispatch_divider\": "<<riu_.vdDispatchDivider;
+  if(options_.exploratoryPm51SpiStartup){
+    const auto& p=riu_.pm51();
+    s<<",\n  \"exploratory_pm51_spi_startup\": true,\n  \"pm51_connected\": true"
+      <<",\n  \"pm51_instructions\": "<<p.cpu().totalInstructions()
+      <<",\n  \"pm51_ticks\": "<<p.cpu().cycles()<<",\n  \"pm51_pc\": \""<<hex(p.cpu().pc())<<"\""
+      <<",\n  \"pm51_interrupt_entries\": "<<p.cpu().interruptEntries()
+      <<",\n  \"pm51_running\": "<<(p.cpu().running()?"true":"false")
+      <<",\n  \"pm51_suspended\": "<<(p.suspended()?"true":"false")
+      <<",\n  \"pm51_boundary\": \""<<p.boundary()<<"\""
+      <<",\n  \"pm51_ram_writes\": "<<p.ramWrites<<",\n  \"pm51_ram_reads\": "<<p.ramReads
+      <<",\n  \"pm51_riu_reads\": "<<p.riuReads<<",\n  \"pm51_marker_writes\": "<<p.markerWrites
+      <<",\n  \"pm51_spi_control_writes\": "<<p.controlWrites
+      <<",\n  \"pm51_dispatch_divider_hypothesis\": "<<p.divider
+      <<",\n  \"pm51_accumulator_known\": "<<unsigned(p.cpu().accumulatorKnown())
+      <<",\n  \"pm51_unknown_origin\": \""<<hex(p.cpu().accumulatorOrigin())<<"\""
+      <<",\n  \"pm51_state_sha256\": \""<<p.stateSha()<<"\"";
+  }
   if(options_.exploratoryVdSuspendedBoundary)s<<",\n  \"exploratory_vd_suspended_boundary\": true,\n  \"vd_mcu_suspended\": "<<(riu_.vdMcuSuspended()?"true":"false")
     <<",\n  \"vd_mcu_boundary_reason\": \""<<riu_.vdMcuBoundaryReason()<<"\"";
   if(options_.osdProbes){

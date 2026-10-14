@@ -1,0 +1,76 @@
+{
+  "result": "PASS",
+  "scope": "full original CPU replay",
+  "emulator_sha256": "f335296d89074f4173bfc46691974a4b62e103fbd14909650f3b5a71de63cf88",
+  "full_five_CPU_trace_replay": "PASS",
+  "original_PM_instruction_first_visits_verified": 102,
+  "original_PM_shared_status_reads": [
+    {
+      "tick": 109134,
+      "pc": "0xbfc01e14",
+      "kind": "pm51_riu_read",
+      "address": "0x1f001d85",
+      "width": 1,
+      "value": "0xa5",
+      "ra": "0xbfc01b2c",
+      "sp": "0x0",
+      "detail": "original PM XDATA=3779 PC=28103 shared MIPS RIU backing; known=0; invalid bits are not status responses"
+    },
+    {
+      "tick": 109614,
+      "pc": "0xbfc01e14",
+      "kind": "pm51_riu_read",
+      "address": "0x1f001d84",
+      "width": 1,
+      "value": "0xa5",
+      "ra": "0xbfc01b2c",
+      "sp": "0x0",
+      "detail": "original PM XDATA=3778 PC=28119 shared MIPS RIU backing; known=0; invalid bits are not status responses"
+    }
+  ],
+  "original_PM_marker_writes": [],
+  "original_PM_boundaries": [
+    {
+      "tick": 110051,
+      "pc": "0xbfc01e14",
+      "kind": "pm51_unknown_boundary",
+      "address": "0x9b27",
+      "width": 0,
+      "value": "0x0",
+      "ra": "0xbfc01b2c",
+      "sp": "0x0",
+      "detail": "PM51 candidate unknown XDATA bits affect instruction/decision/address"
+    }
+  ],
+  "original_PM_application_entries": [
+    {
+      "tick": 1789567269,
+      "pc": "0x8046a190",
+      "kind": "guest_pm_application_entry",
+      "address": "0x8046a190",
+      "width": 0,
+      "value": "0x0",
+      "ra": "0x80469c60",
+      "sp": "0x8072d948",
+      "detail": "original control flow: activity reader/caller or ZUI call site; status validity reported without selecting a branch"
+    },
+    {
+      "tick": 1789567271,
+      "pc": "0x80404bec",
+      "kind": "guest_pm_application_entry",
+      "address": "0x80404bec",
+      "width": 0,
+      "value": "0x0",
+      "ra": "0x8046a198",
+      "sp": "0x8072d948",
+      "detail": "original control flow: activity reader/caller or ZUI call site; status validity reported without selecting a branch"
+    }
+  ],
+  "PM_state_sha256": "cadcb434fea5d892392a7b9c4f7755d4372603e2a3ff07f9aa8e9c0b9de23862",
+  "original_OSD_routine_entries": {
+    "0x8040440c": 1,
+    "0x80522d5c": 1
+  },
+  "full_report": "pm51-shared-full-replay.json.gz",
+  "full_report_sha256": "545a4ca2ac7a85fb317e4f8c72408bc9b0f374d2f09e9e54681724dd0e81b26e"
+}

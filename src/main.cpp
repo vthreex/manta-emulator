@@ -82,6 +82,11 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--candidate-vd-mcu-program")o.candidateVdMcuProgram=true;
       else if (a == "--candidate-avd-mcu-program")o.candidateAvdMcuProgram=true;
       else if (a == "--candidate-audio-idma")o.candidateAudioIdma=true;
+      else if (a == "--exploratory-pm51-spi-startup")o.exploratoryPm51SpiStartup=true;
+      else if (a == "--pm51-dispatch-divider"){
+        o.pm51Divider=std::stoull(value(i),nullptr,0);
+        if(!o.pm51Divider || o.pm51Divider>4096)throw std::runtime_error("PM divider must be 1..4096; relationship remains hypothetical");
+      }
       else if (a == "--exploratory-audio-no-ack")o.exploratoryAudioNoAck=true;
       else if (a == "--exploratory-avd-mcu-startup")o.exploratoryAvdMcuStartup=true;
       else if (a == "--exploratory-avd-suspended-boundary")o.exploratoryAvdSuspendedBoundary=true;
@@ -195,6 +200,8 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-tsp-cpu: actual ORBIS32 execution with explicit hypothetical reset mapping/PC and 1:1 scheduling\n"
                "--defer-platform-identity: SHA-verified original cache stores keep unknown 0198/019C observations invalid; first consumer stops\n"
                "--exploratory-pm-ac-on: external PM boundary models documented ACON cause ff only; no PM51 readiness or input events supplied\n"
+               "--exploratory-pm51-spi-startup: original PM CODE shares flash, XDATA shares RIU; hypothetical concurrent reset/SPI/RAM wiring; required unknown status stops PM before decisions\n"
+               "--pm51-dispatch-divider N: hypothetical MIPS dispatches per PM machine tick (1..4096; default 32); not a measured clock\n"
                "--exploratory-sar-fullscale: 3300mV inputs/reference for SAR0/1; original power/free-run controls and period trigger conversion, board wiring unverified\n"
                "--exploratory-ir-dma-reset: original descriptor command commits an empty IR capture ring; 82h reset/index coupling unverified, no keys supplied\n"
                "--exploratory-gop-reset-windows: original top-bank reset pulse clears GWIN enable bits only; exact reset scope unverified\n"

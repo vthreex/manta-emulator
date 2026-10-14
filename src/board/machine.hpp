@@ -35,6 +35,8 @@ struct Options {
   bool exploratoryTspCpu=false;
   bool deferPlatformIdentity=false;
   bool exploratoryPmAcOn=false;
+  bool exploratoryPm51SpiStartup=false;
+  uint64_t pm51Divider=32;
   bool exploratorySarFullscale=false,orFirstVisits=false;
   bool exploratoryIrDmaReset=false;
   bool exploratoryGopResetWindows=false;

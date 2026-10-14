@@ -6,6 +6,7 @@
 #include <string>
 #include <stdexcept>
 #include <optional>
+#include <span>
 namespace manta {
 struct VdByte { uint8_t value=0xa5,known=0;uint16_t origin=0; };
 struct VdHardwareBoundary:std::runtime_error {
@@ -16,7 +17,7 @@ struct VdHardwareBoundary:std::runtime_error {
 class VdMcuCpu {
   struct Impl;
   std::unique_ptr<Impl> impl_;
-  void resetProgramStorage(std::vector<uint8_t>& code,
+  void resetProgramStorage(std::span<const uint8_t> code,
     std::function<bool(uint16_t)> byteKnown,uint64_t writes);
 public:
   VdMcuCpu();
@@ -36,7 +37,7 @@ public:
   void resetProgram(VdMcuProgram& program);
   void resetProgram(AvdMcuProgram& program);
   // Isolated standard-reset experiment; not a board SPI fetch mapping.
-  void resetPmCandidate(std::vector<uint8_t>& code);
+  void resetPmCandidate(std::span<const uint8_t> code,std::function<bool(uint16_t)> sourceValid={});
   void step();
   void requestInt0();
   bool running()const;
@@ -49,5 +50,9 @@ public:
   uint8_t stack()const;
   uint8_t accumulator()const;
   uint8_t status()const;
+  uint8_t port2()const;
+  uint8_t accumulatorKnown()const;
+  uint16_t accumulatorOrigin()const;
+  std::vector<uint8_t> stateBytes()const; // diagnostic fingerprint, not a restore format
 };
 }

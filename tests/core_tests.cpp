@@ -923,6 +923,32 @@ void vdSharedExecutionTests(){
     require(restores==1 && stop.find(badBranch?"unknown XDATA bits":"XDATA read unsupported")!=std::string::npos,
       "guarded MCU RMW does not turn unknown mask bits into a usable branch or status response");
   }
+  for(unsigned scenario=0;scenario<5;++scenario){
+    // MOVX -> R6 -> independent CLR -> reload; neither Rn nor its direct
+    // IRAM alias can convert an invalid hardware observation to valid data.
+    std::vector<uint8_t> code={0x90,0x1b,0,0xe0,0xfe,0xe4};
+    if(scenario==1)code.insert(code.end(),{0x7e,0x42});
+    if(scenario==3)code.insert(code.end(),{0x75,0xd0,8});
+    if(scenario==4)code.insert(code.end(),{0x78,6,0xe6});
+    else code.insert(code.end(),scenario==2?std::initializer_list<uint8_t>{0xe5,6}:std::initializer_list<uint8_t>{0xee});
+    code.insert(code.end(),{0x90,0x40,0,0xf0,0x60,0});
+    auto p=program(code);manta::VdMcuCpu c;manta::VdByte saved;unsigned writes=0;
+    c.busRead=[](uint16_t a)->std::optional<manta::VdByte>{
+      if(a==0x1b00)return manta::VdByte{0xa5,0,a};return {};};
+    c.busWrite=[&](uint16_t a,manta::VdByte value){require(a==0x4000,"MCU test destination is private RAM");saved=value;++writes;return true;};
+    std::string stop;try{c.startup(p,100);}catch(const std::exception& e){stop=e.what();}
+    require(writes==1,"MCU register-provenance fixture executes actual MOVX store");
+    require(saved.known==(scenario==1 || scenario==3?255:0),"8051 banked Rn and direct alias preserve invalid source; actual overwrite removes it");
+    if(scenario==0 || scenario==2 || scenario==4)require(saved.origin==0x1b00 && stop.find("unknown XDATA bits")!=std::string::npos,
+      "unknown peripheral value survives Rn reload and stops before original conditional branch");
+  }
+  {
+    auto p=program({0x90,0x1b,0,0xe0,0xfe,0xe4,0x75,0x81,6,0x22});
+    manta::VdMcuCpu c;c.busRead=[](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{0xa5,0,a};};
+    std::string stop;try{c.startup(p,100);}catch(const std::exception& e){stop=e.what();}
+    require(stop.find("stack/return address")!=std::string::npos && c.pc()==9,
+      "invalid R6 cannot become a return PC through overlapping low-IRAM stack storage");
+  }
   {
     manta::Riu r;r.event=[](auto,auto,auto,auto,auto){};
     r.candidateVdMcuProgram=true;r.exploratoryVdMcuStartup=true;r.exploratoryVdSharedRun=true;

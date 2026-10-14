@@ -1,5 +1,12 @@
 # Manta LCD4214 firmware execution research build
 
+Current continuation: [original PM51 on the shared machine](docs/pm51-shared-continuation.md).
+`--exploratory-pm51-spi-startup` connects original PM CODE/RIU and executes
+3,435 original instructions. PM stops before an unknown-status decision at
+`9B27 / XDATA 0EC2 bits0..2`; MIPS still stops at `80404BF4 / BF001CD1`.
+No PM activity response, ZUI framebuffer or authentic OSD is demonstrated.
+Reset order, clock ratio and unverified wiring remain explicit hypotheses.
+
 Latest continuation: [original audio failure paths and application boot](docs/audio-timeout-continuation.md).
 With the explicit `--exploratory-audio-no-ack` predicate experiment, the
 guest executes both original finite DSP failure paths, prints DSP2/DSP1
