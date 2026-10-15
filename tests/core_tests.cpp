@@ -698,6 +698,11 @@ void gopUpdateTests() {
   r.write(0x1f203ffc,2,0x201,0,0,edge+2);r.write(0x1f203ffc,2,1,0,0,edge+3);
   require(manta::readGopWindow(r,1,0,true)->miuRelativeAddress==0xbbbb8,"force latch transfers updated guest shadow bytes");
   require((r.knownBits(0x1f203ffc,2)&0x00f0)==0,"GOP latch never validates unrelated interrupt fields");
+  r.configureExploratoryGopResetWindows();r.write(0x1f203ffc,2,0,0,0,edge+4);
+  r.write(0x1f203e00,2,1,0,0,edge+5);
+  require(!manta::readGopWindow(r,1,0,true) && (r.gopActiveByte(1,0).known&1),
+          "asserted GOP plane reset disables already-latched active windows without erasing framebuffer metadata");
+  require(r.gopActiveByte(1,4).value==0x77,"reset cannot fabricate replacement framebuffer addresses");
 }
 void scalerTimingTests() {
   manta::ScalerTiming s;
@@ -915,6 +920,15 @@ void geQueueTests() {
   require(!bus.stopReason.empty(),"GE unrelated status bits remain invalid");
 }
 void readMaskTests() {
+  constexpr uint32_t originalExt=0x7cc53c00; // EXT a1,a2,16,8 at805EE834
+  manta::Engine ext;ext.map(0,0x1000);ext.write(0,&originalExt,4);ext.reg(UC_MIPS_REG_6,0xab35cdef);
+  require(ext.run(0x80000000,1)==UC_ERR_OK && ext.reg(UC_MIPS_REG_5)==0x35,
+          "original interleaved EXT executes its architectural extraction");
+  require(manta::independentExtract(originalExt,0xab35cdef,true)==0x35,
+          "RMW proof agrees with original instruction execution without touching sampled a0");
+  require(!manta::independentExtract(originalExt,0xab35cdef,false),"RMW proof rejects an unknown independent EXT source");
+  require(!manta::independentExtract(originalExt|4,0xab35cdef,true),"INS cannot masquerade as an independent EXT");
+  require(!manta::independentExtract(0x7cc5ffc0,0xab35cdef,true),"invalid overflowing EXT range is rejected");
   std::array<uint32_t,8> ctrl={0x95025004,0xafbf002c,0xafb50028,0x30420002,
       0xafb30020,0xafb2001c,0xafb10018,0xafb00014};
   require(manta::immediateReadMask(ctrl)==2,"stock GE control read masks bit1 after independent SWs");

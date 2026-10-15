@@ -1294,6 +1294,13 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
                !dependent[rs] && !dependent[rt] && !dependent[(w >> 11) & 31]) {
       auto rd = (w >> 11) & 31;
       if (rd && ((w & 63) == 10 ? values[rt] == 0 : values[rt] != 0)) values[rd] = values[rs];
+    } else if (op == 31 && (w & 63) == 0) {
+      // Original805EE830: LBU a0; EXT a1,a2,16,8; ANDI a0,BF; SB.
+      // The independent EXT is not a use of the sampled control byte.
+      auto extracted=independentExtract(w,values[rs],!dependent[rs] &&
+        !unknownObservations_.registerUnknown(rs) && !preservedBits_.mask(rs));
+      if(!extracted)return 0;
+      values[rt]=*extracted;dependent[rt]=0;
     } else if (op == 31 && rs == 0 && (w & 0x7ff) == 0x620 && ((w >> 11) & 31)) {
       auto rd = (w >> 11) & 31;
       values[rd] = uint32_t(int32_t(int16_t(values[rt])));
@@ -1722,11 +1729,24 @@ std::string Msd309Machine::summary() const {
     s << ",\n  \"or1k_idle_poll_log_changes_only\": true,\n  \"or1k_idle_poll_records_suppressed\": " << suppressedOrIdlePolls_;
   if(options_.orRegisterLogChanges)
     s << ",\n  \"or1k_stored_read_log_changes_only\": true,\n  \"or1k_stored_read_records_suppressed\": " << suppressedOrStoredReads_;
-  if(options_.exploratoryGopVsyncLatch)
+  if(options_.exploratoryGopVsyncLatch){
     s << ",\n  \"exploratory_gop_sync_latch\": true,\n  \"gop_update_requests\": "<<riu_.gopUpdate().requests
       << ",\n  \"gop_force_latches\": "<<riu_.gopUpdate().forced<<",\n  \"gop_register_latches\": "<<riu_.gopUpdate().latches
       << ",\n  \"gop_ack_known_mask\": "<<riu_.gopUpdate().known()<<",\n  \"gop_active_register_bytes\": "<<riu_.gopActiveBytes()
-      << ",\n  \"gop_latch_clock_domain_hardware_verified\": false";
+      << ",\n  \"gop_latch_clock_domain_hardware_verified\": false,\n  \"gop_active_descriptors\": [";
+    bool firstActive=true;
+    for(auto bank:{1u,4u})for(unsigned window=0;window<(bank==1?4u:2u);++window){
+      auto descriptor=readGopWindow(riu_,bank,window,true);
+      if(!descriptor)continue;
+      if(!firstActive)s<<',';
+      firstActive=false;
+      s<<"{\"bank\":"<<bank<<",\"window\":"<<window
+       <<",\"miu_relative_address\":\""<<hex(descriptor->miuRelativeAddress)<<"\",\"pitch\":"<<descriptor->pitch
+       <<",\"width\":"<<descriptor->width<<",\"height\":"<<descriptor->height
+       <<",\"format\":"<<unsigned(descriptor->format)<<",\"bpp\":"<<unsigned(descriptor->bpp)<<'}';
+    }
+    s<<']';
+  }
   s << "\n}";
   return s.str();
 }

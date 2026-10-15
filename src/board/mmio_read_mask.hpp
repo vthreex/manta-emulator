@@ -3,6 +3,15 @@
 #include <optional>
 #include <span>
 namespace manta {
+// Used only for independent instructions interleaved into an RMW proof.
+// Never turn an invalid source (including a sampled device value) into a
+// concrete value merely because EXT discards some of its bits.
+inline std::optional<uint32_t> independentExtract(uint32_t word,uint32_t source,bool sourceKnown){
+  if(!sourceKnown || word>>26!=31 || (word&63)!=0 || !((word>>16)&31))return {};
+  unsigned count=((word>>11)&31)+1,shift=(word>>6)&31;
+  if(count+shift>32)return {};
+  return count==32?source:(source>>shift)&((uint32_t(1)<<count)-1);
+}
 // Prove the loaded value is destroyed by ANDI/EXT before any other use.
 // Intervening instructions may neither read nor replace that register.
 inline std::optional<uint32_t> immediateReadMask(std::span<const uint32_t> words) {

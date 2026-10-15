@@ -45,11 +45,38 @@ not itself prove valid framebuffer memory, raster output, or native display.
 
 ## Verification scope
 
-989 native checks and both CTest entries passed on this build, including native
-window creation. Baseline/display regressions and the real GOP continuation are
-being rerun. Earlier full2B event replay remains evidence for its recorded binary;
+996 native checks pass, including active-window reset preservation. The prior
+build passed both CTest entries including native window creation. All18 baseline
+and nine display runs pass;650M MIPS/1.8B TSP reported state, coverage and PM
+history agree with the pre-filter run. Five clock-prefix replays, four forensics
+tests and original PM51/DVB-T/AVD diagnostic regressions pass. Earlier full2B event replay remains evidence for its recorded binary;
 it is not claimed as validation of the new GOP model. The corrected resource61
 observer now recognizes actual RAM SHA256 at the original loader return, rather
 than incorrectly treating a repurposed S0 end pointer as the resource ID.
 
 No enabled GOP framebuffer, GE raster output or authentic TV pixels are proven.
+
+## Real continuation after GOP update
+
+The original guest consumed the modeled ACK and continued to808,027,989 MIPS
+and2,451,551,300 original TSP instructions,36,236 main timer entries and53 DVB-T
+interrupt entries. There were five normal update requests,42 force pulses and47
+actual register-bank latches, covering238 bytes. No decoded enabled window or
+raster output appeared. ZUI returned at804E0DBC, but its state/event loop804E0DC4
+has not been entered.
+
+The next stop805EE830/BF206230 was an original read-modify-write clearing bit6.
+An independent EXT instruction between its LBU and ANDI was not recognized by
+the proof detector. The related Marlon XC archive names the matching routine
+MDrv_SC_set_fpll and HAL_SC_EnableFPLL uses the same6230 bit3/bit6 controls.
+This identifies frame-PLL configuration, not a ready status or reset value.
+The proof now handles a valid independent EXT only when its input is known and
+not derived from the sampled MMIO byte. Unit execution of the actual EXT word
+agrees with the proof; invalid-source, INS and invalid-range cases reject.
+Unknown preserved6230 bits remain invalid. A new original cold boot is running
+to validate this correction in application execution.
+
+[Completed GOP continuation](../evidence/gop-first-continuation.json) and
+compressed full summaries/coverage/history preserve the evidence. Global latch
+scope and sync timing are still exploratory; no verified power marker or CP
+response was generated.

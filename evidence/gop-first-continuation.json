@@ -1,0 +1,30 @@
+{
+  "guest_exception_vector_entries": 36236,
+  "instruction_dispatches": 808027989,
+  "stop_pc": "0x805ee830",
+  "stop_address": "0x1f206230",
+  "reason": "unmodeled MMIO read",
+  "or1k_instructions": 2451551300,
+  "avd_mcu_instructions": 6,
+  "vd_mcu_instructions": 475513,
+  "vd_mcu_interrupt_entries": 53,
+  "pm51_instructions": 3474,
+  "osd_routine_entries": {
+    "0x8040440c": 1,
+    "0x804e0d48": 1,
+    "0x80522d5c": 1
+  },
+  "graphics_probes": {
+    "window_program_entries": 7,
+    "write32_entries": 331,
+    "decoded_windows": []
+  },
+  "copro_original_program_match": true,
+  "gop_update_requests": 5,
+  "gop_force_latches": 42,
+  "gop_register_latches": 47,
+  "gop_active_register_bytes": 238,
+  "gop_latch_clock_domain_hardware_verified": false,
+  "source_revision": "97c1830 (before subsequent active-descriptor summary and EXT proof changes)",
+  "source_binary_hash_recorded": false
+}

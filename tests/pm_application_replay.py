@@ -27,7 +27,8 @@ resource=stock[0x2d89d8:0x2e3c58]
 assert len(resource)==45696 and resource[:2]==b'\xff\xd8'
 assert hashlib.sha256(resource).hexdigest()=='92b1ccd98f3a02f7dd1a7e5d9a6b0cd73e18e07bdeee9531bf3fbaaf66d2b700'
 events=[];trace_sha=hashlib.sha256();count=0
-selected=(b'diagnostic_pm_activity_',b'diagnostic_pm_nonresume_',b'bdma_flash_copy',b'pm51_marker_write')
+selected=(b'diagnostic_pm_activity_',b'diagnostic_pm_nonresume_',b'bdma_flash_copy',b'pm51_marker_write',
+          b'exploratory_gop_update_request',b'exploratory_gop_register_latch')
 with Path(a.reference_trace).open('rb') as f:
     for line in f:
         trace_sha.update(line);count+=1
@@ -42,6 +43,15 @@ assert copy['pc']=='0x80547350' and int(copy['address'],16)==0x2d89d8 and copy['
 assert int(copy['value'],16)==0x03230000
 assert int(done['address'],16)==0x03230000 and done['width']==45696
 assert done.get('virtual_cpu_cycles',done['tick'])>=copy.get('virtual_cpu_cycles',copy['tick'])+64
+if ref.get('exploratory_gop_sync_latch'):
+    assert ref['gop_update_requests']>0 and ref['gop_register_latches']>0
+    assert not ref['gop_latch_clock_domain_hardware_verified']
+    assert kinds.count('exploratory_gop_update_request')==ref['gop_update_requests']
+    assert kinds.count('exploratory_gop_register_latch')==ref['gop_register_latches']
+    coverage=set(Path(a.reference_coverage).read_text().splitlines())
+    assert {'0x80469e38','0x804e0d48','0x804e0dbc'}<=coverage,'original application must enter AND return from ZUI'
+    assert ref['osd_routine_entries'].get('0x804e0d48')==1
+    assert all(e['address']=='0x1f203ffc' for e in events if e['kind'].startswith('exploratory_gop_'))
 replay_result='NOT RUN (recorded evidence only)'
 if not a.validate_only:
     launcher=Path(__file__).resolve().parents[1]/'tools/run_pm_boot_checkpoint.py'
