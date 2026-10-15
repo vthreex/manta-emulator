@@ -1,5 +1,14 @@
 # Manta LCD4214 firmware execution research build
 
+Current [MCU/VIF continuation](docs/mcu-stack-vif-continuation.md): original ZUI
+initialization enters and returns under named exploratory configurations, but
+its dispatcher and authentic OSD remain unentered. Corrected MCU stack
+provenance permits 1,454,515 original DVB-T instructions and 161 interrupts.
+Main execution requires unmodeled live VIF measurements at `80509D54`.
+No enabled framebuffer or authentic TV pixels are demonstrated.
+
+The older checkpoint descriptions below retain their historical results.
+
 Latest [PM/application and original logo-transfer investigation](docs/pm-application-logo-transfer.md) adds an explicit symbolic non-resume path and actual guest-requested flash-to-MIU0 copying. The original logo JPEG reaches guest RAM; decoding, ZUI and authentic scan-out remain unsupported. PM hardware state is still unknown. This diagnostic path is not verified cold boot.
 
 

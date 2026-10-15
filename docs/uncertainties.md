@@ -1,5 +1,16 @@
 # Evidence still needed
 
+Current application investigation: original ZUI initialization has entered and
+returned in explicitly exploratory runs. Its state dispatcher and authentic
+OSD pixels remain unobserved. Main execution reaches `80509D54`, consuming
+invalid VIF mean16 from `BF224644`; neighboring PGA/VGA observations remain
+invalid. The [MCU/VIF continuation](mcu-stack-vif-continuation.md) verifies
+isolated finite original VIF return paths without supplying TV measurements.
+PM51 `574F/0E6A`, AVD `0802/C008`, DVB-T `4AE0/2200`, exact DSP execution,
+strict POR and undocumented SPI CF remain independent uncertainties.
+
+The older checkpoint paragraphs below retain their historical boundaries.
+
 Latest [PM power-good/UART cross-reference](pm51-power-good-and-uart.md):
 related boot source names the exact `0EC2 & 7 == 7` predicate CheckPowerGood.
 Individual MSD309 detectors and reset state remain unverified. The named

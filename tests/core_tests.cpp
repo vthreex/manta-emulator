@@ -1338,6 +1338,79 @@ void vdSharedExecutionTests(){
     if(scenario==0 || scenario==2 || scenario==4)require(saved.origin==0x1b00 && stop.find("unknown XDATA bits")!=std::string::npos,
       "unknown peripheral value survives Rn reload and stops before original conditional branch");
   }
+  for(uint8_t stackBase:{7,0x40,0xa5})for(uint8_t known:{0,0x7f,255}){
+    auto p=program({0x75,0x81,stackBase,0x90,0x1b,0,0xe0,0xc0,0xe0,0xe4,0xd0,0xe0,
+      0x60,0,0x90,0x40,0,0xe0});
+    manta::VdMcuCpu cpu;cpu.busRead=[&](uint16_t address)->std::optional<manta::VdByte>{
+      if(address==0x1b00)return manta::VdByte{0xa5,known,address};return {};};
+    std::string stop;try{cpu.startup(p,100);}catch(const std::exception& error){stop=error.what();}
+    require(cpu.instructions()==(known==255?8:6) && cpu.pc()==(known==255?17:12),
+      "PUSH/POP saves unknown bytes across lower and upper IRAM, stopping only at their consumer");
+    require(cpu.accumulatorKnown()==known && cpu.accumulatorOrigin()==0x1b00 && cpu.stack()==stackBase,
+      "PUSH/POP restores the exact byte mask, origin and original stack pointer");
+    require(stop.find(known==255?"XDATA read unsupported":"unknown XDATA bits")!=std::string::npos,
+      "known stack data continues, while invalid data never supplies a branch predicate");
+  }
+  for(uint8_t destination:{0x82,0xd0}){
+    auto p=program({0x75,0x81,0xa5,0x90,0x1b,0,0xe0,0xc0,0xe0,0xe4,0xd0,destination});
+    manta::VdMcuCpu cpu;cpu.busRead=[](uint16_t address)->std::optional<manta::VdByte>{
+      return manta::VdByte{0xa5,0,address};};
+    std::string stop;try{cpu.startup(p,100);}catch(const std::exception& error){stop=error.what();}
+    require(cpu.pc()==10 && cpu.stack()==0xa6 && stop.find("SFR control/address")!=std::string::npos,
+      "POP cannot convert unknown stack bits into DPTR or PSW control state");
+  }
+  {
+    auto p=program({0x75,0x81,0xa5,0x75,0x82,0x42,0xc0,0x82,0x75,0x82,0,
+      0xd0,0x82,0xe5,0x82,0x90,0x40,0,0xf0,0x80,0xfe});
+    manta::VdMcuCpu cpu;std::string stop;unsigned writes=0;
+    cpu.busWrite=[&](uint16_t address,manta::VdByte value){
+      require(address==0x4000 && value.value==0x42 && value.known==255,
+        "known DPL survives its independent SFR stack round trip");++writes;return true;};
+    try{cpu.startup(p,100);}catch(const std::exception& error){stop=error.what();}
+    require(writes==1 && cpu.stack()==0xa5 && stop.find("cycle budget")!=std::string::npos,
+      "direct DPL stack save uses the SFR rather than unrelated upper IRAM provenance");
+  }
+  for(uint8_t destination:{0x20,0x42,0xe0}){
+    auto save=program({0x75,0x81,0xa5,0x90,0x1b,0,0xe0,0xc0,0xe0,0x80,0xfe});
+    auto failedPush=program({0x75,0x81,0xa5,0xc0,0x8e});
+    std::vector<uint8_t> restoreCode={0x75,0x81,0xa6,0xd0,destination};
+    if(destination!=0xe0)restoreCode.insert(restoreCode.end(),{0xe5,destination});
+    restoreCode.insert(restoreCode.end(),{0x60,0});auto restore=program(restoreCode);
+    manta::VdMcuCpu cpu;cpu.busRead=[](uint16_t address)->std::optional<manta::VdByte>{
+      return manta::VdByte{0xa5,0,address};};
+    cpu.resetProgram(save);
+    for(unsigned ticks=0;ticks<100 && cpu.instructions()<4;++ticks)cpu.step();
+    require(cpu.stack()==0xa6,"reset fixture saves an invalid byte in actual upper IRAM");
+    cpu.resetProgram(failedPush);std::string failed;
+    try{for(unsigned ticks=0;ticks<100;++ticks)cpu.step();}catch(const std::exception& error){failed=error.what();}
+    require(cpu.pc()==3 && cpu.stack()==0xa5 && failed.find("nonstandard SFR read unsupported")!=std::string::npos,
+      "failed PUSH source read cannot write stack RAM or commit its speculative provenance");
+    cpu.resetProgram(restore);std::string stop;
+    try{for(unsigned ticks=0;ticks<100;++ticks)cpu.step();}catch(const std::exception& error){stop=error.what();}
+    require(cpu.pc()==(destination==0xe0?5:7) && cpu.accumulatorKnown()==0 && cpu.accumulatorOrigin()==0x1b00 &&
+      stop.find("unknown XDATA bits")!=std::string::npos,
+      "warm reset preserves retained upper-IRAM provenance through direct RAM and ACC restores");
+  }
+  {
+    std::vector<uint8_t> code(128);code[0]=2;code[2]=0x20;code[3]=2;code[5]=0x40;
+    const std::vector<uint8_t> init={0x75,0x81,0xa5,0x75,0xa8,0x81,0xd2,0x88,0x90,0x40,0,0xe0,0x80,0xfe};
+    const std::vector<uint8_t> handler={0xc0,0xe0,0xc0,0x83,0xc0,0x82,0xc0,0xd0,
+      0x75,0xd0,0x18,0xc2,0xa8,0x90,0x1b,0x10,0xe0,0xd0,0xd0,0xd0,0x82,0xd0,0x83,0xd0,0xe0,0x32};
+    std::copy(init.begin(),init.end(),code.begin()+0x20);
+    std::copy(handler.begin(),handler.end(),code.begin()+0x40);
+    auto p=program(code);manta::VdMcuCpu cpu;cpu.standardInterrupts=true;
+    cpu.busRead=[](uint16_t address)->std::optional<manta::VdByte>{
+      return manta::VdByte{0xa5,uint8_t(address==0x4000?0:255),address};};
+    cpu.resetProgram(p);
+    for(unsigned count=0;count<100 && cpu.accumulatorKnown()==255;++count)cpu.step();
+    require(cpu.accumulatorKnown()==0,"interrupt fixture reaches the actual invalid MOVX result");
+    cpu.requestInt0();
+    for(unsigned count=0;count<100 && (cpu.pc()!=0x2c || cpu.interruptEntries()==0);++count)cpu.step();
+    require(cpu.pc()==0x2c && cpu.interruptEntries()==1 && cpu.stack()==0xa5,
+      "actual interrupt entry, original ISR save prefix and RETI restore the interrupted instruction stream");
+    require(cpu.accumulatorKnown()==0 && cpu.accumulatorOrigin()==0x4000 && cpu.dataPointer()==0x4000,
+      "ISR round trip preserves the invalid accumulator and independently known DPTR");
+  }
   {
     auto p=program({0x90,0x1b,0,0xe0,0xfe,0xe4,0x75,0x81,6,0x22});
     manta::VdMcuCpu c;c.busRead=[](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{0xa5,0,a};};

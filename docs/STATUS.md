@@ -1,5 +1,18 @@
 # Status of the research build
 
+The [MCU stack/VIF continuation](mcu-stack-vif-continuation.md) corrects
+interrupt-save provenance and executes 1,454,515 original DVB-T instructions
+with 161 interrupts. It naturally passes `4A8A` and returns to the genuine
+unsupported `4AE0 / XDATA 2200` transaction. Main execution remains at
+`80509D54` after 854,795,034 dispatches, requiring invalid live VIF measurements.
+An isolated probe executes 2,048 complete original VIF calls with synthetic
+measurements: all return naturally, but no measurements are supplied to TV boot.
+ZUI initialization entered/returned; its dispatcher and authentic OSD remain
+unentered. No enabled framebuffer or guest pixels have appeared.
+The new complete five-CPU trace, summary, coverage and PM history replay
+identically. 1,233 native checks, 18 baseline and nine display runs pass; the
+packaged Windows executable starts with a System32-only PATH.
+
 Latest [ZUI and GOP update investigation](zui-gop-update.md) demonstrates original
 ZUI entry and return through normal control flow in named exploratory runs.
 The corrected unknown-bit guard has full event/summary/coverage/PM-history

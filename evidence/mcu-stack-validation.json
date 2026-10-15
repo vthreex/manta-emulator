@@ -1,0 +1,115 @@
+{
+  "base_git": "c28b061",
+  "scope": "existing multi-CPU exploratory execution; no verified physical cold boot or authentic OSD",
+  "native_checks": 1233,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "reports": {
+    "cold-summary": {
+      "file": "mcu-stack-cold-summary.json.gz",
+      "sha256_uncompressed": "c9b3ed078c983e35e942406f660ac45a52b9ed74fe3f92830d6893b7163a30b3"
+    },
+    "full-replay": {
+      "file": "mcu-stack-full-replay.json.gz",
+      "sha256_uncompressed": "9734b48519c68899a3e4f32479344787cc8a8edb5dfcd5f270a0269686ba5586"
+    },
+    "baseline-regression": {
+      "file": "mcu-stack-baseline-regression.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display-regression": {
+      "file": "mcu-stack-display-regression.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "pm51-regression": {
+      "file": "mcu-stack-pm51-regression.json.gz",
+      "sha256_uncompressed": "4d32cf84493944d1f8ca9bcc2790683728ec520f9ca43a10c74b345a063cb8aa"
+    },
+    "vd-regression": {
+      "file": "mcu-stack-vd-regression.json.gz",
+      "sha256_uncompressed": "71b5043fe9cd6fcd82298dbafbb2f4e79b0622ebd95addd5e0350cecbaa01562"
+    },
+    "avd-regression": {
+      "file": "mcu-stack-avd-regression.json.gz",
+      "sha256_uncompressed": "a6e7516f442618f03858df5bbff14ed5b3d36915512f06b6dac3046c9848d25f"
+    },
+    "copro-regression": {
+      "file": "mcu-stack-copro-regression.json.gz",
+      "sha256_uncompressed": "f4a6b93170a80fc7f32253789aa6f83203db9d33ab01c1783d4a267047622be5"
+    },
+    "clock-regression": {
+      "file": "mcu-stack-clock-regression.json.gz",
+      "sha256_uncompressed": "b6571341adc7ecb79eea3c2b2448e21f789a5185a864ed5cbc7505a9f6a504a5"
+    },
+    "immutable-regression": {
+      "file": "mcu-stack-immutable-regression.json.gz",
+      "sha256_uncompressed": "88b1d4415e3fc3000fac2a6384af1366580e25f050c7b3655041c45f6850d1d5"
+    },
+    "dsp-decoder-regression": {
+      "file": "mcu-stack-dsp-decoder-regression.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "packaged-window": {
+      "file": "mcu-stack-packaged-window.json.gz",
+      "sha256_uncompressed": "f432e8b2f149d429414ec342b261e263562a63895c074b9bbbef0964440d6b03"
+    },
+    "vif-control-flow": {
+      "file": "mcu-stack-vif-control-flow.json.gz",
+      "sha256_uncompressed": "afd5df151bfae064581fea9d360b3db82b1966e3ce8cbadd11bc4ed9a7f382d7"
+    }
+  },
+  "prior_same_mode_comparison": {
+    "MIPS_coverage_identical": true,
+    "PM51_history_identical": true,
+    "changed_summary_fields": {
+      "vd_mcu_instructions": {
+        "before": 407,
+        "after": 475509
+      },
+      "vd_mcu_upstream_ticks": {
+        "before": 409,
+        "after": 475615
+      },
+      "vd_mcu_pc": {
+        "before": "0x4a8a",
+        "after": "0x4ae0"
+      },
+      "vd_mcu_total_instructions": {
+        "before": 486469,
+        "after": 1454515
+      },
+      "vd_mcu_interrupt_entries": {
+        "before": 57,
+        "after": 161
+      },
+      "vd_mailbox_reads": {
+        "before": 40060,
+        "after": 120176
+      },
+      "vd_mailbox_writes": {
+        "before": 14,
+        "after": 30
+      },
+      "pm51_state_sha256": {
+        "before": "629b0453a0d986f1aa838941644d5f8b43030d624453f2dc4e8673f97b3011d5",
+        "after": "32c9489e015cfc475fa13aa1bad537ba4eb9625cff63102d0b80cb6f738d0b68"
+      },
+      "vd_mcu_boundary_reason": {
+        "before": "VD MCU unknown XDATA bits affect instruction/decision/address",
+        "after": "VD MCU XDATA write unsupported at PC 0x4ae0, address 0x2200"
+      }
+    }
+  },
+  "raw_trace_private_path": "<private-trace-cache>/trace-cache-2026-10-13/mcu-stack-cold.jsonl",
+  "raw_coverage_sha256": "3ae2f889a4d4c6b9ed3883fe894cea22949726e911b5b61cf09cef2d24fd958f",
+  "raw_PM_history_sha256": "d5366f766c3c7962f68627ae1be4ab485aa31e5ed552ac1b107ffee1cc4b7487",
+  "original_firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "binaries": {
+    "manta.exe": "2c2a72557346fd47375ca525f74d4d2f49324551b9d994a8d28fa191f62322bd",
+    "core_tests.exe": "0b4cbcc282c1d7133cf89a957733b26f26a00d8ccc8b4c2043115478c27e8a60",
+    "vif_agc_probe.exe": "dece59172a599374656ba8e72139cbb395eaa41bbe93fd69cdf52fcd39464da0"
+  },
+  "native_stdout": "1233 checks passed"
+}

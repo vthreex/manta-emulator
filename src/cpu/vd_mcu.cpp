@@ -19,8 +19,8 @@ struct VdMcuCpu::Impl {
   uint64_t total=0,interrupts=0;
   uint8_t aKnown=255;
   uint16_t aOrigin=0;
-  std::array<uint8_t,32> registerKnown{};
-  std::array<uint16_t,32> registerOrigin{};
+  std::array<uint8_t,256> registerKnown{};
+  std::array<uint16_t,256> registerOrigin{};
   bool parityUnknown=false;
   std::array<VdByte,128> uartRegisters{};
   bool uartTxPending=false;
@@ -131,32 +131,23 @@ struct VdMcuCpu::Impl {
     auto opcode=cpu->mCodeMem[pc];
     // Failed validation must not commit metadata for an unexecuted copy,
     // push or address operation. Architectural registers remain untouched.
-    struct Rollback {
-      Impl& m;decltype(registerKnown) known;decltype(registerOrigin) origins;
-      uint8_t a;uint16_t origin;bool parity;int exceptions;
-      explicit Rollback(Impl& state):m(state),known(state.registerKnown),origins(state.registerOrigin),
-        a(state.aKnown),origin(state.aOrigin),parity(state.parityUnknown),exceptions(std::uncaught_exceptions()){}
-      ~Rollback(){if(std::uncaught_exceptions()>exceptions){m.registerKnown=known;m.registerOrigin=origins;
-        m.aKnown=a;m.aOrigin=origin;m.parityUnknown=parity;}}
-    } rollback(m);
     // Rn are banked IRAM bytes, not permanently known values. Preserve an
     // invalid MOVX result across register copies and reject unmodeled uses.
     auto operand=cpu->mCodeMem[uint16_t(pc+1)];
     auto sp=cpu->mSFR[REG_SP];
-    if((opcode==0x22 || opcode==0x32 || opcode==0xd0) &&
-       ((sp<32 && m.registerKnown[sp]!=255) ||
-        (opcode!=0xd0 && uint8_t(sp-1)<32 && m.registerKnown[uint8_t(sp-1)]!=255)))
-      throw VdHardwareBoundary("MCU unknown IRAM register alias consumed through stack/return address");
+    if(opcode==0x22 || opcode==0x32){
+      if(m.registerKnown[sp]!=255 || m.registerKnown[uint8_t(sp-1)]!=255)
+        throw VdHardwareBoundary("MCU unknown IRAM register alias consumed through stack/return address");}
     auto bank=cpu->mSFR[REG_PSW]&0x18;
     auto index=unsigned(bank+(opcode&7));
     bool registerLoad=opcode>=0xe8 && opcode<=0xef;
     bool registerStore=opcode>=0xf8;
     bool registerImmediate=opcode>=0x78 && opcode<=0x7f;
-    bool directRegisterLoad=opcode==0xe5 && operand<32;
+    bool directRegisterLoad=opcode==0xe5 && operand<128;
     if(registerStore){m.registerKnown[index]=m.aKnown;m.registerOrigin[index]=m.aOrigin;}
     if(registerImmediate){m.registerKnown[index]=255;m.registerOrigin[index]=0;}
-    if(opcode==0x75 && operand<32){m.registerKnown[operand]=255;m.registerOrigin[operand]=0;}
-    if(opcode==0xf5 && operand<32){m.registerKnown[operand]=m.aKnown;m.registerOrigin[operand]=m.aOrigin;}
+    if(opcode==0x75 && operand<128){m.registerKnown[operand]=255;m.registerOrigin[operand]=0;}
+    if(opcode==0xf5 && operand<128){m.registerKnown[operand]=m.aKnown;m.registerOrigin[operand]=m.aOrigin;}
     auto usesRn=[&]{
       return (opcode>=0x08 && opcode<=0x0f) || (opcode>=0x18 && opcode<=0x1f) ||
         (opcode>=0x28 && opcode<=0x2f) || (opcode>=0x38 && opcode<=0x3f) ||
@@ -171,20 +162,46 @@ struct VdMcuCpu::Impl {
     // stop rather than laundering an invalid Rn through another IRAM alias.
     bool directSource=opcode==0x05 || opcode==0x15 || opcode==0x25 || opcode==0x35 ||
       opcode==0x45 || opcode==0x55 || opcode==0x65 || opcode==0x85 || opcode==0x95 ||
-      opcode==0xb5 || opcode==0xc0 || opcode==0xc5 || opcode==0xd5 ||
+      opcode==0xb5 || opcode==0xc5 || opcode==0xd5 ||
       (opcode>=0xa8 && opcode<=0xaf);
-    if(directSource && operand<32 && m.registerKnown[operand]!=255)
+    if(directSource && operand<128 && m.registerKnown[operand]!=255)
       throw VdHardwareBoundary("MCU unknown register bits consumed through direct IRAM alias");
-    if(opcode==0x12 || (opcode&0x1f)==0x11 || opcode==0xc0){
-      unsigned count=opcode==0xc0?1:2;
-      for(unsigned i=1;i<=count;++i){auto address=uint8_t(sp+i);
-        if(address<32){m.registerKnown[address]=255;m.registerOrigin[address]=0;}}
+    bool bitRead=opcode==0x10 || opcode==0x20 || opcode==0x30 || opcode==0x72 ||
+      opcode==0x82 || opcode==0xa0 || opcode==0xa2 || opcode==0xb0 || opcode==0xb2;
+    if(operand<128){
+      auto address=unsigned(0x20+(operand>>3));auto mask=uint8_t(1u<<(operand&7));
+      if(bitRead && !(m.registerKnown[address]&mask))
+        throw VdHardwareBoundary("MCU unknown IRAM bit affects instruction/decision");
+      if(opcode==0xc2 || opcode==0xd2 || opcode==0x92){
+        m.registerKnown[address]|=mask;
+        if(m.registerKnown[address]==255)m.registerOrigin[address]=0;
+      }
     }
-    if(opcode==0xd0 && operand<32){m.registerKnown[operand]=255;m.registerOrigin[operand]=0;}
+    if(bitRead && operand==0xd0 && m.parityUnknown)
+      throw VdHardwareBoundary("VD MCU unknown parity consumed through PSW");
+    if(opcode==0xc0){
+      uint8_t known=255;uint16_t origin=0;
+      if(operand<128){known=m.registerKnown[operand];origin=m.registerOrigin[operand];}
+      else if(operand==0xe0){known=m.aKnown;origin=m.aOrigin;}
+      else if(operand==0xd0 && m.parityUnknown){known=0xfe;origin=m.aOrigin;}
+      auto address=uint8_t(sp+1);
+      m.registerKnown[address]=known;m.registerOrigin[address]=origin;
+    }
+    if(opcode==0xd0){
+      auto known=m.registerKnown[sp];auto origin=m.registerOrigin[sp];
+      if(operand<128){m.registerKnown[operand]=known;m.registerOrigin[operand]=origin;}
+      else if(operand==0xe0){m.aKnown=known;m.aOrigin=origin;m.parityUnknown=known!=255;}
+      else if((operand==0xd0 && (known&0xfe)!=0xfe) || (operand!=0xd0 && known!=255))
+        throw VdHardwareBoundary("MCU unknown stack byte affects SFR control/address");
+    }
+    if(opcode==0x12 || (opcode&0x1f)==0x11){
+      for(unsigned i=1;i<=2;++i){auto address=uint8_t(sp+i);
+        m.registerKnown[address]=255;m.registerOrigin[address]=0;}
+    }
     if(opcode>=0xa8 && opcode<=0xaf){m.registerKnown[index]=255;m.registerOrigin[index]=0;}
-    if((opcode>=0x88 && opcode<=0x8f) && operand<32){m.registerKnown[operand]=255;m.registerOrigin[operand]=0;}
+    if((opcode>=0x88 && opcode<=0x8f) && operand<128){m.registerKnown[operand]=255;m.registerOrigin[operand]=0;}
     if(opcode==0x85){auto destination=cpu->mCodeMem[uint16_t(pc+2)];
-      if(destination<32){m.registerKnown[destination]=255;m.registerOrigin[destination]=0;}}
+      if(destination<128){m.registerKnown[destination]=255;m.registerOrigin[destination]=0;}}
     bool indirect=(opcode&0x0e)==6 || opcode==0xe2 || opcode==0xe3 || opcode==0xf2 || opcode==0xf3;
     if(indirect && m.registerKnown[bank+(opcode&1)]!=255)
       throw VdHardwareBoundary("MCU unknown register used as indirect address");
@@ -192,7 +209,7 @@ struct VdMcuCpu::Impl {
     if((opcode&0x0e)==6){
       auto address=cpu->mLowerData[bank+(opcode&1)];
       bool writes=opcode==0x76 || opcode==0x77 || opcode==0xa6 || opcode==0xa7 || opcode==0xf6 || opcode==0xf7;
-      if(address<32){
+      {
         if(opcode==0xe6 || opcode==0xe7)indirectRegisterLoad=address;
         else if(!writes && m.registerKnown[address]!=255)
           throw VdHardwareBoundary("MCU unknown register bits consumed through indirect IRAM alias");
@@ -204,7 +221,8 @@ struct VdMcuCpu::Impl {
     }
     if(m.aKnown!=255){
       bool independent=opcode==0 || opcode==0x22 || opcode==0x32 || opcode==0x02 ||
-        opcode==0x12 || opcode==0x80 || opcode==0x90 || opcode==0xa3 || opcode==0xf0;
+        opcode==0x12 || (opcode&0x1f)==0x11 || opcode==0x80 || opcode==0x90 ||
+        opcode==0xa3 || opcode==0xf0 || opcode==0xc0 || opcode==0xd0;
       if(opcode==0x54 || opcode==0x44 || opcode==0x64){
         auto bits=cpu->mCodeMem[uint16_t(pc+1)];
         if(opcode!=0x64)m.aKnown|=opcode==0x54?uint8_t(~bits):bits;
@@ -214,7 +232,8 @@ struct VdMcuCpu::Impl {
         registerLoad || opcode==0xe0 ||
         (opcode==0xe5 && cpu->mCodeMem[uint16_t(pc+1)]!=0xd0 && cpu->mCodeMem[uint16_t(pc+1)]!=0xe0);
       if(overwrite){m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;independent=true;}
-      if(registerStore || registerImmediate || (opcode==0x75 && operand<32))independent=true;
+      if(registerStore || registerImmediate || (opcode==0x75 && operand!=0xe0))independent=true;
+      if((opcode==0xc2 || opcode==0xd2) && (operand<0xe0 || operand>0xe7))independent=true;
       if(opcode==0x20 || opcode==0x30){
         auto bit=cpu->mCodeMem[uint16_t(pc+1)];
         independent=bit>=0xe0 && bit<=0xe7 && (m.aKnown&(1u<<(bit-0xe0)));
@@ -226,7 +245,7 @@ struct VdMcuCpu::Impl {
       m.aKnown=m.registerKnown[source];m.aOrigin=m.registerOrigin[source];
       m.parityUnknown=m.aKnown!=255;
     }
-    if(m.parityUnknown && ((opcode==0xc0 || opcode==0xe5) && cpu->mCodeMem[uint16_t(pc+1)]==0xd0))
+    if(m.parityUnknown && opcode==0xe5 && cpu->mCodeMem[uint16_t(pc+1)]==0xd0)
       throw VdHardwareBoundary("VD MCU unknown parity consumed through PSW");
     if(opcode==0x83 || opcode==0x93){
       auto base=opcode==0x83?uint16_t(pc+1):uint16_t(cpu->mSFR[REG_DPL]|(cpu->mSFR[REG_DPH]<<8));
@@ -287,15 +306,28 @@ void VdMcuCpu::resetProgramStorage(std::span<const uint8_t> code,
   if(candidateR8051Uart){cpu.sfrwrite[REG_SBUF]=Impl::uart0Write;cpu.sfrread[REG_SCON]=Impl::uart0ControlRead;}
   cpu.instruction_boundary=Impl::boundary;
   m.executed=m.ticks=0;m.deferredKeyCount=0;
+  if(!m.byteKnown){m.registerKnown.fill(255);m.registerOrigin.fill(0);}
   m.byteKnown=std::move(byteKnown);m.running=true;m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;
-  m.registerKnown.fill(255);m.registerOrigin.fill(0);
   m.uartRegisters.fill({});m.uartTxPending=false;
 }
 void VdMcuCpu::step(){
   auto& m=*impl_;
   if(!m.running)throw VdHardwareBoundary("VD MCU dispatch while stopped");
-  try{if(tick(&m.context.cpu)){++m.executed;++m.total;}++m.ticks;}
-  catch(...){m.running=false;throw;}
+  auto known=m.registerKnown;auto origins=m.registerOrigin;
+  auto accumulatorKnown=m.aKnown;auto accumulatorOrigin=m.aOrigin;auto parity=m.parityUnknown;
+  try{
+    auto previousInterrupt=m.context.cpu.mInterruptActive;
+    if(tick(&m.context.cpu)){++m.executed;++m.total;}++m.ticks;
+    if(m.context.cpu.mInterruptActive & ~previousInterrupt){
+      auto sp=m.context.cpu.mSFR[REG_SP];
+      for(auto address:{sp,uint8_t(sp-1)}){m.registerKnown[address]=255;m.registerOrigin[address]=0;}
+    }
+  }
+  catch(...){
+    m.registerKnown=known;m.registerOrigin=origins;
+    m.aKnown=accumulatorKnown;m.aOrigin=accumulatorOrigin;m.parityUnknown=parity;
+    m.running=false;throw;
+  }
 }
 void VdMcuCpu::requestInt0(){
   if(!standardInterrupts)throw VdHardwareBoundary("VD MCU INT0 input unavailable");
