@@ -128,6 +128,51 @@ void openRiscTests(){
   cpu.halt();auto count=cpu.instructions();cpu.step();require(cpu.instructions()==count,"OR halt dispatches no instructions");
 }
 void irDmaTests(){
+  {
+    manta::Riu fifo;fifo.event=[](auto&,auto,auto,auto,auto&){};fifo.symbolicInit=true;fifo.configurePmIrFifo();
+    fifo.prepareMaskedRead(0x1f007b59,2);fifo.read(0x1f007b59,1,0,0,0);
+    require(!fifo.stopReason.empty() && !fifo.pmIrFifo().empty().has_value(),"candidate PM FIFO supplies no unverified reset occupancy");fifo.stopReason.clear();
+    fifo.write(0x1f007b45,1,15,0,0,1);
+    require(!fifo.pmIrFifo().known(),"original depth/enable0F configuration is not a FIFO clear or an empty reset proof");
+    rejects([&]{fifo.write(0x1f007b59,1,2,0,0,2);});
+    fifo.write(0x1f007b45,1,0x8f,0,0,3);fifo.prepareMaskedRead(0x1f007b59,2);
+    require((fifo.read(0x1f007b59,1,0,0,4)&2) && fifo.pmIrFifo().clears()==1 && fifo.knownBits(0x1f007b59,1)==2,
+      "documented original FIFO_CLR command causally produces EMPTY only, with no key/repeat/IRQ invented");
+    fifo.prepareMaskedRead(0x1f007b58,0x200);
+    require((fifo.knownBits(0x1f007b58,2)&0x300)==0x200 && (fifo.read(0x1f007b58,2,0,0,4)&0x200),
+      "PM IR byte and halfword aliases preserve little-endian EMPTY-field position without defining repeat or adjacent bits");
+    rejects([&]{fifo.receivePmIrDecoded(0x5a,true);});
+    fifo.write(0x1f007b00,1,0xbf,0,0,5);
+    fifo.write(0x1f007b4d,1,0x38,0,0,5);
+    require(fifo.receivePmIrDecoded(0x5a,true),"explicit synthetic decoded packet is accepted only by a configured receiver/FIFO");
+    fifo.prepareMaskedRead(0x1f007b59,3);
+    require((fifo.read(0x1f007b59,1,0,0,6)&3)==1 && fifo.read(0x1f007b51,1,0,0,6)==0x5a &&
+      fifo.read(0x1f007b51,1,0,0,6)==0x5a && fifo.pmIrFifo().pops()==0,"PM key/repeat reflect a real queued fixture; data reads do not consume packets");
+    fifo.write(0x1f007b60,1,1,0,0,7);fifo.prepareMaskedRead(0x1f007b59,2);
+    require((fifo.read(0x1f007b59,1,0,0,8)&2) && fifo.pmIrFifo().pops()==1 && !(fifo.knownBits(0x1f007b60,1)&1),
+      "write-one read pulse pops exactly one packet; pulse readback is not assigned an invented reset value");
+    fifo.read(0x1f007b51,1,0,0,8);require(!fifo.stopReason.empty(),"empty PM FIFO does not fabricate a key byte");fifo.stopReason.clear();
+    for(unsigned i=0;i<8;++i)require(fifo.receivePmIrDecoded(uint8_t(i),false),"bounded PM FIFO accepts an external fixture within capacity");
+    require(!fifo.receivePmIrDecoded(9,false) && fifo.pmIrFifo().received()==9,"FIFO overflow cannot fabricate a ninth retained packet or interrupt");
+    fifo.preparePreservedWrite(0x1f007b60,1,1);fifo.write(0x1f007b60,1,0xa5,0,0,9);
+    require(!fifo.pmIrFifo().known(),"unknown possible pop invalidates nonempty queue state instead of guessing occupancy");
+    fifo.write(0x1f007b45,1,0x8f,0,0,10);
+    require(fifo.pmIrFifo().empty()==true && fifo.pmIrFifo().clears()==2,"a subsequent actual clear can recover known empty state");
+    manta::Engine cpu;cpu.map(0,0x1000);cpu.map(0x004f1000,0x1000);cpu.map(0x006b8000,0x1000);
+    constexpr uint32_t original[]={0x3c07806c,0x00002821,0x00e04021,0x24060008,0x8ce48d0c,
+      0x24a30001,0x306500ff,0x90827b59,0x30420002,0x1440000a,0};
+    constexpr uint32_t tail[]={0x03e00008,0};
+    cpu.write(0x004f1b80,original,sizeof(original));cpu.write(0x004f1bd0,tail,sizeof(tail));
+    uint32_t pm=0xbf000000;cpu.write(0x006b8d0c,&pm,4);cpu.reg(UC_MIPS_REG_RA,0x80000100);
+    struct FifoBus{manta::Riu* fifo;unsigned reads=0;} context{&fifo};
+    auto read=+[](uc_engine*,uint64_t off,unsigned n,void* user)->uint64_t{
+      auto& c=*static_cast<FifoBus*>(user);++c.reads;auto a=0x1f007000u+uint32_t(off);
+      c.fifo->prepareMaskedRead(a,2);return c.fifo->read(a,n,0x804f1b9c,0,11);
+    };
+    manta::check(uc_mmio_map(cpu.handle,0x1f007000,0x1000,read,&context,nullptr,nullptr));
+    require(cpu.run(0x804f1b80,13)==UC_ERR_OK && cpu.reg(UC_MIPS_REG_PC)==0x80000100 && context.reads==1 && fifo.pmIrFifo().pops()==1,
+      "original PM FIFO drain instructions return naturally on an actual empty queue without host keys, data reads, forced PC or success return");
+  }
   manta::IrDma dma;std::array<uint8_t,96> ram{};std::array<uint8_t,48> record{};
   record.fill(0x35);auto store=[&](uint32_t a,std::span<const uint8_t> b){
     require(a>=0x1000 && a+b.size()<=0x1060,"IR capture addresses actual configured ring");

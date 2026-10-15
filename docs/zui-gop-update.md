@@ -307,3 +307,39 @@ unverified. Grounded input is an explicit electrical scenario, not an assertion
 that an unplugged original Manta has that measured level. Strict mode rejects
 the fixture. The new conditional cold boot is still being tested; no new ZUI
 event-loop, enabled GWIN, raster output or authentic frame is claimed here.
+
+
+## PM-domain IR FIFO and application configuration
+
+The SCART-ID scenario reaches854,792,543 original MIPS dispatches and38,589
+original timer entries. Original UART reports the compiled KTC_MSD309_V01 board,
+LC420WUE_SDP1 panel, MMAP_64_64MB,128MB DRAM,8MB flash and DISPLAY_LOGO1.
+These are guest configuration reports, not measurements of the physical board.
+ZUI initialization has returned once; its event loop, enabled GWIN, GE raster
+output and authentic pixels remain unobserved.
+
+The next original routine804F1B80 drains the PM-domain IR FIFO. At804F1B9C it
+reads BF007B59, masks bit1 and returns if empty; otherwise it reads key data at
+7B51 and writes a read pulse to7B60. Exact Titania4 Linux headers define these
+as logical IR_RPT_FIFOEMPTY3DAD, IR_KEY3DA9 and IR_FIFO_READ_PULSE3DB0.
+The byte-address translation is2*index-(index&1). FIFO_CLR is bit7 of logical
+IR_FIFO_CTRL3DA3, physical7B45. Sources:
+https://github.com/Benjamin-Dobell/kogan-tv-gpl/blob/master/Kernel_updated/mstar/mips-boards/titania4/hwreg_S5.h
+and the same tree's mstar/ir/titania4/mhal_ir_multiple_reg.h.
+
+The candidate FIFO implements occupancy-derived EMPTY, entry key/repeat,
+write-one pop and actual clear. Unknown reset occupancy remains unknown.
+Original initialization writes control0F, not FIFO_CLR; therefore the trace
+DOES NOT establish reset emptiness. --exploratory-pm-ir-reset-empty is a separate
+explicit scenario, requiring guarded execution and --candidate-pm-ir-fifo.
+No external packets or host keyboard events are supplied during boot. Native
+positive packet tests are synthetic device fixtures, not captured remote codes.
+Raw pulse decoding, protocol/key mapping and IRQ delivery are not implemented.
+Unknown possible command writes invalidate affected nonempty queue state.
+Pulse readback remains invalid rather than fabricating completion timing.
+
+1138 native checks and both CTest entries pass. Tests execute the original drain
+instructions without CPU/PC changes and verify byte/halfword status aliases,
+read-only status/data, command framing, bounded queue and unknown-state guards.
+Five clock-profile prefix replays and invalid-option checks pass. A full new
+conditional cold boot is running; completion and replay are not yet claimed.

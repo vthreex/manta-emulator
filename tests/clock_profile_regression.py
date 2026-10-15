@@ -66,6 +66,9 @@ with tempfile.TemporaryDirectory(prefix='manta-cycle-profiles-') as directory:
         assert r.returncode==1 and 'IR capture activity hypothesis requires' in r.stderr
     r=subprocess.run([str(emu),'--firmware',str(fw),'--headless','--exploratory-scart-id-grounded'],capture_output=True,text=True)
     assert r.returncode==1 and 'Grounded SCART ID voltage hypothesis requires' in r.stderr
+    for incomplete in ([],['--candidate-pm-ir-fifo'],['--symbolic-init','--defer-diagnostic-reads']):
+        r=subprocess.run([str(emu),'--firmware',str(fw),'--headless','--exploratory-pm-ir-reset-empty']+incomplete,capture_output=True,text=True)
+        assert r.returncode==1 and 'PM IR cold-empty hypothesis requires' in r.stderr
 assert hashlib.sha256(fw.read_bytes()).hexdigest()==stock_sha
 Path(a.report).write_text(json.dumps({'result':'PASS','hardware_timing_verified':False,
     'scope':'original reset/PM prefix under explicit clock/input hypotheses; no verified cold boot or fabricated completion',
@@ -74,5 +77,6 @@ Path(a.report).write_text(json.dumps({'result':'PASS','hardware_timing_verified'
     'strict_and_invalid_VIF_revision_rejections':'PASS',
     'unqualified_IR_capture_activity_rejections':'PASS',
     'strict_SCART_ID_fixture_rejection':'PASS',
+    'unqualified_PM_IR_reset_occupancy_rejections':'PASS',
     'emulator_sha256':hashlib.sha256(emu.read_bytes()).hexdigest(),'stock_sha256':stock_sha},indent=2)+'\n')
 print('PASS: five cycle profiles replay every prefix event; strict/invalid configurations reject; no hardware timing claim')

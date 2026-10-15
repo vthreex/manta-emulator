@@ -54,6 +54,7 @@ struct Options {
   bool exploratorySarFullscale=false,orFirstVisits=false;
   bool exploratoryIrDmaReset=false;
   bool exploratoryIrCapturePresent=false;
+  bool candidatePmIrFifo=false,exploratoryPmIrResetEmpty=false;
   bool exploratoryGopResetWindows=false;
   bool exploratoryScartGrounded=false;
   bool exploratoryScartIdGrounded=false;

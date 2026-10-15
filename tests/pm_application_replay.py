@@ -73,6 +73,8 @@ if not a.validate_only:
         if ref.get('exploratory_avd_no_hsync'):command+=['--exploratory-avd-no-hsync']
         if ref.get('exploratory_ir_capture_activity'):command+=['--exploratory-ir-capture-present']
         if ref.get('exploratory_scart_id_grounded'):command+=['--exploratory-scart-id-grounded']
+        if ref.get('candidate_pm_ir_fifo'):command+=['--candidate-pm-ir-fifo']
+        if ref.get('exploratory_pm_ir_reset_empty'):command+=['--exploratory-pm-ir-reset-empty']
         if 'exploratory_vif_chip_revision_byte' in ref:command+=['--exploratory-vif-chip-revision-byte',str(ref['exploratory_vif_chip_revision_byte'])]
         if ref.get('opaque_policy_enabled'):
             assert a.opaque_read_policy and Path(a.opaque_read_policy).exists(),'policy-enabled replay needs its final rules'

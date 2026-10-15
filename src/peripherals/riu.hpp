@@ -1,4 +1,5 @@
 #pragma once
+#include "peripherals/pm_ir_fifo.hpp"
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -108,6 +109,9 @@ class Riu {
   IrDma irDma_;bool exploratoryIrDmaReset_=false;
   bool exploratoryIrCapturePresent_=false;
   uint64_t irCaptureStatusReads_=0;
+  PmIrFifo pmIrFifo_;
+  bool candidatePmIrFifo_=false;
+  uint64_t pmIrStatusReads_=0;
   bool exploratoryGopResetWindows_=false;
   std::array<bool,2> gopResetHeld_{};
   uint64_t gopResetPulses_=0;
@@ -220,6 +224,17 @@ public:
   }
   void configureExploratoryIrDmaReset(){exploratoryIrDmaReset_=true;}
   void configureExploratoryIrCapturePresent(){exploratoryIrCapturePresent_=true;}
+  void configurePmIrFifo(bool coldEmpty=false){candidatePmIrFifo_=true;if(coldEmpty)pmIrFifo_.coldEmptyHypothesis();}
+  const PmIrFifo& pmIrFifo()const{return pmIrFifo_;}
+  uint64_t pmIrStatusReads()const{return pmIrStatusReads_;}
+  bool receivePmIrDecoded(uint8_t key,bool repeat){
+    if(!candidatePmIrFifo_)throw std::runtime_error("PM IR FIFO not enabled");
+    if(!(knownBits(0x1f007b00,1)&1) || !(get(0x1f007b00,1)&1) ||
+       (knownBits(0x1f007b45,1)&15)!=15 || (get(0x1f007b45,1)&15)!=15 ||
+       (knownBits(0x1f007b4d,1)&0x30)!=0x30 || (get(0x1f007b4d,1)&0x30)!=0x30)
+      throw std::runtime_error("PM IR packet while receiver/FIFO disabled or unknown");
+    return pmIrFifo_.receive(key,repeat);
+  }
   uint64_t irCaptureStatusReads()const{return irCaptureStatusReads_;}
   void captureIrRecord(std::span<const uint8_t> record){
     if(!exploratoryIrCapturePresent_ || !exploratoryIrDmaReset_)

@@ -351,6 +351,7 @@ uint32_t Riu::storageKey(uint32_t a) const {
   return a;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(candidatePmIrFifo_ && n==1 && a==0x1f007b51)return pmIrFifo_.key().has_value()?255:0;
   if(candidateAudioIdma && (a>=0x1f225a00 && a<0x1f225d00)){
     const auto base=a>=0x1f225c00?0x1f225c00u:0x1f225a00u;
     const auto& port=audioIdma_[base==0x1f225c00];
@@ -389,6 +390,11 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;
     if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && irDma_.capturePresent().has_value())v|=bit;
   }
+  if(candidatePmIrFifo_ && a<=0x1f007b59 && uint64_t(a)+n>0x1f007b59){
+    unsigned shift=8*(0x1f007b59-a);v&=~(3u<<shift);
+    if(pmIrFifo_.known())v|=2u<<shift;
+    if(pmIrFifo_.repeat().has_value())v|=1u<<shift;
+  }
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.known())v|=8;
   }
@@ -424,6 +430,12 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     if(auto captured=irDma_.capturePresent()){
       auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;if(*captured)v|=bit;
     }
+  if(candidatePmIrFifo_ && a<=0x1f007b59 && uint64_t(a)+n>0x1f007b59){
+    unsigned shift=8*(0x1f007b59-a);
+    if(auto empty=pmIrFifo_.empty()){v&=~(2u<<shift);if(*empty)v|=2u<<shift;}
+    if(auto repeat=pmIrFifo_.repeat()){v&=~(1u<<shift);if(*repeat)v|=1u<<shift;}
+  }
+  if(candidatePmIrFifo_ && n==1 && a==0x1f007b51)if(auto key=pmIrFifo_.key())v=*key;
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.done())v|=8;
   }
@@ -546,6 +558,11 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   bool masked = consumedRead_.contains(a);
   auto provenConsumed = masked ? consumedRead_.at(a) : 0;
   consumedRead_.clear(); // one-shot proof, including peripheral early returns
+  if(candidatePmIrFifo_ && a<=0x1f007b59 && uint64_t(a)+n>0x1f007b59){
+    ++pmIrStatusReads_;
+    event("pm_ir_fifo_observation",a,n,get(a,n),
+      "Titania4 documented EMPTY bit1 derives from FIFO occupancy; repeat/key valid only with external packets; reset-empty hypothesis is separate, no host key or PM reply supplied");
+  }
   if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41)
     if(auto captured=irDma_.capturePresent()){
       ++irCaptureStatusReads_;
@@ -761,6 +778,10 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   advancePm(tick);
   advanceTsp(tick);
   advanceVd(tick);
+  if(candidatePmIrFifo_ && a<=0x1f007b59 && uint64_t(a)+n>0x1f007b59)
+    throw std::runtime_error("PM IR FIFO status is hardware-owned, not writable storage");
+  if(candidatePmIrFifo_ && a<=0x1f007b51 && uint64_t(a)+n>0x1f007b51)
+    throw std::runtime_error("PM IR FIFO key-data port is read-only");
   if(exploratoryCiDetectHigh && a<=0x1f206891 && uint64_t(a)+n>0x1f206891)
     throw std::runtime_error("CI detect-input register write unsupported; external line is not guest-controlled storage");
   if(candidateVdMcuProgram && a<=0x1f206920 && uint64_t(a)+n>0x1f206920)
@@ -834,6 +855,22 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(candidatePmIrFifo_ && a<=0x1f007b45 && uint64_t(a)+n>0x1f007b45 &&
+     (knownBits(0x1f007b45,1)&0x80) && (get(0x1f007b45,1)&0x80)){
+    pmIrFifo_.clear();bytes_[storageKey(0x1f007b45)].known&=0x7f;
+    event("pm_ir_fifo_clear",0x1f007b45,1,0x80,"original documented FIFO_CLR command emptied actual queue; pulse readback/timing remains unknown");
+  }else if(candidatePmIrFifo_ && a<=0x1f007b45 && uint64_t(a)+n>0x1f007b45 && !(knownBits(0x1f007b45,1)&0x80)){
+    pmIrFifo_.uncertainMutation();
+    event("pm_ir_fifo_uncertain_control",0x1f007b45,1,0,"INVALID possible clear; nonempty queue state invalidated rather than guessed");
+  }
+  if(candidatePmIrFifo_ && a<=0x1f007b60 && uint64_t(a)+n>0x1f007b60 &&
+     (knownBits(0x1f007b60,1)&1) && (get(0x1f007b60,1)&1)){
+    pmIrFifo_.pop();bytes_[storageKey(0x1f007b60)].known&=0xfe;
+    event("pm_ir_fifo_pop",0x1f007b60,1,1,"original write-one read pulse advances actual FIFO; key reads do not pop; pulse readback remains invalid");
+  }else if(candidatePmIrFifo_ && a<=0x1f007b60 && uint64_t(a)+n>0x1f007b60 && !(knownBits(0x1f007b60,1)&1)){
+    pmIrFifo_.uncertainMutation();
+    event("pm_ir_fifo_uncertain_control",0x1f007b60,1,0,"INVALID possible read pulse; queue observation remains guarded");
+  }
   if(candidateAudioIdma && a>=0x1f225a00 && a<0x1f225d00){
     auto base=a>=0x1f225c00?0x1f225c00u:0x1f225a00u;auto& port=audioIdma_[base==0x1f225c00];auto offset=a-base;
     if((offset==8 || offset==0x10) && n==2){

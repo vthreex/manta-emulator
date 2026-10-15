@@ -22,6 +22,8 @@ p.add_argument('--opaque-read-policy',help='Guarded INVALID observations only; e
 p.add_argument('--exploratory-avd-no-hsync',action='store_true',help='Separate absent-input AFEC bit14 hypothesis; READY and all other status stay invalid; detector gating/latency unverified')
 p.add_argument('--exploratory-ir-capture-present',action='store_true',help='Separate unverified bit7 capture-activity interpretation; derived from actual ring capture state, no remote key events')
 p.add_argument('--exploratory-scart-id-grounded',action='store_true',help='Separate SCART ID ADC2/3 external0mV fixtures through real SAR conversion state; board wiring unverified')
+p.add_argument('--candidate-pm-ir-fifo',action='store_true',help='Documented Titania4 FIFO clear/read-pulse/empty fields; reset occupancy remains unknown')
+p.add_argument('--exploratory-pm-ir-reset-empty',action='store_true',help='Separate explicit empty reset-occupancy hypothesis; no external key packet supplied')
 p.add_argument('--exploratory-vif-chip-revision-byte',type=int,help='Separate explicitly unverified chip revision at3D9D; no readiness value; actual board stepping unknown')
 p.add_argument('--opaque-policy-wait-ms',type=int,default=0,help='Debugger freezes all virtual clocks while awaiting a valid rule; maximum300000ms')
 p.add_argument('--or1k-no-qmem-trace',action='store_true',help='Filter QMEM write log records, never actual CPU/memory effects')
@@ -78,6 +80,10 @@ if a.exploratory_ir_capture_present:
     flags += ['--exploratory-ir-capture-present']
 if a.exploratory_scart_id_grounded:
     flags += ['--exploratory-scart-id-grounded']
+if a.candidate_pm_ir_fifo:
+    flags += ['--candidate-pm-ir-fifo']
+if a.exploratory_pm_ir_reset_empty:
+    flags += ['--exploratory-pm-ir-reset-empty']
 if a.exploratory_vif_chip_revision_byte is not None:
     flags += ['--exploratory-vif-chip-revision-byte',str(a.exploratory_vif_chip_revision_byte)]
 if a.opaque_policy_wait_ms:

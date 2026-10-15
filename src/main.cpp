@@ -154,6 +154,8 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-scart-id-grounded") o.exploratoryScartIdGrounded=true;
       else if(a=="--exploratory-ir-dma-reset") o.exploratoryIrDmaReset=true;
       else if(a=="--exploratory-ir-capture-present") o.exploratoryIrCapturePresent=true;
+      else if(a=="--candidate-pm-ir-fifo") o.candidatePmIrFifo=true;
+      else if(a=="--exploratory-pm-ir-reset-empty") o.exploratoryPmIrResetEmpty=true;
       else if(a=="--exploratory-gop-reset-windows") o.exploratoryGopResetWindows=true;
       else if(a=="--or1k-trace-first-visits") o.orFirstVisits=true;
       else if(a=="--max-or1k-instructions") {o.orBudget=std::stoull(value(i));if(!o.orBudget)throw std::runtime_error("OR instruction budget must be positive");}
@@ -238,6 +240,8 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-ir-dma-reset: original descriptor command commits an empty IR capture ring; 82h reset/index coupling unverified, no keys supplied\n"
                "--exploratory-ir-capture-present: separate bit7 capture-activity hypothesis derived from actual ring state, no external keys supplied\n"
                "--exploratory-scart-id-grounded: separate ADC2/3 external0mV fixtures; original conversion timing/power required, actual board wiring unverified\n"
+               "--candidate-pm-ir-fifo: documented EMPTY, key/repeat, FIFO_CLR and read-pulse behavior; reset occupancy stays unknown\n"
+               "--exploratory-pm-ir-reset-empty: separate fresh-empty FIFO reset hypothesis, requires candidate FIFO/guarded mode; no keys injected\n"
                "--exploratory-gop-reset-windows: original top-bank reset pulse clears GWIN enable bits only; exact reset scope unverified\n"
                "--exploratory-scart-grounded: explicit grounded FB input and hypothetical ADC zero code after original config; exact Titania4 transfer/pin mapping unverified\n"
                "--graphics-probes: trace original GOP window-programming entries and report valid guest register descriptors; does not fabricate pixels\n"
