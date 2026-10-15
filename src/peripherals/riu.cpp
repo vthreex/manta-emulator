@@ -372,9 +372,17 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   for (unsigned i = 0; i < n; ++i) {
     if(a+i==0x1f001d84 && pmPowerGood_.configured())v|=7u<<(8*i);
     if(a+i==0x1f003c05 && exploratoryFetchRevisionByte_>=0){v|=255u<<(8*i);continue;}
+    if(a+i==0x1f003d9d && exploratoryVifRevision_>=0){v|=255u<<(8*i);continue;}
     auto it = bytes_.find(storageKey(a + i));
     if (it != bytes_.end())
       v |= uint32_t(it->second.known) << (8 * i);
+  }
+  // Live AFEC status, not writable storage. Only the named HSYNC field is
+  // supplied by the explicit absent-input experiment; READY and all other
+  // fields keep their original invalid provenance.
+  if(a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99){
+    auto bit=0x40u<<(8*(0x1f206b99-a));v&=~bit;
+    if(exploratoryAvdNoHsync_ && analogDisconnected_)v|=bit;
   }
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.known())v|=8;
@@ -399,11 +407,14 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
   uint32_t v = 0;
   for (unsigned i = 0; i < n; ++i) {
     if(a+i==0x1f003c05 && exploratoryFetchRevisionByte_>=0){v|=uint32_t(exploratoryFetchRevisionByte_)<<(8*i);continue;}
+    if(a+i==0x1f003d9d && exploratoryVifRevision_>=0){v|=uint32_t(exploratoryVifRevision_)<<(8*i);continue;}
     auto it = bytes_.find(storageKey(a + i));
     auto byte=uint32_t(it == bytes_.end() ? 0xa5 : it->second.value);
     if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
     v |= byte << (i * 8);
   }
+  if(exploratoryAvdNoHsync_ && analogDisconnected_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99)
+    v&=~(0x40u<<(8*(0x1f206b99-a)));
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.done())v|=8;
   }
@@ -522,6 +533,16 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   bool masked = consumedRead_.contains(a);
   auto provenConsumed = masked ? consumedRead_.at(a) : 0;
   consumedRead_.clear(); // one-shot proof, including peripheral early returns
+  if(exploratoryVifRevision_>=0 && a<=0x1f003d9d && uint64_t(a)+n>0x1f003d9d){
+    ++vifRevisionReads_;
+    event("exploratory_vif_chip_revision",a,n,unsigned(exploratoryVifRevision_),
+      "EXPLICIT unverified silicon-revision input; Titania4 header REG_CHIP_REVISION1ECF maps byte3D9D; actual Manta stepping unknown; independent of fetch byte3C05, no completion generated");
+  }
+  if(exploratoryAvdNoHsync_ && analogDisconnected_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99){
+    ++avdHsyncReads_;
+    event("exploratory_avd_absent_hsync",a,n,get(a,n),
+      "explicit disconnected-input hypothesis: only AFEC status bit14 HSYNC_LOCKED low; exact original/reference HAL load and named driver agree; detector force modes/latency unverified; READY/other fields remain invalid");
+  }
   if (n != 1 && n != 2 && n != 4)
     throw std::runtime_error("Unsupported RIU access width");
   bool opaque=opaqueRead_ && *opaqueRead_==a;
@@ -729,6 +750,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     throw std::runtime_error("AVD MCU program readback port is not writable");
   if(a<=0x1f003c05 && uint64_t(a)+n>0x1f003c05 && exploratoryFetchRevisionByte_>=0)
     throw std::runtime_error("Write overlaps hypothetical immutable fetch revision byte; register writability remains unsupported");
+  if(a<=0x1f003d9d && uint64_t(a)+n>0x1f003d9d && exploratoryVifRevision_>=0)
+    throw std::runtime_error("Write overlaps hypothetical immutable VIF chip revision; register write semantics unsupported");
   if(pqSram_.advance(tick))event("pq_sram_commit",0x1f205f04,2,uint32_t(pqSram_.commits),"original five-byte coefficient payload stored in SRAM; deterministic provisional transfer latency elapsed");
   if(a<=0x1f001cdd && uint64_t(a)+n>0x1f001cdd && pmBoot_.cause())
     throw std::runtime_error("PM PowerOnMode writer unsupported under external AC-on boundary; mode not silently changed or acknowledged");

@@ -98,6 +98,10 @@ class Riu {
   SarAdc sar_;bool exploratorySarFullscale_=false;
   ScartGroundedInput scart_;
   bool analogDisconnected_=false;
+  bool exploratoryAvdNoHsync_=false;
+  uint64_t avdHsyncReads_=0;
+  int exploratoryVifRevision_=-1;
+  uint64_t vifRevisionReads_=0;
   PqSram pqSram_;
   IrDma irDma_;bool exploratoryIrDmaReset_=false;
   bool exploratoryGopResetWindows_=false;
@@ -193,6 +197,15 @@ public:
   const PqSram &pqSram()const{return pqSram_;}
   uint64_t scartReads()const{return scart_.reads();}
   void configureExploratoryAnalogDisconnected(bool disconnected=true){analogDisconnected_=disconnected;}
+  // External absent-HSYNC experiment, NOT a reset/status-ready value. The
+  // matched HAL and driver identify bit14; detector gating/latency unverified.
+  void configureExploratoryAvdNoHsync(bool absent=true){exploratoryAvdNoHsync_=absent;}
+  uint64_t avdHsyncReads()const{return avdHsyncReads_;}
+  void configureExploratoryVifRevision(unsigned byte){
+    if(byte>255)throw std::runtime_error("VIF chip revision hypothesis must be a byte");
+    exploratoryVifRevision_=int(byte);
+  }
+  uint64_t vifRevisionReads()const{return vifRevisionReads_;}
   void configureExploratoryScmiFormat(unsigned byte){
     if(byte>255)throw std::runtime_error("SCMI format fixture byte outside 0..255");
     // Original main/sub read/write targets 1204/1284; only low byte defined.

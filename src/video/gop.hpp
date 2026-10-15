@@ -6,11 +6,12 @@ struct GopWindow {
   uint32_t miuRelativeAddress, pitch;
   uint16_t x, y, width, height;
   uint8_t format, bpp;
+  bool enabled;
 };
 // Original 80538948/A43C window programming, not a host-generated display.
 // MIU selection, active shadow latches, palette, scaling and IRQs remain
 // unresolved. A decoded descriptor alone never authorizes an authentic frame.
-inline std::optional<GopWindow> readGopWindow(const Riu &riu, unsigned bank, unsigned window, bool active=false) {
+inline std::optional<GopWindow> readGopWindow(const Riu &riu, unsigned bank, unsigned window, bool active=false, bool requireEnabled=true) {
   if ((bank != 1 && bank != 4) || window >= (bank == 1 ? 4u : 2u)) return {};
   auto byte = [&](unsigned offset) { return active ? riu.gopActiveByte(bank,offset) : riu.gopByte(bank,offset); };
   auto word = [&](unsigned index) -> std::optional<uint16_t> {
@@ -23,8 +24,10 @@ inline std::optional<GopWindow> readGopWindow(const Riu &riu, unsigned bank, uns
   std::optional<uint16_t> control;
   if ((controlByte.known & 0xf1) == 0xf1) control = controlByte.value;
   auto low = word(1), high = word(2), pitch = word(9);
-  auto hs = word(4), he = word(5), vs = word(6), ve = word(7);
-  if (!control || !(*control & 1) || !low || !high || !pitch || !hs || !he || !vs || !ve) return {};
+  // Original80538B78 and80538D44 use logical1F10: physical offset20h,
+  // not1Ch. Both main and auxiliary GWIN banks use this vertical-end lane.
+  auto hs = word(4), he = word(5), vs = word(6), ve = word(8);
+  if (!control || (requireEnabled && !(*control & 1)) || !low || !high || !pitch || !hs || !he || !vs || !ve) return {};
   unsigned format = (*control >> 4) & 15, bpp;
   if (format == 5) bpp = 32;
   else if (format == 4) bpp = 8;
@@ -34,7 +37,9 @@ inline std::optional<GopWindow> readGopWindow(const Riu &riu, unsigned bank, uns
   auto x = uint32_t(*hs) * pixelsPerUnit, end = uint32_t(*he) * pixelsPerUnit;
   if (*ve <= *vs || end <= x || end > 1920 || *ve > 1080 || uint32_t(*pitch) * 8 < (end-x)*bpp/8)
     return {};
-  return GopWindow{(uint32_t(*low) | (uint32_t(*high) << 16)) * 8, uint32_t(*pitch) * 8,
-                   uint16_t(x), *vs, uint16_t(end-x), uint16_t(*ve-*vs), uint8_t(format), uint8_t(bpp)};
+  auto byteAddress=(uint64_t(*low)|(uint64_t(*high)<<16))*8;
+  if(byteAddress>0xffffffffu)return {};
+  return GopWindow{uint32_t(byteAddress), uint32_t(*pitch) * 8,
+                   uint16_t(x), *vs, uint16_t(end-x), uint16_t(*ve-*vs), uint8_t(format), uint8_t(bpp),bool(*control&1)};
 }
 }

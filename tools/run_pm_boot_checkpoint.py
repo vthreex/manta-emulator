@@ -18,6 +18,10 @@ p.add_argument('--max-or1k-instructions', type=int, default=400000000)
 p.add_argument('--exploratory-cpi', type=int, choices=(1,2,4,8,16), default=1,
                help='UNVERIFIED average instruction cost; shared Count/peripheral cycles; default unchanged')
 p.add_argument('--copro-probes',action='store_true',help='Inspect actual original multimedia loader output; no ready response')
+p.add_argument('--opaque-read-policy',help='Guarded INVALID observations only; exact original code/hash/PC/address/width; no values or status defaults')
+p.add_argument('--exploratory-avd-no-hsync',action='store_true',help='Separate absent-input AFEC bit14 hypothesis; READY and all other status stay invalid; detector gating/latency unverified')
+p.add_argument('--exploratory-vif-chip-revision-byte',type=int,help='Separate explicitly unverified chip revision at3D9D; no readiness value; actual board stepping unknown')
+p.add_argument('--opaque-policy-wait-ms',type=int,default=0,help='Debugger freezes all virtual clocks while awaiting a valid rule; maximum300000ms')
 p.add_argument('--or1k-no-qmem-trace',action='store_true',help='Filter QMEM write log records, never actual CPU/memory effects')
 p.add_argument('--or1k-idle-poll-log-changes',action='store_true',help='Filter duplicate known-zero command poll logs, never reads or nonzero commands/replies')
 p.add_argument('--or1k-register-log-changes',action='store_true',help='Log first/changed internal values and validity masks; duplicate observations summarized; actual reads remain active')
@@ -64,6 +68,14 @@ if a.exploratory_cpi!=1:
     flags += ['--exploratory-cpi',str(a.exploratory_cpi)]
 if a.copro_probes:
     flags += ['--copro-probes']
+if a.opaque_read_policy:
+    flags += ['--opaque-read-policy',a.opaque_read_policy]
+if a.exploratory_avd_no_hsync:
+    flags += ['--exploratory-avd-no-hsync']
+if a.exploratory_vif_chip_revision_byte is not None:
+    flags += ['--exploratory-vif-chip-revision-byte',str(a.exploratory_vif_chip_revision_byte)]
+if a.opaque_policy_wait_ms:
+    flags += ['--opaque-policy-wait-ms',str(a.opaque_policy_wait_ms)]
 if a.or1k_no_qmem_trace:
     flags += ['--or1k-no-qmem-trace']
 if a.or1k_idle_poll_log_changes:

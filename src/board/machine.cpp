@@ -6,6 +6,8 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <thread>
+#include <chrono>
 namespace manta {
 static std::string hex(uint64_t n) {
   std::ostringstream s;
@@ -13,6 +15,9 @@ static std::string hex(uint64_t n) {
   return s.str();
 }
 Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options_(o), virtualTime_(o.exploratoryCpi) {
+  if((!o.opaqueReadPolicy.empty() && (!o.symbolicInit || !o.deferDiagnosticReads)) ||
+     (o.opaqueReadPolicy.empty() && o.opaquePolicyWaitMs) || o.opaquePolicyWaitMs>300000)
+    throw std::runtime_error("opaque observation policy requires guarded mode and at most300000ms debugger wait; unavailable in strict mode");
   if(o.exploratoryCpi!=1 && (!o.cp0Timer || !o.symbolicInit || !o.deferDiagnosticReads || o.stage2 || o.initPrefix))
     throw std::runtime_error("Uncalibrated CPI experiment requires guarded reset execution and CP0 timers; unavailable in strict/direct-boot modes");
   if(o.exploratoryGopVsyncLatch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.exploratoryDisplayClock))
@@ -83,6 +88,16 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryAnalogDisconnected){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("Disconnected analog input fixture requires guarded exploration");
     riu_.configureExploratoryAnalogDisconnected();
+  }
+  if(o.exploratoryAvdNoHsync){
+    if(!o.symbolicInit || !o.deferDiagnosticReads || !o.exploratoryAnalogDisconnected)
+      throw std::runtime_error("AVD absent-HSYNC hypothesis requires guarded execution and explicit disconnected analog input");
+    riu_.configureExploratoryAvdNoHsync();
+  }
+  if(o.exploratoryVifRevision>=0){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("VIF chip revision hypothesis requires guarded exploration; actual board stepping unknown");
+    riu_.configureExploratoryVifRevision(unsigned(o.exploratoryVifRevision));
   }
   if(o.exploratoryScmiFormat>=0){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("SCMI format reset fixture requires guarded exploration");
@@ -847,6 +862,16 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
           "INVALID old 2DEC mode bits; SHA-verified original setter preserves same-byte bits only; decisions and copies to another device remain guarded");
       }
     }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && n==1 &&
+       ((pc==0x804fb0d0 && a==0x1f225b4c) || (pc==0x804fb108 && a==0x1f225a5c))){
+      std::vector<uint8_t> routine(0x684);m.cpu_.read(0x004fb05c,routine.data(),routine.size());
+      if(sha256(routine)=="911ac037ce784d2e1bd4185863872f560773bd17500584dc5da37230b99c72b4"){
+        m.preservedBits_.seed(pc==0x804fb0d0?7:3,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_sif_control_snapshot",a,n,0,
+          "INVALID original temporary control snapshot; ANDI retains bit7/bit0 only; original804FB4D0/4E0 restores identical byte/bit via WriteMask2; no DSP readiness inferred");
+      }
+    }
     if(m.options_.exploratoryAudioNoAck && pc==0x804f9098 && a==0x1f225ab4 && n==1){
       std::vector<uint8_t> reader(0x48),caller(0xb4);
       m.cpu_.read(0x004f905c,reader.data(),reader.size());m.cpu_.read(0x004f79d8,caller.data(),caller.size());
@@ -1207,6 +1232,8 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       }
     }
     auto v = m.riu_.read(a, n, pc, mask, m.virtualTime_.cycles(m.dispatches_));
+    if (!m.stopped_ && m.riu_.stopReason=="unmodeled MMIO read" && !m.options_.opaqueReadPolicy.empty() &&
+        m.observePolicyRead(pc,a,n))m.riu_.stopReason.clear();
     if (!m.riu_.stopReason.empty())
       m.stop(m.riu_.stopReason, a);
     return v;
@@ -1214,6 +1241,39 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
     m.stop(e.what(), 0x1f000000 + uint32_t(off));
     return 0xdeadbeef;
   }
+}
+bool Msd309Machine::observePolicyRead(uint32_t pc,uint32_t address,unsigned width){
+  event("opaque_policy_read_request",address,width,riu_.knownBits(address,width),
+    "unmodeled original read; no value supplied; debugger wait freezes ALL guest clocks; PC="+hex(pc));
+  if(trace_)trace_.flush();
+  auto deadline=std::chrono::steady_clock::now()+std::chrono::milliseconds(options_.opaquePolicyWaitMs);
+  do{
+    std::ifstream file(options_.opaqueReadPolicy,std::ios::binary);
+    if(file){
+      std::string text;char block[4096];
+      while(file.read(block,sizeof(block)) || file.gcount()){
+        text.append(block,size_t(file.gcount()));if(text.size()>65536)throw std::runtime_error("opaque policy exceeds64KiB");
+      }
+      file.close(); // Windows must release the handle before atomic policy replacement while paused
+      for(const auto& rule:parseOpaqueReadPolicy(text))if(rule.pc==pc && rule.address==address && rule.width==width){
+        std::vector<uint8_t> code(rule.size);cpu_.read(rule.start&0x1fffffff,code.data(),code.size());
+        if(!validateOpaqueReadRule(rule,pc,address,width,code))throw std::runtime_error("opaque policy original-code hash or load mismatch");
+        uint32_t word=0;cpu_.read(pc&0x1fffffff,&word,4);
+        auto effective=(cpu_.reg(UC_MIPS_REG_0+int((word>>21)&31))+uint32_t(int32_t(int16_t(word))))&0x1fffffff;
+        if(effective!=address)throw std::runtime_error("opaque policy effective address mismatch");
+        preservedBits_.seed((word>>16)&31,width,riu_.knownBits(address,width),[&](unsigned b){return riu_.controlByteKey(address+b);});
+        ++opaquePolicyReads_;
+        auto identity=hex(pc)+" "+hex(address)+" "+std::to_string(width)+" "+rule.hash;
+        opaquePolicyRules_+=identity+"\n";
+        event("opaque_policy_invalid_observation",address,width,riu_.knownBits(address,width),
+          identity+"; original read result retained INVALID; no repeated bus access, device state, CPU value or PC assignment; read side effects unverified");
+        return true;
+      }
+    }
+    if(std::chrono::steady_clock::now()>=deadline)break;
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }while(true);
+  return false;
 }
 bool Msd309Machine::proveDiagnosticCache(uint32_t pc, uint32_t a, unsigned n) {
   if (n != 2 || !((pc == 0x80469898 && a == 0x1f200a38) || (pc == 0x804698ac && a == 0x1f200a3c)))
@@ -1245,7 +1305,7 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
   for (unsigned r = 0; r < 32; ++r)
     values[r] = cpu_.reg(UC_MIPS_REG_0 + int(r));
   dependent[sampled] = width == 4 ? 0xffffffff : (uint32_t(1) << (width * 8)) - 1;
-  bool changed = false;
+  bool changed = false, independentSpill=false;
   uint32_t proofPc=pc+4, jumpAfterDelay=0;
   for (unsigned i = 1; i <= 12; ++i) {
     cpu_.read(proofPc & 0x1fffffff, &w, 4);
@@ -1328,6 +1388,7 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
     } else if ((op == 35 || op == 36 || op == 37) && !dependent[rs] && rt != 0) {
       // An independent RAM callback-pointer load may occur inside a device
       // RMW. It neither consumes nor defines the sampled register bits.
+      if(independentSpill)return 0; // never simulate a load using stale pre-spill RAM
       auto target = PreservedBits::backingAddress(values[rs] + uint32_t(int32_t(int16_t(w))));
       auto loadSize = op == 35 ? 4u : op == 37 ? 2u : 1u;
       auto ramSize=dramBacking_.empty()?0x08000000u:uint32_t(dramBacking_.size());
@@ -1339,6 +1400,8 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
       dependent[rt] = 0;
     } else if (op == 0 && ((w & 63) == 36 || (w & 63) == 37)) {
       auto rd = (w >> 11) & 31;
+      if(!rmwLogicalInputTracked(dependent[rs],preservedBits_.mask(rs),unknownObservations_.registerUnknown(rs)) ||
+         !rmwLogicalInputTracked(dependent[rt],preservedBits_.mask(rt),unknownObservations_.registerUnknown(rt)))return 0;
       if (rd == 0 || (dependent[rs] && dependent[rt]))
         return 0;
       auto known = dependent[rs] ? values[rt] : values[rs];
@@ -1349,6 +1412,12 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
     } else if (op == 40 || op == 41 || op == 43) {
       auto target = (values[rs] + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
       auto n = op == 40 ? 1u : op == 41 ? 2u : 4u;
+      if(independentStackSpill(w,!dependent[rs] && !preservedBits_.mask(rs) &&
+          !unknownObservations_.registerUnknown(rs),!dependent[rt])){
+        auto ram=PreservedBits::backingAddress(values[rs]+uint32_t(int32_t(int16_t(w))));
+        if((ram&3) || uint64_t(ram)+4>dramBacking_.size())return 0;
+        independentSpill=true;continue; // CPU executes the real store; proof changes no memory
+      }
       // A register may have held the sample, then been overwritten with an
       // independently known address. Its current dependency, not its name,
       // determines whether the same-device store has a proven destination.
@@ -1589,6 +1658,10 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryFetchRevisionByte>=0)s<<",\n  \"exploratory_fetch_revision_byte\": "<<options_.exploratoryFetchRevisionByte
     <<",\n  \"fetch_patch_enabled_decisions\": "<<fetchPatchEnabled_<<",\n  \"fetch_patch_disabled_decisions\": "<<fetchPatchDisabled_;
   if(options_.exploratoryAnalogDisconnected)s<<",\n  \"exploratory_analog_disconnected\": true";
+  if(options_.exploratoryAvdNoHsync)s<<",\n  \"exploratory_avd_no_hsync\": true,\n  \"avd_absent_hsync_reads\": "<<riu_.avdHsyncReads()
+    <<",\n  \"avd_detector_timing_hardware_verified\": false";
+  if(options_.exploratoryVifRevision>=0)s<<",\n  \"exploratory_vif_chip_revision_byte\": "<<options_.exploratoryVifRevision
+    <<",\n  \"vif_chip_revision_reads\": "<<riu_.vifRevisionReads()<<",\n  \"vif_chip_revision_hardware_verified\": false";
   if(options_.exploratoryCiDetectHigh)s<<",\n  \"exploratory_ci_detect_high\": true,\n  \"ci_detect_reads\": "<<riu_.ciDetectReads;
   if(options_.exploratoryPqSramIdle)s<<",\n  \"exploratory_pq_sram_idle\": true,\n  \"pq_sram_submissions\": "<<riu_.pqSram().submissions<<",\n  \"pq_sram_commits\": "<<riu_.pqSram().commits<<",\n  \"pq_sram_state_sha256\": \""<<sha256(riu_.pqSram().stateBytes())<<"\"";
   if(options_.exploratoryPqDisabledPorts)s<<",\n  \"exploratory_pq_disabled_ports\": true";
@@ -1759,7 +1832,24 @@ std::string Msd309Machine::summary() const {
        <<",\"width\":"<<descriptor->width<<",\"height\":"<<descriptor->height
        <<",\"format\":"<<unsigned(descriptor->format)<<",\"bpp\":"<<unsigned(descriptor->bpp)<<'}';
     }
+    s<<"],\n  \"gop_configured_descriptors\": [";
+    bool firstConfigured=true;
+    for(bool active:{false,true})for(auto bank:{1u,4u})for(unsigned window=0;window<(bank==1?4u:2u);++window){
+      auto descriptor=readGopWindow(riu_,bank,window,active,false);
+      if(!descriptor)continue;
+      if(!firstConfigured)s<<',';
+      firstConfigured=false;
+      s<<"{\"active_latch\":"<<(active?"true":"false")<<",\"enabled\":"<<(descriptor->enabled?"true":"false")
+       <<",\"bank\":"<<bank<<",\"window\":"<<window<<",\"miu_relative_address\":\""<<hex(descriptor->miuRelativeAddress)
+       <<"\",\"pitch\":"<<descriptor->pitch<<",\"width\":"<<descriptor->width<<",\"height\":"<<descriptor->height
+       <<",\"format\":"<<unsigned(descriptor->format)<<",\"bpp\":"<<unsigned(descriptor->bpp)<<'}';
+    }
     s<<']';
+  }
+  if(!options_.opaqueReadPolicy.empty()){
+    std::vector<uint8_t> rules(opaquePolicyRules_.begin(),opaquePolicyRules_.end());
+    s<<",\n  \"opaque_policy_enabled\": true,\n  \"opaque_policy_reads_deferred\": "<<opaquePolicyReads_
+      <<",\n  \"opaque_policy_accepted_sequence_sha256\": \""<<sha256(rules)<<"\"";
   }
   s << "\n}";
   return s.str();

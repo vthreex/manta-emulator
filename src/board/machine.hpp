@@ -7,6 +7,7 @@
 #include "board/audio_no_ack.hpp"
 #include "board/pm_activity_scenario.hpp"
 #include "board/virtual_time.hpp"
+#include "board/opaque_read_policy.hpp"
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -14,6 +15,8 @@
 #include <unordered_map>
 namespace manta {
 struct Options {
+  std::string opaqueReadPolicy;
+  uint64_t opaquePolicyWaitMs=0;
   int exploratoryScBank = -1;
   int exploratoryGammaEnable = -1;
   int exploratorySubwindowEnable = -1;
@@ -57,6 +60,8 @@ struct Options {
   int exploratoryScmiFormat=-1;
   int exploratoryFetchRevisionByte=-1;
   bool exploratoryAnalogDisconnected=false;
+  bool exploratoryAvdNoHsync=false;
+  int exploratoryVifRevision=-1;
   bool exploratoryPqSramIdle=false;
   bool exploratoryPqDisabledPorts=false;
   bool candidateVdMcuProgram=false;
@@ -130,6 +135,9 @@ class Msd309Machine {
   bool stage2Reached_ = false, decompressReached_ = false, runtimeReached_ = false;
   std::string guestDecompressedSha_;
   bool preparingPrefix_ = false;
+  uint64_t opaquePolicyReads_=0;
+  std::string opaquePolicyRules_;
+  bool observePolicyRead(uint32_t pc,uint32_t address,unsigned width);
   uint32_t proveImmediateRmw(uint32_t pc, uint32_t address, unsigned width);
   bool proveDiagnosticCache(uint32_t pc, uint32_t address, unsigned width);
   void stop(std::string why, uint32_t address = 0);

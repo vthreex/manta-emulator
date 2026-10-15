@@ -11,6 +11,7 @@ p=argparse.ArgumentParser(description=__doc__)
 for name in ('firmware','emulator','reference-summary','reference-trace','reference-coverage','reference-history','report'):
     p.add_argument('--'+name,required=True)
 p.add_argument('--validate-only',action='store_true')
+p.add_argument('--opaque-read-policy',help='Exact final invalid-observation policy used by a policy-enabled reference; replay never waits for edits')
 p.add_argument('--max-instructions',type=int,default=2000000000,
                help='Original recorded dispatch budget; may exceed a hardware-stop instruction count')
 a=p.parse_args()
@@ -53,6 +54,7 @@ if ref.get('exploratory_gop_sync_latch'):
     assert ref['osd_routine_entries'].get('0x804e0d48')==1
     assert all(e['address']=='0x1f203ffc' for e in events if e['kind'].startswith('exploratory_gop_'))
 replay_result='NOT RUN (recorded evidence only)'
+added_gop_diagnostics=None
 if not a.validate_only:
     launcher=Path(__file__).resolve().parents[1]/'tools/run_pm_boot_checkpoint.py'
     with tempfile.TemporaryDirectory(prefix='manta-pm-application-replay-') as directory:
@@ -68,12 +70,35 @@ if not a.validate_only:
         if ref.get('or1k_idle_poll_log_changes_only'):command+=['--or1k-idle-poll-log-changes']
         if ref.get('or1k_stored_read_log_changes_only'):command+=['--or1k-register-log-changes']
         if ref.get('exploratory_gop_sync_latch'):command+=['--exploratory-gop-vsync-latch']
+        if ref.get('exploratory_avd_no_hsync'):command+=['--exploratory-avd-no-hsync']
+        if 'exploratory_vif_chip_revision_byte' in ref:command+=['--exploratory-vif-chip-revision-byte',str(ref['exploratory_vif_chip_revision_byte'])]
+        if ref.get('opaque_policy_enabled'):
+            assert a.opaque_read_policy and Path(a.opaque_read_policy).exists(),'policy-enabled replay needs its final rules'
+            command+=['--opaque-read-policy',str(Path(a.opaque_read_policy).resolve())]
         result=subprocess.run(command+['--replay-trace',str(Path(a.reference_trace).resolve())],capture_output=True,text=True)
+        if summary.exists():
+            Path(a.report).with_suffix('.actual-summary.json').write_bytes(summary.read_bytes())
+            Path(a.report).with_suffix('.actual.coverage').write_bytes(cov.read_bytes())
+            Path(a.report).with_suffix('.actual-pm.jsonl').write_bytes(history.read_bytes())
         assert result.returncode==2,(result.returncode,result.stderr)
-        assert json.loads(summary.read_text())==ref,'all original CPUs/peripherals and invalid-state observations must replay'
+        got=json.loads(summary.read_text())
+        if 'gop_configured_descriptors' in got and 'gop_configured_descriptors' not in ref:
+            # Decoder-only extension for legacy references. Every old summary
+            # field and every recorded event must still match. These exact
+            # disabled dimensions/address are independently present in original
+            #748M GWIN writes, not a fabricated host framebuffer.
+            added_gop_diagnostics=got.pop('gop_configured_descriptors')
+            tiny={'enabled':False,'bank':4,'window':0,'miu_relative_address':'0xddd800',
+                  'pitch':16,'width':8,'height':8,'format':6,'bpp':16}
+            expected=[]
+            if ref.get('graphics_probes',{}).get('window_program_entries',0)>=7:
+                expected=[dict(active_latch=False,**tiny),dict(active_latch=True,**tiny)]
+            assert added_gop_diagnostics==expected,'legacy guest register writes must explain new disabled descriptors exactly'
+        assert got==ref,'all original CPUs/peripherals and invalid-state observations must replay'
         assert cov.read_bytes()==Path(a.reference_coverage).read_bytes(),'original MIPS coverage must match'
         assert history.read_bytes()==Path(a.reference_history).read_bytes(),'original PM history must match'
-        replay_result='PASS: every event, full summary, coverage and PM history identical'
+        replay_result='PASS: every event, full summary, coverage and PM history identical' if added_gop_diagnostics is None else \
+            'PASS: every event, all pre-existing summary fields, coverage and PM history identical; new disabled-GOP diagnostics verified'
 assert hashlib.sha256(Path(a.firmware).read_bytes()).hexdigest()==stock_sha
 report={'result':'PASS','scope':'diagnostic non-resume predicate assumption; NOT verified cold boot or display',
         'full_new_PM_application_replay':replay_result,'trace_events':count,'trace_sha256':trace_sha.hexdigest(),
@@ -83,7 +108,7 @@ report={'result':'PASS','scope':'diagnostic non-resume predicate assumption; NOT
         'observed_events':events,'instruction_dispatches':ref['instruction_dispatches'],
         'OpenRISC_instructions':ref['or1k_instructions'],'PM_marker_generated':False,
         'exploratory_average_cpi':ref.get('exploratory_average_cpi',1),
-        'physical_timing_verified':False,
+        'physical_timing_verified':False,'added_disabled_GOP_diagnostics':added_gop_diagnostics,
         'ZUI_entries':ref.get('osd_routine_entries',{}).get('0x804e0d48',0),
         'authentic_display_demonstrated':ref['osd_demonstrated']}
 Path(a.report).write_text(json.dumps(report,indent=2)+'\n')

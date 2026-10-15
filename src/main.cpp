@@ -78,6 +78,8 @@ static int appMain(const std::vector<std::string> &args) {
         o.cp0Timer = true;
       else if (a == "--exploratory-cpi")o.exploratoryCpi=std::stoull(value(i),nullptr,0);
       else if (a == "--copro-probes")o.coproProbes=true;
+      else if (a == "--opaque-read-policy")o.opaqueReadPolicy=value(i);
+      else if (a == "--opaque-policy-wait-ms")o.opaquePolicyWaitMs=std::stoull(value(i),nullptr,0);
       else if (a == "--or1k-no-qmem-trace")o.noOrQmemTrace=true;
       else if (a == "--or1k-idle-poll-log-changes")o.orIdlePollChanges=true;
       else if (a == "--or1k-register-log-changes")o.orRegisterLogChanges=true;
@@ -111,6 +113,12 @@ static int appMain(const std::vector<std::string> &args) {
         o.exploratoryFetchRevisionByte=int(v);
       }
       else if(a=="--exploratory-analog-disconnected")o.exploratoryAnalogDisconnected=true;
+      else if(a=="--exploratory-avd-no-hsync")o.exploratoryAvdNoHsync=true;
+      else if(a=="--exploratory-vif-chip-revision-byte"){
+        auto token=value(i);size_t used=0;auto n=std::stoull(token,&used,0);
+        if(n>255 || used!=token.size())throw std::runtime_error("VIF chip revision hypothesis must be a byte");
+        o.exploratoryVifRevision=int(n);
+      }
       else if(a=="--exploratory-ci-detect-high")o.exploratoryCiDetectHigh=true;
       else if(a=="--exploratory-pq-sram-idle")o.exploratoryPqSramIdle=true;
       else if(a=="--exploratory-pq-disabled-ports")o.exploratoryPqDisabledPorts=true;
@@ -191,6 +199,8 @@ static int appMain(const std::vector<std::string> &args) {
                "--cp0-timer: source-built engine Count/Compare and guest interrupt entry\n"
                "--exploratory-cpi N: UNCALIBRATED average cycles/instruction 1(default),2,4,8,16; shared peripheral/Count clock; guarded exploration only\n"
                "--copro-probes: inspect original multimedia loader output in guest RAM; no processor/reset/status emulation\n"
+               "--opaque-read-policy FILE: guarded INVALID observations at exact code/hash/PC/address/width only; no values or readiness\n"
+               "--opaque-policy-wait-ms N: debugger freeze of ALL virtual clocks at unmatched reads, maximum300000; default0\n"
                "--or1k-no-qmem-trace: filter repetitive auxiliary QMEM write records only; memory effects, MMIO, mailbox events and pause points remain active\n"
                "--or1k-idle-poll-log-changes: filter repeated fully-known zero command polls at the same OR PC; all reads execute; commands, replies and pause points retained\n"
                "--or1k-register-log-changes: log first/changed internal values AND validity masks at each OR PC; duplicate records summarized; all reads execute; mailbox traffic and pause points retained\n"
@@ -243,6 +253,8 @@ static int appMain(const std::vector<std::string> &args) {
                 "--osd-probes: original ZUI state, graphics context, font renderer and window-creation entry traces\n"
                 "--exploratory-ci-detect-high: external CI detect bit2 high fixture; board polarity unverified, no module or acknowledgment\n"
                "--exploratory-analog-disconnected: external no-analog-input fixture supplies NORMAL Euro/Australia detection status only; positive patterns/timing unsupported\n"
+               "--exploratory-avd-no-hsync: separate disconnected AFEC bit14 hypothesis; no READY value, other status/force modes/latency unresolved\n"
+               "--exploratory-vif-chip-revision-byte N: separate unverified immutable revision byte at3D9D, not fetch3C05 or a ready status\n"
                "--exploratory-pq-sram-idle: unvalidated initial idle state; original Y/C coefficient writes store real payloads with provisional deterministic latency\n"
                "--exploratory-pq-disabled-ports: separate unvalidated reset fixture with Y/C write-enable bits initially cleared\n"
                "--or1k-trace-first-visits: trace each original auxiliary PC once; every fetch still compared with immutable uploaded code and counted\n"

@@ -48,9 +48,12 @@ with tempfile.TemporaryDirectory(prefix='manta-display-') as directory:
  assert comb['dlc_initializer_returns'] == 1 and comb['preserved_bit_unknown_ram_bytes'] >= 3
  trace = directory/'display.jsonl'
  full = timed+['--exploratory-comb-bank','0']
- final = run('comb-high-byte-guard',full+['--record-trace',str(trace)],'0x805f883c')
- assert 'unknown preserved register bit' in final['reason'], final['reason']
- assert final['registers'][4] == '0xbf206d1c' and final['recent_instructions'][-1]['word'] == '0xa4820000'
+ # The conservative RMW proof now rejects the fresh read before combining
+ # it with a separately invalid saved field. No policy is enabled here:
+ # unknown state must stop at the original LHU, before any SH/device use.
+ final = run('comb-high-byte-guard',full+['--record-trace',str(trace)],'0x805f8824','0x1f206d1c')
+ assert final['reason'] == 'unmodeled MMIO read', final['reason']
+ assert final['registers'][4] == '0xbf206d1c' and final['recent_instructions'][-1]['word'] == '0x94820000'
  assert final['scaler_initializer_returns'] == 1 and final['dlc_initializer_returns'] == 1
  assert final['guest_exception_vector_entries'] == final['guest_software_tick'] == 606
  returns=[]; edges=0; requests=0

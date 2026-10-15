@@ -5,6 +5,12 @@
 #include <array>
 #include <algorithm>
 namespace manta {
+inline bool rmwLogicalInputTracked(uint32_t dependency,uint32_t preservedMask,bool opaqueUnknown){
+  return dependency || (!preservedMask && !opaqueUnknown);
+}
+inline bool independentStackSpill(uint32_t word,bool stackKnown,bool sampleIndependent){
+  return word>>26==43 && ((word>>21)&31)==29 && stackKnown && sampleIndependent;
+}
 // Original ADC byte-update helper: its FIRST LBU is overwritten by MOVE v0,0
 // in the BEQ delay slot. The second LBU is a separate, guarded RMW observation.
 inline bool discardedAdcControlSample(std::span<const uint32_t> words){

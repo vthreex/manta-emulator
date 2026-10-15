@@ -8,6 +8,7 @@
 #include "board/pm_activity_scenario.hpp"
 #include "board/virtual_time.hpp"
 #include "board/mmio_read_mask.hpp"
+#include "board/opaque_read_policy.hpp"
 #include "video/gop.hpp"
 #include <array>
 #include <algorithm>
@@ -605,6 +606,8 @@ void displayHardwareTests() {
   require((r.knownBits(0x1f203ffc,2)&0xf0f0)==0, "GOP bank writes cannot fabricate interrupt or hardware write-ack flags");
   auto w = [&](unsigned index, uint16_t value) { r.write(0x1f203e00+index*4,2,value,0,0,0); };
   w(0,0x51); w(1,0x1234); w(2,1); w(9,960); w(4,0); w(5,960); w(6,0); w(7,1080);
+  require(!manta::readGopWindow(r,1,0),"neighbor register1Ch cannot substitute for the original vertical-end lane20h");
+  w(8,1080);
   auto descriptor = manta::readGopWindow(r,1,0);
   require(descriptor && descriptor->miuRelativeAddress==0x891a0 && descriptor->pitch==7680 &&
           descriptor->width==1920 && descriptor->height==1080 && descriptor->bpp==32,
@@ -615,6 +618,17 @@ void displayHardwareTests() {
   require(!manta::readGopWindow(r,4,0), "incomplete GOP descriptor cannot produce a guest frame");
   r.write(0x1f203ffc,2,1,0,0,0); w(9,1);
   require(!manta::readGopWindow(r,1,0), "GOP pitch cannot address outside a configured scanline");
+  r.write(0x1f203ffc,2,4,0,0,0);
+  // Actual748M guest writes, not a fabricated display fixture.
+  w(0,0x8064);w(1,0xbb00);w(2,0x1b);w(9,2);w(4,0);w(5,2);w(6,0);w(7,0);w(8,8);
+  auto disabled=manta::readGopWindow(r,4,0,false,false);
+  require(disabled && !disabled->enabled && disabled->miuRelativeAddress==0xddd800 &&
+          disabled->pitch==16 && disabled->width==8 && disabled->height==8 && disabled->format==6,
+          "original small guest buffer is distinguishable from enabled scan-out");
+  require(!manta::readGopWindow(r,4,0),"a configured disabled buffer cannot authorize an authentic frame");
+  w(2,0xe000);require(!manta::readGopWindow(r,4,0,false,false),"GOP address units cannot overflow into a different guest memory address");w(2,0x1b);
+  r.symbolicInit=true;r.preparePreservedWrite(0x1f203e00,2,1);w(0,0x8064);
+  require(!manta::readGopWindow(r,4,0,false,false),"unknown enable state cannot be mislabeled as a disabled configuration");
   manta::Riu sc; sc.event = r.event;
   sc.saveTimingSnapshot(); sc.write(0x1f205e00,1,0x10,0,0,0); sc.write(0x1f205e30,2,0x1111,0,0,0);
   sc.write(0x1f205e00,1,0x24,0,0,0); sc.write(0x1f205e30,2,0x2222,0,0,0);
@@ -682,7 +696,7 @@ void gopUpdateTests() {
   panel(0x18,0);panel(0x1c,1079);panel(8,1101);panel(12,1109);panel(0x40,0);
   r.write(0x1f203ffc,2,1,0,0,0);
   auto word=[&](unsigned index,uint16_t value,uint64_t tick=0){r.write(0x1f203e00+index*4,2,value,0,0,tick);};
-  word(0,0x51);word(1,0x1234);word(2,1);word(9,960);word(4,0);word(5,960);word(6,0);word(7,1080);
+  word(0,0x51);word(1,0x1234);word(2,1);word(9,960);word(4,0);word(5,960);word(6,0);word(8,1080);
   require(!manta::readGopWindow(r,1,0,true),"unlatched guest shadow descriptor cannot authorize scan-out");
   r.write(0x1f203ffc,2,0x101,0,0,0);r.write(0x1f203ffc,2,1,0,0,0);
   require(r.gopUpdate().pending() && r.gopActiveBytes()==0,"RIU strobe remains busy before a programmed sync edge");
@@ -746,6 +760,17 @@ void scalerTimingTests() {
   require(!r.stopReason.empty(),"output VSYNC bit0 cannot manufacture the distinct unknown timing-word bit8");
 }
 void preservedBitsTests() {
+  for(auto field:{0x80u,1u}){
+    auto address=field==0x80?0x1f225b4cu:0x1f225a5cu;
+    manta::PreservedBits saved;saved.seed(7,1,255u&~field,[&](unsigned){return address;});
+    std::array<uint32_t,32> regs{};regs[7]=0xa5;regs[4]=0xa0000000u|address;
+    auto step=[&](uint32_t w){return saved.observe(w,[&](unsigned r){return regs[r];},[](auto a){return a;},[](auto,auto,auto){});};
+    require(step(0x30f60000|field).empty() && saved.mask(22)==field,"original SIF snapshot retains only its actual unknown control field");
+    regs[22]=regs[7]&field;
+    require(step(0x02c03021).empty() && saved.mask(6)==field,"SIF restore argument keeps the original field invalid");
+    regs[6]=regs[22];require(step(0xa0860000).empty() && saved.mask(6)==field,"original SIF field may restore only to the same byte and bit");
+    regs[4]^=4;require(!step(0xa0860000).empty(),"saved SIF control cannot become a different register response");
+  }
   bool equalityProofsValid=true;
   for(auto unknown:{1u,0x20u,0x80u,0xa1u,255u}){
     manta::PreservedBits proof;proof.seed(4,1,255u&~unknown,[](unsigned){return 0x1f225dd8u;});
@@ -889,6 +914,27 @@ void combRestoreTests() {
 }
 void preservedRegisterRestoreTests() {
   manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;
+  {
+    // Original 80504534..80504548: saved high nibble plus a fresh low
+    // nibble. Neither sample may validate the other's unknown bits.
+    constexpr uint32_t address=0x1f206bb1;
+    r.write(address,1,0xa4,0,0,0);r.preparePreservedWrite(address,1,0xfe);
+    r.write(address,1,0xa4,0,0,0);
+    manta::PreservedBits p;std::array<uint32_t,32> regs{};
+    regs[16]=regs[2]=0xa4;regs[3]=0xbf200000;
+    p.seed(16,1,r.knownBits(address,1),[&](unsigned){return address;});
+    p.seed(2,1,r.knownBits(address,1),[&](unsigned){return address;});
+    uint32_t invalid=0;
+    auto step=[&](uint32_t w){return p.observe(w,[&](unsigned n){return regs[n];},
+      [](auto a){return a;},[&](auto a,auto n,auto mask){invalid=mask;r.preparePreservedWrite(a,n,mask);});};
+    require(step(0x321000ff).empty() && step(0x321000f0).empty(),"original saved high nibble retains invalid provenance");
+    regs[16]&=0xf0;
+    require(step(0x3042000f).empty(),"fresh low-nibble observation retains its independent invalid bits");regs[2]&=15;
+    require(step(0x02028025).empty() && p.mask(16)==0xfe,"joining two samples cannot launder unknown low bits");regs[16]|=regs[2];
+    require(step(0xa0706bb1).empty() && invalid==0xfe,"original same-byte restore preserves all seven unknown bits");
+    r.write(address,1,regs[16],0,0,0);
+    require(r.knownBits(address,1)==1,"mixed-sample restore defines no additional hardware state");
+  }
   r.write(0x1f205e00,1,0x1a,0,0,0);r.write(0x1f205e51,1,255,0,0,0);
   r.preparePreservedWrite(0x1f205e51,1,255);r.write(0x1f205e51,1,0xa5,0,0,1);
   require(r.knownBits(0x1f205e51,1)==0,"restoring invalid gain must invalidate a previously defined FF register");
@@ -947,7 +993,81 @@ void geQueueTests() {
   bus.read(0x1f20501c,2,0,0,0);
   require(!bus.stopReason.empty(),"GE unrelated status bits remain invalid");
 }
+void opaquePolicyTests(){
+  {
+    manta::Riu bus;bus.event=[](auto&,auto,auto,auto,auto&){};
+    bus.write(0x1f206b98,2,0xffff,0,0,0);
+    require(!(bus.knownBits(0x1f206b98,2)&0x4000),"software writes cannot define live AFEC HSYNC lock");
+    bus.configureExploratoryAnalogDisconnected();
+    require(!(bus.knownBits(0x1f206b98,2)&0x4000),"disconnected HDTV fixture alone cannot silently authorize AVD status");
+    bus.configureExploratoryAvdNoHsync();
+    bus.prepareMaskedRead(0x1f206b98,0x4000);
+    require(!(bus.read(0x1f206b98,2,0,0,1)&0x4000) && bus.stopReason.empty(),"separate absent-HSYNC experiment derives lock low from explicit disconnected input");
+    bus.prepareMaskedRead(0x1f206b99,0x40);
+    require(bus.knownBits(0x1f206b99,1)==255 && !(bus.read(0x1f206b99,1,0,0,1)&0x40),"byte and halfword AFEC status agree on bit14 address encoding");
+    bus.configureExploratoryAnalogDisconnected(false);
+    require(!(bus.knownBits(0x1f206b98,2)&0x4000),"removing disconnected input withdraws HSYNC validity");
+    manta::Riu fresh;fresh.event=bus.event;fresh.configureExploratoryAnalogDisconnected();fresh.configureExploratoryAvdNoHsync();
+    require(fresh.knownBits(0x1f206b98,2)==0x4000 && fresh.knownBits(0x1f206b98,1)==0,
+      "absent sync establishes neither status-ready nor any unrelated low-byte field");
+    fresh.read(0x1f206b98,2,0,0,1);
+    require(!fresh.stopReason.empty(),"full AFEC status cannot be consumed as a fabricated all-zero no-signal response");
+    // Original MDrv_AVD_IsSyncLocked extracts bit14; all other bits discarded.
+    constexpr uint32_t extract=0x7c420380; // EXT v0,v0,14,1
+    for(auto other:{0u,0xbfffu}){
+      manta::Engine cpu;cpu.map(0,0x1000);cpu.write(0,&extract,4);cpu.reg(UC_MIPS_REG_2,other);
+      require(cpu.run(0x80000000,1)==UC_ERR_OK && cpu.reg(UC_MIPS_REG_2)==0,
+        "original driver returns no HSYNC regardless of every unimplemented status field");
+    }
+    constexpr uint32_t hal[]={0x3c04806b,0x2482d974,0x90430004,0x10600004,0x00001021,
+      0x8c82d974,0x94436b98,0x3062ffff,0x03e00008,0};
+    constexpr uint32_t driver[]={0x27bdffe8,0xafbf0014,0x0c140c00,0,0x8fbf0014,0x7c420380,0x03e00008,0x27bd0018};
+    manta::Engine original;original.map(0,0x20000);original.map(0x00501000,0x1000);
+    original.map(0x00503000,0x1000);original.map(0x006ad000,0x1000);
+    original.write(0x00503000,hal,sizeof(hal));original.write(0x00501698,driver,sizeof(driver));
+    uint32_t base=0xbf200000;uint8_t initialized=1;
+    original.write(0x006ad974,&base,4);original.write(0x006ad978,&initialized,1);
+    fresh.symbolicInit=true;fresh.stopReason.clear();
+    struct Context{manta::Riu* bus;unsigned reads=0;} context{&fresh};
+    auto read=+[](uc_engine*,uint64_t offset,unsigned n,void* user)->uint64_t{
+      auto& c=*static_cast<Context*>(user);++c.reads;auto a=0x1f206000u+uint32_t(offset);
+      c.bus->prepareOpaqueRead(a);return c.bus->read(a,n,0x80503018,0,1);
+    };
+    manta::check(uc_mmio_map(original.handle,0x1f206000,0x1000,read,&context,nullptr,nullptr));
+    original.reg(UC_MIPS_REG_SP,0x80010000);original.reg(UC_MIPS_REG_RA,0x80000100);
+    require(original.run(0x80501698,18)==UC_ERR_OK && original.reg(UC_MIPS_REG_PC)==0x80000100 &&
+      original.reg(UC_MIPS_REG_2)==0 && context.reads==1 && fresh.knownBits(0x1f206b98,2)==0x4000,
+      "original AVD caller and HAL execute real LHU/EXT, preserve unknown unrelated status and return absent HSYNC");
+  }
+  std::vector<uint8_t> code{0,0,0x62,0x90}; // original804FB278 LBU v0,(v1)
+  auto line=std::string("0x804fb278 0x1f225900 1 0x804fb278 4 ")+manta::sha256(code)+"\n";
+  auto rules=manta::parseOpaqueReadPolicy("# INVALID observations only\n"+line);
+  require(rules.size()==1 && manta::validateOpaqueReadRule(rules[0],0x804fb278,0x1f225900,1,code),"opaque policy requires the exact original load bytes and PC/address/width");
+  auto bad=code;bad[0]^=1;
+  require(!manta::validateOpaqueReadRule(rules[0],0x804fb278,0x1f225900,1,bad),"changed instruction bytes cannot acquire an opaque observation permission");
+  require(!manta::validateOpaqueReadRule(rules[0],0x804fb27c,0x1f225900,1,code),"opaque policy cannot move the guest PC or authorize another instruction");
+  require(!manta::validateOpaqueReadRule(rules[0],0x804fb278,0x1f225904,1,code),"opaque policy cannot change the observed peripheral address");
+  auto wrong=rules[0];wrong.width=2;
+  require(!manta::validateOpaqueReadRule(wrong,wrong.pc,wrong.address,2,code),"load width must be proven by the real instruction encoding");
+  auto arithmetic=std::vector<uint8_t>{0x21,0x10,0,0};wrong=rules[0];wrong.hash=manta::sha256(arithmetic);
+  require(!manta::validateOpaqueReadRule(wrong,wrong.pc,wrong.address,1,arithmetic),"an arithmetic instruction cannot be used as an opaque read");
+  rejects([&]{manta::parseOpaqueReadPolicy(line+line);});
+  rejects([&]{manta::parseOpaqueReadPolicy(line.substr(0,line.size()-1)+" 0xe3\n");});
+  rejects([&]{manta::parseOpaqueReadPolicy("0x804fb278 0 1 0x804fb278 4 "+rules[0].hash);});
+  rejects([&]{manta::parseOpaqueReadPolicy("0x804fb278 0x1f225900 1 0x804fb278 0 "+rules[0].hash);});
+  rejects([&]{manta::parseOpaqueReadPolicy(std::string(65537,'#'));});
+  manta::PreservedBits invalid;invalid.seed(2,1,0,[](unsigned){return 0x1f225900u;});
+  auto regs=[](unsigned r){return r==2?0xa5u:0u;};
+  require(!invalid.observe(0x10400001,regs,[](auto a){return a;},[](auto,auto,auto){}).empty(),"an opaque policy observation still cannot decide a genuinely unknown status predicate");
+}
 void readMaskTests() {
+  require(!manta::rmwLogicalInputTracked(0,0xf0,false),"an earlier opaque high field cannot masquerade as a known RMW operand");
+  require(!manta::rmwLogicalInputTracked(0,0,true),"coarse invalid observations cannot become concrete RMW masks");
+  require(manta::rmwLogicalInputTracked(255,0,false) && manta::rmwLogicalInputTracked(0,0,false),"current sampled dependencies and genuinely known operands remain distinguishable");
+  require(manta::independentStackSpill(0xafbf0044,true,true),"independent original callee-save SW may interleave with device RMW proof");
+  require(!manta::independentStackSpill(0xafa20044,true,false),"a sampled MMIO value cannot escape through an accepted stack spill");
+  require(!manta::independentStackSpill(0xafbf0044,false,true),"unknown stack pointer cannot authorize a lookahead memory effect");
+  require(!manta::independentStackSpill(0xacbf0044,true,true),"a store to an unrelated base is not a callee-save stack spill");
   std::array<uint32_t,15> adc={0x90620000,0x30a500ff,0x30c600ff,0x10800009,0x00001021,
     0x90620000,0x304400ff,0x14a00003,0x00861025,0x00061027,0x00821024,0xa0620000,0x24020001,0x03e00008,0};
   require(manta::discardedAdcControlSample(adc),"exact original ADC helper proves first sample is unused");
@@ -1707,6 +1827,33 @@ int main() {
     bool unknownCRejected=false;try{cUnknown.write(0x1f205f04,2,0x102,0,255,6);}catch(const std::exception&){unknownCRejected=true;}
     require(unknownCRejected && cUnknown.pqSram().submissions==0,"C writer low-byte mask cannot silently discard an unknown ninth address bit");
     manta::Riu revision;revision.event=[](auto,auto,auto,auto,auto){};
+    revision.read(0x1f003d9d,1,0x8050a5f0,255,0);
+    require(!revision.stopReason.empty() && revision.knownBits(0x1f003d9d,1)==0,"actual VIF chip revision is unknown by default");revision.stopReason.clear();
+    rejects([&]{revision.configureExploratoryVifRevision(256);});
+    for(unsigned byte:{0u,1u,2u,255u}){
+      manta::Riu bus;bus.event=revision.event;bus.configureExploratoryVifRevision(byte);
+      require(bus.knownBits(0x1f003d9c,2)==0xff00 && bus.knownBits(0x1f003c05,1)==0,
+        "VIF stepping fixture defines only logical1ECF high byte, never fetch3C05 or version1ECE");
+      bus.write(0x1f003c71,1,0xa5,0,0,0); // known test setup, never a reset assertion
+      manta::Engine cpu;cpu.map(0,0x1000);cpu.map(0x0050a000,0x1000);cpu.map(0x006ad000,0x1000);
+      constexpr uint32_t branch[]={0x90433d9d,0x14600088,0x8e18d97c,0x3c040002};
+      constexpr uint32_t conditional[]={0x93023c71,0x304200fe,0xa3023c71,0x08142980,0x3c040002};
+      cpu.write(0x0050a5f0,branch,sizeof(branch));cpu.write(0x0050a818,conditional,sizeof(conditional));
+      uint32_t base=0xbf000000;cpu.write(0x006ad97c,&base,4);cpu.reg(UC_MIPS_REG_2,base);cpu.reg(UC_MIPS_REG_16,0x806b0000);
+      struct Bus{manta::Riu* r;unsigned writes=0;} context{&bus};
+      auto read=+[](uc_engine*,uint64_t offset,unsigned n,void* user)->uint64_t{
+        return static_cast<Bus*>(user)->r->read(0x1f003000+uint32_t(offset),n,0,255,1);};
+      auto write=+[](uc_engine*,uint64_t offset,unsigned n,uint64_t value,void* user){
+        auto& c=*static_cast<Bus*>(user);++c.writes;c.r->write(0x1f003000+uint32_t(offset),n,uint32_t(value),0,0,1);};
+      manta::check(uc_mmio_map(cpu.handle,0x1f003000,0x1000,read,&context,write,&context));
+      uc_hook join;manta::check(uc_hook_add(cpu.handle,&join,UC_HOOK_CODE,
+        reinterpret_cast<void*>(+[](uc_engine* engine,uint64_t,uint32_t,void*){uc_emu_stop(engine);}),nullptr,0x8050a600,0x8050a600));
+      require(cpu.run(0x8050a5f0,20)==UC_ERR_OK && cpu.reg(UC_MIPS_REG_PC)==0x8050a600 &&
+        context.writes==unsigned(byte!=0) && bus.vifRevisionReads()==1,
+        "both original VIF stepping branches execute naturally and rejoin; nonzero revision alone causes the extra masked control write");
+      require(bus.read(0x1f003c71,1,0,255,2)==(byte?0xa4u:0xa5u),"original VIF branch preserves every control bit except bit0");
+      rejects([&]{bus.write(0x1f003d9c,2,0,0,0,3);});
+    }
     require(revision.knownBits(0x1f003c05,1)==0,"fetch revision register is unknown without an explicit experiment");
     revision.read(0x1f003c05,1,0x806006d4,255,1);
     require(!revision.stopReason.empty(),"strict fetch predicate cannot consume unverified silicon identity");
@@ -1929,6 +2076,7 @@ int main() {
     semaphoreTests();
     geQueueTests();
     readMaskTests();
+    opaquePolicyTests();
     gopSelectorProvenanceTests();
     gopPaletteTests();
     tspProvenanceTests();
