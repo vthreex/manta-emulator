@@ -99,6 +99,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
       throw std::runtime_error("VIF chip revision hypothesis requires guarded exploration; actual board stepping unknown");
     riu_.configureExploratoryVifRevision(unsigned(o.exploratoryVifRevision));
   }
+  if(o.exploratoryVifZeroInputSettlingCycles){
+    if(!o.symbolicInit || !o.deferDiagnosticReads || !o.exploratoryAnalogDisconnected)
+      throw std::runtime_error("VIF ideal zero-energy hypothesis requires guarded exploration and disconnected analog input; real antenna noise and gain convergence unverified");
+    riu_.configureExploratoryVifZeroInput(o.exploratoryVifZeroInputSettlingCycles);
+  }
   if(o.exploratoryScmiFormat>=0){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("SCMI format reset fixture requires guarded exploration");
     riu_.configureExploratoryScmiFormat(unsigned(o.exploratoryScmiFormat));
@@ -395,6 +400,12 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
+  if(m.options_.exploratoryVifZeroInputSettlingCycles && m.options_.osdProbes &&
+      (a==0x8050962c || a==0x804f2998 || a==0x80509d54 || a==0x80509d68)){
+    ++m.osdProbeEntries_[uint32_t(a)];
+    m.event("guest_vif_control_flow",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_RA),
+      "original VIF handler entry, measurement predicate, gain-limit path or caller return; no PC override");
+  }
   if(m.options_.exploratoryPm51SpiStartup && (a==0x80404bec || a==0x8046a190 || a==0x80469e38))
     m.event("guest_pm_application_entry",uint32_t(a),0,m.riu_.knownBits(0x1f001cd1,1),
       "original control flow: activity reader/caller or ZUI call site; status validity reported without selecting a branch");
@@ -1682,6 +1693,12 @@ std::string Msd309Machine::summary() const {
     <<",\n  \"avd_detector_timing_hardware_verified\": false";
   if(options_.exploratoryVifRevision>=0)s<<",\n  \"exploratory_vif_chip_revision_byte\": "<<options_.exploratoryVifRevision
     <<",\n  \"vif_chip_revision_reads\": "<<riu_.vifRevisionReads()<<",\n  \"vif_chip_revision_hardware_verified\": false";
+  if(options_.exploratoryVifZeroInputSettlingCycles)s<<",\n  \"exploratory_vif_ideal_zero_energy\": true"
+    <<",\n  \"vif_zero_input_settle_cycles\": "<<riu_.vifZeroInput().settlingCycles()
+    <<",\n  \"vif_zero_input_settlements\": "<<riu_.vifZeroInput().settlements()
+    <<",\n  \"vif_zero_input_samples\": "<<riu_.vifZeroInputReads()
+    <<",\n  \"vif_zero_input_state_sha256\": \""<<sha256(riu_.vifZeroInput().stateBytes())<<"\""
+    <<",\n  \"vif_disconnected_antenna_hardware_verified\": false";
   if(options_.exploratoryCiDetectHigh)s<<",\n  \"exploratory_ci_detect_high\": true,\n  \"ci_detect_reads\": "<<riu_.ciDetectReads;
   if(options_.exploratoryPqSramIdle)s<<",\n  \"exploratory_pq_sram_idle\": true,\n  \"pq_sram_submissions\": "<<riu_.pqSram().submissions<<",\n  \"pq_sram_commits\": "<<riu_.pqSram().commits<<",\n  \"pq_sram_state_sha256\": \""<<sha256(riu_.pqSram().stateBytes())<<"\"";
   if(options_.exploratoryPqDisabledPorts)s<<",\n  \"exploratory_pq_disabled_ports\": true";

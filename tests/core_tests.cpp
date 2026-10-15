@@ -1893,6 +1893,63 @@ void r8051UartConfigTests(){
     require(c.instructions()==0 && reason.find("SFR read unsupported")!=std::string::npos,"unchanged CPU mode still rejects unmodeled R8051 extensions");
   });
 }
+void vifZeroInputTests(){
+  using Model=manta::VifZeroInput;
+  Model::Configuration valid={{{0x7f,0x7f},{5,0x0d},{0x1a,0x1a},{0x70,255},
+    {0,3},{5,31},{31,31},{1,255},{0,255}}};
+  Model strict;strict.update(valid,1000);
+  require(strict.sample(0x1f224644).known==0 && strict.sample(0x1f22465d).known==0,
+    "AGC configuration alone never defines external measurements in strict mode");
+  rejects([&]{strict.configure(0);});
+  for(auto delay:{1ull,100ull,4320000ull}){
+    Model model;model.configure(delay);model.update(valid,10);
+    require(!model.settled() && model.sample(0x1f224644).known==0,"ideal IF output invalid before explicit settling deadline");
+    model.update(valid,10+delay-1);require(!model.settled(),"IF settling does not complete early");
+    model.update(valid,10+delay);
+    require(model.sample(0x1f224644).known==255 && model.sample(0x1f224644).value==0 &&
+      model.sample(0x1f22465d).known==31 && model.sample(0x1f22465d).value==31,
+      "ideal zero envelope produces only mean and guest-programmed PGA2 field after settling");
+    require(model.sample(0x1f224650).known==0 && model.sample(0x1f224651).known==0 &&
+      model.sample(0x1f22465c).known==0,"VGA and unrelated analog observations remain invalid");
+    auto poison=valid;for(auto& field:poison)field.value^=uint8_t(~field.known);
+    model.update(poison,11+delay);require(model.settled() && model.settlements()==1,"unknown preserved bits do not restart acquisition");
+    auto disabled=valid;disabled[1].value&=0xfe;model.update(disabled,12+delay);
+    require(!model.settled() && model.sample(0x1f224644).known==0,"AGC disable immediately invalidates ideal output");
+    model.update(valid,13+delay);require(!model.settled(),"reenabling AGC requires new settling interval");
+  }
+  // Every required bit matters; no unknown clock/control/limit is silently
+  // treated as a convenient reset. Gains are derived, not fixed to 31.
+  constexpr std::array<uint8_t,9> required={0x7f,0x0d,0x1a,255,3,31,31,255,255};
+  for(unsigned field=0;field<valid.size();++field)for(unsigned bit=0;bit<8;++bit)if(required[field]&(1<<bit)){
+    Model model;model.configure(1);auto config=valid;config[field].known&=uint8_t(~(1<<bit));
+    model.update(config,1);model.update(config,100);
+    require(model.sample(0x1f224644).known==0 && model.sample(0x1f22465d).known==0,
+      "unknown required VIF field cannot yield a synthetic observation");
+  }
+  for(unsigned maximum=0;maximum<32;++maximum){
+    Model model;model.configure(1);auto config=valid;config[5].value=0;config[6].value=uint8_t(maximum);
+    model.update(config,1);model.update(config,2);
+    require(model.sample(0x1f22465d).value==maximum,"ideal PGA2 saturation follows all 32 programmed maximum codes");
+  }
+  Model model;model.configure(1);auto changed=valid;model.update(valid,1);model.update(valid,2);
+  changed[4].value=2;model.update(changed,3);
+  require(!model.settled(),"gain-override configuration invalidates autonomous gain hypothesis");
+  changed=valid;changed[5].value=31;changed[6].value=30;model.update(changed,4);model.update(changed,100);
+  require(!model.settled(),"inconsistent PGA limits never produce an observation");
+  manta::Riu bus;bus.event=[](const auto&,auto,auto,auto,const auto&){};
+  require(bus.knownBits(0x1f224644,1)==0 && bus.knownBits(0x1f224650,2)==0 &&
+    bus.knownBits(0x1f22465d,1)==0,"default RIU retains all live VIF observations unknown");
+  for(auto address:{0x1f224644u,0x1f224650u,0x1f224651u,0x1f22465du})
+    rejects([&]{bus.write(address,1,0,0,255,1);});
+  bus.configureExploratoryVifZeroInput(100);
+  uint64_t tick=0;
+  for(unsigned i=0;i<valid.size();++i)bus.write(Model::configuration[i],1,valid[i].value,0,255,++tick);
+  bus.read(0x1f224644,1,0,255,tick+99);
+  require(!bus.stopReason.empty() && bus.knownBits(0x1f224644,1)==0,"unsettled model still causes controlled RIU stop");
+  bus.stopReason.clear();bus.read(0x1f224644,1,0,255,tick+100);
+  require(bus.stopReason.empty() && bus.knownBits(0x1f22465d,1)==31 && bus.knownBits(0x1f224650,2)==0,
+    "RIU publishes only the supported hypothetical fields, preserving invalid VGA and PGA high bits");
+}
 int main() {
   try {
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
@@ -2259,6 +2316,7 @@ int main() {
       require(!r.stopReason.empty(),"main-CPU use of unknown decoder output still stops in the suspended-device experiment");
     }
     vdSharedExecutionTests();
+    vifZeroInputTests();
     flashTests();
     riuTests();
     bdmaCopyTests();

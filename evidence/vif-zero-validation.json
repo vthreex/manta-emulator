@@ -1,0 +1,86 @@
+{
+  "base_git": "195ac82",
+  "scope": "ideal noiseless IF/gain equilibrium hypothesis; NOT verified disconnected-antenna cold boot or original OSD",
+  "native_checks": 1346,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "reports": {
+    "cold-summary": {
+      "file": "vif-zero-cold-summary.json.gz",
+      "sha256_uncompressed": "0c28df586f546cd45357660208f69c39b1b3099e113b0bc71b1097da963054e0"
+    },
+    "full-replay": {
+      "file": "vif-zero-full-replay.json.gz",
+      "sha256_uncompressed": "18d0b3f0f51a8c0ef377db81f5807370e5930dd5866c0f9ba2cf48bb769f8219"
+    },
+    "analysis": {
+      "file": "vif-zero-analysis.json.gz",
+      "sha256_uncompressed": "9d5f4343533bc192de124da06529e51a08db77e63439c196d25badc241810eaf"
+    },
+    "baseline-regression": {
+      "file": "vif-zero-baseline-regression.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display-regression": {
+      "file": "vif-zero-display-regression.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "clock-regression": {
+      "file": "vif-zero-clock-regression.json.gz",
+      "sha256_uncompressed": "e398dca1e7198a91bf768b5c8fa35520ee4cd7621ca87d21bb4caa989901065d"
+    },
+    "vd-regression": {
+      "file": "vif-zero-vd-regression.json.gz",
+      "sha256_uncompressed": "717282c7ba1a0cda3f1e84ee0217ca0b37058bc6cdf71341b2af41b1d2e277e8"
+    },
+    "avd-regression": {
+      "file": "vif-zero-avd-regression.json.gz",
+      "sha256_uncompressed": "0875b1092fcc37976702343a722a35b5c67b43b9694f08395a31d79a3847d39b"
+    },
+    "pm51-regression": {
+      "file": "vif-zero-pm51-regression.json.gz",
+      "sha256_uncompressed": "6ce0200fca87188080e4c14348d986108a00599b32651f23fe72b1bbf74caf72"
+    },
+    "copro-regression": {
+      "file": "vif-zero-copro-regression.json.gz",
+      "sha256_uncompressed": "c6e88a480de0225ca9f0441be469b847034d6adc72732202d5121eec9183cd62"
+    },
+    "dsp-decoder-regression": {
+      "file": "vif-zero-dsp-decoder-regression.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "immutable-regression": {
+      "file": "vif-zero-immutable-regression.json.gz",
+      "sha256_uncompressed": "718000f8bb9f3c9b03edacc03491516268f2623946383486a8b26d480fbd2186"
+    },
+    "packaged-window": {
+      "file": "vif-zero-packaged-window.json.gz",
+      "sha256_uncompressed": "035d2f3e9723bc3154b09647fda2eef1f6528b2f344a4851839fb0ed977933a2"
+    },
+    "VIF-original-calls": {
+      "file": "vif-zero-VIF-original-calls.json.gz",
+      "sha256_uncompressed": "2e1ee3fb3c6146bb75870991c2f9e208ddeeb799d212c0213d9b73ac6830bc90"
+    },
+    "AVD-original-requests": {
+      "file": "vif-zero-AVD-original-requests.json.gz",
+      "sha256_uncompressed": "d02b92aa754d267fe6e409e33a7be6dbedf952eb88da47baa282229ee4e4f893"
+    }
+  },
+  "original_firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "binaries": {
+    "manta.exe": "c79326d6724aaa325c18364e8c90ea4523fb2149d1adf6b54ab44e621088d0f4",
+    "core_tests.exe": "c185d2799e9f06e17c1b5a4ddaf81c2d81a3ccdf64a593354ff58f2ce2420c3b",
+    "vif_agc_probe.exe": "d7623f4e7ed4210a3b13069e4d11a903e744ae448abee4f1ae60687925ff8ccd",
+    "avd_request_probe.exe": "0a2a6df4ea1dcb216da3cbbb9f4bdffe2559ec38c61056fb9b794298af4bd946"
+  },
+  "native_stdout": "1346 checks passed",
+  "raw_trace_private_path": "<private-trace-cache>\\trace-cache-2026-10-13\\vif-zero-cold.jsonl",
+  "trace_sha256": "5ca940fc21d39ef171c66496e97c4e6c46204a58a4b1e2287bc24b4178be4b9a",
+  "trace_events": 6591839,
+  "main_progress_dispatches": 91,
+  "AVD_host_function": "HAL_AVD_AFEC_SetRegFromDSP",
+  "coverage_sha256": "d7bfcc70fd232484fb0d1076c48c43ffba9d7eeb5c29a6c34d3291728d132093",
+  "PM51_history_sha256": "d5366f766c3c7962f68627ae1be4ab485aa31e5ed552ac1b107ffee1cc4b7487"
+}

@@ -65,6 +65,7 @@ struct Options {
   bool exploratoryAnalogDisconnected=false;
   bool exploratoryAvdNoHsync=false;
   int exploratoryVifRevision=-1;
+  uint64_t exploratoryVifZeroInputSettlingCycles=0;
   bool exploratoryPqSramIdle=false;
   bool exploratoryPqDisabledPorts=false;
   bool candidateVdMcuProgram=false;

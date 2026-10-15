@@ -114,6 +114,11 @@ static int appMain(const std::vector<std::string> &args) {
       }
       else if(a=="--exploratory-analog-disconnected")o.exploratoryAnalogDisconnected=true;
       else if(a=="--exploratory-avd-no-hsync")o.exploratoryAvdNoHsync=true;
+      else if(a=="--exploratory-vif-zero-input-settle-cycles"){
+        auto token=value(i);size_t used=0;auto n=std::stoull(token,&used,0);
+        if(!n || used!=token.size() || token[0]=='-')throw std::runtime_error("VIF zero-energy settling interval must be positive virtual CPU cycles");
+        o.exploratoryVifZeroInputSettlingCycles=n;
+      }
       else if(a=="--exploratory-vif-chip-revision-byte"){
         auto token=value(i);size_t used=0;auto n=std::stoull(token,&used,0);
         if(n>255 || used!=token.size())throw std::runtime_error("VIF chip revision hypothesis must be a byte");
@@ -263,6 +268,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-analog-disconnected: external no-analog-input fixture supplies NORMAL Euro/Australia detection status only; positive patterns/timing unsupported\n"
                "--exploratory-avd-no-hsync: separate disconnected AFEC bit14 hypothesis; no READY value, other status/force modes/latency unresolved\n"
                "--exploratory-vif-chip-revision-byte N: separate unverified immutable revision byte at3D9D, not fetch3C05 or a ready status\n"
+               "--exploratory-vif-zero-input-settle-cycles N: opt-in ideal noiseless IF equilibrium after explicit virtual cycles; no measured antenna noise, VGA or lock response\n"
                "--exploratory-pq-sram-idle: unvalidated initial idle state; original Y/C coefficient writes store real payloads with provisional deterministic latency\n"
                "--exploratory-pq-disabled-ports: separate unvalidated reset fixture with Y/C write-enable bits initially cleared\n"
                "--or1k-trace-first-visits: trace each original auxiliary PC once; every fetch still compared with immutable uploaded code and counted\n"

@@ -1,5 +1,12 @@
 # Original ZUI entry and GOP update boundary
 
+Latest [VIF continuation](vif-zero-energy-experiment.md) reaches the original
+AVD host-register service at `805032A0/BF206BB8` after an explicitly hypothetical
+ideal-input AGC return. ZUI initialization/return remain demonstrated; dispatcher
+`804E0DC4`, framebuffer allocation, enabled scan-out and authentic drawing do not.
+The original initializer sets ZUI state 1; the dispatcher has separate active
+states 2..5. No host UI event, auxiliary request or OSD pixels are injected.
+
 ## Demonstrated exploratory application execution
 
 The original startup-image timeout/cleanup returns through8049C82C and the

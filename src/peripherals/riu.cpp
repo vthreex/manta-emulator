@@ -3,6 +3,17 @@
 #include <stdexcept>
 #include "storage/sha256.hpp"
 namespace manta {
+void Riu::updateVifZeroInput(uint64_t tick){
+  if(!vifZeroInput_.enabled())return;
+  VifZeroInput::Configuration config;
+  for(unsigned i=0;i<config.size();++i){
+    auto address=VifZeroInput::configuration[i];
+    config[i]={uint8_t(get(address,1)),uint8_t(knownBits(address,1))};
+  }
+  auto before=vifZeroInput_.settlements();vifZeroInput_.update(config,tick);
+  if(before!=vifZeroInput_.settlements())event("exploratory_vif_zero_input_settled",0x1f224644,1,0,
+    "HYPOTHESIS: ideal noiseless zero-energy post-ADC input; positive AGC reference drives PGA2 to guest-programmed maximum after explicit virtual-cycle interval; VGA/lock remain invalid, NOT measured disconnected-antenna behavior");
+}
 VdByte Riu::pmRead(uint16_t address){
   auto physical=0x1f000000u+(uint32_t(address&~1u)<<1)+(address&1u);
   VdByte v{uint8_t(get(physical,1)),uint8_t(knownBits(physical,1)),address};
@@ -378,6 +389,9 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     auto it = bytes_.find(storageKey(a + i));
     if (it != bytes_.end())
       v |= uint32_t(it->second.known) << (8 * i);
+    if(VifZeroInput::observation(a+i)){
+      v&=~(255u<<(8*i));v|=uint32_t(vifZeroInput_.sample(a+i).known)<<(8*i);
+    }
   }
   // Live AFEC status, not writable storage. Only the named HSYNC field is
   // supplied by the explicit absent-input experiment; READY and all other
@@ -421,6 +435,10 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     if(a+i==0x1f003d9d && exploratoryVifRevision_>=0){v|=uint32_t(exploratoryVifRevision_)<<(8*i);continue;}
     auto it = bytes_.find(storageKey(a + i));
     auto byte=uint32_t(it == bytes_.end() ? 0xa5 : it->second.value);
+    if(VifZeroInput::observation(a+i)){
+      auto sample=vifZeroInput_.sample(a+i);
+      byte=(0xa5u&~sample.known)|(sample.value&sample.known);
+    }
     if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
     v |= byte << (i * 8);
   }
@@ -490,6 +508,15 @@ RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
   return it==gopActive_.end()?RiuByte{}:it->second;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(vifZeroInput_.enabled())for(unsigned i=0;i<n;++i)if(VifZeroInput::observation(a+i)){
+    updateVifZeroInput(tick);
+    if(vifZeroInput_.sample(a+i).known){
+      ++vifZeroInputReads_;
+      event("exploratory_vif_zero_input_sample",a,n,get(a,n),
+        "explicit ideal zero-energy equilibrium fixture; mean16=zero envelope, PGA2 low5 from guest MAX; upper PGA bits and all VGA bits invalid; settling/clock/gain-distribution not verified on Titania4");
+    }
+    break;
+  }
   advanceGopUpdate(tick);
   advancePm(tick);
   advanceTsp(tick);
@@ -772,6 +799,9 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  for(auto observed:{0x1f224644u,0x1f224650u,0x1f224651u,0x1f22465du})
+    if(a<=observed && uint64_t(a)+n>observed)
+      throw std::runtime_error("VIF live AGC observation is hardware-owned; guest writes cannot manufacture measurements");
   // Also invalidate if an observer ever performs a nested controller write.
   tspBurstMappingActive_=false;
   advanceGopUpdate(tick); // latch the old shadow state before this timestamped write
@@ -855,6 +885,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(vifZeroInput_.enabled())for(auto config:VifZeroInput::configuration)
+    if(a<=config && uint64_t(a)+n>config){updateVifZeroInput(tick);break;}
   if(candidatePmIrFifo_ && a<=0x1f007b45 && uint64_t(a)+n>0x1f007b45 &&
      (knownBits(0x1f007b45,1)&0x80) && (get(0x1f007b45,1)&0x80)){
     pmIrFifo_.clear();bytes_[storageKey(0x1f007b45)].known&=0x7f;

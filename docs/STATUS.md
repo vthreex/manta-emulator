@@ -1,5 +1,24 @@
 # Status of the research build
 
+Latest [VIF zero-energy experiment](vif-zero-energy-experiment.md) implements
+an opt-in, configuration-gated ideal IF/gain equilibrium model. The original
+VIF handler passes `80509D54` and returns; main reaches `805032A0 / BF206BB8`
+after 854,795,125 dispatches. That byte is the AVD MCU's host-assisted register
+request, identified against a named reference with only three relocated words
+differing in the complete 256-byte routine. Its producer has not executed.
+No idle request is fabricated. AVD remains at `0802/C008` after six instructions.
+
+This conditional input is not measured disconnected-antenna behavior. VGA and
+unrelated status remain invalid; default VIF behavior still stops on unknowns.
+ZUI initialization returns, but its dispatcher, framebuffer allocation, enabled
+window and authentic pixels remain unproven. The original BIST-filled disabled
+8x8 descriptor is unchanged. Full five-CPU replay matches all 6,591,839 events,
+summary, coverage and PM history. 1,346 native checks, 18 baseline runs, nine
+display runs, auxiliary/clock regressions and clean-PATH Windows startup pass.
+See the [validation manifest](../evidence/vif-zero-validation.json).
+
+The following paragraphs preserve earlier verified checkpoints.
+
 The [MCU stack/VIF continuation](mcu-stack-vif-continuation.md) corrects
 interrupt-save provenance and executes 1,454,515 original DVB-T instructions
 with 161 interrupts. It naturally passes `4A8A` and returns to the genuine

@@ -1,5 +1,6 @@
 #pragma once
 #include "peripherals/pm_ir_fifo.hpp"
+#include "peripherals/vif_zero_input.hpp"
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -105,6 +106,9 @@ class Riu {
   uint64_t avdHsyncReads_=0;
   int exploratoryVifRevision_=-1;
   uint64_t vifRevisionReads_=0;
+  VifZeroInput vifZeroInput_;
+  uint64_t vifZeroInputReads_=0;
+  void updateVifZeroInput(uint64_t tick);
   PqSram pqSram_;
   IrDma irDma_;bool exploratoryIrDmaReset_=false;
   bool exploratoryIrCapturePresent_=false;
@@ -216,6 +220,9 @@ public:
     exploratoryVifRevision_=int(byte);
   }
   uint64_t vifRevisionReads()const{return vifRevisionReads_;}
+  void configureExploratoryVifZeroInput(uint64_t cycles){vifZeroInput_.configure(cycles);}
+  const VifZeroInput& vifZeroInput()const{return vifZeroInput_;}
+  uint64_t vifZeroInputReads()const{return vifZeroInputReads_;}
   void configureExploratoryScmiFormat(unsigned byte){
     if(byte>255)throw std::runtime_error("SCMI format fixture byte outside 0..255");
     // Original main/sub read/write targets 1204/1284; only low byte defined.

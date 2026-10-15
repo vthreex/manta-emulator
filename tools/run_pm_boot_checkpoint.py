@@ -25,6 +25,7 @@ p.add_argument('--exploratory-scart-id-grounded',action='store_true',help='Separ
 p.add_argument('--candidate-pm-ir-fifo',action='store_true',help='Documented Titania4 FIFO clear/read-pulse/empty fields; reset occupancy remains unknown')
 p.add_argument('--exploratory-pm-ir-reset-empty',action='store_true',help='Separate explicit empty reset-occupancy hypothesis; no external key packet supplied')
 p.add_argument('--exploratory-vif-chip-revision-byte',type=int,help='Separate explicitly unverified chip revision at3D9D; no readiness value; actual board stepping unknown')
+p.add_argument('--exploratory-vif-zero-input-settle-cycles',type=int,help='Explicit ideal noiseless IF equilibrium interval; gain/clock hypotheses, not measured disconnected antenna')
 p.add_argument('--opaque-policy-wait-ms',type=int,default=0,help='Debugger freezes all virtual clocks while awaiting a valid rule; maximum300000ms')
 p.add_argument('--or1k-no-qmem-trace',action='store_true',help='Filter QMEM write log records, never actual CPU/memory effects')
 p.add_argument('--or1k-idle-poll-log-changes',action='store_true',help='Filter duplicate known-zero command poll logs, never reads or nonzero commands/replies')
@@ -34,6 +35,8 @@ p.add_argument('--print-command', action='store_true')
 a = p.parse_args()
 if a.max_instructions < 1 or a.max_or1k_instructions < 1:
     p.error('instruction limit must be positive')
+if a.exploratory_vif_zero_input_settle_cycles is not None and not 0<a.exploratory_vif_zero_input_settle_cycles<2**64:
+    p.error('VIF ideal zero-input interval must be positive uint64 virtual CPU cycles')
 flags = ['--firmware', a.firmware, '--symbolic-init', '--candidate-miu', '--candidate-bdma',
  '--candidate-uart', '--gpio-i2c', '--defer-diagnostic-reads', '--virtual-rtc', '--cp0-timer',
  '--candidate-utmi', '--candidate-spi', '--exploratory-spi-input', 'pull-up', '--candidate-chip-id',
@@ -86,6 +89,8 @@ if a.exploratory_pm_ir_reset_empty:
     flags += ['--exploratory-pm-ir-reset-empty']
 if a.exploratory_vif_chip_revision_byte is not None:
     flags += ['--exploratory-vif-chip-revision-byte',str(a.exploratory_vif_chip_revision_byte)]
+if a.exploratory_vif_zero_input_settle_cycles is not None:
+    flags += ['--exploratory-vif-zero-input-settle-cycles',str(a.exploratory_vif_zero_input_settle_cycles)]
 if a.opaque_policy_wait_ms:
     flags += ['--opaque-policy-wait-ms',str(a.opaque_policy_wait_ms)]
 if a.or1k_no_qmem_trace:

@@ -1,5 +1,18 @@
 # Evidence still needed
 
+The new [ideal zero-energy VIF experiment](vif-zero-energy-experiment.md) lets
+the original handler return under an explicitly configured gain/clock/settling
+hypothesis. It does not establish actual disconnected-antenna measurements;
+strict mean16/PGA2/VGA remain unknown and VGA stays unknown even in this mode.
+The next main boundary is `805032A0 / BF206BB8`, the command field of original
+`HAL_AVD_AFEC_SetRegFromDSP`. Its AVD firmware producer is statically identified
+but unexecuted; no idle command is supplied. The related C008/C009 watchdog
+documentation has the opposite key pair from the original AVD startup, so exact
+T4 key effects, watchdog timing and shared auxiliary RIU mapping still need
+evidence. AVD stops at `0802/C008`. ZUI dispatch and authentic drawing remain
+unentered. Full replay proves determinism of the named experiment, not hardware
+accuracy. Older boundaries below retain their original scope.
+
 Current application investigation: original ZUI initialization has entered and
 returned in explicitly exploratory runs. Its state dispatcher and authentic
 OSD pixels remain unobserved. Main execution reaches `80509D54`, consuming

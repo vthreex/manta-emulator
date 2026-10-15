@@ -1,11 +1,15 @@
 # Manta LCD4214 firmware execution research build
 
-Current [MCU/VIF continuation](docs/mcu-stack-vif-continuation.md): original ZUI
-initialization enters and returns under named exploratory configurations, but
-its dispatcher and authentic OSD remain unentered. Corrected MCU stack
-provenance permits 1,454,515 original DVB-T instructions and 161 interrupts.
-Main execution requires unmodeled live VIF measurements at `80509D54`.
-No enabled framebuffer or authentic TV pixels are demonstrated.
+Current [VIF input experiment](docs/vif-zero-energy-experiment.md): a separately
+configured ideal noiseless IF/gain-equilibrium hypothesis lets the original VIF
+handler return naturally. Main execution reaches `805032A0 / BF206BB8`, an AVD
+MCU register-service request whose producer has not run. This is not a verified
+disconnected-antenna boot. Strict VIF measurements remain invalid.
+
+ZUI initialization enters and returns; its dispatcher, enabled framebuffer and
+authentic OSD pixels remain unobserved. All 1,346 native checks, 18 baseline and
+nine display runs pass. Complete five-CPU replay verifies 6,591,839 events,
+summary, coverage and PM history. Original firmware remains unchanged.
 
 The older checkpoint descriptions below retain their historical results.
 
