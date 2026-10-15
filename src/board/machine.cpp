@@ -125,6 +125,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("SAR input/reference fixture requires explicitly guarded exploration");
     riu_.configureExploratorySarFullscale();
   }
+  if(o.exploratoryScartIdGrounded){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("Grounded SCART ID voltage hypothesis requires guarded exploration; actual board wiring unknown");
+    riu_.configureExploratoryScartIdGrounded();
+  }
   if(o.exploratoryPmAcOn){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("PM external AC-on boundary requires explicitly guarded exploration");
     riu_.configureExploratoryPmAcOn();
@@ -1761,6 +1766,8 @@ std::string Msd309Machine::summary() const {
     s<<"]}";
   }
   if(options_.exploratorySarFullscale)s<<",\n  \"exploratory_sar_fullscale\": true,\n  \"sar_conversions\": "<<riu_.sarConversions();
+  if(options_.exploratoryScartIdGrounded)s<<",\n  \"exploratory_scart_id_grounded\": true,\n  \"scart_id_sar_samples\": "<<riu_.scartIdSamples()
+    <<",\n  \"scart_id_board_wiring_hardware_verified\": false";
   if(options_.exploratoryTspCpu)s<<",\n  \"or1k_trace_first_visits\": "<<(options_.orFirstVisits?"true":"false")
     <<",\n  \"or1k_budget\": "<<options_.orBudget<<",\n  \"or1k_original_word_fetches\": "<<riu_.orOriginalWords()
     <<",\n  \"or1k_modified_word_fetches\": "<<riu_.orModifiedWords()<<",\n  \"or1k_unique_pcs\": "<<riu_.orVisited()

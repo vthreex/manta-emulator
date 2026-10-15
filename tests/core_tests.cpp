@@ -1775,7 +1775,28 @@ int main() {
     sar.advance(116);require(sar.result(0)==127,"SAR next sample quantizes midpoint voltage");
     sar.configure(0x20,0xff,3,0xff,0,0xff,117);require(!sar.result(0),"SAR analog powerdown invalidates output");
     sar.configure(0x20,0,2,0xff,0,0xff,118);sar.advance(200);require(!sar.result(0),"SAR unknown power controls cannot manufacture output");
-    rejects([&]{sar.input(2,3300);});rejects([&]{sar.input(0,3301);});
+    rejects([&]{sar.input(8,3300);});rejects([&]{sar.input(0,3301);});
+    require(manta::SarAdc::channel(0x1f002838)==2 && manta::SarAdc::channel(0x1f002839)==3 &&
+      manta::SarAdc::channel(0x1f002841)==7 && !manta::SarAdc::channel(0x1f002836),
+      "all eight original SAR jump-table byte addresses map independently, including SCART ID channels2/3");
+    manta::Riu id;id.event=[](auto&,auto,auto,auto,auto&){};id.configureExploratoryScartIdGrounded();
+    require(id.knownBits(0x1f002838,1)==0 && id.knownBits(0x1f002839,1)==0,"grounded SCART fixture alone does not create an ADC conversion");
+    id.write(0x1f002800,1,0x20,0,0,10);id.write(0x1f002801,1,2,0,0,10);id.write(0x1f002804,1,0,0,0,10);
+    id.read(0x1f002838,1,0,0,17);require(!id.stopReason.empty(),"SCART voltage cannot be sampled before programmed SAR latency");id.stopReason.clear();
+    require(id.read(0x1f002838,1,0,0,18)==0 && id.read(0x1f002839,1,0,0,18)==0 && id.scartIdSamples()==2,
+      "original power and period commands produce grounded ADC2/3 samples, rather than host source-readiness constants");
+    require(id.knownBits(0x1f002834,1)==0 && id.knownBits(0x1f00283c,1)==0,"SCART ID fixture defines no keypad or unrelated analog input");
+    id.write(0x1f002800,1,0x60,0,0,19);require(id.knownBits(0x1f002838,1)==0,"SAR powerdown withdraws SCART voltage validity");
+    // Original GetScart1IDLevel arithmetic and original three-level classifier.
+    constexpr uint32_t scale[]={0x00021900,0x00021080,0x00431021,0x3042fffc};
+    constexpr uint32_t classify[]={0x00402021,0x2c4208fd,0x10400003,0x24030002,0x2c8203e9,0x38430001};
+    for(auto code:{0u,50u,51u,115u,116u,255u}){
+      manta::Engine cpu;cpu.map(0,0x1000);cpu.map(0x00486000,0x1000);
+      cpu.write(0,scale,sizeof(scale));cpu.write(0x00486b10,classify,sizeof(classify));cpu.reg(UC_MIPS_REG_2,code);
+      require(cpu.run(0x80000000,4)==UC_ERR_OK && cpu.reg(UC_MIPS_REG_2)==code*20,"original SCART1 scaling executes its actual shifts/add/ANDI");
+      auto level=code*20;require(cpu.run(0x80486b10,level>=2301?4:6)==UC_ERR_OK && cpu.reg(UC_MIPS_REG_PC)==0x80486b28 &&
+        cpu.reg(UC_MIPS_REG_3)==(level>=2301?2u:level>=1001?1u:0u),"original SCART ID classification crosses its actual1001/2301 boundaries; grounded input chooses no ID");
+    }
     manta::Riu scartStrict;scartStrict.event=[](auto&,auto,auto,auto,auto&){};
     scartStrict.write(0x1f204b10,2,0x7f20,0,0xffff,1);
     scartStrict.prepareMaskedRead(0x1f204b15,15);

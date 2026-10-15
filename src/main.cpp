@@ -151,6 +151,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--defer-platform-identity") o.deferPlatformIdentity=true;
       else if(a=="--exploratory-pm-ac-on") o.exploratoryPmAcOn=true;
       else if(a=="--exploratory-sar-fullscale") o.exploratorySarFullscale=true;
+      else if(a=="--exploratory-scart-id-grounded") o.exploratoryScartIdGrounded=true;
       else if(a=="--exploratory-ir-dma-reset") o.exploratoryIrDmaReset=true;
       else if(a=="--exploratory-ir-capture-present") o.exploratoryIrCapturePresent=true;
       else if(a=="--exploratory-gop-reset-windows") o.exploratoryGopResetWindows=true;
@@ -236,6 +237,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-sar-fullscale: 3300mV inputs/reference for SAR0/1; original power/free-run controls and period trigger conversion, board wiring unverified\n"
                "--exploratory-ir-dma-reset: original descriptor command commits an empty IR capture ring; 82h reset/index coupling unverified, no keys supplied\n"
                "--exploratory-ir-capture-present: separate bit7 capture-activity hypothesis derived from actual ring state, no external keys supplied\n"
+               "--exploratory-scart-id-grounded: separate ADC2/3 external0mV fixtures; original conversion timing/power required, actual board wiring unverified\n"
                "--exploratory-gop-reset-windows: original top-bank reset pulse clears GWIN enable bits only; exact reset scope unverified\n"
                "--exploratory-scart-grounded: explicit grounded FB input and hypothetical ADC zero code after original config; exact Titania4 transfer/pin mapping unverified\n"
                "--graphics-probes: trace original GOP window-programming entries and report valid guest register descriptors; does not fabricate pixels\n"

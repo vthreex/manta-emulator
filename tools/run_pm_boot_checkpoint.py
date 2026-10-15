@@ -21,6 +21,7 @@ p.add_argument('--copro-probes',action='store_true',help='Inspect actual origina
 p.add_argument('--opaque-read-policy',help='Guarded INVALID observations only; exact original code/hash/PC/address/width; no values or status defaults')
 p.add_argument('--exploratory-avd-no-hsync',action='store_true',help='Separate absent-input AFEC bit14 hypothesis; READY and all other status stay invalid; detector gating/latency unverified')
 p.add_argument('--exploratory-ir-capture-present',action='store_true',help='Separate unverified bit7 capture-activity interpretation; derived from actual ring capture state, no remote key events')
+p.add_argument('--exploratory-scart-id-grounded',action='store_true',help='Separate SCART ID ADC2/3 external0mV fixtures through real SAR conversion state; board wiring unverified')
 p.add_argument('--exploratory-vif-chip-revision-byte',type=int,help='Separate explicitly unverified chip revision at3D9D; no readiness value; actual board stepping unknown')
 p.add_argument('--opaque-policy-wait-ms',type=int,default=0,help='Debugger freezes all virtual clocks while awaiting a valid rule; maximum300000ms')
 p.add_argument('--or1k-no-qmem-trace',action='store_true',help='Filter QMEM write log records, never actual CPU/memory effects')
@@ -75,6 +76,8 @@ if a.exploratory_avd_no_hsync:
     flags += ['--exploratory-avd-no-hsync']
 if a.exploratory_ir_capture_present:
     flags += ['--exploratory-ir-capture-present']
+if a.exploratory_scart_id_grounded:
+    flags += ['--exploratory-scart-id-grounded']
 if a.exploratory_vif_chip_revision_byte is not None:
     flags += ['--exploratory-vif-chip-revision-byte',str(a.exploratory_vif_chip_revision_byte)]
 if a.opaque_policy_wait_ms:

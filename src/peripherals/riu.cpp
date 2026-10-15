@@ -364,7 +364,8 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   }
   if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c) && irDma_.producer())return 255;
   if(a==0x1f001cdd && n==1 && !pmPowerReasonWritten_ && pmBoot_.cause())return 255;
-  if(exploratorySarFullscale_ && n==1 && (a==0x1f002834 || a==0x1f002835) && sar_.result(a-0x1f002834))return 255;
+  if((exploratorySarFullscale_ || exploratoryScartIdGrounded_) && n==1)
+    if(auto channel=SarAdc::channel(a))if(sar_.result(*channel))return 255;
   if(candidateTsp && a==0x1f202afc && n==2)return tsp_.known()?TspQueue::countStatusMask:0;
   if(candidateGe && ge_.initialized() && a==0x1f20501c && n==2)return GeQueue::statusKnown;
   if(candidateGe && a==0x1f2050c8 && n==2)return ge_.completedTag()?0xffff:0;
@@ -523,10 +524,14 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     auto v=(*cursor>>(a==0x1f206e79?0:8))&255;
     event("exploratory_ir_dma_cursor",a,n,v,"capture-ring producer index after original descriptor command; no external IR records supplied, no key or interrupt fabricated; reset coupling unvalidated");return v;
   }
-  if(exploratorySarFullscale_){
+  if(exploratorySarFullscale_ || exploratoryScartIdGrounded_){
     sar_.advance(tick);
-    if(n==1 && (a==0x1f002834 || a==0x1f002835))if(auto v=sar_.result(a-0x1f002834)){
-      event("exploratory_sar_sample",a,n,*v,"free-running conversion from explicit 3300mV/reference fixture, guest digital/analog power controls and period; keypad wiring and latency unvalidated");return *v;
+    if(n==1)if(auto channel=SarAdc::channel(a))if(auto v=sar_.result(*channel)){
+      if(*channel==2 || *channel==3){
+        ++scartIdSamples_;
+        event("exploratory_scart_id_sar_sample",a,n,*v,
+          "original GetScart1/2IDLevel path; separate explicit grounded0mV input through programmed SAR conversion; actual board pin/divider/pull-down and timing unverified; not a source-ready response");
+      }else event("exploratory_sar_sample",a,n,*v,"free-running conversion from explicit 3300mV/reference fixture, guest digital/analog power controls and period; keypad wiring and latency unvalidated");return *v;
     }
   }
   if(a==0x1f001cdd && n==1 && !pmPowerReasonWritten_ && pmBoot_.cause()){
@@ -943,7 +948,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       if(!vdMcuSuspended_ && !exploratoryVdSharedRun)throw std::runtime_error("MCU reset released after genuine program upload/readback; original auxiliary CPU execution unsupported");
     }
   }
-  if(exploratorySarFullscale_ && (a==0x1f002800 || a==0x1f002801 || a==0x1f002804)){
+  if((exploratorySarFullscale_ || exploratoryScartIdGrounded_) && (a==0x1f002800 || a==0x1f002801 || a==0x1f002804)){
     sar_.configure(uint8_t(get(0x1f002800,1)),uint8_t(knownBits(0x1f002800,1)),
       uint8_t(get(0x1f002801,1)),uint8_t(knownBits(0x1f002801,1)),
       uint8_t(get(0x1f002804,1)),uint8_t(knownBits(0x1f002804,1)),tick);

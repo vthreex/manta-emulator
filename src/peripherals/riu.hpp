@@ -96,6 +96,8 @@ class Riu {
   VdByte pmRead(uint16_t address);
   bool pmWrite(uint16_t address,VdByte value);
   SarAdc sar_;bool exploratorySarFullscale_=false;
+  bool exploratoryScartIdGrounded_=false;
+  uint64_t scartIdSamples_=0;
   ScartGroundedInput scart_;
   bool analogDisconnected_=false;
   bool exploratoryAvdNoHsync_=false;
@@ -181,6 +183,8 @@ public:
   void configureExploratoryPmPowerGood(bool good){pmPowerGood_.input(good);}
   const PmPowerGood& pmPowerGood()const{return pmPowerGood_;}
   void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}
+  void configureExploratoryScartIdGrounded(){exploratoryScartIdGrounded_=true;sar_.input(2,0);sar_.input(3,0);}
+  uint64_t scartIdSamples()const{return scartIdSamples_;}
   void configureExploratoryScartGrounded(){scart_.ground();}
   void configureExploratoryFetchRevisionByte(unsigned byte){
     if(byte>255)throw std::runtime_error("Fetch revision hypothesis byte must be 0..255");

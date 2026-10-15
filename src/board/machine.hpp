@@ -56,6 +56,7 @@ struct Options {
   bool exploratoryIrCapturePresent=false;
   bool exploratoryGopResetWindows=false;
   bool exploratoryScartGrounded=false;
+  bool exploratoryScartIdGrounded=false;
   bool graphicsProbes=false;
   bool osdProbes=false;
   int exploratoryScmiFormat=-1;

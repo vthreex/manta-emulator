@@ -278,3 +278,32 @@ This updates the earlier unresolved-MIU observation without claiming a frame.
 pass. The new IR-mode cold boot and complete replay are pending. Prior full
 replays retain their exact binary/profile scope; the new activity interpretation
 must not be presented as physical hardware validation.
+
+## Original SCART ID voltage path
+
+The capture-activity experiment continues through213 original status reads with
+zero external records and reaches844,783,433 MIPS dispatches,38,087 original
+timer entries and unchanged2,453,934,820 TSP instructions. The application is
+at8046A01C, calling804F0E74 with source14h. Its original804F0D48 helper reads SAR
+channel2 atBF002838 and scales its byte by20. An INVALID-only probe preserves
+that sample through the original stack cache and correctly stops at804F0D64
+before unknown arithmetic. Stock string80614CE0 identifies this function as
+`GetScart1IDLevel()`; the adjacent diagnostic names the channel3 path
+`GetScart2IDLevel()`. The original classifier uses1001/2301 thresholds.
+
+The existing SAR conversion model now supports all eight channels in the actual
+804F13D4 jump table, at byte offsets2834/2835/2838/2839/283C/283D/2840/2841.
+Unconfigured channels remain invalid. `--exploratory-scart-id-grounded` supplies
+separate external0mV inputs only to channels2/3. Results appear through the
+original digital/analog power and period controls after conversion, and become
+invalid on powerdown. No ADC byte or source-ready flag is directly preset.
+The fullscale keypad fixture for0/1 is unchanged. Native1116 checks include
+actual MIPS scaling/classification across the original threshold boundaries.
+
+The supplied different-board schematic labels PAD_SAR2 as POWER_DET on page14;
+this conflicts with treating its wiring as proof for the Manta SCART path. The
+Manta pin wiring, divider, pull-downs, voltage reference and timing remain
+unverified. Grounded input is an explicit electrical scenario, not an assertion
+that an unplugged original Manta has that measured level. Strict mode rejects
+the fixture. The new conditional cold boot is still being tested; no new ZUI
+event-loop, enabled GWIN, raster output or authentic frame is claimed here.

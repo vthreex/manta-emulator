@@ -7,10 +7,16 @@ namespace manta {
 // Eight-bit SAR result interface identified in original byte readers.
 // Input/reference voltage and conversion latency are explicit fixtures.
 class SarAdc {
-  std::array<std::optional<unsigned>,2> inputs_{};
-  std::array<std::optional<uint8_t>,2> result_{};
+  std::array<std::optional<unsigned>,8> inputs_{};
+  std::array<std::optional<uint8_t>,8> result_{};
   bool running_=false;uint64_t due_=0,period_=0,conversions_=0;
 public:
+  static std::optional<unsigned> channel(uint32_t address){
+    constexpr std::array<uint32_t,8> addresses={0x1f002834,0x1f002835,0x1f002838,0x1f002839,
+      0x1f00283c,0x1f00283d,0x1f002840,0x1f002841};
+    for(unsigned i=0;i<addresses.size();++i)if(address==addresses[i])return i;
+    return {};
+  }
   void input(unsigned channel,unsigned millivolts){
     if(channel>=inputs_.size() || millivolts>3300)throw std::runtime_error("SAR external voltage outside fixture bounds");
     inputs_[channel]=millivolts;
