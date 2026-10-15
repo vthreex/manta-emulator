@@ -29,6 +29,7 @@
 #include "cpu/vd_mcu.hpp"
 #include "audio/idma.hpp"
 #include <set>
+#include <bitset>
 namespace manta {
 struct RiuByte {
   uint8_t value = 0xa5, known = 0;
@@ -106,6 +107,7 @@ class Riu {
   uint64_t orBudget_=10000000,orOriginalWords_=0,orModifiedWords_=0;
   uint64_t orDivider_=1;
   std::set<uint32_t> orVisited_;
+  std::bitset<4096> orVisitedQmem_;
   uint64_t tspCpuTick_=0,tspCpuReads_=0,tspCpuWrites_=0;
   struct TspMapping {uint32_t base=0,mask=0;bool known=false;};
   std::array<TspMapping,2> tspBurstMapping_{};

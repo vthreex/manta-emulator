@@ -80,3 +80,24 @@ to validate this correction in application execution.
 compressed full summaries/coverage/history preserve the evidence. Global latch
 scope and sync timing are still exploratory; no verified power marker or CP
 response was generated.
+
+## FPLL continuation and ADC dummy read
+
+The independent EXT correction advanced the original application to808,041,401
+MIPS dispatches at8054CD88/BF204AFC. Active-descriptor diagnostics remain empty.
+This helper addresses bytes using RIU_base +2*index -(index&1). Its first LBU
+is overwritten in the BEQ delay slot, before the separate second LBU/RMW.
+The new guarded observation is restricted to the exact15 original words and
+ADC aperture204A00..204BFF. It keeps the first sample INVALID; mutation of the
+original delay slot or branch rejects the proof. Native execution with different
+first samples demonstrates identical writes based on the independently reread
+second byte. Read side effects and precise ADC field semantics remain unverified;
+no input-presence, power-ready or completion response is generated.
+
+A third cold boot is testing this continuation. Its private pre-bitmap executable
+SHA256 is7bedb39c393ed94935ff656733b15a20c22235ce4e6c9fb6abc85d1ffd22086d.
+A logging-only QMEM PC bitmap now avoids repeated set searches; instruction
+fetch, decode, execution, data accesses and counters remain unchanged. Native
+loop coverage verifies four first-visit records for ten actual instructions.
+1002 native checks pass. Complete new-mode replay remains pending; no claim of
+an authentic frame or exact physical clock/latch semantics is made.

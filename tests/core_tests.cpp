@@ -920,6 +920,25 @@ void geQueueTests() {
   require(!bus.stopReason.empty(),"GE unrelated status bits remain invalid");
 }
 void readMaskTests() {
+  std::array<uint32_t,15> adc={0x90620000,0x30a500ff,0x30c600ff,0x10800009,0x00001021,
+    0x90620000,0x304400ff,0x14a00003,0x00861025,0x00061027,0x00821024,0xa0620000,0x24020001,0x03e00008,0};
+  require(manta::discardedAdcControlSample(adc),"exact original ADC helper proves first sample is unused");
+  auto altered=adc;altered[4]=0x00401021;
+  require(!manta::discardedAdcControlSample(altered),"retaining the first ADC sample must invalidate the proof");
+  altered=adc;altered[3]=0x10400009;
+  require(!manta::discardedAdcControlSample(altered),"branching on the first ADC sample must invalidate the proof");
+  for(auto poison:{0u,255u}){
+    struct Bus {unsigned first,reads=0,writes=0,value=0;} bus{poison};
+    manta::Engine cpu;cpu.map(0,0x1000);cpu.write(0,adc.data(),sizeof(adc));
+    auto read=+[](uc_engine*,uint64_t,unsigned,void* p)->uint64_t{auto& b=*static_cast<Bus*>(p);return ++b.reads==1?b.first:0x54;};
+    auto write=+[](uc_engine*,uint64_t,unsigned,uint64_t v,void* p){auto& b=*static_cast<Bus*>(p);++b.writes;b.value=unsigned(v);};
+    manta::check(uc_mmio_map(cpu.handle,0x1f204000,0x1000,read,&bus,write,&bus));
+    cpu.reg(UC_MIPS_REG_3,0xbf204afc);cpu.reg(UC_MIPS_REG_4,0x10257e);
+    cpu.reg(UC_MIPS_REG_5,1);cpu.reg(UC_MIPS_REG_6,1);cpu.reg(UC_MIPS_REG_RA,0x80000100);
+    require(cpu.run(0x80000000,13)==UC_ERR_OK && cpu.reg(UC_MIPS_REG_PC)==0x80000100 &&
+      bus.reads==2 && bus.writes==1 && bus.value==0x55,
+      "original ADC instructions discard either first value and update only the independently reread byte");
+  }
   constexpr uint32_t originalExt=0x7cc53c00; // EXT a1,a2,16,8 at805EE834
   manta::Engine ext;ext.map(0,0x1000);ext.write(0,&originalExt,4);ext.reg(UC_MIPS_REG_6,0xab35cdef);
   require(ext.run(0x80000000,1)==UC_ERR_OK && ext.reg(UC_MIPS_REG_5)==0x35,
@@ -1411,7 +1430,8 @@ void tspDownloadTests() {
   rejects([&]{r.write(0x1f202be8,2,3,0,0xffff,15);});
 }
 void tspMappingBurstTests(){
-  manta::Riu r;r.event=[](auto,auto,auto,auto,auto){};r.symbolicInit=true;r.candidateTsp=true;
+  unsigned firstVisits=0;
+  manta::Riu r;r.event=[&](const auto& kind,auto,auto,auto,const auto&){if(kind=="or1k_instruction")++firstVisits;};r.symbolicInit=true;r.candidateTsp=true;
   r.configureExploratoryTspResetLow();r.configureExploratoryTspCpu();r.configureOrTraceBudget(true,1000,4);
   std::vector<uint8_t> code(0x200);const uint32_t words[]={0x18000000,0x9c200123,0,0x15000000};
   for(unsigned i=0;i<4;++i)for(unsigned b=0;b<4;++b)code[0x100+4*i+b]=uint8_t(words[i]>>(8*b));
@@ -1425,6 +1445,7 @@ void tspMappingBurstTests(){
   tick=100;w(0xe8,6);tick=132;r.read(0x1f202be8,2,0,8,tick);tick=133;w(0xe8,3);
   tick=173;r.read(0x1f202be8,2,0,1,tick);
   require(r.tspCpuInstructions()==10 && r.tspCpuPc()==0x108,"actual OR instructions and delay-slot loop execute within a burst");
+  require(r.orVisited()==4 && firstVisits==4,"first-visit bitmap logs four distinct original PCs while all ten instructions execute");
   w(0x88,0x4000);tick=177;
   rejects([&]{r.read(0x1f202be8,2,0,1,tick);});
   require(r.tspCpuInstructions()==10 && r.tspCpuPc()==0x108,"mapping changes between bursts cannot reuse stale executable translations");

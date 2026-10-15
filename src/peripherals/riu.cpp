@@ -149,7 +149,13 @@ void Riu::configureExploratoryTspCpu(){
   tspCpu_.read=[this](uint32_t a,unsigned n,bool f){return tspCpuRead(a,n,f);};
   tspCpu_.write=[this](uint32_t a,unsigned n,OrWord v){tspCpuWrite(a,n,v);};
   tspCpu_.trace=[this](uint32_t pc,uint32_t word){
-    bool fresh=orVisited_.insert(pc).second;
+    // This is only first-visit logging metadata, never an instruction/data
+    // cache. Every original instruction still fetches and executes normally.
+    bool fresh;
+    if(pc<0x4000 && !(pc&3)){
+      auto index=pc>>2;fresh=!orVisitedQmem_[index];
+      if(fresh){orVisitedQmem_.set(index);orVisited_.insert(pc);}
+    }else fresh=orVisited_.insert(pc).second;
     if(!orFirstVisits_ || fresh)event("or1k_instruction",pc,4,word,orFirstVisits_?
       "original auxiliary instruction; first visit per PC trace; total execution and immutable-word comparisons counted separately":
       "original TSP QMEM instruction; deterministic auxiliary dispatch");

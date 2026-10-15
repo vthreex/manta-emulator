@@ -1,0 +1,8 @@
+{
+  "scope": "third exploratory cold boot, pending completion",
+  "emulator_sha256": "7bedb39c393ed94935ff656733b15a20c22235ce4e6c9fb6abc85d1ffd22086d",
+  "instruction_budget": 1400000000,
+  "original_OpenRISC_budget": 6000000000,
+  "source": "2af2353 plus ADC discarded-sample guard; before logging-only first-visit bitmap",
+  "authentic_frame_proven": false
+}

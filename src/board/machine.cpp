@@ -660,6 +660,16 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       m.cpu_.read(pc & 0x1fffffff, words, sizeof(words));
       if(auto consumed=immediateReadMask(words))m.riu_.prepareMaskedRead(a,*consumed);
     }
+    if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x8054cd88 &&
+       n==1 && a>=0x1f204a00 && a<0x1f204c00){
+      uint32_t actual[15]{};m.cpu_.read(0x0054cd88,actual,sizeof(actual));
+      if(discardedAdcControlSample(actual)){
+        m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+        m.riu_.prepareOpaqueRead(a);
+        m.event("deferred_adc_discarded_sample",a,n,0,
+          "INVALID unused first LBU in byte-verified ADC update helper; original BEQ delay slot discards sample; second RMW remains independently guarded; read side effects unverified");
+      }
+    }
     if(m.options_.exploratoryDisplayClock && pc==0x805fbc8c && a==0x1f205e78 && n==1) {
       constexpr uint32_t expected[]={0x90440000,0x8ce39634,0x3c020020,0x34425e00,
         0x00621821,0x308400ff,0xa0650000,0x03e00008,0x30820001};

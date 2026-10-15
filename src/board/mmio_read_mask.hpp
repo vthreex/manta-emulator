@@ -2,7 +2,16 @@
 #include <cstdint>
 #include <optional>
 #include <span>
+#include <array>
+#include <algorithm>
 namespace manta {
+// Original ADC byte-update helper: its FIRST LBU is overwritten by MOVE v0,0
+// in the BEQ delay slot. The second LBU is a separate, guarded RMW observation.
+inline bool discardedAdcControlSample(std::span<const uint32_t> words){
+  constexpr std::array<uint32_t,15> original={0x90620000,0x30a500ff,0x30c600ff,0x10800009,0x00001021,
+    0x90620000,0x304400ff,0x14a00003,0x00861025,0x00061027,0x00821024,0xa0620000,0x24020001,0x03e00008,0};
+  return words.size()==original.size() && std::equal(original.begin(),original.end(),words.begin());
+}
 // Used only for independent instructions interleaved into an RMW proof.
 // Never turn an invalid source (including a sampled device value) into a
 // concrete value merely because EXT discards some of its bits.
