@@ -152,6 +152,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-pm-ac-on") o.exploratoryPmAcOn=true;
       else if(a=="--exploratory-sar-fullscale") o.exploratorySarFullscale=true;
       else if(a=="--exploratory-ir-dma-reset") o.exploratoryIrDmaReset=true;
+      else if(a=="--exploratory-ir-capture-present") o.exploratoryIrCapturePresent=true;
       else if(a=="--exploratory-gop-reset-windows") o.exploratoryGopResetWindows=true;
       else if(a=="--or1k-trace-first-visits") o.orFirstVisits=true;
       else if(a=="--max-or1k-instructions") {o.orBudget=std::stoull(value(i));if(!o.orBudget)throw std::runtime_error("OR instruction budget must be positive");}
@@ -234,6 +235,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--pm51-history FILE: bounded PM instruction/validity and bus history; requires original PM startup experiment\n"
                "--exploratory-sar-fullscale: 3300mV inputs/reference for SAR0/1; original power/free-run controls and period trigger conversion, board wiring unverified\n"
                "--exploratory-ir-dma-reset: original descriptor command commits an empty IR capture ring; 82h reset/index coupling unverified, no keys supplied\n"
+               "--exploratory-ir-capture-present: separate bit7 capture-activity hypothesis derived from actual ring state, no external keys supplied\n"
                "--exploratory-gop-reset-windows: original top-bank reset pulse clears GWIN enable bits only; exact reset scope unverified\n"
                "--exploratory-scart-grounded: explicit grounded FB input and hypothetical ADC zero code after original config; exact Titania4 transfer/pin mapping unverified\n"
                "--graphics-probes: trace original GOP window-programming entries and report valid guest register descriptors; does not fabricate pixels\n"

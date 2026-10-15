@@ -58,10 +58,18 @@ with tempfile.TemporaryDirectory(prefix='manta-cycle-profiles-') as directory:
     for incomplete in ([],['--symbolic-init','--defer-diagnostic-reads']):
         r=subprocess.run([str(emu),'--firmware',str(fw),'--headless','--exploratory-avd-no-hsync']+incomplete,capture_output=True,text=True)
         assert r.returncode==1 and 'AVD absent-HSYNC hypothesis requires' in r.stderr
+    for token in ('0','256','4294967296','1junk','-1'):
+        r=subprocess.run([str(emu),'--firmware',str(fw),'--headless','--exploratory-vif-chip-revision-byte',token],capture_output=True,text=True)
+        assert r.returncode==1 and ('VIF chip revision' in r.stderr), (token,r.returncode,r.stderr)
+    for incomplete in ([],['--symbolic-init','--defer-diagnostic-reads']):
+        r=subprocess.run([str(emu),'--firmware',str(fw),'--headless','--exploratory-ir-capture-present']+incomplete,capture_output=True,text=True)
+        assert r.returncode==1 and 'IR capture activity hypothesis requires' in r.stderr
 assert hashlib.sha256(fw.read_bytes()).hexdigest()==stock_sha
 Path(a.report).write_text(json.dumps({'result':'PASS','hardware_timing_verified':False,
     'scope':'original reset/PM prefix under explicit clock/input hypotheses; no verified cold boot or fabricated completion',
     'profiles':results,'strict_and_invalid_profile_rejections':'PASS','unqualified_GOP_hypothesis_rejections':'PASS',
     'strict_and_invalid_opaque_policy_rejections':'PASS',
+    'strict_and_invalid_VIF_revision_rejections':'PASS',
+    'unqualified_IR_capture_activity_rejections':'PASS',
     'emulator_sha256':hashlib.sha256(emu.read_bytes()).hexdigest(),'stock_sha256':stock_sha},indent=2)+'\n')
 print('PASS: five cycle profiles replay every prefix event; strict/invalid configurations reject; no hardware timing claim')

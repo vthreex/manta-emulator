@@ -71,6 +71,7 @@ if not a.validate_only:
         if ref.get('or1k_stored_read_log_changes_only'):command+=['--or1k-register-log-changes']
         if ref.get('exploratory_gop_sync_latch'):command+=['--exploratory-gop-vsync-latch']
         if ref.get('exploratory_avd_no_hsync'):command+=['--exploratory-avd-no-hsync']
+        if ref.get('exploratory_ir_capture_activity'):command+=['--exploratory-ir-capture-present']
         if 'exploratory_vif_chip_revision_byte' in ref:command+=['--exploratory-vif-chip-revision-byte',str(ref['exploratory_vif_chip_revision_byte'])]
         if ref.get('opaque_policy_enabled'):
             assert a.opaque_read_policy and Path(a.opaque_read_policy).exists(),'policy-enabled replay needs its final rules'

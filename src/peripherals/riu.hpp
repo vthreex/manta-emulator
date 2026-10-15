@@ -104,6 +104,8 @@ class Riu {
   uint64_t vifRevisionReads_=0;
   PqSram pqSram_;
   IrDma irDma_;bool exploratoryIrDmaReset_=false;
+  bool exploratoryIrCapturePresent_=false;
+  uint64_t irCaptureStatusReads_=0;
   bool exploratoryGopResetWindows_=false;
   std::array<bool,2> gopResetHeld_{};
   uint64_t gopResetPulses_=0;
@@ -213,6 +215,13 @@ public:
     for(auto offset:{8u,0x108u})bytes_[0x81000000u+(0x12u<<10)+offset]={uint8_t(byte),255};
   }
   void configureExploratoryIrDmaReset(){exploratoryIrDmaReset_=true;}
+  void configureExploratoryIrCapturePresent(){exploratoryIrCapturePresent_=true;}
+  uint64_t irCaptureStatusReads()const{return irCaptureStatusReads_;}
+  void captureIrRecord(std::span<const uint8_t> record){
+    if(!exploratoryIrCapturePresent_ || !exploratoryIrDmaReset_)
+      throw std::runtime_error("external IR capture requires explicit ring/activity experiments");
+    irDma_.capture(record,dramWrite); // raw external record only; no host key/UI translation
+  }
   uint64_t irDmaStarts()const{return irDma_.starts();}
   uint64_t irDmaCaptures()const{return irDma_.captures();}
   std::optional<unsigned> irDmaProducer()const{return irDma_.producer();}

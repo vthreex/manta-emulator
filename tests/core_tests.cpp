@@ -134,11 +134,15 @@ void irDmaTests(){
     std::copy(b.begin(),b.end(),ram.begin()+(a-0x1000));
   };
   require(!dma.producer(),"IR producer remains unknown before descriptor/reset experiment");
+  require(!dma.capturePresent().has_value(),"IR capture activity is unknown before a valid original descriptor command");
   rejects([&]{dma.capture(record,store);});dma.configure(0x1000,2);
   require(dma.producer()==0 && dma.captures()==0,"IR empty cursor derives from configured capture state, not reads");
+  require(dma.capturePresent()==false,"newly configured ring contains no externally captured records");
   dma.capture(record,store);require(dma.producer()==1 && ram[0]==0x35 && ram[47]==0x35,"IR captured record causes actual DMA bytes and cursor advance");
   record.fill(0x62);dma.capture(record,store);
   require(dma.producer()==0 && ram[48]==0x62 && dma.captures()==2,"IR capture ring wraps after actual second transfer");
+  require(dma.capturePresent()==true,"wrapped index zero cannot erase actual capture history");
+  dma.configure(0x1000,2);require(dma.capturePresent()==false && dma.captures()==2,"new descriptor resets current activity while retaining total real capture count");
   rejects([&]{dma.capture(std::span<const uint8_t>(record).first(47),store);});
   rejects([&]{dma.configure(3,2);});rejects([&]{dma.configure(0x10000000,2);});
   manta::Riu r;r.symbolicInit=true;r.event=[](auto&,auto,auto,auto,auto&){};
@@ -151,6 +155,37 @@ void irDmaTests(){
       "original IR address/length/MIU fields are decoded by actual guest command write");
   require(r.read(0x1f206e79,1,0,255,3)==0 && r.read(0x1f206e7c,1,0,255,4)==0 && r.irDmaCaptures()==0,
       "IR cursor is stable with no external records and no fake keys or completions");
+  require((r.knownBits(0x1f206e41,1)&0x80)==0,"DMA-index experiment alone cannot authorize a new status-bit interpretation");
+  r.configureExploratoryIrCapturePresent();r.prepareMaskedRead(0x1f206e41,0x80);
+  require(!(r.read(0x1f206e41,1,0,0,5)&0x80) && r.stopReason.empty() && r.knownBits(0x1f206e40,2)==0x8000,
+    "separate activity model supplies only bit7 from actual empty capture state, with correct word alias");
+  r.read(0x1f206e41,1,0,0,5);require(!r.stopReason.empty(),"other IR status fields stay invalid");r.stopReason.clear();
+  std::array<uint8_t,48> actual{};actual.fill(0x53);unsigned written=0;
+  r.dramWrite=[&](uint32_t address,std::span<const uint8_t> bytes){
+    require(address==0x3847000 && bytes.size()==48 && bytes[47]==0x53,"IR activity follows bytes committed to guest DMA memory");++written;
+  };
+  r.captureIrRecord(actual);r.prepareMaskedRead(0x1f206e41,0x80);
+  require((r.read(0x1f206e41,1,0,0,6)&0x80) && written==1 && r.irDmaProducer()==1 && r.irDmaCaptures()==1,
+    "external record commits before activity and producer become visible, no invented key decoding");
+  r.write(0x1f206e3d,1,0x82,0,255,7);r.prepareMaskedRead(0x1f206e41,0x80);
+  require(!(r.read(0x1f206e41,1,0,0,8)&0x80) && r.irDmaProducer()==0 && r.irDmaCaptures()==1,
+    "original descriptor command resets current ring activity, not total capture evidence");
+  manta::Engine original;original.map(0,0x20000);original.map(0x00527000,0x1000);original.map(0x006d8000,0x1000);
+  constexpr uint32_t caller[]={0x27bdffe8,0xafbf0014,0x0c149fc3,0,0x14400005,0,0x24020001,0x8fbf0014,0x03e00008,0x27bd0018};
+  constexpr uint32_t reader[]={0x3c02806e,0x8c4387f4,0x90626e41,0x03e00008,0x7c4201c0};
+  original.write(0x005276b0,caller,sizeof(caller));original.write(0x00527f0c,reader,sizeof(reader));
+  uint32_t base=0xbf200000;original.write(0x006d87f4,&base,4);
+  struct IrBus{manta::Riu* r;unsigned reads=0;} context{&r};
+  auto read=+[](uc_engine*,uint64_t off,unsigned n,void* user)->uint64_t{
+    auto& b=*static_cast<IrBus*>(user);++b.reads;auto a=0x1f206000u+uint32_t(off);
+    if(a!=0x1f206e41)throw std::runtime_error("empty IR path must not read a producer or capture record");
+    b.r->prepareMaskedRead(a,0x80);return b.r->read(a,n,0x80527f14,0,9);
+  };
+  manta::check(uc_mmio_map(original.handle,0x1f206000,0x1000,read,&context,nullptr,nullptr));
+  original.reg(UC_MIPS_REG_SP,0x80010000);original.reg(UC_MIPS_REG_RA,0x80000100);
+  require(original.run(0x805276b0,15)==UC_ERR_OK && original.reg(UC_MIPS_REG_PC)==0x80000100 &&
+    original.reg(UC_MIPS_REG_2)==1 && context.reads==1 && r.stopReason.empty(),
+    "original IR HAL and ring predicate compute no-data themselves from stateful activity; no host-generated key, acknowledgment or producer read");
 }
 void gopResetTests(){
   manta::Riu r;r.symbolicInit=true;r.event=[](auto&,auto,auto,auto,auto&){};

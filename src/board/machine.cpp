@@ -115,6 +115,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("IR DMA reset/index fixture requires explicitly guarded exploration");
     riu_.configureExploratoryIrDmaReset();
   }
+  if(o.exploratoryIrCapturePresent){
+    if(!o.symbolicInit || !o.deferDiagnosticReads || !o.exploratoryIrDmaReset)
+      throw std::runtime_error("IR capture activity hypothesis requires guarded execution and original DMA descriptor/reset experiment");
+    riu_.configureExploratoryIrCapturePresent();
+  }
   riu_.configureOrTraceBudget(o.orFirstVisits,o.orBudget,o.orDivider);
   if(o.exploratorySarFullscale){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("SAR input/reference fixture requires explicitly guarded exploration");
@@ -1658,6 +1663,8 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryFetchRevisionByte>=0)s<<",\n  \"exploratory_fetch_revision_byte\": "<<options_.exploratoryFetchRevisionByte
     <<",\n  \"fetch_patch_enabled_decisions\": "<<fetchPatchEnabled_<<",\n  \"fetch_patch_disabled_decisions\": "<<fetchPatchDisabled_;
   if(options_.exploratoryAnalogDisconnected)s<<",\n  \"exploratory_analog_disconnected\": true";
+  if(options_.exploratoryIrCapturePresent)s<<",\n  \"exploratory_ir_capture_activity\": true,\n  \"ir_capture_activity_reads\": "<<riu_.irCaptureStatusReads()
+    <<",\n  \"ir_capture_activity_hardware_verified\": false";
   if(options_.exploratoryAvdNoHsync)s<<",\n  \"exploratory_avd_no_hsync\": true,\n  \"avd_absent_hsync_reads\": "<<riu_.avdHsyncReads()
     <<",\n  \"avd_detector_timing_hardware_verified\": false";
   if(options_.exploratoryVifRevision>=0)s<<",\n  \"exploratory_vif_chip_revision_byte\": "<<options_.exploratoryVifRevision

@@ -384,6 +384,10 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     auto bit=0x40u<<(8*(0x1f206b99-a));v&=~bit;
     if(exploratoryAvdNoHsync_ && analogDisconnected_)v|=bit;
   }
+  if(a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41){
+    auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;
+    if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && irDma_.capturePresent().has_value())v|=bit;
+  }
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.known())v|=8;
   }
@@ -415,6 +419,10 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
   }
   if(exploratoryAvdNoHsync_ && analogDisconnected_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99)
     v&=~(0x40u<<(8*(0x1f206b99-a)));
+  if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41)
+    if(auto captured=irDma_.capturePresent()){
+      auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;if(*captured)v|=bit;
+    }
   if(candidateTsp && a==0x1f202be8 && n==2) {
     v&=~8u;if(tspDownload_.done())v|=8;
   }
@@ -533,6 +541,12 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   bool masked = consumedRead_.contains(a);
   auto provenConsumed = masked ? consumedRead_.at(a) : 0;
   consumedRead_.clear(); // one-shot proof, including peripheral early returns
+  if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41)
+    if(auto captured=irDma_.capturePresent()){
+      ++irCaptureStatusReads_;
+      event("exploratory_ir_capture_activity",a,n,unsigned(*captured),
+        "HYPOTHESIS: bit7 marks a ring having captured data since descriptor/reset command; original reader bypasses producer when clear; derives only from actual48-byte DMA captures; other bits invalid, no key/IRQ/ready reply generated");
+    }
   if(exploratoryVifRevision_>=0 && a<=0x1f003d9d && uint64_t(a)+n>0x1f003d9d){
     ++vifRevisionReads_;
     event("exploratory_vif_chip_revision",a,n,unsigned(exploratoryVifRevision_),

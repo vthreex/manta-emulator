@@ -237,3 +237,44 @@ at the recorded terminal read changes the experiment and must not be called a
 matching replay. Preserve a separate policy snapshot per checkpoint; host waits
 are not part of virtual time. No original firmware assets are distributed with
 these metadata policies or reports.
+
+## Scaler reset and IR capture-ring boundary
+
+The revision0 run's full event/summary/coverage/PM-history replay passed. A
+continuation with the value-free clock snapshot/restore rules reaches820,195,695
+MIPS dispatches and36,851 original timer entries. The original scaler reset
+routine returns; subsequent original GOP programming executes. The next stop is
+80527F14/BF206E41, not another scaler ready poll. ZUI initialization remains
+entered/returned once; no enabled GWIN or raster output is demonstrated.
+
+Original80527F0C reads bit7 in its JR delay-slot EXT. Caller805276B0 returns its
+own no-data result when that bit is clear; otherwise it reads the DMA producer
+index at6E79/6E7C, compares the ring consumer, handles wrap and fetches48-byte
+records. A direct-instruction scan finds this one6E41 reader and no direct
+software writer. This supports a capture-valid/activity interpretation but does
+not establish its exact hardware label or timing. The related Linux IR FIFO
+definitions use a different bank and bit; they were not substituted here.
+
+`--exploratory-ir-capture-present` is a separately named hypothesis, requiring
+the existing original descriptor/reset experiment. Bit7 is unknown before an
+accepted descriptor command, clear when no record has been captured, and set
+only after a real48-byte external record is committed to guest DMA memory.
+Ring wrap does not erase activity; a new original descriptor/reset clears
+current activity while preserving cumulative capture statistics. Other status
+bits remain invalid. No remote key, PM reply, interrupt or readiness response is
+fabricated. Native tests execute the original HAL and caller: the guest itself
+computes its no-data return without a producer/data read. Positive-capture
+tests use explicitly synthetic raw records and are not physical-TV evidence.
+
+An additional memory-routing audit found original full-word25E4=0008 at
+tick90,201,219 and later writes preserving that value. Original805382B0 selects
+GOP MIU using logical12F2 bits5/6;8053AB50 adds physical bit27 for MIU1. The
+observed disabled bank4/window0 candidate therefore selects MIU0, resolving its
+address to00DDD800 in these traces. Allocation ownership, RAM pixel contents,
+active window enable and final composition remain unproven; no PNG was exported.
+This updates the earlier unresolved-MIU observation without claiming a frame.
+
+1098 native checks, both CTest entries and isolated PM51/DVB-T/AVD diagnostics
+pass. The new IR-mode cold boot and complete replay are pending. Prior full
+replays retain their exact binary/profile scope; the new activity interpretation
+must not be presented as physical hardware validation.

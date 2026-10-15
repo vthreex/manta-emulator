@@ -53,6 +53,7 @@ struct Options {
   uint64_t pm51Divider=32;
   bool exploratorySarFullscale=false,orFirstVisits=false;
   bool exploratoryIrDmaReset=false;
+  bool exploratoryIrCapturePresent=false;
   bool exploratoryGopResetWindows=false;
   bool exploratoryScartGrounded=false;
   bool graphicsProbes=false;
