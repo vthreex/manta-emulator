@@ -834,7 +834,11 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       m.cpu_.read((m.cpu_.reg(UC_MIPS_REG_SP)+0x14)&0x1fffffff,&parentReturn,4);
       std::vector<uint8_t> reader(0x58),wrapper(0xbc);
       m.cpu_.read(0x004f9004,reader.data(),reader.size());m.cpu_.read(0x004fc1ac,wrapper.data(),wrapper.size());
-      if((parentReturn==0x804fc1f8 || parentReturn==0x804fc224 || parentReturn==0x804fc24c) &&
+      uint32_t outer[6]{};m.cpu_.read(0x004fe23c,outer,sizeof(outer));
+      constexpr uint32_t originalOuter[]={0x0c13f06b,0,0x304200ff,0x0c13f073,0x00502025,0x0813f78b};
+      bool outerPreservation=parentReturn==0x804fe244 &&
+        std::equal(std::begin(outer),std::end(outer),std::begin(originalOuter));
+      if((parentReturn==0x804fc1f8 || parentReturn==0x804fc224 || parentReturn==0x804fc24c || outerPreservation) &&
          sha256(reader)=="1ca38efb1835870f93e7dfa62d4e7ad5548439c4fe882c6decc70b0d4c34dcfc" &&
          sha256(wrapper)=="437415d9fdd5d141394d289f9def13ac3903c6b83630dcabbafb2f2d3b0e9556"){
         m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});

@@ -101,3 +101,38 @@ fetch, decode, execution, data accesses and counters remain unchanged. Native
 loop coverage verifies four first-visit records for ten actual instructions.
 1002 native checks pass. Complete new-mode replay remains pending; no claim of
 an authentic frame or exact physical clock/latch semantics is made.
+
+## User's physical-TV boot reference
+
+The owner reports Manta logo -> temporary lower source/resolution banner ->
+moving NO SIGNAL text over blue or black. Their SCART/1920x1080 wording is an
+example, not a verified source/timing combination or exact screenshot. Banner
+duration, text motion, colors and positions remain unmeasured. Use this as an
+observation to compare against genuine firmware output, never as instructions
+to construct host-side artwork. The current stock JPEG copy/decoder failure
+path and absent active framebuffer do not reproduce this observed boot yet.
+
+## Audio mode preservation after ADC initialization
+
+The ADC continuation reaches809,361,032 MIPS dispatches and2,453,934,820 original
+TSP instructions,36,304 main timer entries and53 DVB-T interrupts. The next read
+is804F9050/BF225DD8, logical sound-mode2DEC. The original caller804FE23C reads the
+mode, ORs its argument, and invokes the existing setter. Its6 exact original
+instructions and existing complete reader/setter SHA256 identities now guard the
+additional preservation path. No value for the unknown mode bit is supplied.
+
+The setter compares against10h/20h; already programmed low mode bits can prove
+inequality independently of unknown bit5. PreservedBits now permits only an
+equality/inequality predicate with a known differing bit. It never clears unknown
+origins, changes a CPU value or selects a PC. Predicates dependent on unknown
+fields still stop. Exhaustive byte-value pairs across five unknown masks and
+original uncertain CI/GOP/TSP cases test this distinction. Old metadata-only
+fixtures now apply their observed ANDI to simulated register values, matching
+production CPU execution rather than leaving stale unmasked bits.
+
+1022 native checks and both CTest entries pass. Full event/summary/coverage/PM
+history replay passed through the809M ADC checkpoint, including the logging-only
+PC bitmap; the newer audio preservation path is being cold-boot tested. No enabled
+GOP descriptor or raster operation is proven. Literal stock NO SIGNAL/SCART/HDMI1
+UTF16LE candidates were independently located in resource826; they are data
+forensics, never host-rendered OSD or proof that the guest drew them.

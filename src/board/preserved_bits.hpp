@@ -8,7 +8,8 @@ namespace manta {
 // Narrow diagnostic provenance for unchanged register bits. This observes
 // original instructions; it never executes or patches them. Each unknown bit
 // retains its exact banked byte and bit identity. Only a write back to that
-// identity can preserve it. Decisions, addresses and new device uses reject.
+// identity can preserve it. Decisions requiring unknown bits, addresses and
+// new device uses reject; a known unequal bit may prove an equality predicate.
 class PreservedBits {
   struct Bit { uint32_t byte=0; uint8_t bit=0; bool inverted=false; bool operator==(const Bit &) const=default; };
   using Value=std::array<Bit,32>;
@@ -153,6 +154,13 @@ public:
           for(unsigned bit=0;bit<8;++bit)result[byte*8+bit]=memory_.at(a+byte)[bit];
         assign(rt,result); // MMIO source is seeded separately after this dispatch
       }
+      return {};
+    }
+    if((op==4 || op==5 || op==20 || op==21) &&
+       ((reg(rs)^reg(rt)) & ~(mask(rs)|mask(rt)))) {
+      // A known unequal bit proves inequality for EVERY completion of the
+      // unknown bits. Let the CPU execute its original branch; retain all
+      // invalid origins for later stores/uses. Poison alone is never proof.
       return {};
     }
     int dest=-1; bool useRs=false,useRt=false;

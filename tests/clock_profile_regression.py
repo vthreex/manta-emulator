@@ -44,9 +44,13 @@ with tempfile.TemporaryDirectory(prefix='manta-cycle-profiles-') as directory:
     for bad in (3,4):
         r=subprocess.run([str(emu),'--firmware',str(fw),'--headless','--exploratory-cpi',str(bad)],capture_output=True,text=True)
         assert r.returncode==1 and ('CPI' in r.stderr or 'CPI' in r.stdout)
+    for incomplete in ([],['--exploratory-display-clock','148500000'],['--symbolic-init','--defer-diagnostic-reads']):
+        r=subprocess.run([str(emu),'--firmware',str(fw),'--headless','--exploratory-gop-vsync-latch']+incomplete,
+                         capture_output=True,text=True)
+        assert r.returncode==1 and 'GOP sync-latch hypothesis requires' in r.stderr
 assert hashlib.sha256(fw.read_bytes()).hexdigest()==stock_sha
 Path(a.report).write_text(json.dumps({'result':'PASS','hardware_timing_verified':False,
     'scope':'original connected reset/PM prefix only; no fabricated hardware input or completion',
-    'profiles':results,'strict_and_invalid_profile_rejections':'PASS',
+    'profiles':results,'strict_and_invalid_profile_rejections':'PASS','unqualified_GOP_hypothesis_rejections':'PASS',
     'emulator_sha256':hashlib.sha256(emu.read_bytes()).hexdigest(),'stock_sha256':stock_sha},indent=2)+'\n')
 print('PASS: five cycle profiles replay every prefix event; strict/invalid configurations reject; no hardware timing claim')

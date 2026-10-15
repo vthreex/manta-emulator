@@ -1,0 +1,25 @@
+{
+  "instruction_dispatches": 809361032,
+  "or1k_instructions": 2453934820,
+  "vd_mcu_total_instructions": 484841,
+  "avd_mcu_instructions": 6,
+  "pm51_instructions": 3474,
+  "guest_exception_vector_entries": 36304,
+  "vd_mcu_interrupt_entries": 53,
+  "pm51_interrupt_entries": 0,
+  "stop_pc": "0x804f9050",
+  "stop_address": "0x1f225dd8",
+  "reason": "unmodeled MMIO read",
+  "osd_routine_entries": {
+    "0x8040440c": 1,
+    "0x804e0d48": 1,
+    "0x80522d5c": 1
+  },
+  "gop_register_latches": 47,
+  "gop_active_descriptors": [],
+  "graphics_probes": {
+    "window_program_entries": 7,
+    "write32_entries": 331,
+    "decoded_windows": []
+  }
+}

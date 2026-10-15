@@ -1,0 +1,7 @@
+{
+  "scope": "pending audio preservation cold boot",
+  "emulator_sha256": "9bc868f1158d9d308d4bcb37028c4db0b9cc9638aec67222014667a71661011b",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "unknown_mode_bit_validated": false,
+  "source": "ffa06a6 plus known-inequality proof and exact outer audio mode-preservation path"
+}

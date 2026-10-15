@@ -10,6 +10,12 @@ stock=Path(a.firmware).read_bytes();manifest,payloads=module.recover(stock)
 cp=next(r for r in manifest['resources'] if r['id']=='0x61')
 assert cp['source_flash']=='0x242910' and cp['decoded_bytes']==1253416
 assert cp['decoded_sha256']=='bc00e532ab47b35e2f3a8be0b59a40b7ae80111dd366b6ceb741cdb74ca95ae1'
+osd=next(r for r in manifest['resources'] if r['id']=='0x826')
+assert osd['decoded_sha256']=='769bb8b6fc9eda743de6cefc8b3bc10c60d9ddb867b4cc37fef1ef3badf54f4f'
+osd_literals={'NO SIGNAL':0x21356,'No Signal':0x23e42,'SCART':0x210dc,'HDMI1':0x2119c}
+for text,offset in osd_literals.items():
+    encoded=text.encode('utf-16-le')
+    assert offset%2==0 and payloads[0x826][offset:offset+len(encoded)]==encoded
 results=[]
 with tempfile.TemporaryDirectory(prefix='manta-original-copro-') as directory:
     root=Path(directory);runtime=root/'runtime.bin';program=root/'program.bin'
@@ -41,6 +47,7 @@ with tempfile.TemporaryDirectory(prefix='manta-original-copro-') as directory:
         assert private_stock.read_bytes()==stock,'resource manifest cannot truncate the immutable input'
 assert hashlib.sha256(Path(a.firmware).read_bytes()).hexdigest()==module.STOCK
 Path(a.report).write_text(json.dumps({'result':'PASS','scope':'isolated original lookup/startup; CP not integrated; no JPEG reply/display',
-    'resource':cp,'experiments':results,'changed_guest_code_rejected':True,
+    'resource':cp,'OSD_literal_resource':osd,'OSD_literal_offsets':osd_literals,
+    'OSD_literals_are_frame_evidence':False,'experiments':results,'changed_guest_code_rejected':True,
     'probe_sha256':hashlib.sha256(Path(a.probe).read_bytes()).hexdigest()},indent=2)+'\n')
 print('PASS: original MIPS directory lookup, original CP startup prefix and replay; unimplemented hardware never acknowledges')

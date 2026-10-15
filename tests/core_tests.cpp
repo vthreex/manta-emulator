@@ -746,6 +746,33 @@ void scalerTimingTests() {
   require(!r.stopReason.empty(),"output VSYNC bit0 cannot manufacture the distinct unknown timing-word bit8");
 }
 void preservedBitsTests() {
+  bool equalityProofsValid=true;
+  for(auto unknown:{1u,0x20u,0x80u,0xa1u,255u}){
+    manta::PreservedBits proof;proof.seed(4,1,255u&~unknown,[](unsigned){return 0x1f225dd8u;});
+    for(unsigned sample=0;sample<256;++sample)for(unsigned target=0;target<256;++target){
+      auto regs=[&](unsigned r){return r==4?sample:r==2?target:0u;};
+      bool permitted=proof.observe(0x10820001,regs,[](auto a){return a;},[](auto,auto,auto){}).empty();
+      bool fixedInequality=((sample^target)&~unknown)!=0;
+      if(permitted!=fixedInequality || proof.mask(4)!=unknown)equalityProofsValid=false;
+    }
+  }
+  require(equalityProofsValid,"all byte values and five unknown masks preserve equality uncertainty unless a known unequal bit proves the outcome");
+  for(auto value:{1u,0x21u})for(auto op:{4u,5u,20u,21u}){
+    manta::PreservedBits partial;partial.seed(4,1,0xdf,[](unsigned){return 0x1f225dd8u;});
+    auto regs=[&](unsigned r){return r==4?value:r==2?0x10u:0u;};
+    require(partial.observe((op<<26)|(4u<<21)|(2u<<16)|1u,regs,[](auto a){return a;},[](auto,auto,auto){}).empty(),
+      "known unequal bit determines original equality branch despite an unrelated unknown mode bit");
+    require(partial.mask(4)==0x20,"determinate branch cannot validate the underlying unknown mode bit");
+  }
+  {
+    manta::PreservedBits partial;partial.seed(4,1,0xdf,[](unsigned){return 0x1f225dd8u;});
+    auto regs=[](unsigned r){return r==4?0x20u:0u;};
+    require(!partial.observe(0x10820001,regs,[](auto a){return a;},[](auto,auto,auto){}).empty(),
+      "representative inequality solely in an unknown bit cannot authorize a branch");
+    partial.seed(2,1,0xdf,[](unsigned){return 0x1f225dd8u;});
+    require(!partial.observe(0x10820001,regs,[](auto a){return a;},[](auto,auto,auto){}).empty(),
+      "matching origins alone cannot decide equality without a proven known unequal bit");
+  }
   manta::PreservedBits p;
   std::array<uint32_t,32> regs{};
   auto reg=[&](unsigned i){return regs[i];};
@@ -795,8 +822,9 @@ void preservedBitsTests() {
   require(step(0x03e00008).empty() && p.mask(2)==0xf0,"known leaf return cannot discard unknown GOP IRQ flags");
   require(step(0x304200ff).empty() && p.mask(2)==0xf0,"original byte-reader delay slot retains status provenance");
   require(step(0x3042000f).empty() && p.mask(2)==0,"original caller masks IRQ flags before comparing a known selector");
+  regs[2]&=15;regs[17]=1; // metadata observer does not execute ANDI; use actual masked values and a valid bank
   require(step(0x1051ffd8).empty(),"known selector comparison is allowed after actual guest mask");
-  p.seed(2,1,0,[&](unsigned b){return key(0x1f203ffc+b);});step(0x3042000f);
+  p.seed(2,1,0,[&](unsigned b){return key(0x1f203ffc+b);});step(0x3042000f);regs[2]&=15;
   require(!step(0x1051ffd8).empty(),"the same original comparison rejects an unknown power-on GOP bank");
   step(0x24050000); // known cached context field, independent of prior MIU fixture
   p.seed(4,2,0,[&](unsigned b){return key(0x1f205000+b);});regs[6]=1;regs[5]=0;
@@ -1271,7 +1299,10 @@ void tspProvenanceTests() {
     input.seed(4,1,4,[](unsigned){return 0x1f206891;});
     auto step=[&](uint32_t w){return input.observe(w,[&](unsigned r){return registers[r];},
       [](uint32_t a){return a;},[](uint32_t,unsigned,uint32_t){});};
-    require(!step(0x10800001).empty(),"full CI register still cannot drive an unknown-data branch");
+    require(step(0x10800001).empty() && input.mask(4)==0xfb,
+      "known asserted CI bit proves the byte nonzero without validating adjacent input bits");
+    registers[5]=4;
+    require(!step(0x10850001).empty(),"CI comparison whose outcome depends on adjacent unknown bits still rejects");
     require(step(0x30840004).empty() && input.mask(4)==0,
       "original CI ANDI bit2 discards all unrelated invalid input fields");
   }
@@ -1304,6 +1335,7 @@ void tspProvenanceTests() {
   p.seed(2,2,0,[](unsigned b){return 0x1f202afc+b;});regs[2]=0xa5a5;
   require(step(0x3042001f).empty() && p.mask(2)==31,
       "original TSP CmdQ_CmdCount mask does not manufacture known occupancy");
+  regs[2]&=31; // match the ANDI which the production CPU actually executes
   require(!step(0x14400001).empty(),"original TSP nonempty-queue poll still rejects unknown occupancy");
   p.seed(2,2,31,[](unsigned b){return 0x1f202afc+b;});regs[2]=0xa5a0;
   require(step(0x3042001f).empty() && p.mask(2)==0,
