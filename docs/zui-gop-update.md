@@ -343,3 +343,37 @@ instructions without CPU/PC changes and verify byte/halfword status aliases,
 read-only status/data, command framing, bounded queue and unknown-state guards.
 Five clock-profile prefix replays and invalid-option checks pass. A full new
 conditional cold boot is running; completion and replay are not yet claimed.
+
+
+## FIFO continuation, AGC boundary and GOP physical-address decoding
+
+The FIFO scenario replays through854,795,034 MIPS dispatches,2,453,934,820
+OpenRISC instructions and38,589 original timer entries. Its two original EMPTY
+reads see the configured empty-queue scenario; zero guest clear commands, pops
+and external packets occur. The initialization write0F is still not a reset
+proof. Original ZUI initialization entered/returned once; the dispatcher and
+actual display output remain unentered. The complete trace, full summary,
+coverage and PM history replay identically with the pinned FIFO binary.
+
+Further original code reaches [the VIF AGC input boundary](vif-agc-input-boundary.md).
+INVALID mean/gain observations remain invalid and stop before arithmetic at
+80509D54; no signal measurement, maximum gain or receiver-ready value is invented.
+This is an emulator rejection of needed signal data, not a demonstrated guest
+infinite wait. The original main application has advanced into input polling.
+
+Original8053AB50 and805382B0 establish physical MIU reconstruction: bank1 windows
+0..3 use logical12F2 bit5; bank4 windows0..1 use bit6. MIU1 is physical bit27.
+The address decoder now executes alongside original-fragment regression tests
+for every valid GWIN ID and both selector combinations. Unknown selector bits,
+invalid IDs and addresses already outside the MIU-relative aperture reject.
+Read-only GOP memory observations report address/size/checksum and invalid/nonzero
+byte counts. They do not prove allocation ownership, guest drawing or active
+scan-out. Actual observation of the disabled8x8 candidate is being re-executed.
+
+A further IR audit found both original804F24B4 and the Titania4 Linux full-decode
+handler reading repeat status after the read pulse. Whether that reflects the
+consumed entry, next head or another latch is unresolved. Candidate repeat status
+therefore remains invalid even when explicit synthetic packet metadata exists.
+The earlier FIFO text's key/repeat description must not imply a completed
+remote-control path. EMPTY/key/pop/clear tests remain valid; no real key packet
+or IRQ is supplied to the application.1190 native checks pass.

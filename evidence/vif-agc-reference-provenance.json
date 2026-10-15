@@ -1,0 +1,15 @@
+{
+  "scope": "reference names correlated against original instructions; absolute banks differ; no reset values inferred",
+  "files": [
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/master/Chakra3_017a0d6_20170731/device/if_demodulator/MsVIF.c",
+      "sha256": "e97119777cd895fb31e8fc8810ee8cd15ec5997c137413bfd59d0883ba53dd4b",
+      "bytes": 79410
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/master/Chakra3_017a0d6_20170731/device/if_demodulator/MsVIF.h",
+      "sha256": "93f7c59980cfe45b7efba2e02fdd3bd397bae9447fd8989774180fbb467de6b3",
+      "bytes": 33739
+    }
+  ]
+}

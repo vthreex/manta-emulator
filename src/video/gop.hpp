@@ -9,8 +9,19 @@ struct GopWindow {
   bool enabled;
 };
 // Original 80538948/A43C window programming, not a host-generated display.
-// MIU selection, active shadow latches, palette, scaling and IRQs remain
-// unresolved. A decoded descriptor alone never authorizes an authentic frame.
+// Active shadow latch timing, palette, scaling and IRQs remain unresolved.
+// A decoded descriptor alone never authorizes an authentic frame.
+inline std::optional<uint32_t> gopPhysicalAddress(const Riu &riu, unsigned bank,
+    unsigned window, uint32_t relative) {
+  if ((bank != 1 && bank != 4) || window >= (bank == 1 ? 4u : 2u) || relative >= 0x08000000)
+    return {};
+  // Original805382B0 selects logical12F2 bit5 for GWIN0..3, bit6 for4..5.
+  // Original8053AB50 reconstructs MIU1 by ORing physical bit27. This decodes
+  // an address, not RAM density, allocation ownership or active scan-out.
+  auto miu1=riu.gopMiu1(bank);
+  if (!miu1)return {};
+  return relative | (*miu1?0x08000000u:0);
+}
 inline std::optional<GopWindow> readGopWindow(const Riu &riu, unsigned bank, unsigned window, bool active=false, bool requireEnabled=true) {
   if ((bank != 1 && bank != 4) || window >= (bank == 1 ? 4u : 2u)) return {};
   auto byte = [&](unsigned offset) { return active ? riu.gopActiveByte(bank,offset) : riu.gopByte(bank,offset); };

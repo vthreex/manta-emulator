@@ -145,9 +145,13 @@ void irDmaTests(){
     fifo.write(0x1f007b00,1,0xbf,0,0,5);
     fifo.write(0x1f007b4d,1,0x38,0,0,5);
     require(fifo.receivePmIrDecoded(0x5a,true),"explicit synthetic decoded packet is accepted only by a configured receiver/FIFO");
-    fifo.prepareMaskedRead(0x1f007b59,3);
-    require((fifo.read(0x1f007b59,1,0,0,6)&3)==1 && fifo.read(0x1f007b51,1,0,0,6)==0x5a &&
-      fifo.read(0x1f007b51,1,0,0,6)==0x5a && fifo.pmIrFifo().pops()==0,"PM key/repeat reflect a real queued fixture; data reads do not consume packets");
+    fifo.prepareMaskedRead(0x1f007b59,1);fifo.read(0x1f007b59,1,0,0,6);
+    require(!fifo.stopReason.empty() && !(fifo.knownBits(0x1f007b59,1)&1),
+      "external repeat metadata cannot invent whether RPT reports a consumed entry, new head or separate latch");fifo.stopReason.clear();
+    fifo.prepareMaskedRead(0x1f007b59,2);
+    require(!(fifo.read(0x1f007b59,1,0,0,6)&2) && fifo.read(0x1f007b51,1,0,0,6)==0x5a &&
+      fifo.read(0x1f007b51,1,0,0,6)==0x5a && fifo.pmIrFifo().pops()==0 && fifo.stopReason.empty(),
+      "PM EMPTY/key reflect an actual queued fixture; data reads do not consume packets");
     fifo.write(0x1f007b60,1,1,0,0,7);fifo.prepareMaskedRead(0x1f007b59,2);
     require((fifo.read(0x1f007b59,1,0,0,8)&2) && fifo.pmIrFifo().pops()==1 && !(fifo.knownBits(0x1f007b60,1)&1),
       "write-one read pulse pops exactly one packet; pulse readback is not assigned an invented reset value");
@@ -677,6 +681,32 @@ void gopGuestBankTests() {
           "real guest MIPS MMIO writes switch GOP banks and read back original framebuffer base");
   require(r.gopByte(1,4).value==0x34 && r.gopByte(4,4).value==0x77,
           "guest MMIO bus retains separate GOP bank contents");
+}
+void gopMiuAddressTests(){
+  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};
+  require(!manta::gopPhysicalAddress(r,1,0,0xddd800),"unknown MIU-select field cannot resolve a framebuffer address");
+  constexpr uint32_t original[]={0x2e020004,0x10400010,0x2602fffc,0x97a20010,0x30420020,0x10400014,0x8fbf0024,
+    0x8e220000,0x3c030800,0x24040001,0x00431025,0xae220000,0x8fbf0024,0x00801021,0x8fb10020,
+    0x8fb0001c,0x03e00008,0x27bd0028,0x304200ff,0x2c420002,0x1040fff7,0x00002021,0x97a20010,
+    0x30420040,0x1440ffee,0x8fbf0024,0x24040001,0x00801021,0x8fb10020,0x8fb0001c,0x03e00008,0x27bd0028};
+  manta::Engine cpu;cpu.map(0,0x2000);cpu.map(0x0053a000,0x1000);cpu.write(0x0053ab74,original,sizeof(original));
+  for(unsigned select:{0u,0x20u,0x40u,0x60u})for(unsigned id=0;id<6;++id){
+    r.write(0x1f2025e4,2,select,0,0,0);
+    uint32_t relative=0xddd800,ret=0x80000100;
+    cpu.write(0x200,&relative,4);cpu.write(0x1010,&select,4);cpu.write(0x1024,&ret,4);
+    cpu.reg(UC_MIPS_REG_SP,0x80001000);cpu.reg(UC_MIPS_REG_16,id);cpu.reg(UC_MIPS_REG_17,0x80000200);
+    require(uc_emu_start(cpu.handle,0x8053ab74,ret,0,100)==UC_ERR_OK && cpu.reg(UC_MIPS_REG_PC)==ret,
+      "original GOP physical-address fragment returns through its own branches and JR");
+    uint32_t physical=0;cpu.read(0x200,&physical,4);
+    require(manta::gopPhysicalAddress(r,id<4?1:4,id<4?id:id-4,relative)==physical && cpu.reg(UC_MIPS_REG_2)==1,
+      "MIU decoder matches actual original instructions for all six GWIN IDs and both MIU-select fields");
+  }
+  require(!manta::gopPhysicalAddress(r,1,4,0) && !manta::gopPhysicalAddress(r,4,2,0) &&
+    !manta::gopPhysicalAddress(r,0,0,0) && !manta::gopPhysicalAddress(r,1,0,0x08000000),
+    "unsupported window IDs and pre-encoded physical addresses cannot alias another MIU");
+  r.symbolicInit=true;r.preparePreservedWrite(0x1f2025e4,2,0x40);r.write(0x1f2025e4,2,0x60,0,0,0);
+  require(manta::gopPhysicalAddress(r,1,0,0)==0x08000000 && !manta::gopPhysicalAddress(r,4,0,0),
+    "unknown auxiliary MIU field remains invalid without hiding independently known main MIU selection");
 }
 void displayHardwareTests() {
   manta::Riu r; r.event = [](auto&,auto,auto,auto,auto&){};
@@ -2169,6 +2199,7 @@ int main() {
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();
+    gopMiuAddressTests();
     scalerTimingTests();
     gopUpdateTests();
     preservedBitsTests();

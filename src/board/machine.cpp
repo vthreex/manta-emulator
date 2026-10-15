@@ -1864,7 +1864,23 @@ std::string Msd309Machine::summary() const {
       s<<"{\"active_latch\":"<<(active?"true":"false")<<",\"enabled\":"<<(descriptor->enabled?"true":"false")
        <<",\"bank\":"<<bank<<",\"window\":"<<window<<",\"miu_relative_address\":\""<<hex(descriptor->miuRelativeAddress)
        <<"\",\"pitch\":"<<descriptor->pitch<<",\"width\":"<<descriptor->width<<",\"height\":"<<descriptor->height
-       <<",\"format\":"<<unsigned(descriptor->format)<<",\"bpp\":"<<unsigned(descriptor->bpp)<<'}';
+       <<",\"format\":"<<unsigned(descriptor->format)<<",\"bpp\":"<<unsigned(descriptor->bpp);
+      // Read-only observation, never proof of allocation or authentic drawing.
+      auto physical=gopPhysicalAddress(riu_,bank,window,descriptor->miuRelativeAddress);
+      uint64_t size=uint64_t(descriptor->pitch)*descriptor->height;
+      if(physical && size && size<=16*1024*1024 && uint64_t(*physical)+size<=dramBacking_.size()){
+        auto bytes=std::span<const uint8_t>(dramBacking_).subspan(*physical,size);
+        uint64_t nonzero=0,invalid=0;
+        for(size_t i=0;i<bytes.size();++i){
+          nonzero+=bytes[i]!=0;
+          auto address=*physical+uint32_t(i);
+          invalid+=preservedBits_.memoryUnknown(address) || unknownObservations_.bytes().contains(address);
+        }
+        s<<",\"memory_observation\":{\"physical_address\":\""<<hex(*physical)<<"\",\"byte_count\":"<<size
+         <<",\"nonzero_bytes\":"<<nonzero<<",\"invalid_bytes\":"<<invalid<<",\"sha256\":\""<<sha256(bytes)
+         <<"\",\"authentic_frame\":false}";
+      }
+      s<<'}';
     }
     s<<']';
   }

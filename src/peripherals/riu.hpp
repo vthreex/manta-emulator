@@ -385,6 +385,12 @@ public:
   void prepareMaskedRead(uint32_t a, uint32_t consumed) { consumedRead_[a] = consumed; }
   void prepareOpaqueRead(uint32_t a) { opaqueRead_=a; }
   uint32_t knownBits(uint32_t a, unsigned size) const;
+  std::optional<bool> gopMiu1(unsigned bank)const{
+    if(bank!=1 && bank!=4)return {};
+    unsigned mask=bank==1?0x20:0x40;
+    if(!(knownBits(0x1f2025e4,2)&mask))return {};
+    return bool(get(0x1f2025e4,2)&mask);
+  }
   uint32_t controlByteKey(uint32_t a) const;
   bool symbolicInit = false;
   bool candidateBdma = false;

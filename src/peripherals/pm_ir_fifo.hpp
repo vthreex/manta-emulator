@@ -19,7 +19,10 @@ public:
   void uncertainMutation(){if(!known_ || !entries_.empty())known_=false;}
   std::optional<bool> empty()const{return known_?std::optional<bool>(entries_.empty()):std::nullopt;}
   std::optional<uint8_t> key()const{return known_&&!entries_.empty()?std::optional<uint8_t>(entries_.front().key):std::nullopt;}
-  std::optional<bool> repeat()const{return known_&&!entries_.empty()?std::optional<bool>(entries_.front().repeat):std::nullopt;}
+  // Original804F24B4 and the Titania4 Linux driver read RPT after a pop.
+  // Whether that reports the consumed entry, new head or a separate latch is
+  // unresolved. Retain external metadata, but never guess its hardware timing.
+  std::optional<bool> repeat()const{return std::nullopt;}
   // External decoded packet boundary only. Raw pulse decoding/protocol and
   // host keyboard translation are NOT supplied by this FIFO implementation.
   bool receive(uint8_t key,bool repeat){

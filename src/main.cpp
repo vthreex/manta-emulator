@@ -240,7 +240,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-ir-dma-reset: original descriptor command commits an empty IR capture ring; 82h reset/index coupling unverified, no keys supplied\n"
                "--exploratory-ir-capture-present: separate bit7 capture-activity hypothesis derived from actual ring state, no external keys supplied\n"
                "--exploratory-scart-id-grounded: separate ADC2/3 external0mV fixtures; original conversion timing/power required, actual board wiring unverified\n"
-               "--candidate-pm-ir-fifo: documented EMPTY, key/repeat, FIFO_CLR and read-pulse behavior; reset occupancy stays unknown\n"
+               "--candidate-pm-ir-fifo: documented EMPTY/key, FIFO_CLR and read-pulse; repeat-latch timing and reset occupancy stay unknown\n"
                "--exploratory-pm-ir-reset-empty: separate fresh-empty FIFO reset hypothesis, requires candidate FIFO/guarded mode; no keys injected\n"
                "--exploratory-gop-reset-windows: original top-bank reset pulse clears GWIN enable bits only; exact reset scope unverified\n"
                "--exploratory-scart-grounded: explicit grounded FB input and hypothetical ADC zero code after original config; exact Titania4 transfer/pin mapping unverified\n"

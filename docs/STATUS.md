@@ -3,19 +3,22 @@
 Latest [ZUI and GOP update investigation](zui-gop-update.md) demonstrates original
 ZUI entry and return through normal control flow in named exploratory runs.
 The corrected unknown-bit guard has full event/summary/coverage/PM-history
-replay through815,025,648 MIPS dispatches; a separate absent-HSYNC experiment
-also replays through819,978,158. With an additional, explicitly unverified VIF
-chip-revision0 input, execution reaches820,110,296 at805FD41C/BF201751: an old
-clock-control snapshot in the original scaler software-reset routine. Further
-continuation is being tested; no valid reset value is supplied for that byte.
+replays, most recently through854,795,034 MIPS dispatches and38,589 original
+timer entries. The source-ID scenario lets original firmware print its board,
+panel, DRAM and flash configuration. A documented PM-domain IR FIFO model is
+implemented; reset occupancy remains unknown by default. An independently named
+empty-reset scenario passes the original drain/poll and reaches VIF AGC input
+processing. Its full original-event/summary/coverage/PM-history replay passes. No enabled framebuffer or original
+OSD pixels have appeared.
 
 | Current capability | Status | Evidence and limit |
 |---|---|---|
 | Original ZUI initializer entry and return | demonstrated | Exploratory original control flow; ZUI event/state loop and real OSD drawing still unentered |
-| GOP descriptor decoding | implemented | Correct vertical-end offset20h; actual disabled8x8 bank4/window0 descriptor, MIU-relative00DDD800; allocation/MIU selection unproven |
+| GOP descriptor decoding | implemented | Correct vertical-end offset20h; actual disabled8x8 bank4/window0 descriptor, MIU-relative00DDD800; observed MIU-select bits resolve this candidate to MIU0; allocation ownership and pixels unproven |
 | Opaque-read debugger and mixed-restore provenance fix | demonstrated | No values/PC overrides allowed; corrected815M/819M traces replay; all unknown decision/device uses remain guarded |
 | AFEC HSYNC-lock identification | demonstrated | Matching original/reference HAL readsBF206B98 and caller extracts14; separate absent-input behavior is partially implemented and explicitly hypothetical |
 | VIF chip revision | partially implemented | Opt-in immutable input atBF003D9D, independent ofBF003C05; real Manta stepping unsupported |
+| PM-domain IR FIFO | partially implemented | Exact Titania4 EMPTY/key/clear/pop interfaces; reset occupancy, repeat latch, pulse timing, raw decoder and interrupt delivery unverified |
 | Enabled framebuffer, GE raster and authentic native pixels | unsupported | Native window startup works; no original OSD frame demonstrated |
 
 GOP latch timing/scope, PM state, POR, SPI CF and other named hypotheses remain
