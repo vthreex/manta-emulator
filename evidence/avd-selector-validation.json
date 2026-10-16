@@ -1,0 +1,88 @@
+{
+  "base_git": "a801d31",
+  "scope": "direct IRAM mask provenance and isolated synthetic AVD dependency study; no new connected TV/graphics milestone",
+  "native_checks": 1399,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "reports": {
+    "isolated-study": {
+      "file": "avd-selector-isolated-study.json.gz",
+      "sha256_uncompressed": "43d7795fe250301e4a8aa56f678e0e493225db2e29e88a5bf0a954d414c0314b"
+    },
+    "original-table": {
+      "file": "avd-selector-original-table.json.gz",
+      "sha256_uncompressed": "32bb2e6435cf84537a3e1ef4fbf3467e537b77d63921a3ca30a2def04c394f1d"
+    },
+    "full-replay": {
+      "file": "avd-selector-full-replay.json.gz",
+      "sha256_uncompressed": "c9e8a8571006672fe1bc0f9e3744c609a3334164a6bd714a9cb730c0d56a57ae"
+    },
+    "default-full-replay": {
+      "file": "avd-selector-default-full-replay.json.gz",
+      "sha256_uncompressed": "d637a8276216ba31322046b79537160253affafe661976214b317d11264ef8a1"
+    },
+    "baseline-regression": {
+      "file": "avd-selector-baseline-regression.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display-regression": {
+      "file": "avd-selector-display-regression.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "AVD-regression": {
+      "file": "avd-selector-AVD-regression.json.gz",
+      "sha256_uncompressed": "a188c061ceff74d52801c52e75e8ade90bdda98a7cf053d36cdccf3e346e7ea6"
+    },
+    "DVB-T-regression": {
+      "file": "avd-selector-DVB-T-regression.json.gz",
+      "sha256_uncompressed": "c1505d45494b5a52396aefc7d8efebf795525fe5cdf7944a5ceb1dcc23e9af59"
+    },
+    "PM51-regression": {
+      "file": "avd-selector-PM51-regression.json.gz",
+      "sha256_uncompressed": "2765f3b668a2737b4f685a9060d1668724ec20321aa8fc2f9b32cf3a44b288ad"
+    },
+    "clock-regression": {
+      "file": "avd-selector-clock-regression.json.gz",
+      "sha256_uncompressed": "1594d2acbf2e9a56da2e17ac9acc4910d21b33827462f1943920763865d84395"
+    },
+    "copro-regression": {
+      "file": "avd-selector-copro-regression.json.gz",
+      "sha256_uncompressed": "4995732a8c9a48439ef5afca6750a1ee0292f3cd576ea2d0be43fe297ef710d0"
+    },
+    "immutable-regression": {
+      "file": "avd-selector-immutable-regression.json.gz",
+      "sha256_uncompressed": "25fe61f153b6b6c9a9f5bb34b83ceedca423e26cb0f0a502c8dbe0c5654a3149"
+    },
+    "DSP-decoder-regression": {
+      "file": "avd-selector-DSP-decoder-regression.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "VIF-regression": {
+      "file": "avd-selector-VIF-regression.json.gz",
+      "sha256_uncompressed": "d69cbe347ac2945a60b18273c10d4ce5f1de268355ea5bf0fa5b61a616e20d78"
+    },
+    "request-regression": {
+      "file": "avd-selector-request-regression.json.gz",
+      "sha256_uncompressed": "6ca8ff8488d2c2eda9d1447c56d4142b46e18d2eb819f0013752197852b38a5f"
+    },
+    "packaged-window": {
+      "file": "avd-selector-packaged-window.json.gz",
+      "sha256_uncompressed": "58525f59f91d680f511d862f988fc9978ff3f81afaf49d1073a41aba4623e785"
+    }
+  },
+  "connected_AVD_original_instructions": 379,
+  "isolated_synthetic_cases": 256,
+  "partial_field_cases": 10,
+  "TV_selector_fixture_available": false,
+  "authentic_pixels": false,
+  "original_firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "binaries": {
+    "manta.exe": "a8912f4ff1db9dc49bfa9dda345328a4c92413c36bcc979c3811b54e9aca5394",
+    "core_tests.exe": "9115c19a031df80d6d168154148eb65d0edd98791492a17ca35d50ce5516bd91",
+    "avd_mcu_probe.exe": "1c1df7802ed2bfeeec50330e6aa17bea48298311e970e238ecc60186706a6806",
+    "avd_request_probe.exe": "ef001419906ffd5e228a16705dc570ad23feb9bf77f863b301b99d029e1ed04e"
+  },
+  "native_stdout": "1399 checks passed"
+}

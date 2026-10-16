@@ -158,6 +158,11 @@ struct VdMcuCpu::Impl {
     if(registerImmediate){m.registerKnown[index]=255;m.registerOrigin[index]=0;}
     if(opcode==0x75 && operand<128){m.registerKnown[operand]=255;m.registerOrigin[operand]=0;}
     if(opcode==0xf5 && operand<128){m.registerKnown[operand]=m.aKnown;m.registerOrigin[operand]=m.aOrigin;}
+    bool directImmediateLogical=(opcode==0x43 || opcode==0x53 || opcode==0x63) && operand<128;
+    if(directImmediateLogical){
+      auto bits=cpu->mCodeMem[uint16_t(pc+2)];
+      if(opcode!=0x63)m.registerKnown[operand]|=opcode==0x53?uint8_t(~bits):bits;
+    }
     auto usesRn=[&]{
       return (opcode>=0x08 && opcode<=0x0f) || (opcode>=0x18 && opcode<=0x1f) ||
         (opcode>=0x28 && opcode<=0x2f) || (opcode>=0x38 && opcode<=0x3f) ||
@@ -261,7 +266,7 @@ struct VdMcuCpu::Impl {
       bool independent=opcode==0 || opcode==0x22 || opcode==0x32 || opcode==0x02 ||
         opcode==0x12 || (opcode&0x1f)==0x11 || opcode==0x80 || opcode==0x90 ||
         opcode==0xa3 || opcode==0xf0 || opcode==0xc0 || opcode==0xd0 || opcode==0xc3 || opcode==0xd3 ||
-        opcode==0x40 || opcode==0x50 || partialPermutation;
+        opcode==0x40 || opcode==0x50 || partialPermutation || directImmediateLogical;
       if(opcode==0x54 || opcode==0x44 || opcode==0x64){
         auto bits=cpu->mCodeMem[uint16_t(pc+1)];
         if(opcode!=0x64)m.aKnown|=opcode==0x54?uint8_t(~bits):bits;

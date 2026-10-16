@@ -1,5 +1,14 @@
 # Evidence still needed
 
+[Isolated AVD dependency tests](avd-startup-selector-study.md) require selector
+bits 1, 2, 4 for the first table and bits 5..7 additionally for the next one.
+They do not establish any real input value. An unrelated `11DB` bit7 decision
+appears only in those synthetic runs. The complete original 78-entry MIPS
+table was actually executed and contains no initializers for either field,
+the host command or HTotal outputs. The observed `BF206A28.7` pulse's reset
+domain/defaults remain unverified. No new reset default or timing sample is
+promoted into connected execution. Connected AVD still stops at `1C26`.
+
 The separate [AVD reset-latch hypothesis](avd-request-reset-experiment.md)
 assumes command bits `0C` reset empty on a guest programming hold. Its reset
 coupling/retention are unverified, disabled by default and explicitly reported;

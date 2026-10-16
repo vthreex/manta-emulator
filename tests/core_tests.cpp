@@ -1951,6 +1951,21 @@ void vifZeroInputTests(){
     "RIU publishes only the supported hypothetical fields, preserving invalid VGA and PGA high bits");
 }
 void avdBusTests(){
+  for(auto opcode:{0x43,0x53,0x63}){
+    bool exact=true;
+    for(unsigned value=0;value<256;++value)for(auto mask:{0u,0x1fu,0xe0u,255u}){
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      for(auto b:{0x90,0x11,0x4c,0xe0,0xff,opcode,0x07,int(mask),0xef,0xf0})p.write(0x18,uint8_t(b));
+      manta::VdMcuCpu cpu;manta::VdByte written{};
+      cpu.busRead=[&](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{uint8_t(value),0,a};};
+      cpu.busWrite=[&](uint16_t,manta::VdByte v){written=v;return true;};cpu.resetProgram(p);
+      while(cpu.instructions()<6)cpu.step();
+      auto expected=opcode==0x43?(value|mask):opcode==0x53?(value&mask):(value^mask);
+      auto known=opcode==0x43?mask:opcode==0x53?uint8_t(~mask):0;
+      exact &= written.value==expected && written.known==known && written.origin==0x114c;
+    }
+    require(exact,"direct IRAM immediate masks preserve unknown low fields and origin while unrelated ACC remains invalid, for every source byte");
+  }
   for(bool hypothesis:{false,true}){
     manta::Riu r;r.candidateAvdMcuProgram=true;r.exploratoryAvdHostResetEmpty=hypothesis;
     r.event=[](auto,auto,auto,auto,auto){};

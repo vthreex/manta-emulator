@@ -1,5 +1,14 @@
 # Status of the research build
 
+Latest [AVD startup-field study](avd-startup-selector-study.md) repairs direct
+IRAM mask provenance and verifies 256 isolated original-firmware input cases
+plus ten partial-field cases. These synthetic cases do not feed the TV.
+Connected counts and graphics state remain unchanged: optional reset-latch
+experiment stops at `80501BFC` on unknown HTotal; baseline shared mode stops
+at `805032A0`. Both full-machine paths replay identically with current code.
+1,399 native checks and all suites pass. All 78 original initialization-table
+writes are traced; they contain no selector/flag/command initializers.
+
 An independent [AVD request-latch reset experiment](avd-request-reset-experiment.md)
 lets original MIPS return from the AVD service, under an explicitly unverified
 reset-empty hypothesis tied to a guest MCU-hold write. Main reaches `80501BFC`

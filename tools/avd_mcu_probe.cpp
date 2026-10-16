@@ -24,8 +24,10 @@ int main(int argc,char** argv){try{
       std::cout<<std::hex<<pc<<' '<<text<<'\n';pc+=n;}
     return 0;
   }
-  bool shared=argc==3 && std::string(argv[2])=="--deferred-shared-prefix";
-  check(argc==2 || argc==4 || shared,"supply the original 13312-byte AVD payload [disassembly start end | --deferred-shared-prefix]");
+  bool synthetic=argc==6 && std::string(argv[2])=="--deferred-shared-prefix" &&
+    std::string(argv[3])=="--synthetic-startup-selector";
+  bool shared=(argc==3 && std::string(argv[2])=="--deferred-shared-prefix") || synthetic;
+  check(argc==2 || argc==4 || shared,"supply original AVD payload [disassembly start end | --deferred-shared-prefix [--synthetic-startup-selector VALUE MASK]]; synthetic fixture is isolated, never TV input");
   std::ifstream f(argv[1],std::ios::binary);
   std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});
   check(code.size()==13312 && manta::sha256(code)=="48ab58a5689d3135b2cdf78fa77da92fa912776f741c33c7afa97fdcfc4ee4fd",
@@ -45,8 +47,17 @@ int main(int argc,char** argv){try{
   p.write(5,0,255);check(p.write(1,1,255),"original program release missing");
   manta::VdMcuCpu cpu;std::set<uint16_t> visits;
   manta::AvdMcuBus bus;std::map<uint32_t,manta::VdByte> registers;
+  if(synthetic){
+    auto byte=[](const char* text){size_t used=0;auto v=std::stoul(text,&used,0);
+      check(used==std::string(text).size() && v<=255,"synthetic selector/mask must be bytes");return uint8_t(v);};
+    auto value=byte(argv[4]),known=byte(argv[5]);registers[0x1f206b38]={value,known,0};
+    std::cout<<"SYNTHETIC_ISOLATED_STARTUP_SELECTOR value="<<unsigned(value)<<" known="<<unsigned(known)
+      <<"; original reset/program unchanged; not measured hardware, not connected to television boot\n";
+  }
   if(shared){
-    std::cout<<"DIAGNOSTIC original startup writes retained; no asynchronous reset/clock disturbance during bounded prefix is an EXPLORATORY assumption; no input/readback/ready value supplied\n";
+    std::cout<<"DIAGNOSTIC original startup writes retained; no asynchronous reset/clock disturbance during bounded prefix is an EXPLORATORY assumption; "
+      <<(synthetic?"only the labeled synthetic selector fixture is supplied; all other inputs remain invalid\n":
+        "no input/readback/ready value supplied\n");
     bus.configureDeferredStartup();
     bus.sharedRead=[&](uint32_t a){return registers[a];};
     bus.sharedWrite=[&](uint32_t a,manta::VdByte v){registers[a]=v;};
