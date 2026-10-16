@@ -1,5 +1,20 @@
 # Status of the research build
 
+Latest [original startup selection and timeout investigation](zui-startup-selection-and-timeout.md)
+observes wrapper **11**, source phase **0**, ActiveOsd **0** and an unarmed
+numeric-entry timeout at the connected HTotal boundary. That original wrapper
+path selects OSD 3 if platform polling returns without changing its state.
+Original-function tests verify all opener selections, ID 3's 113-window setup,
+root-creation invalidation, empty-queue dispatch to the paint boundary and four
+original software timer installations. These are isolated tests, not connected
+rendering. The earlier 3001-tick lead is a numeric-input timeout in a separate
+source service, not an automatic boot timer. Three resource IDs select an
+original assertion instead of a show worker. No hardware value or event is added.
+All **1,457 native checks**, full regression suites, native Windows startup and
+complete **6,592,741-event** replay pass. Nonobserver trace bytes, summaries,
+coverage and UART equal `e91ec31`. MIPS/AVD still stop at `80501BFC`/`0702`;
+no connected dispatcher, enabled framebuffer, raster drawing or OSD pixels.
+
 Latest [HTotal provenance and original window resources](htotal-provenance-and-zui-resources.md)
 repairs a narrow INVALID data-publication path without supplying a raw timing
 sample. Original timing-copy/getter/stability instructions pass isolated tests;

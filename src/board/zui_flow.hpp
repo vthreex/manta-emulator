@@ -11,6 +11,8 @@ namespace manta {
 struct ZuiFlowSnapshot {
   uint32_t pc=0;uint64_t tick=0;
   std::optional<uint32_t> state,previous,active,head,tail,windowCount,windowList;
+  std::optional<uint32_t> softwareTick,wrapperState,inputServiceState,inputKey,
+    sourceId,sourcePhase,sourceTimeoutTimestamp,softwareFlags;
   unsigned knownSlots=0,occupiedSlots=0;
   bool indicesValid=false;
 };
@@ -25,7 +27,8 @@ public:
     for(auto address:{0x804e0d48u,0x804e0dbcu,0x8046ca74u,0x80488864u,0x8047602cu,
         0x804e0dc4u,0x804c3684u,0x804c370cu,0x804c3574u,0x8049f0dcu,0x8049f040u,
         0x8049f824u,0x804a0640u,0x8049f180u,0x804a0770u,0x8049ee1cu,0x8049dfc4u,
-        0x804afdfcu,0x804a071cu})if(pc==address)return true;
+        0x804afdfcu,0x804a071cu,0x80476a10u,0x8046d9dcu,0x80476b88u,
+        0x8048848cu,0x80482da8u,0x80480ca8u,0x8046b690u,0x80501bfcu})if(pc==address)return true;
     return false;
   }
   static ZuiFlowSnapshot capture(uint32_t pc,uint64_t tick,const Reader& read){
@@ -33,6 +36,12 @@ public:
     s.state=read(stateAddress,4);s.previous=read(previousAddress,4);s.active=read(activeAddress,4);
     s.head=read(headAddress,4);s.tail=read(tailAddress,4);
     s.windowCount=read(windowCountAddress,2);s.windowList=read(windowListAddress,4);
+    // Raw original software state, not decoded peripheral status or a timer
+    // producer. Unknown fields stay absent. All addresses are fixed and bounded.
+    s.softwareTick=read(0x006e561c,4);s.wrapperState=read(0x006c0918,4);
+    s.inputServiceState=read(0x006c08a0,4);s.inputKey=read(0x006b910c,1);
+    s.sourceId=read(0x006f8f8c,4);s.sourcePhase=read(0x006d4a08,4);
+    s.sourceTimeoutTimestamp=read(0x006b9050,4);s.softwareFlags=read(0x006bedf0,4);
     s.indicesValid=s.head && s.tail && *s.head<queueSize && *s.tail<queueSize;
     // Fixed bounded storage only: never dereference a guest queue index or
     // resource pointer, including an invalid or uncertain value.

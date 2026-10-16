@@ -1,5 +1,14 @@
 # Evidence still needed
 
+The [startup-selection study](zui-startup-selection-and-timeout.md) now observes
+wrapper 11/source phase 0 in genuine connected execution. Its original worker
+can select OSD 3 after platform polling returns without a state change; the
+unentered numeric-entry timeout is not that first-boot event. Original window
+creation supplies dirty-region work and software timers without a host menu
+event, as verified in isolated fixtures. Connected surface allocation, dispatch,
+paint and scan-out remain unexecuted. AVD sample/event/selector producers remain
+unknown; no convenient HTotal or physical reset state is introduced.
+
 The [timing/resource continuation](htotal-provenance-and-zui-resources.md) adds
 no physical input or reset assumption. The narrow original `113C/113D` data
 publication can now retain invalid measured bits in `11C7/11C8`; it does not

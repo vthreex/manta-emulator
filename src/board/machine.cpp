@@ -1858,6 +1858,10 @@ std::string Msd309Machine::summary() const {
       field("state",observation.state);field("previous_state",observation.previous);field("active_osd",observation.active);
       field("queue_head",observation.head);field("queue_tail",observation.tail);
       field("window_count",observation.windowCount);field("window_list",observation.windowList);
+      field("software_tick",observation.softwareTick);field("wrapper_state",observation.wrapperState);
+      field("input_service_state",observation.inputServiceState);field("input_key_raw",observation.inputKey);
+      field("source_id_raw",observation.sourceId);field("source_phase_raw",observation.sourcePhase);
+      field("source_timeout_timestamp",observation.sourceTimeoutTimestamp);field("software_flags_raw",observation.softwareFlags);
       s<<",\"queue_indices_valid\":"<<(observation.indicesValid?"true":"false")
         <<",\"known_hwnd_slots\":"<<observation.knownSlots<<",\"raw_occupied_hwnd_slots\":"<<observation.occupiedSlots<<'}';
     }

@@ -116,14 +116,21 @@ null window table**. It is empty window-state setup, not creation of a screen.
 The initializer's later return and platform polling still show state 1,
 ActiveOsd 0, an empty 40-slot queue and no windows.
 
-Inside the unentered UI wrapper, one mapped timeout path reads a timestamp at
+Correction from the [subsequent original-instruction study](zui-startup-selection-and-timeout.md):
+the following timeout is inside separate source service `80476A10`, not the UI
+wrapper itself. Its timestamp is armed by numeric input while OSD 17 is active;
+it is not the current boot activation path. Connected startup instead selects
+wrapper state 11/source phase 0, whose original worker can select OSD 3 after
+platform polling returns without changing that state.
+
+The unentered source service's mapped timeout path reads a timestamp at
 `80476B88`, calls the original elapsed-time getter, and tests against `0BB9`
 at `80476B9C`. With the additional original flag-4 test true, it branches
 through `80476EA0 -> 8048848C`. The latter can call `804C3684` with OSD ID 3
 and then `804C29E0` with action `0102`, when no OSD is active and its suppression
 byte is clear. This provides an original software activation path without a
-fabricated remote key. Its enclosing application-state conditions have not
-been demonstrated dynamically, so it is **not yet the proven first boot event**.
+fabricated remote key at that particular callee, but its actual caller requires
+OSD 17 and a numeric-entry timestamp. It is **not the proven first boot event**.
 
 Another source-state service at `8048863C` is easy to misidentify as video-lock
 handling. Its `80486B38 -> 80486B00 -> 804F0D48` chain uses a logical SAR query

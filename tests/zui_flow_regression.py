@@ -21,6 +21,15 @@ with tempfile.TemporaryDirectory(prefix='manta-original-zui-') as directory:
     assert functions['result']=='PASS' and functions['queue_cases']==40
     assert functions['standby_default_cases']==4 and functions['active_dispatch_cases']==4
     assert functions['window_resource_cases']==29 and functions['original_window_records']>3000
+    assert functions['source_timeout_cases']==1620 and functions['source_timeout_transition_boundaries']==54
+    assert functions['elapsed_getter_cases']==30
+    assert functions['source_phase_cases']==15 and functions['wrapper_selection_cases']==9
+    assert functions['startup_source_cases']==3
+    assert functions['resource3_windows_before_surface']==113
+    assert functions['OSD_open_selection_cases']==87
+    assert functions['OSD_open_original_assert_ids']==3
+    assert functions['resource3_creation_routes']==113 and functions['isolated_empty_queue_reaches_paint_boundary']
+    assert functions['original_window_timer_cases']==6
     assert not functions['TV_dispatcher_invoked'] and not functions['TV_events_injected'] and not functions['pixels_generated']
     damaged=d/'damaged-main.bin';bad=bytearray(main);bad[0x804e0dc4-0x803b3980]^=1;damaged.write_bytes(bad)
     result=subprocess.run([a.probe,str(damaged)],capture_output=True,text=True)

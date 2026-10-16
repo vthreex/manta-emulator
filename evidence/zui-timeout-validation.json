@@ -1,0 +1,271 @@
+{
+  "base_git": "e91ec31",
+  "result": "PASS",
+  "scope": "read-only startup selection, original source timeout and isolated window creation/paint/timer paths; no hardware input or TV event supplied",
+  "native_checks": 1457,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "connected_AVD_instructions": 863,
+  "AVD_boundary": "0702 / 11DB.7; meaning/reset/producer unresolved",
+  "MIPS_instructions": 854795171,
+  "MIPS_boundary": "80501BFC / invalid HTotal",
+  "ZUI_state_after_init": 1,
+  "ActiveOsd_after_init": 0,
+  "empty_queue_slots_after_init": 40,
+  "window_count_after_init": 0,
+  "ZUI_dispatcher_executed": false,
+  "HTotal_publisher_executed": false,
+  "enabled_GWIN": false,
+  "GE_raster": false,
+  "authentic_pixels": false,
+  "strict_mode_values_added": false,
+  "reports": {
+    "analysis": {
+      "file": "zui-timeout-analysis.json.gz",
+      "sha256_uncompressed": "ed50b6d5d1d6afaf6ecc8e3379b2c01811702ac6cfa27f8b17f616f3ac307176"
+    },
+    "htotal": {
+      "file": "zui-timeout-htotal.json.gz",
+      "sha256_uncompressed": "9344e3a55772f092ba181bdce2f28455170d5922693c8f586b1fc7949601df3c"
+    },
+    "zui": {
+      "file": "zui-timeout-zui.json.gz",
+      "sha256_uncompressed": "47e5db6cf2aa8613c9be49eafe3b18a7443543be8dfec18a61d585e445c5eed1"
+    },
+    "events": {
+      "file": "zui-timeout-events.json.gz",
+      "sha256_uncompressed": "ca27761fa240c9af90ea5851f2b82073da9ac8313c57c572a7956ece2a9e15fe"
+    },
+    "symbolic": {
+      "file": "zui-timeout-symbolic.json.gz",
+      "sha256_uncompressed": "10a7567437c9cf4a41152c605c888af2b86237d1876ed2ccf8ca1c5ac3805cb2"
+    },
+    "selector": {
+      "file": "zui-timeout-selector.json.gz",
+      "sha256_uncompressed": "335147c3a79cad442233382bb37d77eb6d79e02fcc1724941d74448396ea6bab"
+    },
+    "full-replay": {
+      "file": "zui-timeout-full-replay.json.gz",
+      "sha256_uncompressed": "1c86b1cec7b58ee1c13693bc398af6ef3f3850624f134b905855c6e0466d1abc"
+    },
+    "baseline": {
+      "file": "zui-timeout-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display": {
+      "file": "zui-timeout-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "avd": {
+      "file": "zui-timeout-avd.json.gz",
+      "sha256_uncompressed": "86ab3e1f7c140b97e34f01e5db39a72482f59cbb5299d50121b20694b219aa88"
+    },
+    "vd": {
+      "file": "zui-timeout-vd.json.gz",
+      "sha256_uncompressed": "9bc6a80fbc2edec820797ef33c0d39b3d3ce2b120082505924a088322d176b33"
+    },
+    "pm": {
+      "file": "zui-timeout-pm.json.gz",
+      "sha256_uncompressed": "5f5df2ff21366bec58152986af53dff6cfdfb3890763ecb90b0d1e4920d0a20a"
+    },
+    "clock": {
+      "file": "zui-timeout-clock.json.gz",
+      "sha256_uncompressed": "c8e3ca5600be4bb3da3a9d4b3864101c98858f263fdb975c9c06066e77239bdb"
+    },
+    "copro": {
+      "file": "zui-timeout-copro.json.gz",
+      "sha256_uncompressed": "018e0bd337fb6564f9fda5976c3282724b2b35e183d8ce62edb3d96a6df5d9f6"
+    },
+    "immutable": {
+      "file": "zui-timeout-immutable.json.gz",
+      "sha256_uncompressed": "42759f77c3ca94dfa36854c15bff86eec65f8af320c2451916998a445d953825"
+    },
+    "audio": {
+      "file": "zui-timeout-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "vif": {
+      "file": "zui-timeout-vif.json.gz",
+      "sha256_uncompressed": "260e4afa8707f82dbf0738349f1e71e3eaef8e3cacf5d53d6b23a4eaac874e42"
+    },
+    "request": {
+      "file": "zui-timeout-request.json.gz",
+      "sha256_uncompressed": "d92bb7be9f76eb51fc2c1213864f1b34c6085a249c2aa37229b19f8ed9034a53"
+    },
+    "packaged-window": {
+      "file": "zui-timeout-packaged-window.json.gz",
+      "sha256_uncompressed": "a8615a3f4270944c439fd9d3d756cd74ffb218a2dff631d0363c62a0e95120a3"
+    },
+    "native-tools": {
+      "file": "zui-timeout-native-tools.json.gz",
+      "sha256_uncompressed": "e7c24d077b5b3b3a623c09017f049dc81c46421a92e72870c8eafd525458a056"
+    }
+  },
+  "recording_binary_sha256": "e6255cc602b23996f87479102184a3ec6cd8fdceb98781b4896f29557bcdc7f7",
+  "binaries": {
+    "manta.exe": "e6255cc602b23996f87479102184a3ec6cd8fdceb98781b4896f29557bcdc7f7",
+    "core_tests.exe": "4eeb8d964075027f56461c40c0b6b0d52ffe72c7b38c6d7d8581e7f93ccf9b1d",
+    "avd_mcu_probe.exe": "8d38c0c5935101e4eb8c31c8ba5b92cf09fd5ea51dcdfff0296d347bb8fda551",
+    "zui_flow_probe.exe": "d849df0eab41c84de299d20961b44468de2077e768f9be6e8787afb791227585",
+    "avd_request_probe.exe": "3eb9468b58ab2673c1eedda35b12f739ebcd0d94353bc24d95236c518cd5a12c",
+    "avd_htotal_probe.exe": "b63b30f5aa7ba05a1cc3ac2a1c0869eddfda5d4e09318dd0bc78e3cde67320cc"
+  },
+  "native_stdout": "1457 checks passed",
+  "recording_and_final_binary_note": "Recording and full replay use the same final binary. Two read-only observations and raw software state fields are added versus e91ec31. Every nonobserver trace byte, nonobserver summary field and coverage match. No recorded read value is supplied.",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "related_MStar_sources": [
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_UiMenuDef.h",
+      "sha256": "556605e2275fe41ee7718b66a6d69ada4bbf3a570aa110007ab3dcf0e5c9853d",
+      "bytes": 35156
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/MApp_ZUI_ACTglobal.c",
+      "sha256": "8246744a029ab0352a5c3427e070e9fb3ecdd9b144141a8d6c93d2a437463e29",
+      "bytes": 87392
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_ZUI_ACTglobal.h",
+      "sha256": "af4cf61f55342ae89cdd23fc480f52d43bf94889969639f0a5c4ab8df1b3c490",
+      "bytes": 10078
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/include/MApp_ZUI_APIcommon.h",
+      "sha256": "dd398b2114efb1cf7c949f7291a7d817d7fb350aa01e2cce7688f0dcccf62099",
+      "bytes": 9529
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_APIdraw.c",
+      "sha256": "02d1e2dea68fbc4f28217bf9e1daa236ee2edf409878b7337a3bef78f5fc8ff5",
+      "bytes": 46681
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/include/MApp_ZUI_APItables.h",
+      "sha256": "e9022c678db532ffec0aff9f44a9b1f601140a204b404cd1aae72ed2c980bfbc",
+      "bytes": 13150
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_APIwindow.c",
+      "sha256": "f9b50772bd31e1c84e0ab60187f62655aa17e4259cc6c8e83d0ff32ec4f50cbd",
+      "bytes": 68564
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_CTLeffectzoom.c",
+      "sha256": "82100ee0235f4dda1135d60721712b783db3ce14bdc02dde13357dc29f86f9f4",
+      "bytes": 17788
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/MApp_ZUI_Main.c",
+      "sha256": "de49002d5b98341a97bedf50a1002c3901272013112db9844ac966ed3308c268",
+      "bytes": 15872
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_ZUI_Main.h",
+      "sha256": "06415458e61d13a92da928240944914c4553c07d31875b9272f88a032bc765c9",
+      "bytes": 8573
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/ZUI_tables_h.inl",
+      "sha256": "535cb6e21baa6d8c45b800da51e98a43d6febf7cd361280887a730b91e9e9b61",
+      "bytes": 3194
+    }
+  ],
+  "additional_hardware_references": [
+    {
+      "file": "amethyst-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "eagle-c_vdmcu_riubase.h",
+      "sha256": "b107fed4f3239abfc59930a7c5b613acccdd4654f438d327e8501b0ff9cf5827",
+      "bytes": 5268
+    },
+    {
+      "file": "eiffel-c_vdmcu_riubase.h",
+      "sha256": "b107fed4f3239abfc59930a7c5b613acccdd4654f438d327e8501b0ff9cf5827",
+      "bytes": 5268
+    },
+    {
+      "file": "emerald-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "kenya-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "kriti-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "milan-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "mst786.pdf",
+      "sha256": "679fb3fa3b66ba6d3c37ffc371822e770828c2666ee6de0e83a2dbd2e215de74",
+      "bytes": 20880236
+    },
+    {
+      "file": "nikon-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "nugget-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    }
+  ],
+  "MST786_reference_url": "https://linux-chenxing.org/cedric/mst786_ds_v01maite_new.pdf",
+  "reference_chip_register_defaults_transferred": false,
+  "original_window_resource_sets": 29,
+  "original_window_records": 3616,
+  "AVD_fragment_instructions_not_TV_execution": 117400,
+  "ZUI_acronym_expansion_verified": false,
+  "zoom_note": "Related MStar window show/hide animation and enlarged text; not proof of a zoomable canvas or Manta effect support",
+  "raw_UART_file": "avd-symbolic-tables-uart.raw",
+  "raw_UART_sha256": "23e5aff1fc2bfc449985ade1c6e83436905985514aaa32710125a195eb1c7f3c",
+  "connected_wrapper_state": 11,
+  "connected_source_phase": 0,
+  "connected_source_id_raw": 20,
+  "numeric_entry_timeout_armed": false,
+  "original_OSD_assertion_ids": [
+    22,
+    23,
+    28
+  ],
+  "isolated_root_creation_reaches_dirty_flag": true,
+  "isolated_empty_queue_reaches_paint_boundary": true,
+  "connected_OSD_activation": false,
+  "new_AVD_reset_or_status_values": false,
+  "validation_retry": {
+    "suite": "display",
+    "first_attempt": "failed summary output flush; no assertion weakened",
+    "first_attempt_log_sha256": "65435139f05f143fd4e8f3f33d5828ab38f9d70af2a79a49cdc959653ace75e8",
+    "passing_attempt_log_sha256": "ba6996e98e0b9624c44eb022afede9255f79b7604397160ec6210be71667856d",
+    "passing_process_temporary_directory": "<private-trace-cache>/zui-timeout-regression-temp",
+    "cause_proven": false
+  },
+  "AVD_related_embedded_reference_programs": [
+    {
+      "symbol": "AVD_ADC_DSP_CODE",
+      "sha256": "34644372329fcefc2bee2ffa386fae18d56b6749da9e49889085dee01a8a53b4",
+      "bytes": 13312,
+      "scope": "static disassembly only; different chip; no reset/producer established"
+    },
+    {
+      "symbol": "AVD_VIF_DSP_CODE",
+      "sha256": "4b0a3dae314d265791b07469ee543a961eaf9939bad4b6a0d1813c9fd6f365fb",
+      "bytes": 13312,
+      "scope": "static disassembly only; different chip; no reset/producer established"
+    }
+  ]
+}

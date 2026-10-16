@@ -2210,6 +2210,14 @@ int main() {
       words.erase(Z::stateAddress);words.erase(Z::headAddress);
       auto unknown=Z::capture(0,0,read);
       require(!unknown.state && !unknown.head && !unknown.indicesValid,"unknown ZUI globals remain unavailable rather than defaulting to standby or empty");
+      require(!unknown.softwareTick && !unknown.sourceTimeoutTimestamp && !unknown.softwareFlags && !unknown.sourcePhase,
+        "read-only source timeout diagnostics do not invent initial software state");
+      words[0x006e561c]=0xfffffff0;words[0x006b9050]=0;words[0x006bedf0]=4;words[0x006d4a08]=3;
+      saved=words;auto source=Z::capture(0,0,read);
+      require(source.softwareTick==0xfffffff0u && source.sourceTimeoutTimestamp==0 && source.softwareFlags==4 && source.sourcePhase==3 && words==saved,
+        "source timeout observer preserves zero, wraparound and raw flags without modifying guest RAM");
+      require(Z::watches(0x80476a10) && Z::watches(0x8048848c) && Z::watches(0x80501bfc),
+        "original source service, timeout destination and HTotal boundary are observed separately");
       require(Z::watches(0x804c3684) && Z::watches(0x804e0dc4) && Z::watches(0x8049f040),
         "observer independently watches OSD opening, dispatcher and queue consumption");
     }
