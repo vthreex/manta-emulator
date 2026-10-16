@@ -38,7 +38,10 @@ match after masking only three linked data-address immediate fields. The
 [symbol comparison evidence](../evidence/htotal-next-boundary-symbol-match.json)
 records the original/normalized hashes and reference archive provenance.
 This supports the **AFEC co-channel detector status** identification, not a
-reset value or an automatic false value with disconnected video.
+reset value or an automatic false value with disconnected video. The subsequent
+[publisher investigation](avd-cochannel-publisher.md) identifies original AVD
+startup and recurring software writers for this shared byte, without supplying
+their output to connected boot before those instructions execute.
 
 Other patch-flag configurations can read AFEC status `BF206B98` earlier.
 The original routine later consumes its `C000` mask and additional detector

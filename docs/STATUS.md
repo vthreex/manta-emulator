@@ -1,5 +1,13 @@
 # Status of the research build
 
+The [co-channel publisher study](avd-cochannel-publisher.md) identifies the
+original AVD startup clear and recurring `2C.3 -> 11CA.3` software publisher
+behind the MIPS co-channel getter. New two-processor fragment tests and both
+previous isolated conditional reset paths verify those original stores; unknown
+private bits still stop. No detector output, selector or event is supplied to
+connected execution. Production binaries and all connected counts/stops remain
+unchanged; the new test target does not produce TV pixels.
+
 The [post-HTotal polling study](avd-post-htotal-boundary.md) executes nine
 additional original prefix fixtures through genuine COMB/gain programming to
 the next status getter. A named reference matches original `80503080` as AFEC

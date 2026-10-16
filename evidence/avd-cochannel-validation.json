@@ -1,0 +1,59 @@
+{
+  "result": "PASS",
+  "base_git": "360e83a",
+  "scope": "original co-channel output producer investigation; isolated tests only, no TV status or pixels supplied",
+  "report": "avd-cochannel-regression.json.gz",
+  "report_sha256_uncompressed": "7a03081534483bda7090f7d23868788f1a1fda7d5823f25ddea5d173b0a4b895",
+  "native_checks": 1457,
+  "native_stdout": "1457 checks passed",
+  "new_probe_sha256": "029253f3661c5a34a17a39a62544398a100460222b94fbe16484614b8246ad3e",
+  "clean_PATH": "C:\\WINDOWS\\System32",
+  "clean_PATH_probe_result": {
+    "result": "PASS",
+    "scope": "ISOLATED concatenated unchanged original fragments with detector-latch fixtures; NOT connected startup or physical signal detection",
+    "latch_cases": 2,
+    "unknown_latch_cases": 2,
+    "original_MIPS_getters": 6,
+    "original_AVD_fragment_instructions": 157,
+    "initial_status_invalid": true,
+    "TV_detector_status_supplied": false,
+    "TV_AVD_advanced": false,
+    "pixels_generated": false
+  },
+  "same_production_validation": "zui-timeout-validation.json",
+  "same_production_validation_sha256": "f8b547cbfd3495c25a3c83c6ea1115a2163eaaf25c9cb08570a8761df4da4fcf",
+  "unchanged_production_and_other_probe_binaries": {
+    "manta.exe": "e6255cc602b23996f87479102184a3ec6cd8fdceb98781b4896f29557bcdc7f7",
+    "core_tests.exe": "4eeb8d964075027f56461c40c0b6b0d52ffe72c7b38c6d7d8581e7f93ccf9b1d",
+    "avd_mcu_probe.exe": "8d38c0c5935101e4eb8c31c8ba5b92cf09fd5ea51dcdfff0296d347bb8fda551",
+    "zui_flow_probe.exe": "d849df0eab41c84de299d20961b44468de2077e768f9be6e8787afb791227585",
+    "avd_request_probe.exe": "3eb9468b58ab2673c1eedda35b12f739ebcd0d94353bc24d95236c518cd5a12c"
+  },
+  "full_replay_events_same_production_binary": 6592741,
+  "connected_AVD_instructions": 863,
+  "connected_MIPS_instructions": 854795171,
+  "startup_native_writer": "0245 -> 02AA/02AD; 11CA=0",
+  "periodic_native_publisher": "1183..1192; IRAM2C.3 -> 11CA.3",
+  "conditional_complete_reset_prefixes_NOT_TV": [
+    {
+      "synthetic_coefficient_selector_bit7": 0,
+      "original_startup_instructions": 2278,
+      "stop": "0x0993 / unknown event bit",
+      "original_11CA_zero_write_observed": true,
+      "stdout_sha256": "36d1cde1100bbd1766e3923b74b763e2d0099611a04f84680e4b84adfaf8a9e5",
+      "scope": "isolated conditional full original reset; NOT connected progress"
+    },
+    {
+      "synthetic_coefficient_selector_bit7": 1,
+      "original_startup_instructions": 2309,
+      "stop": "0x0993 / unknown event bit",
+      "original_11CA_zero_write_observed": true,
+      "stdout_sha256": "94769cb22f9ca8055d92f6b1aa9b66cf471462e3b4288d55e012c9aecd05fe28",
+      "scope": "isolated conditional full original reset; NOT connected progress"
+    }
+  ],
+  "producer_reset_behavior_verified_on_TV": false,
+  "HTotal_or_11DB_producer_resolved": false,
+  "TV_OSD_pixels": false,
+  "original_firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9"
+}
