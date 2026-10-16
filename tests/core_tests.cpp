@@ -1951,6 +1951,31 @@ void vifZeroInputTests(){
     "RIU publishes only the supported hypothetical fields, preserving invalid VGA and PGA high bits");
 }
 void avdBusTests(){
+  for(bool hypothesis:{false,true}){
+    manta::Riu r;r.candidateAvdMcuProgram=true;r.exploratoryAvdHostResetEmpty=hypothesis;
+    r.event=[](auto,auto,auto,auto,auto){};
+    require(r.knownBits(0x1f206bb8,1)==0 && r.avdHostRequestLatchResets==0,
+      "configuring reset-latch hypothesis cannot fabricate an initial command before an actual guest hold");
+    r.write(0x1f2068c1,1,0,0,255,1);
+    require(r.knownBits(0x1f206bb8,1)==(hypothesis?12u:0u) &&
+      r.knownBits(0x1f206bb9,1)==0 && r.knownBits(0x1f206bbc,1)==0 && r.knownBits(0x1f206bbd,1)==0,
+      "only explicit nonretained-latch hypothesis makes command bits 0C reset-empty; bank and payload remain invalid");
+    if(!hypothesis)continue;
+    r.write(0x1f206bb8,1,9,0,255,2);r.write(0x1f206bbd,1,0x5a,0,255,3);
+    require(r.read(0x1f206bb8,1,0,255,4)==9 && r.read(0x1f206bb8,1,0,255,5)==9,
+      "real pending request remains pending across repeated polls; no automatic completion");
+    r.write(0x1f2068c1,1,1,0,255,6);
+    require(r.read(0x1f206bb8,1,0,255,7)==9 && r.avdHostRequestLatchResets==1,
+      "execution release is not a request reset or completion");
+    r.write(0x1f206bb8,1,1,0,255,8);
+    require(r.read(0x1f206bb8,1,0,255,9)==1,"only an actual MIPS command clear services the submitted write");
+    r.write(0x1f2068c1,1,0,0,255,10);
+    require(r.read(0x1f206bb8,1,0,255,11)==1 && r.read(0x1f206bbd,1,0,255,12)==0x5a &&
+      r.avdHostRequestLatchResets==2,"later explicit reset retains written bank/data and never creates a completion marker");
+    r.write(0x1f206bb8,1,9,0,255,13);r.write(0x1f2068c1,1,0,0,255,14);
+    require(r.read(0x1f206bb8,1,0,255,15)==1 && r.read(0x1f206bbd,1,0,255,16)==0x5a &&
+      r.avdHostRequestLatchResets==3,"conditional MCU hold aborts a pending latch without a DONE marker, payload change or executed service");
+  }
   for(auto opcode:{0x03,0x23,0xc4,0x13,0x33}){
     bool exact=true;
     for(unsigned value=0;value<256;++value)for(auto known:{0u,1u,8u,128u,255u}){

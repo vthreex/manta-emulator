@@ -1,0 +1,96 @@
+{
+  "base_git": "5cea1ba",
+  "scope": "UNVERIFIED nonretained AVD request-latch reset hypothesis; no timing sample or OSD supplied",
+  "native_checks": 1396,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "reports": {
+    "cold-summary": {
+      "file": "avd-reset-cold-summary.json.gz",
+      "sha256_uncompressed": "945d1e3c41d0b4e28d53104bd520184e5a0e05079455297a0a4e6a619b3e2e25"
+    },
+    "analysis": {
+      "file": "avd-reset-analysis.json.gz",
+      "sha256_uncompressed": "0655a7a0128ff0e467c86fd02ed88f9de97bf61413b51edab4af1aede5f08f45"
+    },
+    "full-replay": {
+      "file": "avd-reset-full-replay.json.gz",
+      "sha256_uncompressed": "e85d07fcc5f14496e87730e61056de688299079205068c0097d884b2d509cbf5"
+    },
+    "default-full-replay": {
+      "file": "avd-reset-default-full-replay.json.gz",
+      "sha256_uncompressed": "6c85b2cfe56a1587541cce29153a96025228a95e6a63adfe1005e2cf127375b5"
+    },
+    "baseline-regression": {
+      "file": "avd-reset-baseline-regression.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display-regression": {
+      "file": "avd-reset-display-regression.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "AVD-regression": {
+      "file": "avd-reset-AVD-regression.json.gz",
+      "sha256_uncompressed": "854db5d764015f719394a345e85d49ab42d75ff1a2be34f391b642f4f295202f"
+    },
+    "DVB-T-regression": {
+      "file": "avd-reset-DVB-T-regression.json.gz",
+      "sha256_uncompressed": "1c49852eca1a3a9eb12e96a788fc07f495b9f4bbd9049a5a8fbe0b693dfdab21"
+    },
+    "PM51-regression": {
+      "file": "avd-reset-PM51-regression.json.gz",
+      "sha256_uncompressed": "5b76097f2ff4782dcbcc1ed5ce1cd865a178bdc3d80684bdf744f129fc93e4d9"
+    },
+    "clock-regression": {
+      "file": "avd-reset-clock-regression.json.gz",
+      "sha256_uncompressed": "e6ba9c9a58b5ac9a9cd9c67d9e860cf5142025655ee5359b4d1d28bff77c7cfb"
+    },
+    "copro-regression": {
+      "file": "avd-reset-copro-regression.json.gz",
+      "sha256_uncompressed": "ff33b316c6fd5cade4cce4ff9411e20ab3ed470cd60749e325fa03196cfbbbf0"
+    },
+    "immutable-regression": {
+      "file": "avd-reset-immutable-regression.json.gz",
+      "sha256_uncompressed": "b5218f33ac5f519e6434daa918aa397c18d939dd3d9df673ec03a30e9c4cdab3"
+    },
+    "DSP-decoder-regression": {
+      "file": "avd-reset-DSP-decoder-regression.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "VIF-regression": {
+      "file": "avd-reset-VIF-regression.json.gz",
+      "sha256_uncompressed": "7604f814db37d3d643415d72d85cf8ab42a22ac0dcf6979cf855525a30b7e584"
+    },
+    "request-regression": {
+      "file": "avd-reset-request-regression.json.gz",
+      "sha256_uncompressed": "6cba34da334e4832d2cf43a83121660704a8882956cdedb15fc290509497bd27"
+    },
+    "packaged-window": {
+      "file": "avd-reset-packaged-window.json.gz",
+      "sha256_uncompressed": "ba67411ca30817c867bae038c75bb1a1db02a3efddf208d1ff77186ef2921a06"
+    }
+  },
+  "AVD_original_instructions": 379,
+  "MIPS_original_dispatches": 854795171,
+  "new_UART": false,
+  "authentic_pixels": false,
+  "strict_or_missing_suspension_AVD_reset_options_rejected": true,
+  "AVD_latch_reset_silicon_verified": false,
+  "binaries": {
+    "manta.exe": "4ec0baba38de5a8e093b50163e936f43f600bec858e723a4e40e8ebb1528f275",
+    "core_tests.exe": "ed65a5267a9cc90473465594cd18baed7e31af9b8cb3e8cf2ddf2e1644b3bbcc",
+    "avd_mcu_probe.exe": "763fd90faced3c87fa832cd26ce22df792d63dd75472517d0205676cd01c859a",
+    "avd_request_probe.exe": "92c09e844ec34bf277fa117aa02aeb6b7334ba480d550758bffefa99943c4564"
+  },
+  "native_stdout": "1396 checks passed",
+  "raw_trace_private_path": "<private-trace-cache>\\trace-cache-2026-10-13\\avd-reset-empty-cold.jsonl",
+  "trace_events": 6592234,
+  "trace_sha256": "1ae9bd08f5f7e74616195d5c9e353ae1521ecc783f40fe5d42bbeda4bc05fc95",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "INVALID_only_policy_sha256": "26ba60a5360c06aa894f2e8f5762de4e3c17de564ccdffde9275621bc0b13410",
+  "original_private_policy_restored": true,
+  "coverage_sha256": "e050f21f9f855ecc058be4b995977f33a8e7170fd4a79687ad5ba296862fe7ff",
+  "PM51_history_sha256": "d5366f766c3c7962f68627ae1be4ab485aa31e5ed552ac1b107ffee1cc4b7487"
+}

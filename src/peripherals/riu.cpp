@@ -173,6 +173,7 @@ std::string Riu::avdSharedStateSha()const{
   auto bytes=avdMcuCpu_.stateBytes(),bus=avdMcuBus_.stateBytes();bytes.insert(bytes.end(),bus.begin(),bus.end());
   for(auto value:{avdTick_,avdDispatchDivider,avdInstructionBudget})for(unsigned i=0;i<8;++i)bytes.push_back(uint8_t(value>>(8*i)));
   bytes.push_back(uint8_t(avdMcuSuspended_));bytes.push_back(uint8_t(avdMcuProgram_.held()));
+  if(exploratoryAvdHostResetEmpty){bytes.push_back(0xec);for(unsigned i=0;i<8;++i)bytes.push_back(uint8_t(avdHostRequestLatchResets>>(8*i)));}
   return sha256(bytes);
 }
 std::string Riu::tspCoreStateSha()const{
@@ -958,6 +959,12 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(n!=1)throw std::runtime_error("AVD MCU programming requires byte access");
     auto cursor=avdMcuProgram_.cursor();
     auto start=avdMcuProgram_.write(a-0x1f2068c0,uint8_t(v),uint8_t(knownBits(a,n)));
+    if(exploratoryAvdHostResetEmpty && a==0x1f2068c1 && avdMcuProgram_.held()){
+      auto& command=bytes_[storageKey(0x1f206bb8)];
+      command.value=uint8_t(command.value&~0x0c);command.known|=0x0c;++avdHostRequestLatchResets;
+      event("exploratory_avd_host_request_reset",0x1f206bb8,1,command.value,
+        "UNVERIFIED nonretained host-request latch reset tied to actual guest MCU hold; only bits 0C become reset-empty; bank/payload untouched; no request serviced or ready/completion generated");
+    }
     if(a==0x1f2068d8)event("avd_mcu_program_write",a,n,v,"actual original MIPS program-port upload; address="+std::to_string(cursor));
     if(start){
       event("avd_mcu_start_request",a,n,v,exploratoryAvdMcuStartup?

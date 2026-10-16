@@ -83,6 +83,8 @@ if not a.validate_only:
                       '--max-avd-instructions',str(ref['avd_instruction_budget'])]
             if ref.get('diagnostic_avd_deferred_startup_writes'):
                 command+=['--diagnostic-avd-deferred-startup-writes']
+            if ref.get('exploratory_avd_host_request_reset_empty'):
+                command+=['--exploratory-avd-host-request-reset-empty']
         if ref.get('opaque_policy_enabled'):
             assert a.opaque_read_policy and Path(a.opaque_read_policy).exists(),'policy-enabled replay needs its final rules'
             command+=['--opaque-read-policy',str(Path(a.opaque_read_policy).resolve())]

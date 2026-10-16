@@ -1,5 +1,16 @@
 # Evidence still needed
 
+The separate [AVD reset-latch hypothesis](avd-request-reset-experiment.md)
+assumes command bits `0C` reset empty on a guest programming hold. Its reset
+coupling/retention are unverified, disabled by default and explicitly reported;
+this is not an identified ready-response producer. With that hypothesis, MIPS
+gets to `80501BFC` and rejects unknown HTotal from `BF206B90/BF206B8D`.
+Original AVD code can publish those bytes from native `113C/113D`, but remains
+stopped before that writer at `1C26`. Raw counter reset/latch/no-HSYNC behavior,
+startup `119C`, and the prior startup-control effects still need evidence.
+No HTotal value or comparison result is provided. The default shared mode
+retains its original `805032A0` stop, verified by a full independent replay.
+
 The [connected AVD diagnostic](avd-shared-prefix.md) now reaches original
 `1C26` after 379 instructions, requiring bits 1, 2 and 4 from captured native
 `119C` for its first table address. Candidate `BF206B38` has an identified

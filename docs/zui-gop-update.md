@@ -1,5 +1,9 @@
 # Original ZUI entry and GOP update boundary
 
+The additional, unverified [AVD latch-reset experiment](avd-request-reset-experiment.md)
+returns to `8050170C`, but then stops at `80501BFC` on unknown HTotal before
+the ZUI wrapper/dispatcher. It does not demonstrate drawing or a framebuffer.
+
 The [connected AVD investigation](avd-shared-prefix.md) preserves the same
 main coverage: `80488844`, `8045CFC4`, `8046CA74` and `805016C8` execute, but
 the AVD service has not returned to `8050170C`. The next application call at

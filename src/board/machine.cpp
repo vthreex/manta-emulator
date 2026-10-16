@@ -59,8 +59,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     throw std::runtime_error("AVD shared execution requires guarded uploaded startup, explicit bounded scheduling and unknown-value guards");
   if(o.diagnosticAvdDeferredStartup && !o.exploratoryAvdSharedRun)
     throw std::runtime_error("AVD unresolved startup-write retention requires the separate shared-run diagnostic; no effects/reset values inferred");
+  if(o.exploratoryAvdHostResetEmpty && (!o.exploratoryAvdSharedRun || !o.exploratoryAvdSuspendedBoundary))
+    throw std::runtime_error("AVD request-latch reset hypothesis requires guarded original shared execution and explicit unresolved-CPU suspension; not verified reset behavior");
   riu_.exploratoryAvdSharedRun=o.exploratoryAvdSharedRun;
   riu_.diagnosticAvdDeferredStartup=o.diagnosticAvdDeferredStartup;
+  riu_.exploratoryAvdHostResetEmpty=o.exploratoryAvdHostResetEmpty;
   riu_.avdDispatchDivider=o.avdDivider;riu_.avdInstructionBudget=o.avdBudget;
   if(o.deferVdResetKeyWrites && (!o.deferVdSfr8eWrite || !o.exploratoryVdMcuStartup))
     throw std::runtime_error("VD reset-key write deferral requires explicit SFR deferral and original startup experiment");
@@ -706,6 +709,18 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       uint32_t words[8]{};
       m.cpu_.read(pc & 0x1fffffff, words, sizeof(words));
       if(auto consumed=immediateReadMask(words))m.riu_.prepareMaskedRead(a,*consumed);
+    }
+    if(m.options_.exploratoryAvdHostResetEmpty && pc==0x805032a0 && a==0x1f206bb8 && n==1){
+      std::vector<uint8_t> helper(256);m.cpu_.read(0x0050328c,helper.data(),helper.size());
+      if(sha256(helper)!="926aa44601025abeca5733f2e3aed1b7437db476b6cff0e63e2609163ca1dfc5")
+        throw std::runtime_error("AVD original host-service identity mismatch");
+      // The byte is copied before ANDI 0C, so the immediate-mask shortcut is
+      // inapplicable. Retain every unknown field in the normal bit tracker;
+      // pending requests still cannot consume unknown bank/payload fields.
+      m.preservedBits_.seed(2,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
+      m.riu_.prepareOpaqueRead(a);
+      m.event("avd_host_command_partial_sample",a,n,m.riu_.knownBits(a,n),
+        "byte-verified original LBU/copies/field tests; invalid bank/high bits remain guarded; no branch outcome or byte supplied");
     }
     if(m.options_.symbolicInit && m.options_.deferDiagnosticReads && pc==0x8054cd88 &&
        n==1 && a>=0x1f204a00 && a<0x1f204c00){
@@ -1738,6 +1753,9 @@ std::string Msd309Machine::summary() const {
       <<",\n  \"avd_hardware_boundary_reason\": "<<std::quoted(riu_.avdMcuBoundaryReason())
       <<",\n  \"avd_shared_state_sha256\": \""<<riu_.avdSharedStateSha()<<"\""
       <<",\n  \"avd_shared_mapping_clock_reset_verified\": false";
+    if(options_.exploratoryAvdHostResetEmpty)s<<",\n  \"exploratory_avd_host_request_reset_empty\": true"
+      <<",\n  \"avd_host_request_latch_resets\": "<<riu_.avdHostRequestLatchResets
+      <<",\n  \"avd_host_request_latch_reset_verified\": false";
   }
   if(options_.candidateAudioIdma){
     // Existing audio diagnostics retain invalid ACK bytes independently of PM.

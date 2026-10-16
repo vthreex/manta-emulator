@@ -1,5 +1,18 @@
 # Status of the research build
 
+An independent [AVD request-latch reset experiment](avd-request-reset-experiment.md)
+lets original MIPS return from the AVD service, under an explicitly unverified
+reset-empty hypothesis tied to a guest MCU-hold write. Main reaches `80501BFC`
+after 854,795,171 dispatches, then correctly stops comparing an INVALID HTotal
+sample from `BF206B90/BF206B8D`. Its original AVD publisher is identified at
+`0ABC`, but has not executed. No timing value is supplied. The AVD dependency
+is not resolved as verified hardware behavior. ZUI dispatch and pixels remain
+unentered. 1,396 native checks and full suites pass. Both the new 6,592,234-event
+path and the previous 6,592,227-event path replay completely and identically;
+see [validation](../evidence/avd-reset-validation.json).
+
+The following records preserve their individual hypothesis scopes.
+
 Latest [connected AVD diagnostic](avd-shared-prefix.md) executes 379 original
 AVD instructions with shared RIU backing, seven genuine register stores and
 sixteen private-RAM stores. Startup control effects and the bus/clock mapping

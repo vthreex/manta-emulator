@@ -103,6 +103,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-avd-mcu-startup")o.exploratoryAvdMcuStartup=true;
       else if (a == "--exploratory-avd-suspended-boundary")o.exploratoryAvdSuspendedBoundary=true;
       else if(a=="--exploratory-avd-shared-run")o.exploratoryAvdSharedRun=true;
+      else if(a=="--exploratory-avd-host-request-reset-empty")o.exploratoryAvdHostResetEmpty=true;
       else if(a=="--diagnostic-avd-deferred-startup-writes")o.diagnosticAvdDeferredStartup=true;
       else if(a=="--avd-dispatch-divider")o.avdDivider=std::stoull(value(i),nullptr,0);
       else if(a=="--max-avd-instructions")o.avdBudget=std::stoull(value(i),nullptr,0);
@@ -259,6 +260,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--candidate-vd-mcu-program: shared MCU upload/readback ports; current original payload is DVB-T; no synthetic acknowledgment\n"
                  "--candidate-avd-mcu-program: original analog-video MCU programming/readback port; no ready signaling\n"
                  "--exploratory-avd-shared-run: candidate XDATA/shared-register and private RAM wiring, standard Timer0 and explicit scheduling; no mailbox reset value\n"
+                 "--exploratory-avd-host-request-reset-empty: UNVERIFIED nonretained request-latch hypothesis; actual guest MCU hold clears only command bits 0C; no payload, bank, ready value or completion generated\n"
                  "--diagnostic-avd-deferred-startup-writes: separately retain unresolved original startup configuration writes; assume no asynchronous reset/clock disruption during bounded execution; no readback/status inferred\n"
                  "--avd-dispatch-divider N --max-avd-instructions N: explicit virtual-cycle ratio and original-instruction diagnostic budget\n"
                  "--candidate-audio-idma: observed 24-bit addressed upload/readback protocol, atomic functional timing; no DSP ISA/ready replies\n"
