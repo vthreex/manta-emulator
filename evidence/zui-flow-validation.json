@@ -1,0 +1,178 @@
+{
+  "base_git": "9ac1691",
+  "result": "PASS",
+  "scope": "read-only original ZUI state, isolated original queue/dispatcher and AVD event consumers; no physical inputs or events supplied",
+  "native_checks": 1447,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "connected_AVD_instructions": 863,
+  "AVD_boundary": "0702 / 11DB.7; meaning/reset/producer unresolved",
+  "MIPS_instructions": 854795171,
+  "MIPS_boundary": "80501BFC / invalid HTotal",
+  "ZUI_state_after_init": 1,
+  "ActiveOsd_after_init": 0,
+  "empty_queue_slots_after_init": 40,
+  "window_count_after_init": 0,
+  "ZUI_dispatcher_executed": false,
+  "HTotal_publisher_executed": false,
+  "enabled_GWIN": false,
+  "GE_raster": false,
+  "authentic_pixels": false,
+  "strict_mode_values_added": false,
+  "reports": {
+    "analysis": {
+      "file": "zui-flow-analysis.json.gz",
+      "sha256_uncompressed": "f8a128c1855a9c90841fe07e8380347d5143a757f73092ee7297a7a4fe9017bf"
+    },
+    "zui": {
+      "file": "zui-flow-zui.json.gz",
+      "sha256_uncompressed": "272ae3a21f7fb4062e6685d753c59f8207c28b83f4a705007f870b2a7e74eed9"
+    },
+    "events": {
+      "file": "zui-flow-events.json.gz",
+      "sha256_uncompressed": "d585ac4f6313c0a8130832d377702c61dcf022001e2f23771c220d56310bc7e8"
+    },
+    "symbolic": {
+      "file": "zui-flow-symbolic.json.gz",
+      "sha256_uncompressed": "e7f17155bee5e9ba3cc9f050f042ff7e4493169df58bbca03863df8da4a48c0e"
+    },
+    "selector": {
+      "file": "zui-flow-selector.json.gz",
+      "sha256_uncompressed": "45a160e58cca80f1ec83c257cf53ad58cb2ae22460a7c3b895398174579e9a55"
+    },
+    "full-replay": {
+      "file": "zui-flow-full-replay.json.gz",
+      "sha256_uncompressed": "62dd48c58c317650e445daf07a2a8597b2890f6ee0c2e3c2032ca108c10a5670"
+    },
+    "previous-full-replay": {
+      "file": "zui-flow-previous-full-replay.json.gz",
+      "sha256_uncompressed": "0ff2a5cedc7862b45876967a796936ba88312e742ed275ed5511325f74a9aaef"
+    },
+    "baseline": {
+      "file": "zui-flow-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display": {
+      "file": "zui-flow-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "avd": {
+      "file": "zui-flow-avd.json.gz",
+      "sha256_uncompressed": "7086ca8f30b47eccb11f295677880b030391707f33aa3b7232ce3d945733dd1a"
+    },
+    "vd": {
+      "file": "zui-flow-vd.json.gz",
+      "sha256_uncompressed": "fa8e56b3ec8c6cb2cfc8eec140d5a7ec879806755e6e5947414ff991fb80fe8e"
+    },
+    "pm": {
+      "file": "zui-flow-pm.json.gz",
+      "sha256_uncompressed": "abd524f8bc8630e8c87a105fbc264d2f67955694f52af2c4946f4a1e0dcdaeba"
+    },
+    "clock": {
+      "file": "zui-flow-clock.json.gz",
+      "sha256_uncompressed": "77e8c89343dd5cc2964645e1cd13f78b59fc379dcdeae4ff8e593ba763707f52"
+    },
+    "copro": {
+      "file": "zui-flow-copro.json.gz",
+      "sha256_uncompressed": "76115bc46aa9cefd183bc80822c17a369a0e1157f8f1de81e7367f7ba8f9a4df"
+    },
+    "immutable": {
+      "file": "zui-flow-immutable.json.gz",
+      "sha256_uncompressed": "2742928bbd6cbaa625f5187a8fa5c4e57b11711f74922ac06b785cbda15e9d44"
+    },
+    "audio": {
+      "file": "zui-flow-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "vif": {
+      "file": "zui-flow-vif.json.gz",
+      "sha256_uncompressed": "8d8c17045ec5e6da79194223e5809d540fc2f604052cc5db28bf829d0e9b8f2c"
+    },
+    "request": {
+      "file": "zui-flow-request.json.gz",
+      "sha256_uncompressed": "dff2ebd376cb604c90dc102d95bed5fc3b3675eadceb6d25ed14bd52fd208a7e"
+    },
+    "packaged-window": {
+      "file": "zui-flow-packaged-window.json.gz",
+      "sha256_uncompressed": "de01b2a1a77693e5c5be91d9b3f6c3c961ecaccd17bdfebf7690d8b99cb74da6"
+    },
+    "native-tools": {
+      "file": "zui-flow-native-tools.json.gz",
+      "sha256_uncompressed": "2d3ba42f31aa4c197661280b8189f97a087d10f096c8346ff9000505dcf639ab"
+    }
+  },
+  "recording_binary_sha256": "99a4a22d1ebf3c42e722e640043869d8d3bf2cbd0cafc113f06c8c4bdf8b8522",
+  "binaries": {
+    "manta.exe": "3479354ce6a3f107192d22a4ce8aad6d8e35ad6b49049987808311866c90a418",
+    "core_tests.exe": "6c7a60535faa599f8775c79c82b84aec9ce0ff5c83df161030bfe71b3b346939",
+    "avd_mcu_probe.exe": "a50ceb7aade7a3bdc48e50941f60210ba00dd151cd089f432e12d6d91059d089",
+    "zui_flow_probe.exe": "b7eb81cd719ed1e64d8d5b17baef06762a9bdc68115e69d40d5f7eb54505ba20",
+    "avd_request_probe.exe": "580cde2b52d7e50b1824d4ad565b783c71ca0cfa6f75493c90bbb0d28e2cd1f4"
+  },
+  "native_stdout": "1447 checks passed",
+  "recording_and_final_binary_note": "Final binary adds conservative unsupported AVD event-store guards; complete fresh-reset replay of all new/previous events and state verifies identical connected execution. No recorded read value is supplied.",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "related_MStar_sources": [
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_UiMenuDef.h",
+      "sha256": "556605e2275fe41ee7718b66a6d69ada4bbf3a570aa110007ab3dcf0e5c9853d",
+      "bytes": 35156
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/MApp_ZUI_ACTglobal.c",
+      "sha256": "8246744a029ab0352a5c3427e070e9fb3ecdd9b144141a8d6c93d2a437463e29",
+      "bytes": 87392
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_ZUI_ACTglobal.h",
+      "sha256": "af4cf61f55342ae89cdd23fc480f52d43bf94889969639f0a5c4ab8df1b3c490",
+      "bytes": 10078
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/include/MApp_ZUI_APIcommon.h",
+      "sha256": "dd398b2114efb1cf7c949f7291a7d817d7fb350aa01e2cce7688f0dcccf62099",
+      "bytes": 9529
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_APIdraw.c",
+      "sha256": "02d1e2dea68fbc4f28217bf9e1daa236ee2edf409878b7337a3bef78f5fc8ff5",
+      "bytes": 46681
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/include/MApp_ZUI_APItables.h",
+      "sha256": "e9022c678db532ffec0aff9f44a9b1f601140a204b404cd1aae72ed2c980bfbc",
+      "bytes": 13150
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_APIwindow.c",
+      "sha256": "f9b50772bd31e1c84e0ab60187f62655aa17e4259cc6c8e83d0ff32ec4f50cbd",
+      "bytes": 68564
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_CTLeffectzoom.c",
+      "sha256": "82100ee0235f4dda1135d60721712b783db3ce14bdc02dde13357dc29f86f9f4",
+      "bytes": 17788
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/MApp_ZUI_Main.c",
+      "sha256": "de49002d5b98341a97bedf50a1002c3901272013112db9844ac966ed3308c268",
+      "bytes": 15872
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_ZUI_Main.h",
+      "sha256": "06415458e61d13a92da928240944914c4553c07d31875b9272f88a032bc765c9",
+      "bytes": 8573
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/ZUI_tables_h.inl",
+      "sha256": "535cb6e21baa6d8c45b800da51e98a43d6febf7cd361280887a730b91e9e9b61",
+      "bytes": 3194
+    }
+  ],
+  "ZUI_acronym_expansion_verified": false,
+  "zoom_note": "Related MStar window show/hide animation and enlarged text; not proof of a zoomable canvas or Manta effect support",
+  "raw_UART_file": "avd-symbolic-tables-uart.raw",
+  "raw_UART_sha256": "23e5aff1fc2bfc449985ade1c6e83436905985514aaa32710125a195eb1c7f3c"
+}

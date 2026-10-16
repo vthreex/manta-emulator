@@ -1,5 +1,6 @@
 #include "cpu/engine.hpp"
 #include "cpu/mcu_value_mask.hpp"
+#include "board/zui_flow.hpp"
 #include "peripherals/riu.hpp"
 #include "storage/flash.hpp"
 #include "storage/sha256.hpp"
@@ -2168,6 +2169,40 @@ void avdBusTests(){
 }
 int main() {
   try {
+    {
+      using Z=manta::ZuiFlow;std::map<uint32_t,uint32_t> words;
+      words[Z::stateAddress]=1;words[Z::activeAddress]=0;words[Z::previousAddress]=0;
+      words[Z::headAddress]=words[Z::tailAddress]=0;words[Z::windowCountAddress]=0;words[Z::windowListAddress]=0;
+      for(unsigned i=0;i<40;++i)words[Z::queueAddress+12*i]=0xffff;
+      unsigned reads=0;auto read=[&](uint32_t a,unsigned)->std::optional<uint32_t>{++reads;if(words.contains(a))return words[a];return {};};
+      Z probe;require(!probe.record(0x804e0db0,1,read,true) && reads==0,"ZUI observer never reads RAM outside explicit original routine boundaries");
+      require(!probe.record(0x804e0dbc,2,read,false) && reads==0 && probe.signatureFailures==1,
+        "mismatched original ZUI signature cannot label or decode arbitrary guest memory");
+      require(probe.record(0x804e0d48,3,read,true) && probe.snapshots.back().state==1 &&
+        probe.snapshots.back().indicesValid && probe.snapshots.back().occupiedSlots==0,
+        "read-only ZUI observer distinguishes standby, empty queue and no windows");
+      auto saved=words;auto oldReads=reads;
+      require(!probe.record(0x804e0d48,4,read,true) && reads==oldReads && words==saved && probe.dropped==1,
+        "repeated ZUI probes are bounded and never create messages, windows or state transitions");
+      words[Z::tailAddress]=0xffffffff;words[Z::queueAddress+12]=4;words.erase(Z::queueAddress+24);
+      auto partial=Z::capture(0,0,read);
+      require(!partial.indicesValid && partial.knownSlots==39 && partial.occupiedSlots==1,
+        "invalid queue indices cannot address guest data; unknown slots remain separate from occupied slots");
+      words.erase(Z::stateAddress);words.erase(Z::headAddress);
+      auto unknown=Z::capture(0,0,read);
+      require(!unknown.state && !unknown.head && !unknown.indicesValid,"unknown ZUI globals remain unavailable rather than defaulting to standby or empty");
+      require(Z::watches(0x804c3684) && Z::watches(0x804e0dc4) && Z::watches(0x8049f040),
+        "observer independently watches OSD opening, dispatcher and queue consumption");
+    }
+    {
+      manta::AvdMcuBus b;unsigned writes=0;b.sharedWrite=[&](uint32_t,manta::VdByte){++writes;};
+      bool rejected=true;for(unsigned v=0;v<256;++v)rejected &= !b.write(0x11fc,{uint8_t(v),255,0});
+      require(rejected && writes==0 && b.sharedWrites==0,"AVD event acknowledgements never become ordinary RW storage that creates pending event bits");
+      manta::Riu r;r.candidateAvdMcuProgram=true;r.event=[](auto,auto,auto,auto,auto){};
+      for(auto [a,width]:std::array<std::pair<uint32_t,unsigned>,3>{{{0x1f206bf8,1},{0x1f206bf8,2},{0x1f206bf6,4}}})
+        rejects([&]{r.write(a,width,0xffffffff,0,0xffffffff,1);});
+      require(r.knownBits(0x1f206bf8,1)==0,"overlapping MIPS stores cannot turn unknown AVD event bits into status or acknowledgements");
+    }
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
     require(manta::sha256(abc) ==
                 "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",

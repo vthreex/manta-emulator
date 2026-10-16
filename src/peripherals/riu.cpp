@@ -831,6 +831,8 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
+    throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
   for(auto observed:{0x1f224644u,0x1f224650u,0x1f224651u,0x1f22465du})
     if(a<=observed && uint64_t(a)+n>observed)
       throw std::runtime_error("VIF live AGC observation is hardware-owned; guest writes cannot manufacture measurements");

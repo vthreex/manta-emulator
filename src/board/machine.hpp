@@ -8,6 +8,7 @@
 #include "board/pm_activity_scenario.hpp"
 #include "board/virtual_time.hpp"
 #include "board/opaque_read_policy.hpp"
+#include "board/zui_flow.hpp"
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -60,6 +61,7 @@ struct Options {
   bool exploratoryScartIdGrounded=false;
   bool graphicsProbes=false;
   bool osdProbes=false;
+  bool zuiFlowProbes=false;
   int exploratoryScmiFormat=-1;
   int exploratoryFetchRevisionByte=-1;
   bool exploratoryAnalogDisconnected=false;
@@ -132,6 +134,7 @@ class Msd309Machine {
   uint64_t gopWindowProgramEntries_=0,gopWrite32Entries_=0;
   uint64_t fetchPatchEnabled_=0,fetchPatchDisabled_=0;
   std::map<uint32_t,uint64_t> osdProbeEntries_;
+  ZuiFlow zuiFlow_;
   uint64_t scalerInitializerEntries_=0, scalerInitializerReturns_=0, dlcInitializerReturns_=0;
   bool spiJedecRead_ = false, spiDescriptorSelected_ = false;
   std::array<uint8_t,3> spiJedec_{};

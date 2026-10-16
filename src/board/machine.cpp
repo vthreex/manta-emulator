@@ -414,6 +414,31 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
+  if(m.options_.zuiFlowProbes && ZuiFlow::watches(uint32_t(a))){
+    std::vector<uint8_t> initAndDispatch(0x1cc),queueCode(0x140);
+    m.cpu_.read(0x004e0d48,initAndDispatch.data(),initAndDispatch.size());
+    m.cpu_.read(0x0049f040,queueCode.data(),queueCode.size());
+    bool signature=sha256(initAndDispatch)=="9da8c036aca630ca87967416a7c79bb6bf2a891d5f570de86be61fabaaba3f92" &&
+      sha256(queueCode)=="4ce696096aded2ef3fbfea2ab738d4aa276251132213ce7ddd5aebeaa4aa47b1";
+    auto read=[&](uint32_t address,unsigned width)->std::optional<uint32_t>{
+      auto ramSize=m.dramBacking_.empty()?0x08000000u:uint32_t(m.dramBacking_.size());
+      if(!width || width>4 || uint64_t(address)+width>ramSize)return {};
+      for(unsigned i=0;i<width;++i)
+        if(m.preservedBits_.memoryUnknown(address+i) || m.unknownObservations_.bytes().contains(address+i))return {};
+      uint8_t bytes[4]{};m.cpu_.read(address,bytes,width);uint32_t value=0;
+      for(unsigned i=0;i<width;++i)value|=uint32_t(bytes[i])<<(8*i);
+      return value;
+    };
+    if(m.zuiFlow_.record(uint32_t(a),m.dispatches_,read,signature)){
+      const auto& observation=m.zuiFlow_.snapshots.back();
+      auto show=[](auto v){return v?std::to_string(*v):std::string("INVALID");};
+      m.event("guest_zui_flow_observation",uint32_t(a),0,0,
+        "READ-ONLY original code signatures verified; state="+show(observation.state)+
+        "; active_osd="+show(observation.active)+"; queue_head="+show(observation.head)+
+        "; queue_tail="+show(observation.tail)+"; raw_occupied_slots="+std::to_string(observation.occupiedSlots)+
+        "; no guest writes, events or CPU control changes");
+    }
+  }
   if(m.options_.exploratoryVifZeroInputSettlingCycles && m.options_.osdProbes &&
       (a==0x8050962c || a==0x804f2998 || a==0x80509d54 || a==0x80509d68)){
     ++m.osdProbeEntries_[uint32_t(a)];
@@ -1819,6 +1844,24 @@ std::string Msd309Machine::summary() const {
     bool firstProbe=true;
     for(auto [pc,count]:osdProbeEntries_){if(!firstProbe)s<<',';firstProbe=false;s<<'\"'<<hex(pc)<<"\":"<<count;}
     s<<"}";
+  }
+  if(options_.zuiFlowProbes){
+    s<<",\n  \"zui_flow_probes_enabled\": true,\n  \"zui_flow\": {\"read_only\":true,\"signature_failures\":"
+      <<zuiFlow_.signatureFailures<<",\"dropped_observations\":"<<zuiFlow_.dropped<<",\"entries\":{";
+    bool first=true;for(auto [pc,count]:zuiFlow_.entries){if(!first)s<<',';first=false;s<<'\"'<<hex(pc)<<"\":"<<count;}
+    s<<"},\"snapshots\":[";first=true;
+    for(const auto& observation:zuiFlow_.snapshots){
+      if(!first)s<<',';
+      first=false;
+      s<<"{\"pc\":\""<<hex(observation.pc)<<"\",\"tick\":"<<observation.tick;
+      auto field=[&](const char* name,auto value){s<<",\""<<name<<"\":";if(value)s<<*value;else s<<"null";};
+      field("state",observation.state);field("previous_state",observation.previous);field("active_osd",observation.active);
+      field("queue_head",observation.head);field("queue_tail",observation.tail);
+      field("window_count",observation.windowCount);field("window_list",observation.windowList);
+      s<<",\"queue_indices_valid\":"<<(observation.indicesValid?"true":"false")
+        <<",\"known_hwnd_slots\":"<<observation.knownSlots<<",\"raw_occupied_hwnd_slots\":"<<observation.occupiedSlots<<'}';
+    }
+    s<<"]}";
   }
   if(options_.graphicsProbes){
     s<<",\n  \"graphics_probes\": {\"window_program_entries\":"<<gopWindowProgramEntries_<<",\"write32_entries\":"<<gopWrite32Entries_<<",\"decoded_windows\":[";

@@ -1,5 +1,16 @@
 # Evidence still needed
 
+The [ZUI-flow/event study](zui-flow-and-avd-events.md) confirms the original
+UI remains in state 1 with no active OSD, messages or windows after init.
+Platform polling has not returned to the dispatcher. The concrete event or
+source transition that should open the first OSD remains to be demonstrated.
+No authoritative expansion of MStar's ZUI acronym was found; a related source's
+window zoom effects do not establish Manta support or zoomable navigation.
+Native `11FC` complement stores have unresolved acknowledgment/latch semantics:
+they are rejected rather than treated as ordinary RW writes or guessed W0C.
+All 512 isolated input cases stop before any shared event write. Connected
+AVD still stops on `11DB.7`; event producers and raw HTotal remain unknown.
+
 Latest [AVD CODE-data continuation](avd-symbolic-code-tables.md): unknown
 startup selector `119C` is no longer required as a concrete input merely to
 evaluate immutable ROM tables. Conservative uncertainty reaches the original

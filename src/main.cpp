@@ -87,6 +87,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-scart-grounded")o.exploratoryScartGrounded=true;
       else if (a == "--graphics-probes")o.graphicsProbes=true;
       else if (a == "--osd-probes")o.osdProbes=true;
+      else if (a == "--zui-flow-probes")o.zuiFlowProbes=true;
       else if (a == "--candidate-vd-mcu-program")o.candidateVdMcuProgram=true;
       else if (a == "--candidate-avd-mcu-program")o.candidateAvdMcuProgram=true;
       else if (a == "--candidate-audio-idma")o.candidateAudioIdma=true;
@@ -275,6 +276,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-vd-shared-run: original MCU on verified mailbox aliases; provisional divider4, private XRAM and INT0/Timer0 wiring; unknown data consumption stops\n"
                "--exploratory-vd-suspended-boundary: explicit stalled-MCU experiment; unresolved transaction has no effect/reply; MIPS continues only until unknown inputs\n"
                 "--osd-probes: original ZUI state, graphics context, font renderer and window-creation entry traces\n"
+                "--zui-flow-probes: hash-verified, read-only ZUI state/queue observations; no input or CPU control changes\n"
                 "--exploratory-ci-detect-high: external CI detect bit2 high fixture; board polarity unverified, no module or acknowledgment\n"
                "--exploratory-analog-disconnected: external no-analog-input fixture supplies NORMAL Euro/Australia detection status only; positive patterns/timing unsupported\n"
                "--exploratory-avd-no-hsync: separate disconnected AFEC bit14 hypothesis; no READY value, other status/force modes/latency unresolved\n"

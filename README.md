@@ -1,5 +1,14 @@
 # Manta LCD4214 firmware execution research build
 
+Latest [ZUI-flow and AVD-event investigation](docs/zui-flow-and-avd-events.md)
+observes original UI state 1, an empty 40-slot queue and zero windows after
+initialization. Platform polling stops on invalid HTotal before the dispatcher.
+Read-only probes preserve all prior CPU/peripheral state and coverage. Original
+queue/dispatcher function tests and 512 isolated AVD event cases add coverage;
+unsupported event acknowledgments cannot manufacture pending events. No authentic
+framebuffer or OSD pixels are demonstrated. ZUI's acronym remains unverified;
+related window zoom animations do not establish a zoomable-canvas interface.
+
 Latest [AVD continuation](docs/avd-symbolic-code-tables.md) executes 863
 original AVD instructions without inventing its startup selector. Conservative
 ROM-data uncertainty reaches the firmware's own `119C=0` writer. The next

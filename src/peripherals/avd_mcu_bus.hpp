@@ -41,6 +41,11 @@ public:
     return {};
   }
   bool write(uint16_t address,VdByte value){
+    // Original 099B..09A1 complements the captured event byte before a store.
+    // Plain RW storage would turn acknowledged zero bits into new events.
+    // Its clearing/latching semantics are unresolved: stop, never fabricate
+    // events from this software write (or guess write-zero-to-clear behavior).
+    if(address==0x11fc)return false;
     if(address>=0x8000 && address<0x8100){
       ram_[address-0x8000]=value;++ramWrites;return true;
     }

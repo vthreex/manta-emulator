@@ -1,5 +1,12 @@
 # Original ZUI entry and GOP update boundary
 
+The latest [read-only cold-run observations](zui-flow-and-avd-events.md) show
+state 1, ActiveOsd 0, all 40 queue handles empty, window count 0 and window-list
+pointer 0 after the original initializer returns and at platform polling entry.
+No OSD-open call site is covered. Original queue/dispatcher tests verify the
+standby/active branches in separate synthetic-RAM function fixtures; they do
+not advance the TV's UI. The full cold run still stops before `80488864`.
+
 The additional, unverified [AVD latch-reset experiment](avd-request-reset-experiment.md)
 returns to `8050170C`, but then stops at `80501BFC` on unknown HTotal before
 the ZUI wrapper/dispatcher. It does not demonstrate drawing or a framebuffer.

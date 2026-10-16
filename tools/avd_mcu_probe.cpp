@@ -28,7 +28,8 @@ int main(int argc,char** argv){try{
   }
   bool synthetic=argc==6 && std::string(argv[2])=="--deferred-shared-prefix" &&
     std::string(argv[3])=="--synthetic-startup-selector";
-  bool syntheticFlag=argc==5 && std::string(argv[2])=="--deferred-shared-prefix" &&
+  bool syntheticEvents=argc==7 && std::string(argv[5])=="--synthetic-event-status";
+  bool syntheticFlag=(argc==5 || syntheticEvents) && std::string(argv[2])=="--deferred-shared-prefix" &&
     std::string(argv[3])=="--synthetic-11db-bit7";
   bool shared=(argc==3 && std::string(argv[2])=="--deferred-shared-prefix") || synthetic || syntheticFlag;
   check(argc==2 || argc==4 || shared,"supply original AVD payload [disassembly start end | --deferred-shared-prefix [--synthetic-startup-selector VALUE MASK]]; synthetic fixture is isolated, never TV input");
@@ -59,6 +60,12 @@ int main(int argc,char** argv){try{
     check(symbolic && used==std::string(argv[4]).size() && value<=1,"synthetic 11DB bit must be 0 or 1 and requires symbolic CODE tracking");
     registers[0x1f206bb5]={uint8_t(value<<7),0x80,0};
     std::cout<<"SYNTHETIC_ISOLATED_11DB_BIT7="<<value<<"; unknown meaning/reset, not connected to television boot\n";
+    if(syntheticEvents){
+      used=0;auto event=std::stoul(argv[6],&used,0);
+      check(used==std::string(argv[6]).size() && event<=255,"synthetic event status must be one byte");
+      registers[0x1f206bf8]={uint8_t(event),255,0};
+      std::cout<<"SYNTHETIC_ISOLATED_EVENT_STATUS="<<event<<"; event producer/reset/ack unknown; write will stop, not generate events\n";
+    }
   }
   if(synthetic){
     auto byte=[](const char* text){size_t used=0;auto v=std::stoul(text,&used,0);

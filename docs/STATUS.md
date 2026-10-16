@@ -1,5 +1,21 @@
 # Status of the research build
 
+Latest [ZUI-flow/event investigation](zui-flow-and-avd-events.md) adds opt-in
+read-only probes of hash-verified original code and UI globals. Full cold
+execution confirms state 1, ActiveOsd 0, an empty 40-slot message queue and
+zero windows after initialization. Platform polling reaches unknown HTotal
+before returning to the UI wrapper; all 82 direct OSD-open call sites are
+unentered. All nonobserver summary fields and MIPS coverage match `9ac1691`.
+Connected processor counts and blockers are unchanged. Original queue and
+dispatcher function tests are explicitly isolated; they do not invoke the TV UI.
+512 original AVD event-consumer fixtures expose the complement acknowledgment;
+unsupported writes now stop instead of fabricating pending events in RW backing.
+No status producer/reset/sample has been supplied. All 1,447 native checks,
+18 baseline runs, nine display runs and remaining suites pass. Complete
+new/previous replays match 6,592,738/6,592,734 events, summaries, coverage and
+PM history. Evidence is recorded in the linked manifest; no authentic OSD
+image exists.
+
 Latest [AVD symbolic CODE-data continuation](avd-symbolic-code-tables.md)
 executes 863 original connected AVD instructions without supplying a startup
 selector. Original `1B2B` writes `119C=0`; earlier table results remain invalid
