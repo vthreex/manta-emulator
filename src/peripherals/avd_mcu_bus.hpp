@@ -16,6 +16,10 @@ public:
   std::function<void(uint32_t,VdByte)> sharedWrite;
   std::function<void(const std::string&,uint32_t,uint32_t,uint32_t,const std::string&)> event;
   void configureDeferredStartup(){deferStartup_=true;}
+  // Original 1C22/1C55..1C63 publishes CODE table data to these
+  // configuration bytes. A merged table result may overwrite them INVALID;
+  // it is never treated as a same-register preserved value or device reply.
+  bool symbolicTableConfiguration=false;
   static std::optional<uint32_t> sharedAddress(uint16_t address){
     if(address<0x1100 || address>=0x1300)return {};
     auto logical=uint32_t(address)+0x2400;
@@ -44,7 +48,12 @@ public:
       // COMB banking can change between CPUs. A 16-bit MCU origin does not
       // encode that bank: reject partial COMB restores instead of laundering
       // unknown bits across banks. AFEC is unbanked on this shared aperture.
-      if(!sharedWrite || (value.known!=255 && (value.origin!=address || address>=0x1200)))return false;
+      bool tableData=symbolicTableConfiguration && address>=0x117c && address<=0x117f && value.origin==0;
+      // Original 0289..0290 copies the private timer diagnostic byte before
+      // entering its loop. Retain uninitialized 8077 as INVALID in 11D6;
+      // this is a data publication, not a produced timer tick or ACK.
+      bool timerCopy=symbolicTableConfiguration && address==0x11d6 && value.origin==0x8077;
+      if(!sharedWrite || (value.known!=255 && !tableData && !timerCopy && (value.origin!=address || address>=0x1200)))return false;
       sharedWrite(*physical,value);++sharedWrites;
       if(event)event("avd_shared_register_write",*physical,1,value.value,
         "original AVD MOVX XDATA="+std::to_string(address)+"; known="+std::to_string(value.known)+"; no host response generated");
@@ -77,6 +86,7 @@ public:
       for(unsigned i=0;i<8;++i)out.push_back(uint8_t(count>>(8*i)));
     out.push_back(uint8_t(deferred_.size()));
     for(auto [address,value]:deferred_){out.push_back(uint8_t(address));out.push_back(uint8_t(address>>8));out.push_back(value);}
+    if(symbolicTableConfiguration)out.push_back(0x54);
     return out;
   }
 };

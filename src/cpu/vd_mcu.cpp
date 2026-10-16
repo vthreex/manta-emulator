@@ -1,6 +1,7 @@
 #include "cpu/vd_mcu.hpp"
 #include "cpu/third_party/emu8051/emu8051.h"
 #include "storage/sha256.hpp"
+#include "cpu/mcu_value_mask.hpp"
 #include <array>
 #include <cstddef>
 #include <exception>
@@ -23,6 +24,7 @@ struct VdMcuCpu::Impl {
   std::array<uint16_t,256> registerOrigin{};
   bool parityUnknown=false;
   bool carryKnown=true;
+  uint8_t dplKnown=255,dphKnown=255,bKnown=255,arithmeticFlagsKnown=0x44;
   std::array<VdByte,128> uartRegisters{};
   bool uartTxPending=false;
   static bool uartRegister(uint8_t a){
@@ -126,6 +128,103 @@ struct VdMcuCpu::Impl {
     if((cpu->mSFR[REG_IE]&0x80) && (cpu->mSFR[REG_IE]&0x7f))
       throw std::runtime_error("VD MCU interrupt-source enable requires verified MStar interrupt/clock wiring");
   }
+  bool codeTableData(em8051* c,uint8_t op,uint8_t operand){
+    bool readsPsw=operand==0xd0 && (op==0xe5 || op==0xc0 || op==0x85 ||
+      (op>=0xa8 && op<=0xaf) || op==0x25 || op==0x35 || op==0x45 || op==0x55 ||
+      op==0x65 || op==0x95 || op==0xb5 || op==0xc5);
+    if(readsPsw && arithmeticFlagsKnown!=0x44)
+      throw VdHardwareBoundary("MCU unknown arithmetic flags consumed through PSW");
+    if(readsPsw && op!=0xc0 && (!carryKnown || parityUnknown))
+      throw VdHardwareBoundary("MCU unknown PSW flags copied without a validity model");
+    auto byte=[&](uint8_t address)->VdByte{
+      if(address<128)return {c->mLowerData[address],registerKnown[address],registerOrigin[address]};
+      auto known=address==0x82?dplKnown:address==0x83?dphKnown:address==0xf0?bKnown:address==0xe0?aKnown:255;
+      return {c->mSFR[address-128],uint8_t(known),address==0xe0?aOrigin:uint16_t(0)};
+    };
+    auto acc=[&](VdByte v){aKnown=v.known;aOrigin=v.origin;parityUnknown=v.known!=255;};
+    auto local=[](uint8_t address){return address<128 || address==0x82 || address==0x83 || address==0xe0 || address==0xf0;};
+    auto put=[&](uint8_t address,VdByte v){
+      if(address<128){registerKnown[address]=v.known;registerOrigin[address]=v.origin;}
+      else if(address==0x82)dplKnown=v.known;
+      else if(address==0x83)dphKnown=v.known;
+      else if(address==0xf0)bKnown=v.known;
+      else if(address==0xe0)acc(v);
+    };
+    auto bank=c->mSFR[REG_PSW]&0x18;
+    if(op==0x90){dplKnown=dphKnown=255;return false;}
+    if(op==0x75 && local(operand)){put(operand,{c->mCodeMem[uint16_t(c->mPC+2)],255,0});return true;}
+    if(op==0xf5 && local(operand)){put(operand,{c->mSFR[REG_ACC],aKnown,aOrigin});return true;}
+    if(op==0xe5 && local(operand)){acc(byte(operand));return true;}
+    if(op>=0xa8 && op<=0xaf && local(operand)){put(uint8_t(bank+(op&7)),byte(operand));return true;}
+    if(op>=0x88 && op<=0x8f && local(operand)){put(operand,byte(uint8_t(bank+(op&7))));return true;}
+    if(op==0x85 && local(operand) && local(c->mCodeMem[uint16_t(c->mPC+2)])){
+      put(c->mCodeMem[uint16_t(c->mPC+2)],byte(operand));return true;
+    }
+    bool add=(op==0x24 || op==0x25 || (op>=0x28 && op<=0x2f));
+    bool addc=(op==0x34 || op==0x35 || (op>=0x38 && op<=0x3f));
+    if(add || addc){
+      VdByte rhs{operand,255,0};
+      if(op==0x25 || op==0x35){if(!local(operand))return false;rhs=byte(operand);}
+      else if((op&15)>=8)rhs=byte(uint8_t(bank+(op&7)));
+      auto result=mcuAddMasks({c->mSFR[REG_ACC],aKnown},{rhs.value,rhs.known},
+        addc && (c->mSFR[REG_PSW]&128),!addc || carryKnown);
+      acc({result.result.value,result.result.known,0});
+      carryKnown=(result.flagsKnown&128)!=0;arithmeticFlagsKnown=result.flagsKnown&0x44;
+      return true;
+    }
+    if(op==0xa4){
+      auto result=mcuMultiplyMasks({c->mSFR[REG_ACC],aKnown},{c->mSFR[REG_B],bKnown});
+      acc({result.first.value,result.first.known,0});bKnown=result.second.known;carryKnown=true;
+      // OV is high-product != 0. AC is architecturally undefined after MUL.
+      arithmeticFlagsKnown=((bKnown==255 || (result.second.value&bKnown))?4:0);
+      return true;
+    }
+    if(op==0x84 && bKnown!=255)throw VdHardwareBoundary("MCU unknown B consumed by DIV");
+    if(op==0x83 || op==0x93){
+      auto base=op==0x83?uint16_t(c->mPC+1):uint16_t(c->mSFR[REG_DPL]|(c->mSFR[REG_DPH]<<8));
+      auto mask=op==0x83?uint16_t(65535):uint16_t(dplKnown|(dphKnown<<8));
+      // Enumerate every address represented by the byte masks. Even one
+      // unwritten possible byte rejects the lookup; no representative input
+      // may hide an uninitialized CODE access. XDATA is never enumerated.
+      McuMaskMerge merged;unsigned combinations=0;
+      for(unsigned address=0;address<65536;++address)if(((address^base)&mask)==0)
+        mcuPossibleBytes({c->mSFR[REG_ACC],aKnown},[&](unsigned offset){
+          if(++combinations>65536)throw VdHardwareBoundary("MCU symbolic CODE lookup exceeds bounded address set");
+          auto target=uint16_t(address+offset);
+          if(!byteKnown(target))throw VdHardwareBoundary("VD MCU MOVC possible address reads unwritten code byte");
+          merged.add(c->mCodeMem[target]);
+        });
+      acc({merged.byte().value,merged.byte().known,0});return true;
+    }
+    if(op==0xa3 && (dplKnown!=255 || dphKnown!=255))
+      throw VdHardwareBoundary("MCU unknown DPTR increment requires a validity model");
+    if((op==0xe0 || op==0xf0 || op==0x73) && (dplKnown!=255 || dphKnown!=255))
+      throw VdHardwareBoundary("MCU unknown DPTR used as device address or instruction target");
+    if((op==0xc0 || op==0xd0) && (operand==0x82 || operand==0x83 || operand==0xf0)){
+      if(op==0xc0 && byte(operand).known!=255)
+        throw VdHardwareBoundary("MCU unknown SFR stack save requires a validity model");
+      if(op==0xd0 && registerKnown[c->mSFR[REG_SP]]==255)put(operand,{0,255,0});
+    }
+    // No untracked control use of data-SFR masks or arithmetic flags.
+    bool bitRead=op==0x10 || op==0x20 || op==0x30 || op==0x72 || op==0x82 || op==0xa0 || op==0xa2 || op==0xb0 || op==0xb2;
+    if(bitRead && (operand&0xf8)==0xf0 && !(bKnown&(1u<<(operand&7))))
+      throw VdHardwareBoundary("MCU unknown B bit affects instruction/decision");
+    if((op==0xe5 || op==0xc0) && operand==0xd0 && arithmeticFlagsKnown!=0x44)
+      throw VdHardwareBoundary("MCU unknown arithmetic flags consumed through PSW");
+    if(bitRead && (operand==0xd2 || operand==0xd6) && !(arithmeticFlagsKnown&(1u<<(operand&7))))
+      throw VdHardwareBoundary("MCU unknown arithmetic flag affects instruction/decision");
+    if((op==0x75 || op==0xf5) && operand==0xd0)arithmeticFlagsKnown=0x44;
+    bool direct=op==0x05 || op==0x15 || op==0x25 || op==0x35 || op==0x42 || op==0x43 ||
+      op==0x45 || op==0x52 || op==0x53 || op==0x55 || op==0x62 || op==0x63 || op==0x65 ||
+      op==0x95 || op==0xa6 || op==0xa7 || op==0xb5 || op==0xc5 || op==0xd5;
+    if(direct && (operand==0x82 || operand==0x83 || operand==0xf0) && byte(operand).known!=255)
+      throw VdHardwareBoundary("MCU unknown data-SFR operation requires a validity model");
+    if(op==0x85 && (operand==0x82 || operand==0x83 || operand==0xf0) && byte(operand).known!=255)
+      throw VdHardwareBoundary("MCU unknown data-SFR copy to control register");
+    if(op==0xd4 && !(arithmeticFlagsKnown&0x40))
+      throw VdHardwareBoundary("MCU unknown auxiliary carry consumed by decimal adjust");
+    return false;
+  }
   static void boundary(em8051* cpu){
     auto& m=self(cpu);auto pc=cpu->mPC;
     if(!m.byteKnown(pc))throw VdHardwareBoundary("VD MCU instruction fetch from unwritten program memory");
@@ -140,6 +239,10 @@ struct VdMcuCpu::Impl {
     // invalid MOVX result across register copies and reject unmodeled uses.
     auto operand=cpu->mCodeMem[uint16_t(pc+1)];
     auto sp=cpu->mSFR[REG_SP];
+    if(m.outer->symbolicCodeTables && m.codeTableData(cpu,opcode,operand)){
+      if(m.outer->instruction)m.outer->instruction(pc,opcode,text);
+      return;
+    }
     bool consumesCarry=opcode==0x40 || opcode==0x50 || opcode==0x92 || opcode==0xb3 || opcode==0xd4 ||
       opcode==0x72 || opcode==0x82 || opcode==0xa0 || opcode==0xb0 ||
       (opcode>=0x34 && opcode<=0x3f) || (opcode>=0x94 && opcode<=0x9f);
@@ -294,7 +397,7 @@ struct VdMcuCpu::Impl {
       if((opcode==0xc2 || opcode==0xd2) && (operand<0xe0 || operand>0xe7))independent=true;
       if(opcode==0x20 || opcode==0x30){
         auto bit=cpu->mCodeMem[uint16_t(pc+1)];
-        independent=bit>=0xe0 && bit<=0xe7 && (m.aKnown&(1u<<(bit-0xe0)));
+        independent=(bit<128) || (bit>=0xe0 && bit<=0xe7 && (m.aKnown&(1u<<(bit-0xe0))));
       }
       if(!independent)throw VdHardwareBoundary(std::string(m.name)+" unknown XDATA bits affect instruction/decision/address");
     }
@@ -368,6 +471,7 @@ void VdMcuCpu::resetProgramStorage(std::span<const uint8_t> code,
   m.executed=m.ticks=0;m.deferredKeyCount=0;
   if(!m.byteKnown){m.registerKnown.fill(255);m.registerOrigin.fill(0);}
   m.byteKnown=std::move(byteKnown);m.running=true;m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;m.carryKnown=true;
+  m.dplKnown=m.dphKnown=m.bKnown=255;m.arithmeticFlagsKnown=0x44;
   m.uartRegisters.fill({});m.uartTxPending=false;
 }
 void VdMcuCpu::step(){
@@ -375,6 +479,7 @@ void VdMcuCpu::step(){
   if(!m.running)throw VdHardwareBoundary("VD MCU dispatch while stopped");
   auto known=m.registerKnown;auto origins=m.registerOrigin;
   auto accumulatorKnown=m.aKnown;auto accumulatorOrigin=m.aOrigin;auto parity=m.parityUnknown;auto carry=m.carryKnown;
+  auto dpl=m.dplKnown,dph=m.dphKnown,b=m.bKnown,flags=m.arithmeticFlagsKnown;
   try{
     auto previousInterrupt=m.context.cpu.mInterruptActive;
     if(tick(&m.context.cpu)){++m.executed;++m.total;}++m.ticks;
@@ -386,6 +491,7 @@ void VdMcuCpu::step(){
   catch(...){
     m.registerKnown=known;m.registerOrigin=origins;
     m.aKnown=accumulatorKnown;m.aOrigin=accumulatorOrigin;m.parityUnknown=parity;m.carryKnown=carry;
+    m.dplKnown=dpl;m.dphKnown=dph;m.bKnown=b;m.arithmeticFlagsKnown=flags;
     m.running=false;throw;
   }
 }
@@ -434,6 +540,7 @@ std::vector<uint8_t> VdMcuCpu::stateBytes()const{
   // Existing all-known-carry fingerprints retain their exact byte layout.
   // An unknown carry is additional state and cannot hash as a known flag.
   if(!m.carryKnown){append(0x434b,2);append(0,1);}
+  if(symbolicCodeTables){append(0x4354,2);append(m.dplKnown,1);append(m.dphKnown,1);append(m.bKnown,1);append(m.arithmeticFlagsKnown,1);}
   return b;
 }
 }

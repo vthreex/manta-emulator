@@ -1,5 +1,14 @@
 # Manta LCD4214 firmware execution research build
 
+Latest [AVD continuation](docs/avd-symbolic-code-tables.md) executes 863
+original AVD instructions without inventing its startup selector. Conservative
+ROM-data uncertainty reaches the firmware's own `119C=0` writer. The next
+AVD decision needs unknown `11DB.7`; main MIPS still stops on unknown HTotal
+at `80501BFC`. Original ZUI initialization returns, but its dispatcher and
+authentic OSD pixels remain unobserved. 1,435 native checks pass.
+
+The following checkpoint descriptions preserve their individual scopes.
+
 Current [VIF input experiment](docs/vif-zero-energy-experiment.md): a separately
 configured ideal noiseless IF/gain-equilibrium hypothesis lets the original VIF
 handler return naturally. Main execution reaches `805032A0 / BF206BB8`, an AVD

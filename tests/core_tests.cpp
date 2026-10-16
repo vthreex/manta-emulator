@@ -1,4 +1,5 @@
 #include "cpu/engine.hpp"
+#include "cpu/mcu_value_mask.hpp"
 #include "peripherals/riu.hpp"
 #include "storage/flash.hpp"
 #include "storage/sha256.hpp"
@@ -1951,6 +1952,76 @@ void vifZeroInputTests(){
     "RIU publishes only the supported hypothetical fields, preserving invalid VGA and PGA high bits");
 }
 void avdBusTests(){
+  {
+    // CPU-level differential checks: real ADD/ADDC opcodes, uncertain bus
+    // data and their later carry consumer. No peripheral sample is supplied.
+    for(auto op:{0x24,0x34})for(auto mask:{0u,0x0fu,0x80u,0xf0u,255u}){
+      bool exact=true;
+      for(auto value:{0u,1u,0x39u,0x7fu,0xc0u,0xffu}){
+        manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+        for(auto b:{0x90,0x11,0x00,0xe0,0xd3,op,0x39,0xf0,0x40,0})p.write(0x18,uint8_t(b));
+        manta::VdMcuCpu cpu;cpu.symbolicCodeTables=true;manta::VdByte output{};
+        cpu.busRead=[&](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{uint8_t(value),uint8_t(mask),a};};
+        cpu.busWrite=[&](uint16_t,manta::VdByte v){output=v;return true;};cpu.resetProgram(p);
+        while(cpu.instructions()<5)cpu.step();
+        unsigned first=0,known=255,firstCarry=0;bool initialized=false,carryCertain=true;
+        for(unsigned source=0;source<256;++source)if(((source^value)&mask)==0){
+          auto sum=source+0x39+(op==0x34?1:0);
+          if(!initialized){first=sum&255;firstCarry=sum>255;initialized=true;}
+          else{known&=~(first^(sum&255));carryCertain &= firstCarry==unsigned(sum>255);}
+        }
+        exact &= output.value==uint8_t(value+0x39+(op==0x34?1:0)) && output.known==known && output.origin==0;
+        bool rejected=false;try{while(cpu.instructions()<6)cpu.step();}catch(const manta::VdHardwareBoundary&){rejected=true;}
+        exact &= rejected!=carryCertain;
+      }
+      require(exact,"symbolic ADD/ADDC executes original CPU arithmetic, preserves exactly common result bits and rejects an uncertain carry branch");
+    }
+    for(bool complete:{false,true}){
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      for(auto b:{0x90,0x11,0x00,0xe0,0x54,0x03,0x90,0x01,0x00,0x93,0x30,0xe0,0})p.write(0x18,uint8_t(b));
+      p.write(8,0);p.write(9,1);for(auto b:{0xa0,0xaa,0xa5})p.write(0x18,uint8_t(b));if(complete)p.write(0x18,0xaf);
+      manta::VdMcuCpu cpu;cpu.symbolicCodeTables=true;
+      cpu.busRead=[](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{0,0,a};};cpu.resetProgram(p);
+      while(cpu.instructions()<4)cpu.step();bool rejected=false;
+      try{while(cpu.instructions()<5)cpu.step();}catch(const manta::VdHardwareBoundary&){rejected=true;}
+      require(rejected!=complete,"MOVC considers every possible address and rejects even an unwritten alternative not selected by the representative byte");
+      if(complete){
+        require(cpu.accumulator()==0xa0 && cpu.accumulatorKnown()==0xf0 && cpu.accumulatorOrigin()==0,
+          "MOVC marks only bits common to all uploaded table bytes known, with no retained-device identity");
+        bool decision=false;try{while(cpu.instructions()<6)cpu.step();}catch(const manta::VdHardwareBoundary&){decision=true;}
+        require(decision,"a real branch on uncertain ROM data remains a controlled boundary");
+      }else require(cpu.accumulatorKnown()==0xfc && cpu.pc()==9,"failed alternative-code validation leaves the unexecuted MOVC and accumulator validity intact");
+    }
+    for(auto use:{0xe0,0xf0,0x73}){
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      for(auto b:{0x90,0x11,0,0xe0,0xf5,0x82,0xe4,use})p.write(0x18,uint8_t(b));
+      manta::VdMcuCpu cpu;cpu.symbolicCodeTables=true;
+      cpu.busRead=[](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{0,0,a};};cpu.resetProgram(p);
+      bool stopped=false;try{for(unsigned i=0;i<100;++i)cpu.step();}catch(const manta::VdHardwareBoundary& e){stopped=std::string(e.what()).find("unknown DPTR used")!=std::string::npos;}
+      require(stopped && cpu.instructions()==4 && cpu.pc()==7,"uncertain DPTR can never select XDATA reads, XDATA writes or instruction targets");
+    }
+    for(auto tail:std::vector<std::vector<uint8_t>>{{0xe5,0xd0},{0x85,0xd0,0x10},{0xa8,0xd0},
+        {0xc0,0xd0},{0x30,0xd2,0},{0xe4,0x84},{0xe4,0x55,0xf0}}){
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      for(auto b:{0x90,0x11,0,0xe0,0x75,0xf0,8,0xa4})p.write(0x18,uint8_t(b));
+      for(auto b:tail)p.write(0x18,b);
+      manta::VdMcuCpu cpu;cpu.symbolicCodeTables=true;
+      cpu.busRead=[](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{0,0,a};};cpu.resetProgram(p);
+      bool rejected=false;std::string reason;try{for(unsigned i=0;i<100;++i)cpu.step();}catch(const manta::VdHardwareBoundary& e){
+        reason=e.what();rejected=reason.find("unknown")!=std::string::npos;}
+      if(!rejected)throw std::runtime_error("symbolic MUL guard tail="+std::to_string(tail[0])+" PC="+std::to_string(cpu.pc())+" reason="+reason);
+      require(rejected,"uncertain multiply flags and B high product cannot leak through PSW copies, branches, DIV or unmodeled direct operations");
+    }
+    manta::AvdMcuBus bus;bus.symbolicTableConfiguration=true;std::map<uint32_t,manta::VdByte> bytes;
+    bus.sharedWrite=[&](uint32_t a,manta::VdByte v){bytes[a]=v;};
+    for(unsigned a=0x117c;a<=0x117f;++a)require(bus.write(uint16_t(a),{0xa5,0,0}) && bytes[*bus.sharedAddress(uint16_t(a))].known==0,
+      "original CODE-derived configuration stores remain INVALID rather than inventing a selector or threshold");
+    for(auto a:{0x11dc,0x11dd,0x11c7,0x11c8,0x113c,0x1200})require(!bus.write(uint16_t(a),{0,0,0}),
+      "symbolic threshold stores cannot initialize commands, HTotal samples, raw counters or banked COMB data");
+    require(bus.write(0x11d6,{0xa5,0,0x8077}) && bytes[0x1f206bac].known==0 &&
+      !bus.write(0x11d6,{0,0,0}) && !bus.write(0x11c7,{0,0,0x8077}),
+      "original timer-counter publication preserves unknown private RAM and cannot define HTotal or accept an unrelated source");
+  }
   for(auto opcode:{0x43,0x53,0x63}){
     bool exact=true;
     for(unsigned value=0;value<256;++value)for(auto mask:{0u,0x1fu,0xe0u,255u}){

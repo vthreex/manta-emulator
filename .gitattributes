@@ -6,3 +6,4 @@
 evidence/ge-gop-uart.raw binary
 evidence/tsp-uart.raw binary
 evidence/or1k-uart.raw binary
+evidence/avd-symbolic-tables-uart.raw binary

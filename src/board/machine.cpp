@@ -62,6 +62,9 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryAvdHostResetEmpty && (!o.exploratoryAvdSharedRun || !o.exploratoryAvdSuspendedBoundary))
     throw std::runtime_error("AVD request-latch reset hypothesis requires guarded original shared execution and explicit unresolved-CPU suspension; not verified reset behavior");
   riu_.exploratoryAvdSharedRun=o.exploratoryAvdSharedRun;
+  if(o.diagnosticAvdSymbolicCodeTables && !o.exploratoryAvdSharedRun)
+    throw std::runtime_error("AVD symbolic CODE data tracking requires guarded shared execution; no hardware selector is provided");
+  riu_.diagnosticAvdSymbolicCodeTables=o.diagnosticAvdSymbolicCodeTables;
   riu_.diagnosticAvdDeferredStartup=o.diagnosticAvdDeferredStartup;
   riu_.exploratoryAvdHostResetEmpty=o.exploratoryAvdHostResetEmpty;
   riu_.avdDispatchDivider=o.avdDivider;riu_.avdInstructionBudget=o.avdBudget;
@@ -1756,6 +1759,7 @@ std::string Msd309Machine::summary() const {
     if(options_.exploratoryAvdHostResetEmpty)s<<",\n  \"exploratory_avd_host_request_reset_empty\": true"
       <<",\n  \"avd_host_request_latch_resets\": "<<riu_.avdHostRequestLatchResets
       <<",\n  \"avd_host_request_latch_reset_verified\": false";
+    if(options_.diagnosticAvdSymbolicCodeTables)s<<",\n  \"diagnostic_avd_symbolic_code_tables\": true";
   }
   if(options_.candidateAudioIdma){
     // Existing audio diagnostics retain invalid ACK bytes independently of PM.

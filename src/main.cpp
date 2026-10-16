@@ -105,6 +105,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-avd-shared-run")o.exploratoryAvdSharedRun=true;
       else if(a=="--exploratory-avd-host-request-reset-empty")o.exploratoryAvdHostResetEmpty=true;
       else if(a=="--diagnostic-avd-deferred-startup-writes")o.diagnosticAvdDeferredStartup=true;
+      else if(a=="--diagnostic-avd-symbolic-code-tables")o.diagnosticAvdSymbolicCodeTables=true;
       else if(a=="--avd-dispatch-divider")o.avdDivider=std::stoull(value(i),nullptr,0);
       else if(a=="--max-avd-instructions")o.avdBudget=std::stoull(value(i),nullptr,0);
       else if (a == "--exploratory-vd-mcu-startup")o.exploratoryVdMcuStartup=true;
@@ -260,6 +261,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--candidate-vd-mcu-program: shared MCU upload/readback ports; current original payload is DVB-T; no synthetic acknowledgment\n"
                  "--candidate-avd-mcu-program: original analog-video MCU programming/readback port; no ready signaling\n"
                  "--exploratory-avd-shared-run: candidate XDATA/shared-register and private RAM wiring, standard Timer0 and explicit scheduling; no mailbox reset value\n"
+                 "--diagnostic-avd-symbolic-code-tables: conservative uploaded-ROM data lookup masks; no selector or timing value supplied; requires shared AVD execution\n"
                  "--exploratory-avd-host-request-reset-empty: UNVERIFIED nonretained request-latch hypothesis; actual guest MCU hold clears only command bits 0C; no payload, bank, ready value or completion generated\n"
                  "--diagnostic-avd-deferred-startup-writes: separately retain unresolved original startup configuration writes; assume no asynchronous reset/clock disruption during bounded execution; no readback/status inferred\n"
                  "--avd-dispatch-divider N --max-avd-instructions N: explicit virtual-cycle ratio and original-instruction diagnostic budget\n"

@@ -11,6 +11,8 @@
 #include <set>
 static void check(bool c,const char* s){if(!c)throw std::runtime_error(s);}
 int main(int argc,char** argv){try{
+  bool symbolic=false;
+  if(argc>2 && std::string(argv[argc-1])=="--symbolic-code-tables"){symbolic=true;--argc;}
   if(argc==5 && std::string(argv[1])=="--disassemble-only"){
     std::ifstream f(argv[2],std::ios::binary);std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});
     check(!code.empty() && code.size()<=65536,"candidate 8051 image must contain 1..65536 bytes");
@@ -26,7 +28,9 @@ int main(int argc,char** argv){try{
   }
   bool synthetic=argc==6 && std::string(argv[2])=="--deferred-shared-prefix" &&
     std::string(argv[3])=="--synthetic-startup-selector";
-  bool shared=(argc==3 && std::string(argv[2])=="--deferred-shared-prefix") || synthetic;
+  bool syntheticFlag=argc==5 && std::string(argv[2])=="--deferred-shared-prefix" &&
+    std::string(argv[3])=="--synthetic-11db-bit7";
+  bool shared=(argc==3 && std::string(argv[2])=="--deferred-shared-prefix") || synthetic || syntheticFlag;
   check(argc==2 || argc==4 || shared,"supply original AVD payload [disassembly start end | --deferred-shared-prefix [--synthetic-startup-selector VALUE MASK]]; synthetic fixture is isolated, never TV input");
   std::ifstream f(argv[1],std::ios::binary);
   std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});
@@ -46,7 +50,16 @@ int main(int argc,char** argv){try{
   p.write(8,0,255);p.write(9,0,255);for(auto b:code)check(p.read()==b,"AVD port readback mismatch");
   p.write(5,0,255);check(p.write(1,1,255),"original program release missing");
   manta::VdMcuCpu cpu;std::set<uint16_t> visits;
+  cpu.symbolicCodeTables=symbolic;
+  if(symbolic)std::cout<<"SYMBOLIC_CODE_TABLES: all possible uploaded ROM data bytes merged; no hardware input supplied\n";
   manta::AvdMcuBus bus;std::map<uint32_t,manta::VdByte> registers;
+  bus.symbolicTableConfiguration=symbolic;
+  if(syntheticFlag){
+    size_t used=0;auto value=std::stoul(argv[4],&used,0);
+    check(symbolic && used==std::string(argv[4]).size() && value<=1,"synthetic 11DB bit must be 0 or 1 and requires symbolic CODE tracking");
+    registers[0x1f206bb5]={uint8_t(value<<7),0x80,0};
+    std::cout<<"SYNTHETIC_ISOLATED_11DB_BIT7="<<value<<"; unknown meaning/reset, not connected to television boot\n";
+  }
   if(synthetic){
     auto byte=[](const char* text){size_t used=0;auto v=std::stoul(text,&used,0);
       check(used==std::string(text).size() && v<=255,"synthetic selector/mask must be bytes");return uint8_t(v);};
@@ -56,7 +69,7 @@ int main(int argc,char** argv){try{
   }
   if(shared){
     std::cout<<"DIAGNOSTIC original startup writes retained; no asynchronous reset/clock disturbance during bounded prefix is an EXPLORATORY assumption; "
-      <<(synthetic?"only the labeled synthetic selector fixture is supplied; all other inputs remain invalid\n":
+      <<((synthetic || syntheticFlag)?"only the labeled synthetic fixture is supplied; all other inputs remain invalid\n":
         "no input/readback/ready value supplied\n");
     bus.configureDeferredStartup();
     bus.sharedRead=[&](uint32_t a){return registers[a];};

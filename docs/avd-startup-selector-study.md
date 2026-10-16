@@ -1,5 +1,9 @@
 # Original AVD startup-field dependency study
 
+Subsequent [symbolic CODE-data tracking](avd-symbolic-code-tables.md) reaches
+863 connected instructions without a selector fixture and executes the original
+`119C=0` writer. The results below preserve this earlier checkpoint's scope.
+
 This follows `a801d31`. It does not advance connected TV boot or identify
 the real startup selector. It fixes an additional validity-tracking gap and
 tests actual original AVD instructions with explicitly synthetic, isolated

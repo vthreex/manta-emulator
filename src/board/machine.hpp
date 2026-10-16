@@ -74,6 +74,7 @@ struct Options {
   bool exploratoryAudioNoAck=false;
   bool exploratoryAvdMcuStartup=false,exploratoryAvdSuspendedBoundary=false;
   bool exploratoryAvdSharedRun=false,diagnosticAvdDeferredStartup=false;
+  bool diagnosticAvdSymbolicCodeTables=false;
   bool exploratoryAvdHostResetEmpty=false;
   uint64_t avdDivider=32,avdBudget=1000000;
   bool exploratoryVdMcuStartup=false;

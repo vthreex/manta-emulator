@@ -1,5 +1,20 @@
 # Evidence still needed
 
+Latest [AVD CODE-data continuation](avd-symbolic-code-tables.md): unknown
+startup selector `119C` is no longer required as a concrete input merely to
+evaluate immutable ROM tables. Conservative uncertainty reaches the original
+writer `1B2B`, which defines `119C=0`. Three table destination bytes remain
+invalid. This does not establish their reset values or physical configuration.
+Connected AVD now stops at `0702`, consuming `11DB.7` (candidate `BF206BB5`),
+whose code role is selecting coefficient scaling; producer/reset unknown.
+Isolated synthetic flag cases reach `0993 / 11FC.2`; captured bit0 later gates
+the HTotal publisher. Event sources, acknowledgement semantics, native
+`113C/113D` counter behavior and `11C7/11C8` initial validity remain unverified.
+MIPS still rejects the actual unknown HTotal comparison at `80501BFC`.
+No ZUI dispatcher, enabled framebuffer, raster drawing or authentic pixels.
+
+Earlier checkpoint scopes follow.
+
 [Isolated AVD dependency tests](avd-startup-selector-study.md) require selector
 bits 1, 2, 4 for the first table and bits 5..7 additionally for the next one.
 They do not establish any real input value. An unrelated `11DB` bit7 decision

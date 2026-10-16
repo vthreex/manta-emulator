@@ -992,6 +992,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
           avdMcuCpu_.busWrite=[this](uint16_t a,VdByte v){return avdMcuBus_.write(a,v);};
           avdMcuCpu_.unsupportedSfrWrite=[this](uint8_t a,VdByte v){return avdMcuBus_.deferSfr(a,v);};
           avdMcuCpu_.standardInterrupts=true;
+          avdMcuCpu_.symbolicCodeTables=diagnosticAvdSymbolicCodeTables;
+          avdMcuBus_.symbolicTableConfiguration=diagnosticAvdSymbolicCodeTables;
         }
         avdMcuCpu_.resetProgram(avdMcuProgram_);avdTick_=tick;
         if(!exploratoryAvdSharedRun)try{

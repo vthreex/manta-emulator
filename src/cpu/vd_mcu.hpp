@@ -38,6 +38,9 @@ public:
   std::function<bool(uint8_t,VdByte)> unsupportedSfrWrite;
   bool standardInterrupts=false;
   bool candidateR8051Uart=false; // configuration only; no guessed RX/TX completion
+  // Conservative data-only ROM lookups, with no unknown XDATA address,
+  // instruction target, branch outcome or device value supplied.
+  bool symbolicCodeTables=false;
   void resetProgram(VdMcuProgram& program);
   void resetProgram(AvdMcuProgram& program);
   // Isolated standard-reset experiment; not a board SPI fetch mapping.

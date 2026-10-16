@@ -163,6 +163,7 @@ public:
   const AudioIdma& audioIdma(unsigned i)const{return audioIdma_[i];}
   bool exploratoryAvdMcuStartup=false,exploratoryAvdSuspendedBoundary=false;
   bool exploratoryAvdSharedRun=false,diagnosticAvdDeferredStartup=false;
+  bool diagnosticAvdSymbolicCodeTables=false;
   bool exploratoryAvdHostResetEmpty=false;
   uint64_t avdHostRequestLatchResets=0;
   uint64_t avdDispatchDivider=32,avdInstructionBudget=1000000;

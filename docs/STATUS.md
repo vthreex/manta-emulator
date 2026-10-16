@@ -1,5 +1,19 @@
 # Status of the research build
 
+Latest [AVD symbolic CODE-data continuation](avd-symbolic-code-tables.md)
+executes 863 original connected AVD instructions without supplying a startup
+selector. Original `1B2B` writes `119C=0`; earlier table results remain invalid
+where their inputs are unknown. New boundary: `0702 / 11DB bit7`, selecting
+an optional coefficient adjustment. Its hardware producer/reset is unresolved.
+Both isolated flag outcomes reach the main loop and stop on native `11FC`
+event bits; these synthetic fixtures are not connected-TV progress.
+MIPS still stops at `80501BFC` after 854,795,171 dispatches. HTotal publisher
+`0ABC`, ZUI dispatcher and authentic graphics remain unentered. Strict mode
+gets no hardware input, reset byte or ready value. 1,435 native checks pass;
+all suites and Windows startup pass. Full new/previous replays match
+6,592,734/6,592,234 events, summaries, coverage and PM history. Full validation
+is recorded in the linked evidence manifest.
+
 Latest [AVD startup-field study](avd-startup-selector-study.md) repairs direct
 IRAM mask provenance and verifies 256 isolated original-firmware input cases
 plus ten partial-field cases. These synthetic cases do not feed the TV.

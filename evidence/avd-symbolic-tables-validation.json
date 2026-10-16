@@ -1,0 +1,108 @@
+{
+  "base_git": "a2345bd",
+  "result": "PASS",
+  "scope": "conservative original AVD CODE-data masks; connected prefix advances without a selector; prior hardware hypotheses remain unverified",
+  "native_checks": 1435,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "connected_AVD_instructions": 863,
+  "selector_input_supplied": false,
+  "original_119C_zero_writer_executed": true,
+  "connected_AVD_boundary": "0702 / native 11DB bit7, candidate BF206BB5",
+  "MIPS_instructions": 854795171,
+  "MIPS_boundary": "80501BFC / unknown HTotal from BF206B90/BF206B8D",
+  "HTotal_publisher_executed": false,
+  "ZUI_dispatcher_executed": false,
+  "enabled_GWIN": false,
+  "GE_raster": false,
+  "authentic_pixels": false,
+  "strict_mode_values_added": false,
+  "reports": {
+    "analysis": {
+      "file": "avd-symbolic-tables-analysis.json.gz",
+      "sha256_uncompressed": "3bf7c4882b1affb0b085f06cb1c7878d3b6e47e152b85c6657a9d59f2aecc540"
+    },
+    "symbolic": {
+      "file": "avd-symbolic-tables-symbolic.json.gz",
+      "sha256_uncompressed": "896603907f646ab0df177085c5676c10364decb91ad7c1763189d47f6ee5059a"
+    },
+    "selector": {
+      "file": "avd-symbolic-tables-selector.json.gz",
+      "sha256_uncompressed": "f5314d0b1f8bde86d1345655d70051de1b51f606c5e54a10833fcf2cde7b6a81"
+    },
+    "full-replay": {
+      "file": "avd-symbolic-tables-full-replay.json.gz",
+      "sha256_uncompressed": "38de8d360e8bbd2771dcdc2b6899a5a7bae5db981e07995e4f9cbea81fb7a32f"
+    },
+    "previous-full-replay": {
+      "file": "avd-symbolic-tables-previous-full-replay.json.gz",
+      "sha256_uncompressed": "613b54f277d51825ccbcad1093639da48dd115013dbbeb671954281cc431180a"
+    },
+    "baseline": {
+      "file": "avd-symbolic-tables-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display": {
+      "file": "avd-symbolic-tables-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "avd": {
+      "file": "avd-symbolic-tables-avd.json.gz",
+      "sha256_uncompressed": "4e8371c40b61ba5e7febd006337a0cf8288906bafd704871f8e637e31526c7a5"
+    },
+    "vd": {
+      "file": "avd-symbolic-tables-vd.json.gz",
+      "sha256_uncompressed": "8d0575a41ea333c396038dcd2fd379907dbdc5787791d8e1614fca7c800769cb"
+    },
+    "pm": {
+      "file": "avd-symbolic-tables-pm.json.gz",
+      "sha256_uncompressed": "e338a19e7c7e505725694e0372f10ae5ab6bb684434fbaf069b2e71eea972900"
+    },
+    "clock": {
+      "file": "avd-symbolic-tables-clock.json.gz",
+      "sha256_uncompressed": "d68fb90676f5837ce164514e6f238a32245e6ecaa2e82bc023ead6b26154e106"
+    },
+    "copro": {
+      "file": "avd-symbolic-tables-copro.json.gz",
+      "sha256_uncompressed": "43a537c54741c65c4a982cb05e9ba99739db377e0e828a40c6ed617bce9c34dc"
+    },
+    "immutable": {
+      "file": "avd-symbolic-tables-immutable.json.gz",
+      "sha256_uncompressed": "228e1382da8ae7eb76f7aa9ff95ccc8ba8922ded0f5a13ec106e6f74df30db2a"
+    },
+    "audio": {
+      "file": "avd-symbolic-tables-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "vif": {
+      "file": "avd-symbolic-tables-vif.json.gz",
+      "sha256_uncompressed": "9f0f026421f0c36d79d7bbf7fe80561fe695118f91b77a53422fcf1c1bf3f32b"
+    },
+    "request": {
+      "file": "avd-symbolic-tables-request.json.gz",
+      "sha256_uncompressed": "79fbc827324ad24e502c4d8a41c216a87851cfe748be2e5212517707a4740076"
+    },
+    "packaged-window": {
+      "file": "avd-symbolic-tables-packaged-window.json.gz",
+      "sha256_uncompressed": "4c8adda0b788943f6597d0a69b6d267fa9068f64b4076f0217ae107f0808a356"
+    },
+    "native-tools": {
+      "file": "avd-symbolic-tables-native-tools.json.gz",
+      "sha256_uncompressed": "926ef29a31e52d15495a4e5a80fd149bb9766909c25eeef5a4ba2283807c5b20"
+    }
+  },
+  "recording_binary_sha256": "438abd6b16d71d34a2ef9528776c26229728ad1693193795ddbd38c10104bcf5",
+  "binaries": {
+    "manta.exe": "474819e97cb726fd8cd457ef43c94dd4ea37b2c32bdb5d8c02b0514cc1898646",
+    "core_tests.exe": "5748b599d9a7c8d136d97082248042e24ae01bc712783586d329b7d32379b028",
+    "avd_mcu_probe.exe": "224ef0bff38f24a4e817375c3c4f75d04e29e236f76816a2e05f29715fd3c14c",
+    "avd_request_probe.exe": "8448918919519f6262139e418c67abe133803a85bd0876a7fd870956dc606d2f"
+  },
+  "native_stdout": "1435 checks passed",
+  "recording_and_final_binary_note": "Final binary adds stricter unknown-SFR/PSW guards and a narrow invalid timer-byte copy; full fresh-reset replay of every new-path event/state verifies identical connected execution. No recorded read value is supplied.",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "raw_UART_file": "avd-symbolic-tables-uart.raw",
+  "raw_UART_sha256": "23e5aff1fc2bfc449985ade1c6e83436905985514aaa32710125a195eb1c7f3c"
+}

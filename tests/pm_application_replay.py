@@ -83,6 +83,8 @@ if not a.validate_only:
                       '--max-avd-instructions',str(ref['avd_instruction_budget'])]
             if ref.get('diagnostic_avd_deferred_startup_writes'):
                 command+=['--diagnostic-avd-deferred-startup-writes']
+            if ref.get('diagnostic_avd_symbolic_code_tables'):
+                command+=['--diagnostic-avd-symbolic-code-tables']
             if ref.get('exploratory_avd_host_request_reset_empty'):
                 command+=['--exploratory-avd-host-request-reset-empty']
         if ref.get('opaque_policy_enabled'):
