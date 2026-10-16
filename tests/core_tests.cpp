@@ -2170,6 +2170,25 @@ void avdBusTests(){
 int main() {
   try {
     {
+      manta::AvdMcuBus bus;std::map<uint32_t,manta::VdByte> bytes;
+      bus.sharedWrite=[&](uint32_t a,manta::VdByte v){bytes[a]=v;};
+      require(!bus.write(0x11c7,{0xa5,0,0x113c}) && !bus.write(0x11c8,{5,0xf8,0x113d}) && bytes.empty(),
+        "default AVD bus does not enable cross-origin unknown timing publication");
+      bus.symbolicTableConfiguration=true;bytes[0x1f206b8d]={0x6f,255,0};bytes[0x1f206b90]={4,255,0};
+      require(bus.write(0x11c7,{0xa5,0,0x113c}) && bytes[0x1f206b8d].known==0 && bytes[0x1f206b8d].origin==0x113c,
+        "original raw timing data copy invalidates an old known sample rather than inventing a new measurement");
+      require(bus.write(0x11c8,{5,0xf8,0x113d}) && bytes[0x1f206b90].known==0xf8 && bytes[0x1f206b90].origin==0x113d,
+        "original high-byte AND makes only discarded high bits known; measured low fields remain unknown");
+      require(!bus.write(0x11c8,{0,0xf0,0x113d}) && !bus.write(0x11c8,{8,0xf8,0x113d}),
+        "partial high timing copy requires the actual mask to have defined all upper five bits as zero");
+      require(!bus.write(0x11c7,{0,0,0x113d}) && !bus.write(0x11c8,{0,0xf8,0x113c}) && !bus.write(0x11c7,{0,0,0x8077}),
+        "swapped lanes and unrelated data origins cannot become unknown HTotal publications");
+      require(!bus.write(0x113c,{0,0,0x11c7}) && !bus.write(0x11fc,{0,0,0x113c}) && !bus.write(0x11dc,{0,0,0x113c}),
+        "timing copy permission cannot initialize raw counters, pending events or host requests");
+      require(manta::ZuiFlow::watches(0x8049ee1c) && manta::ZuiFlow::watches(0x8049dfc4) && manta::ZuiFlow::watches(0x804afdfc),
+        "read-only probes separately observe original window-state, surface and OSD-resource setup");
+    }
+    {
       using Z=manta::ZuiFlow;std::map<uint32_t,uint32_t> words;
       words[Z::stateAddress]=1;words[Z::activeAddress]=0;words[Z::previousAddress]=0;
       words[Z::headAddress]=words[Z::tailAddress]=0;words[Z::windowCountAddress]=0;words[Z::windowListAddress]=0;

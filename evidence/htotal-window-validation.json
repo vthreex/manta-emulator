@@ -1,0 +1,240 @@
+{
+  "base_git": "1745c6c",
+  "result": "PASS",
+  "scope": "unknown-preserving timing publication and isolated original timing/window-resource instructions; no raw input or hardware event supplied",
+  "native_checks": 1454,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "connected_AVD_instructions": 863,
+  "AVD_boundary": "0702 / 11DB.7; meaning/reset/producer unresolved",
+  "MIPS_instructions": 854795171,
+  "MIPS_boundary": "80501BFC / invalid HTotal",
+  "ZUI_state_after_init": 1,
+  "ActiveOsd_after_init": 0,
+  "empty_queue_slots_after_init": 40,
+  "window_count_after_init": 0,
+  "ZUI_dispatcher_executed": false,
+  "HTotal_publisher_executed": false,
+  "enabled_GWIN": false,
+  "GE_raster": false,
+  "authentic_pixels": false,
+  "strict_mode_values_added": false,
+  "reports": {
+    "analysis": {
+      "file": "htotal-window-analysis.json.gz",
+      "sha256_uncompressed": "3a0ca86d8a1fd6793b7279962d35058bd0df239b7d39be78ed43d2b92472d1b8"
+    },
+    "htotal": {
+      "file": "htotal-window-htotal.json.gz",
+      "sha256_uncompressed": "27e44e9537a08b7a980453ad9060d2acedd7716be66371dc8d2ba2d5efeb95ae"
+    },
+    "zui": {
+      "file": "htotal-window-zui.json.gz",
+      "sha256_uncompressed": "84e214691fcb3801f6279654aa24ea9abb2817e8075e563b3d93eedff64a7983"
+    },
+    "events": {
+      "file": "htotal-window-events.json.gz",
+      "sha256_uncompressed": "76fbdc0bded258717c5620656c491f9ff672fb23434697bef5c888cbd907b778"
+    },
+    "symbolic": {
+      "file": "htotal-window-symbolic.json.gz",
+      "sha256_uncompressed": "cf3e2e9f4693fb5a41e2cb4d3682172bb4ac38ea9e741ff39a949e91bbe1c253"
+    },
+    "selector": {
+      "file": "htotal-window-selector.json.gz",
+      "sha256_uncompressed": "58a6c416ab6514748c59d53957316cd1e539c5e6bf40a36eb0f3ad74c31ef9b9"
+    },
+    "full-replay": {
+      "file": "htotal-window-full-replay.json.gz",
+      "sha256_uncompressed": "c09086322a2c86699439b7adcc83d14d67ec5fb4e1b8d21083f2ba2c4bc9f902"
+    },
+    "previous-full-replay": {
+      "file": "htotal-window-previous-full-replay.json.gz",
+      "sha256_uncompressed": "7cdb03849cf2744db691336db12997dcab5e15ee331cd61cfa247a4f7ed942bb"
+    },
+    "baseline": {
+      "file": "htotal-window-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display": {
+      "file": "htotal-window-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "avd": {
+      "file": "htotal-window-avd.json.gz",
+      "sha256_uncompressed": "f6096fb6007b0be74e313ebed1945375b71639da39d2c70b98594f96b4fc3a7e"
+    },
+    "vd": {
+      "file": "htotal-window-vd.json.gz",
+      "sha256_uncompressed": "5bcd4bf4fe6cd7f79a4222ef9c791571e9e1b28404ff7f6578b1237882aa81ce"
+    },
+    "pm": {
+      "file": "htotal-window-pm.json.gz",
+      "sha256_uncompressed": "c70105376ff786e313bc19d34c61cc2ddc6182a1eabc2af8c45fff53601daccd"
+    },
+    "clock": {
+      "file": "htotal-window-clock.json.gz",
+      "sha256_uncompressed": "5340df72a4e4f229efa34492e5270814921daed5e60cf5d34ce3d922596989ac"
+    },
+    "copro": {
+      "file": "htotal-window-copro.json.gz",
+      "sha256_uncompressed": "7c84c794f6fa0e801e5c20dd4b673f6c1974f2a758ea6c7b994f5ab3120d37f6"
+    },
+    "immutable": {
+      "file": "htotal-window-immutable.json.gz",
+      "sha256_uncompressed": "fad0950f24c840ddef6e6af60d2ea76731ac8b352d830146a95795b487af0f64"
+    },
+    "audio": {
+      "file": "htotal-window-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "vif": {
+      "file": "htotal-window-vif.json.gz",
+      "sha256_uncompressed": "9ad5a7613800a2a095c72e77fc1ceb66e6988e9bb6596e367fdcb752fab03b4e"
+    },
+    "request": {
+      "file": "htotal-window-request.json.gz",
+      "sha256_uncompressed": "3c0c0f0f19210277e237ba8c53e6d68f8663ee6a840f36be9df9091e6e5ccf34"
+    },
+    "packaged-window": {
+      "file": "htotal-window-packaged-window.json.gz",
+      "sha256_uncompressed": "6483c3268d46352cc9ddd59ddfcdebe1b9db840c44ee60661e9c0f83618cba47"
+    },
+    "native-tools": {
+      "file": "htotal-window-native-tools.json.gz",
+      "sha256_uncompressed": "4f658c34aa7e404f0c30b3ae52680331257e322515f2fea396aa01d3180fb499"
+    }
+  },
+  "recording_binary_sha256": "5d2aea62ef3db086dc8a67b822a16b69f7e0b530a853ec36bba946d80f40dc3e",
+  "binaries": {
+    "manta.exe": "5d2aea62ef3db086dc8a67b822a16b69f7e0b530a853ec36bba946d80f40dc3e",
+    "core_tests.exe": "f4a3982bbcc66cb4334b7add0f77c60d73e24270abf0423daee9e71752de082e",
+    "avd_mcu_probe.exe": "6a3dae89f9b3ce015cd1d9a45ac3ddf2bdb89d2afb4d5e0661e4edbde659ce1c",
+    "zui_flow_probe.exe": "7c2513fd9e024ab9eed9f46546c10c7def79c3f6a50d348a7a525de040ad15e5",
+    "avd_request_probe.exe": "bfd18ba9a0e4d909746223d638abacbc88128e10179f771af6c2dc62c0f28d41",
+    "avd_htotal_probe.exe": "aff38e3c336fcd0d6288c6def5d008b1a2d06453380397a2ccd90f99c5efdaf3"
+  },
+  "native_stdout": "1454 checks passed",
+  "recording_and_final_binary_note": "Recording and replay use the same final binary. New read-only window initializer observation is the only additional event versus 1745c6c; all prior CPU/peripheral fields and coverage match. No recorded read value is supplied.",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "related_MStar_sources": [
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_UiMenuDef.h",
+      "sha256": "556605e2275fe41ee7718b66a6d69ada4bbf3a570aa110007ab3dcf0e5c9853d",
+      "bytes": 35156
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/MApp_ZUI_ACTglobal.c",
+      "sha256": "8246744a029ab0352a5c3427e070e9fb3ecdd9b144141a8d6c93d2a437463e29",
+      "bytes": 87392
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_ZUI_ACTglobal.h",
+      "sha256": "af4cf61f55342ae89cdd23fc480f52d43bf94889969639f0a5c4ab8df1b3c490",
+      "bytes": 10078
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/include/MApp_ZUI_APIcommon.h",
+      "sha256": "dd398b2114efb1cf7c949f7291a7d817d7fb350aa01e2cce7688f0dcccf62099",
+      "bytes": 9529
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_APIdraw.c",
+      "sha256": "02d1e2dea68fbc4f28217bf9e1daa236ee2edf409878b7337a3bef78f5fc8ff5",
+      "bytes": 46681
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/include/MApp_ZUI_APItables.h",
+      "sha256": "e9022c678db532ffec0aff9f44a9b1f601140a204b404cd1aae72ed2c980bfbc",
+      "bytes": 13150
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_APIwindow.c",
+      "sha256": "f9b50772bd31e1c84e0ab60187f62655aa17e4259cc6c8e83d0ff32ec4f50cbd",
+      "bytes": 68564
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/common/zui/MApp_ZUI_CTLeffectzoom.c",
+      "sha256": "82100ee0235f4dda1135d60721712b783db3ce14bdc02dde13357dc29f86f9f4",
+      "bytes": 17788
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/MApp_ZUI_Main.c",
+      "sha256": "de49002d5b98341a97bedf50a1002c3901272013112db9844ac966ed3308c268",
+      "bytes": 15872
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/MApp_ZUI_Main.h",
+      "sha256": "06415458e61d13a92da928240944914c4553c07d31875b9272f88a032bc765c9",
+      "bytes": 8573
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/tv-ap/dvb/ui2/include/ZUI_tables_h.inl",
+      "sha256": "535cb6e21baa6d8c45b800da51e98a43d6febf7cd361280887a730b91e9e9b61",
+      "bytes": 3194
+    }
+  ],
+  "additional_hardware_references": [
+    {
+      "file": "amethyst-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "eagle-c_vdmcu_riubase.h",
+      "sha256": "b107fed4f3239abfc59930a7c5b613acccdd4654f438d327e8501b0ff9cf5827",
+      "bytes": 5268
+    },
+    {
+      "file": "eiffel-c_vdmcu_riubase.h",
+      "sha256": "b107fed4f3239abfc59930a7c5b613acccdd4654f438d327e8501b0ff9cf5827",
+      "bytes": 5268
+    },
+    {
+      "file": "emerald-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "kenya-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "kriti-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "milan-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "mst786.pdf",
+      "sha256": "679fb3fa3b66ba6d3c37ffc371822e770828c2666ee6de0e83a2dbd2e215de74",
+      "bytes": 20880236
+    },
+    {
+      "file": "nikon-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    },
+    {
+      "file": "nugget-c_vdmcu_riubase.h",
+      "sha256": "4ade08f599854ea50c6889c02b89f7bf681994eb1ccccb32975cc1e4c507ba97",
+      "bytes": 5273
+    }
+  ],
+  "MST786_reference_url": "https://linux-chenxing.org/cedric/mst786_ds_v01maite_new.pdf",
+  "reference_chip_register_defaults_transferred": false,
+  "original_window_resource_sets": 29,
+  "original_window_records": 3616,
+  "AVD_fragment_instructions_not_TV_execution": 117400,
+  "ZUI_acronym_expansion_verified": false,
+  "zoom_note": "Related MStar window show/hide animation and enlarged text; not proof of a zoomable canvas or Manta effect support",
+  "raw_UART_file": "avd-symbolic-tables-uart.raw",
+  "raw_UART_sha256": "23e5aff1fc2bfc449985ade1c6e83436905985514aaa32710125a195eb1c7f3c"
+}

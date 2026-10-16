@@ -58,7 +58,14 @@ public:
       // entering its loop. Retain uninitialized 8077 as INVALID in 11D6;
       // this is a data publication, not a produced timer tick or ACK.
       bool timerCopy=symbolicTableConfiguration && address==0x11d6 && value.origin==0x8077;
-      if(!sharedWrite || (value.known!=255 && !tableData && !timerCopy && (value.origin!=address || address>=0x1200)))return false;
+      // Original 0AA9..0ABC -> 076E publishes the raw timing bytes, not a
+      // completion. A data copy may retain an INVALID sample. The high-byte
+      // AND #07 must have defined the upper five bits as zero; unrelated
+      // origins, swapped lanes and unmasked high bytes remain unsupported.
+      bool timingCopy=symbolicTableConfiguration &&
+        ((address==0x11c7 && value.origin==0x113c) ||
+         (address==0x11c8 && value.origin==0x113d && (value.known&0xf8)==0xf8 && !(value.value&0xf8)));
+      if(!sharedWrite || (value.known!=255 && !tableData && !timerCopy && !timingCopy && (value.origin!=address || address>=0x1200)))return false;
       sharedWrite(*physical,value);++sharedWrites;
       if(event)event("avd_shared_register_write",*physical,1,value.value,
         "original AVD MOVX XDATA="+std::to_string(address)+"; known="+std::to_string(value.known)+"; no host response generated");

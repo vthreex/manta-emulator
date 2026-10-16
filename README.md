@@ -1,5 +1,13 @@
 # Manta LCD4214 firmware execution research build
 
+Latest [HTotal provenance/window-resource work](docs/htotal-provenance-and-zui-resources.md)
+allows the original timing publisher to copy INVALID raw samples without
+inventing measurement bits. Isolated original-instruction tests verify timing
+copies, getter widths, finite stability branches and all 29 original OSD
+resource sets (3,616 window records). Connected counts and blockers remain
+unchanged: no ZUI dispatcher, active OSD or authentic pixels. The window-state
+initializer executes with count zero during ordinary ZUI initialization.
+
 Latest [ZUI-flow and AVD-event investigation](docs/zui-flow-and-avd-events.md)
 observes original UI state 1, an empty 40-slot queue and zero windows after
 initialization. Platform polling stops on invalid HTotal before the dispatcher.

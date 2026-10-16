@@ -31,7 +31,7 @@ int main(int argc,char** argv){try{
     fixture={};fixture.stopAt=stopAt;
     for(int r=UC_MIPS_REG_0;r<=UC_MIPS_REG_31;++r)cpu.reg(r,0);
     cpu.reg(UC_MIPS_REG_SP,0x8070ff00);cpu.reg(UC_MIPS_REG_RA,0x803b0000);cpu.reg(UC_MIPS_REG_4,argument);
-    manta::check(cpu.run(entry,5000));need(cpu.reg(UC_MIPS_REG_PC)==(stopAt?stopAt:0x803b0000),"original function failed to reach its own return or explicit fixture observation boundary");
+    manta::check(cpu.run(entry,50000));need(cpu.reg(UC_MIPS_REG_PC)==(stopAt?stopAt:0x803b0000),"original function failed to reach its own return or explicit fixture observation boundary");
   };
   using Z=manta::ZuiFlow;unsigned cases=0,queueInstructions=0;
   write(0x006e561c,0x12345678);
@@ -71,10 +71,38 @@ int main(int argc,char** argv){try{
     else need(!fixture.visits.contains(0x8049f040),"end-effect and shutdown select their distinct original handlers");
     ++runningCases;
   }
-  std::vector<uint8_t> after(image.size());cpu.read(0x003b3980,after.data(),after.size());need(after==image,"original instruction image changed");
+  unsigned resourceCases=0,resourceWindows=0;uint64_t resourceInstructions=0;
+  for(unsigned id=1;id<30;++id){
+    auto descriptor=0x00686030+48*id;
+    auto count=read(descriptor,2),windows=read(descriptor+4);
+    run(0x8049ea20,id);need(cpu.reg(UC_MIPS_REG_2)==count,"original resource count getter differs from original descriptor");
+    run(0x8049ea58,id);need(cpu.reg(UC_MIPS_REG_2)==windows,"original window table getter differs from original descriptor");
+    run(0x8049eabc,id);auto rectangles=cpu.reg(UC_MIPS_REG_2);
+    need(rectangles==read(0x00695780+4*id),"original rectangle table getter differs from original table");
+    write(Z::windowCountAddress,count,2);write(Z::windowListAddress,windows);write(0x006b918c,rectangles);
+    run(0x8049ee1c);resourceInstructions+=fixture.instructions;
+    need(cpu.reg(UC_MIPS_REG_2)==1,"original window-state initializer must return success");
+    auto wordCount=(count+32)>>5,visible=read(0x006d4fac),disabled=read(0x006d4fb0);
+    need(visible==0x806d523c && disabled==visible+wordCount*4,"original visibility/disable bitmap layout differs");
+    for(unsigned hwnd=0;hwnd<count;++hwnd){
+      auto flags=read((windows&0x1fffffff)+20*hwnd+8,1);
+      need(((read((visible&0x1fffffff)+4*(hwnd>>5))>>(hwnd&31))&1)==(flags&1),"original visibility must come from actual window flag bit0");
+      need(((read((disabled&0x1fffffff)+4*(hwnd>>5))>>(hwnd&31))&1)==bool(flags&4),"original disabled state must come from actual window flag bit2");
+    }
+    if(rectangles)for(unsigned i=0;i<1100;++i)for(unsigned lane=0;lane<2;++lane)
+      need(read(0x006d534c+8*i+4*lane)==read((rectangles&0x1fffffff)+12*i+4+4*lane),
+        "original unaligned LWL/LWR rectangle copies must use the original resource bytes");
+    resourceWindows+=count;++resourceCases;
+  }
+  for(auto id:{0u,30u,0xffffffffu})for(auto getter:{0x8049ea20u,0x8049ea58u,0x8049eabcu}){
+    run(getter,id);need(cpu.reg(UC_MIPS_REG_2)==0,"original invalid OSD resource ID must return no resource");
+  }
+  std::vector<uint8_t> after(image.size());cpu.read(0x003b3980,after.data(),after.size());need(after==image,"original instruction/resource image changed");
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"ISOLATED original-function execution with synthetic RAM, not television boot or events\","
     <<"\"queue_cases\":"<<cases-4<<",\"standby_default_cases\":4,\"active_dispatch_cases\":"<<runningCases
-    <<",\"queue_original_instructions\":"<<queueInstructions<<",\"TV_dispatcher_invoked\":false,\"TV_events_injected\":false,\"pixels_generated\":false,"
+    <<",\"queue_original_instructions\":"<<queueInstructions<<",\"window_resource_cases\":"<<resourceCases
+    <<",\"original_window_records\":"<<resourceWindows<<",\"window_state_instructions\":"<<resourceInstructions
+    <<",\"TV_dispatcher_invoked\":false,\"TV_events_injected\":false,\"pixels_generated\":false,"
     <<"\"program_sha256\":\""<<manta::sha256(image)<<"\"}\n";
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

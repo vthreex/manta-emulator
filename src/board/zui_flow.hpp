@@ -24,7 +24,8 @@ public:
   static bool watches(uint32_t pc){
     for(auto address:{0x804e0d48u,0x804e0dbcu,0x8046ca74u,0x80488864u,0x8047602cu,
         0x804e0dc4u,0x804c3684u,0x804c370cu,0x804c3574u,0x8049f0dcu,0x8049f040u,
-        0x8049f824u,0x804a0640u,0x8049f180u,0x804a0770u})if(pc==address)return true;
+        0x8049f824u,0x804a0640u,0x8049f180u,0x804a0770u,0x8049ee1cu,0x8049dfc4u,
+        0x804afdfcu,0x804a071cu})if(pc==address)return true;
     return false;
   }
   static ZuiFlowSnapshot capture(uint32_t pc,uint64_t tick,const Reader& read){

@@ -1,5 +1,10 @@
 # Original ZUI state and AVD event-consumer boundary
 
+The subsequent [timing/resource continuation](htotal-provenance-and-zui-resources.md)
+observes the original zero-count window-state initializer and tests every
+original OSD resource set. This page preserves the earlier four-observation
+trace and its hypothesis scope.
+
 This continues `9ac1691`. **No authentic OSD pixels are demonstrated.**
 Read-only probes now establish the actual UI globals in a full conditional
 cold run. They do not change any previous CPU/peripheral summary field,

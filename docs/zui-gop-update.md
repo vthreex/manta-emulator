@@ -1,5 +1,13 @@
 # Original ZUI entry and GOP update boundary
 
+The [timing/resource study](htotal-provenance-and-zui-resources.md) confirms
+the original window-state initializer `8049EE1C` runs with zero window records
+from `804E0D68`. A successful return is not window creation. All 29 actual
+resource sets initialize in separate original-function fixtures; the TV still
+has none selected. A specific original timeout path to the OSD opener and the
+surface/graphics-call sequence are mapped but unexecuted. No raster operation
+is implemented or claimed from those static calls alone.
+
 The latest [read-only cold-run observations](zui-flow-and-avd-events.md) show
 state 1, ActiveOsd 0, all 40 queue handles empty, window count 0 and window-list
 pointer 0 after the original initializer returns and at platform polling entry.

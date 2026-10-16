@@ -1,5 +1,15 @@
 # Evidence still needed
 
+The [timing/resource continuation](htotal-provenance-and-zui-resources.md) adds
+no physical input or reset assumption. The narrow original `113C/113D` data
+publication can now retain invalid measured bits in `11C7/11C8`; it does not
+make a timing sample valid. Its original publisher has not executed in the
+TV. Physical event sources, `11DB.7`, `11FC` acknowledgment and absent-HSYNC
+counter behavior remain missing. A related MST786 partial AFEC table does
+not establish those MSD309 defaults. Original ZUI initialization intentionally
+calls window-state setup with count zero. Isolated resource tests and mapped
+UI timeout/OSD-open paths do not prove connected activation or raster output.
+
 The [ZUI-flow/event study](zui-flow-and-avd-events.md) confirms the original
 UI remains in state 1 with no active OSD, messages or windows after init.
 Platform polling has not returned to the dispatcher. The concrete event or

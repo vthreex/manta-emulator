@@ -20,6 +20,7 @@ with tempfile.TemporaryDirectory(prefix='manta-original-zui-') as directory:
     functions=json.loads(first)
     assert functions['result']=='PASS' and functions['queue_cases']==40
     assert functions['standby_default_cases']==4 and functions['active_dispatch_cases']==4
+    assert functions['window_resource_cases']==29 and functions['original_window_records']>3000
     assert not functions['TV_dispatcher_invoked'] and not functions['TV_events_injected'] and not functions['pixels_generated']
     damaged=d/'damaged-main.bin';bad=bytearray(main);bad[0x804e0dc4-0x803b3980]^=1;damaged.write_bytes(bad)
     result=subprocess.run([a.probe,str(damaged)],capture_output=True,text=True)

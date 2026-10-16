@@ -1,5 +1,19 @@
 # Status of the research build
 
+Latest [HTotal provenance and original window resources](htotal-provenance-and-zui-resources.md)
+repairs a narrow INVALID data-publication path without supplying a raw timing
+sample. Original timing-copy/getter/stability instructions pass isolated tests;
+all 29 original OSD resource sets and 3,616 window records pass original
+window-state initialization tests. A fresh cold run confirms that the actual
+initializer executes with count zero before selecting ZUI state 1. This is
+not screen creation. All other CPU/peripheral state, coverage and UART match
+the prior checkpoint. AVD remains at `0702/11DB.7` after 863 instructions;
+MIPS remains at `80501BFC` after 854,795,171. No dispatcher or OSD pixels.
+All 1,454 native checks and full regression suites pass. Complete new/earlier
+replays match 6,592,739/6,592,734 events, summaries, coverage and PM histories.
+Validation is recorded in the linked manifest; hardware event, reset and
+no-input counter producers remain unresolved.
+
 Latest [ZUI-flow/event investigation](zui-flow-and-avd-events.md) adds opt-in
 read-only probes of hash-verified original code and UI globals. Full cold
 execution confirms state 1, ActiveOsd 0, an empty 40-slot message queue and
