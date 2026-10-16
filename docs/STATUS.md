@@ -1,5 +1,13 @@
 # Status of the research build
 
+The [HTotal interleaving extension](htotal-publication-interleavings.md) adds
+128 isolated original two-processor publication cases, including publication
+between MIPS getter reads followed by the original stability decision. It
+preserves all previous partial/unknown cases and introduces no atomic latch,
+sample or event. Production binaries are identical to the preceding fully
+replayed checkpoint. The physical counter and latch semantics remain unknown;
+connected counts, UI state and hardware stops are unchanged.
+
 Latest [original startup selection and timeout investigation](zui-startup-selection-and-timeout.md)
 observes wrapper **11**, source phase **0**, ActiveOsd **0** and an unarmed
 numeric-entry timeout at the connected HTotal boundary. That original wrapper

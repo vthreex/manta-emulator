@@ -1,0 +1,39 @@
+{
+  "result": "PASS",
+  "base_git": "41622e6",
+  "scope": "probe/test-only original two-processor interleavings; no production changes or TV inputs",
+  "report": "htotal-interleaving-regression.json.gz",
+  "report_sha256_uncompressed": "64e8f9d5fdd2e6edac9c986a5520a15d8fbd344651b8d827d970ac470aa13ad9",
+  "unchanged_production_and_other_probe_binaries": {
+    "manta.exe": "e6255cc602b23996f87479102184a3ec6cd8fdceb98781b4896f29557bcdc7f7",
+    "core_tests.exe": "4eeb8d964075027f56461c40c0b6b0d52ffe72c7b38c6d7d8581e7f93ccf9b1d",
+    "avd_mcu_probe.exe": "8d38c0c5935101e4eb8c31c8ba5b92cf09fd5ea51dcdfff0296d347bb8fda551",
+    "zui_flow_probe.exe": "d849df0eab41c84de299d20961b44468de2077e768f9be6e8787afb791227585",
+    "avd_request_probe.exe": "3eb9468b58ab2673c1eedda35b12f739ebcd0d94353bc24d95236c518cd5a12c"
+  },
+  "original_firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "new_probe_sha256": "8bb9a970fb5aedf87b611454008b0e4c997122ca702cc1eac785ee5ce288d1d2",
+  "native_checks": 1457,
+  "native_stdout": "1457 checks passed",
+  "unchanged_full_validation": "zui-timeout-validation.json",
+  "unchanged_full_validation_sha256": "f8b547cbfd3495c25a3c83c6ea1115a2163eaaf25c9cb08570a8761df4da4fcf",
+  "prior_full_replay_events_same_production_binary": 6592741,
+  "new_cold_boot_required_for_probe_only_change": false,
+  "isolated_interleaved_copy_cases": 128,
+  "isolated_getters_at_publication_store_boundaries": 128,
+  "isolated_between_getter_reads_stability_cases": 64,
+  "extra_original_AVD_fragment_instructions_not_TV": 6400,
+  "physical_register_latch_semantics_verified": false,
+  "connected_AVD_instructions": 863,
+  "connected_MIPS_dispatches": 854795171,
+  "TV_samples_events_or_pixels_supplied": false,
+  "additional_static_reference": {
+    "url": "https://github.com/neuschaefer/mstar-mboot/blob/962e8b8258378dded694883a9f9acb7058d34631/MstarCore/bsp/amethyst/lib/libdrvAVD.a",
+    "bytes": 88566,
+    "sha256": "f632478a205685ab0007f06a8bb76113b400e26de1e6c50fc078cef400d524d8",
+    "embedded_AVD_bytes": 13312,
+    "embedded_AVD_sha256": "ca919ffe5b452af460922caa57aee5e5767587c3afe51bf3822fe5f548bfba20",
+    "producer_reset_or_event_identified": false,
+    "reference_code_imported_into_emulator": false
+  }
+}

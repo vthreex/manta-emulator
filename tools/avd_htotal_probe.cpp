@@ -5,6 +5,7 @@
 #include "peripherals/avd_mcu_bus.hpp"
 #include "storage/sha256.hpp"
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <map>
@@ -17,6 +18,7 @@ int main(int argc,char** argv){try{
   std::vector<uint8_t> avd(image.begin()+0x80627a00-0x803b3980,image.begin()+0x8062ae00-0x803b3980);
   need(manta::sha256(avd)=="48ab58a5689d3135b2cdf78fa77da92fa912776f741c33c7afa97fdcfc4ee4fd","original AVD mismatch");
   unsigned copies=0,partial=0;uint64_t mcuInstructions=0;
+  std::function<void(uint32_t,manta::VdByte)> publicationObserver;
   auto transfer=[&](uint8_t low,uint8_t high,uint8_t lowKnown,uint8_t highKnown){
     // A separate test program contains the unchanged sampling fragment at
     // reset and its unchanged original absolute helper. It is NOT the TV
@@ -31,7 +33,7 @@ int main(int argc,char** argv){try{
     registers[*bus.sharedAddress(0x113c)]={low,lowKnown,0};registers[*bus.sharedAddress(0x113d)]={high,highKnown,0};
     std::vector<uint16_t> reads,writes;
     bus.sharedRead=[&](uint32_t a){return registers.at(a);};
-    bus.sharedWrite=[&](uint32_t a,manta::VdByte v){registers[a]=v;};
+    bus.sharedWrite=[&](uint32_t a,manta::VdByte v){registers[a]=v;if(publicationObserver)publicationObserver(a,v);};
     cpu.busRead=[&](uint16_t a){reads.push_back(a);return bus.read(a);};
     cpu.busWrite=[&](uint16_t a,manta::VdByte v){writes.push_back(a);return bus.write(a,v);};
     cpu.resetProgram(program);
@@ -52,12 +54,16 @@ int main(int argc,char** argv){try{
   manta::Engine cpu;cpu.map(0x003b0000,0x350000);cpu.map(0x00700000,0x10000);
   cpu.write(0x003b3980,image.data(),image.size());uint32_t stopAt=0;unsigned instructions=0;
   std::array<uint8_t,2> published{};std::vector<uint32_t> readOrder;
-  std::pair mmio{&published,&readOrder};
+  std::function<void(uint32_t)> readObserver;
+  std::tuple mmio{&published,&readOrder,&readObserver};
   manta::check(uc_mmio_map(cpu.handle,0x1f206000,0x1000,
     +[](uc_engine*,uint64_t offset,unsigned width,void* data)->uint64_t{
       auto& state=*static_cast<decltype(mmio)*>(data);
       need(width==1 && (offset==0xb8d || offset==0xb90),"getter accessed an unrelated device");
-      state.second->push_back(uint32_t(offset));return (*state.first)[offset==0xb8d?0:1];
+      std::get<1>(state)->push_back(uint32_t(offset));
+      auto value=(*std::get<0>(state))[offset==0xb8d?0:1];
+      if(*std::get<2>(state))(*std::get<2>(state))(uint32_t(offset));
+      return value;
     },&mmio,nullptr,nullptr));
   uc_hook hook;struct Execution{uint32_t* stop;unsigned* count;} execution{&stopAt,&instructions};
   manta::check(uc_hook_add(cpu.handle,&hook,UC_HOOK_CODE,reinterpret_cast<void*>(
@@ -76,6 +82,65 @@ int main(int argc,char** argv){try{
     need(cpu.reg(UC_MIPS_REG_PC)==stopAt && cpu.reg(UC_MIPS_REG_2)==((high<<8)|low),"original MIPS getter is a 16-bit byte assembly, not an implicit 11-bit mask");
     need(readOrder==std::vector<uint32_t>{0xb90,0xb8d},"MIPS getter must read high before low");++getterCases;
   }
+  auto primaryCopies=copies,primaryPartial=partial;auto primaryMcuInstructions=mcuInstructions;
+  unsigned interleavedCopies=0,interleavedGetters=0,tornSamples=0;
+  // Both processors execute original instructions. The MIPS getter observes
+  // each genuine 8051 store through the candidate shared lanes; there is no
+  // invented atomic latch. Synthetic old/raw samples exist only in this test.
+  for(auto oldSample:{0u,1u,255u,256u,511u,1023u,1135u,2047u})
+    for(auto nextSample:{0u,1u,255u,256u,511u,1023u,1135u,2047u}){
+      published={uint8_t(oldSample),uint8_t(oldSample>>8)};unsigned stores=0;
+      publicationObserver=[&](uint32_t address,manta::VdByte value){
+        need(value.known==255,"isolated getter cannot consume an invalid published fixture as valid data");
+        need(address==(stores?0x1f206b90u:0x1f206b8du),"original publication lane order changed");
+        published[stores?1:0]=value.value;reset();stopAt=0x803b0000;
+        manta::check(cpu.run(0x805030e0,100));
+        auto expected=stores?nextSample:((oldSample&0x700)|(nextSample&255));
+        need(cpu.reg(UC_MIPS_REG_PC)==stopAt && cpu.reg(UC_MIPS_REG_2)==expected &&
+          readOrder==std::vector<uint32_t>{0xb90,0xb8d},
+          "original shared getter must see actual old/new lanes rather than an implicit atomic sample");
+        if(expected!=oldSample && expected!=nextSample)++tornSamples;
+        ++stores;++interleavedGetters;
+      };
+      transfer(uint8_t(nextSample),uint8_t(nextSample>>8),255,255);
+      need(stores==2,"original timing publisher must perform both stores");++interleavedCopies;
+    }
+  publicationObserver={};
+  need(tornSamples>0,"interleaved tests must exercise actual mixed-generation samples");
+  unsigned midReadCopies=0,midReadTornSamples=0;
+  for(auto oldSample:{0u,1u,255u,256u,511u,1023u,1135u,2047u})
+    for(auto nextSample:{0u,1u,255u,256u,511u,1023u,1135u,2047u}){
+      published={uint8_t(oldSample),uint8_t(oldSample>>8)};unsigned stores=0,publications=0;
+      publicationObserver=[&](uint32_t address,manta::VdByte value){
+        need(value.known==255 && address==(stores?0x1f206b90u:0x1f206b8du),
+          "interleaved original publisher must retain known fixture data and its actual lane order");
+        published[stores?1:0]=value.value;++stores;
+      };
+      readObserver=[&](uint32_t offset){if(offset==0xb90){
+        // Complete the original 8051 fragment after the MIPS high-byte read
+        // has sampled its value, before the original low-byte instruction.
+        transfer(uint8_t(nextSample),uint8_t(nextSample>>8),255,255);++publications;
+      }};
+      // Continue from the original getter call through the original history
+      // and stability decision, stopping at its genuine rejoin instruction.
+      // Mode8/history/counter are explicit isolated RAM fixtures, never TV state.
+      reset();cpu.reg(UC_MIPS_REG_21,0x806e0000);write(0x006d83c8,8);
+      write(0x006d83cc,oldSample,2);write(0x006d83ce,oldSample,2);
+      write(0x006d83d4,4,1);write(0x006ad960,0x5678,2);
+      stopAt=0x80501758;manta::check(cpu.run(0x8050170c,100));
+      auto expected=(oldSample&0x700)|(nextSample&255);
+      need(cpu.reg(UC_MIPS_REG_PC)==stopAt && cpu.reg(UC_MIPS_REG_7)==expected && stores==2 && publications==1 &&
+        readOrder==std::vector<uint32_t>{0xb90,0xb8d} &&
+        (unsigned(published[0])|(unsigned(published[1])<<8))==nextSample,
+        "getter cannot retroactively relatch the high byte when AVD publishes between the original reads");
+      need(read(0x006d83cc,2)==expected && read(0x006d83ce,2)==oldSample && read(0x006d83d0,2)==oldSample &&
+        read(0x006d83d4,1)==(expected==oldSample?4u:0u) &&
+        read(0x006ad960,2)==(expected==oldSample?oldSample:0x5678u),
+        "original stability routine must process the exact interleaved getter result, without host filtering");
+      if(expected!=oldSample && expected!=nextSample)++midReadTornSamples;
+      ++midReadCopies;
+    }
+  publicationObserver={};readObserver={};
   unsigned stabilityCases=0;
   for(auto previous:{0u,909u,1135u,2047u})for(auto older:{0u,909u,1135u,2047u})
     for(auto sample:{0u,909u,1135u,2047u})for(auto count:{0u,3u,4u,5u,255u}){
@@ -91,8 +156,12 @@ int main(int argc,char** argv){try{
   std::vector<uint8_t> after(0x80613000-0x803b3980);cpu.read(0x003b3980,after.data(),after.size());
   need(std::equal(after.begin(),after.end(),image.begin()),"original instruction image changed");
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"ISOLATED original fragments/functions with synthetic samples, NOT TV boot/publisher/event production\","
-    <<"\"sample_copy_cases\":"<<copies<<",\"invalid_sample_cases\":"<<partial<<",\"fragment_instructions\":"<<mcuInstructions
+    <<"\"sample_copy_cases\":"<<primaryCopies<<",\"invalid_sample_cases\":"<<primaryPartial<<",\"fragment_instructions\":"<<primaryMcuInstructions
     <<",\"MIPS_getter_cases\":"<<getterCases<<",\"MIPS_stability_cases\":"<<stabilityCases
+    <<",\"interleaved_copy_cases\":"<<interleavedCopies<<",\"interleaved_original_getters\":"<<interleavedGetters
+    <<",\"mixed_generation_samples\":"<<tornSamples<<",\"additional_fragment_instructions\":"<<mcuInstructions-primaryMcuInstructions
+    <<",\"publication_between_getter_reads_cases\":"<<midReadCopies<<",\"between_read_mixed_samples\":"<<midReadTornSamples
+    <<",\"interleaved_original_stability_cases\":"<<midReadCopies
     <<",\"TV_sample_supplied\":false,\"TV_publisher_executed\":false,\"pixels_generated\":false}\n";
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
