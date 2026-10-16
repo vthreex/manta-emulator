@@ -55,7 +55,8 @@ int main(int argc,char** argv){try{
   cpu.write(0x003b3980,image.data(),image.size());uint32_t stopAt=0;unsigned instructions=0;
   std::array<uint8_t,2> published{};std::vector<uint32_t> readOrder;
   std::function<void(uint32_t)> readObserver;
-  std::tuple mmio{&published,&readOrder,&readObserver};
+  std::vector<std::tuple<uint32_t,unsigned,uint64_t>> registerWrites;
+  std::tuple mmio{&published,&readOrder,&readObserver,&registerWrites};
   manta::check(uc_mmio_map(cpu.handle,0x1f206000,0x1000,
     +[](uc_engine*,uint64_t offset,unsigned width,void* data)->uint64_t{
       auto& state=*static_cast<decltype(mmio)*>(data);
@@ -64,7 +65,11 @@ int main(int argc,char** argv){try{
       auto value=(*std::get<0>(state))[offset==0xb8d?0:1];
       if(*std::get<2>(state))(*std::get<2>(state))(uint32_t(offset));
       return value;
-    },&mmio,nullptr,nullptr));
+    },&mmio,+[](uc_engine*,uint64_t offset,unsigned width,uint64_t value,void* data){
+      auto& state=*static_cast<decltype(mmio)*>(data);
+      need((offset==0xca4 && width==2) || (offset==0xbad && width==1),"isolated continuation wrote an unrelated peripheral");
+      std::get<3>(state)->emplace_back(uint32_t(offset),width,value);
+    },&mmio));
   uc_hook hook;struct Execution{uint32_t* stop;unsigned* count;} execution{&stopAt,&instructions};
   manta::check(uc_hook_add(cpu.handle,&hook,UC_HOOK_CODE,reinterpret_cast<void*>(
     +[](uc_engine* engine,uint64_t pc,uint32_t,void* data){auto& e=*static_cast<Execution*>(data);
@@ -153,6 +158,21 @@ int main(int argc,char** argv){try{
       need(read(0x006d83cc,2)==sample && read(0x006d83ce,2)==previous && read(0x006d83d0,2)==older,"original HTotal history shift differs");
       need(read(0x006d83d4,1)==expected && read(0x006ad960,2)==(equal && count>=4?sample:0x5678),"original stable-sample counter threshold differs");++stabilityCases;
     }
+  unsigned postStabilityCases=0;
+  for(auto sample:{0u,1135u,2047u})for(auto count:{0u,3u,4u}){
+    // An isolated configuration with patch flags0. Do not describe this as
+    // the connected TV's flags or supply the next co-channel status bit.
+    reset();registerWrites.clear();published={uint8_t(sample),uint8_t(sample>>8)};
+    cpu.reg(UC_MIPS_REG_21,0x806e0000);write(0x006d83c8,0);
+    write(0x006d83cc,1135,2);write(0x006d83ce,1135,2);write(0x006d83d4,count,1);
+    write(0x006ad960,1135,2);write(0x006ad964,0);write(0x006d8414,0);write(0x006d8419,0,1);
+    stopAt=0x80503080;manta::check(cpu.run(0x8050170c,200));
+    need(cpu.reg(UC_MIPS_REG_PC)==stopAt && readOrder==std::vector<uint32_t>{0xb90,0xb8d},
+      "original polling prefix must reach its own co-channel getter without another sample wait");
+    need(registerWrites==std::vector<std::tuple<uint32_t,unsigned,uint64_t>>{{0xca4,2,1135},{0xbad,1,0}},
+      "original prefix must program its nominal COMB total and configured gain before the next status boundary");
+    ++postStabilityCases;
+  }
   std::vector<uint8_t> after(0x80613000-0x803b3980);cpu.read(0x003b3980,after.data(),after.size());
   need(std::equal(after.begin(),after.end(),image.begin()),"original instruction image changed");
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"ISOLATED original fragments/functions with synthetic samples, NOT TV boot/publisher/event production\","
@@ -162,6 +182,7 @@ int main(int argc,char** argv){try{
     <<",\"mixed_generation_samples\":"<<tornSamples<<",\"additional_fragment_instructions\":"<<mcuInstructions-primaryMcuInstructions
     <<",\"publication_between_getter_reads_cases\":"<<midReadCopies<<",\"between_read_mixed_samples\":"<<midReadTornSamples
     <<",\"interleaved_original_stability_cases\":"<<midReadCopies
+    <<",\"post_stability_cochannel_boundary_cases\":"<<postStabilityCases
     <<",\"TV_sample_supplied\":false,\"TV_publisher_executed\":false,\"pixels_generated\":false}\n";
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

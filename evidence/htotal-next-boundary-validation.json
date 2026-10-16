@@ -1,0 +1,39 @@
+{
+  "result": "PASS",
+  "base_git": "86b2215",
+  "scope": "isolated original polling prefix with synthetic samples/configuration; production unchanged, no TV measurements/events",
+  "reports": {
+    "regression": {
+      "file": "htotal-next-boundary-regression.json.gz",
+      "sha256_uncompressed": "e27075a5c54664d9f5be62b98bd2f6d265ef6aebb7e4559247c7a17334c29c6c"
+    },
+    "symbol-match": {
+      "file": "htotal-next-boundary-symbol-match.json",
+      "sha256_uncompressed": "f2433f395484359aa2d8c513687f5f1b96a85c35aa932c79222f52dcb4c7b812"
+    }
+  },
+  "new_probe_sha256": "55497f182cff1d5d6c2321e291c9ccbbb3e44d736a2d7cc88353d43bafcf0039",
+  "original_polling_prefix_entry": "0x8050170C",
+  "isolated_stop_before_getter": "0x80503080",
+  "conditional_next_read_pc": "0x80503098",
+  "conditional_next_MMIO": "0xBF206B94",
+  "field": "bit3 / AFEC co-channel status",
+  "connected_configuration_assumed_by_test": false,
+  "cochannel_status_supplied": false,
+  "same_production_validation": "zui-timeout-validation.json",
+  "same_production_validation_sha256": "f8b547cbfd3495c25a3c83c6ea1115a2163eaaf25c9cb08570a8761df4da4fcf",
+  "unchanged_production_and_other_probe_binaries": {
+    "manta.exe": "e6255cc602b23996f87479102184a3ec6cd8fdceb98781b4896f29557bcdc7f7",
+    "core_tests.exe": "4eeb8d964075027f56461c40c0b6b0d52ffe72c7b38c6d7d8581e7f93ccf9b1d",
+    "avd_mcu_probe.exe": "8d38c0c5935101e4eb8c31c8ba5b92cf09fd5ea51dcdfff0296d347bb8fda551",
+    "zui_flow_probe.exe": "d849df0eab41c84de299d20961b44468de2077e768f9be6e8787afb791227585",
+    "avd_request_probe.exe": "3eb9468b58ab2673c1eedda35b12f739ebcd0d94353bc24d95236c518cd5a12c"
+  },
+  "native_checks": 1457,
+  "full_replay_events_same_production_binary": 6592741,
+  "connected_MIPS_PC": "0x80501bfc",
+  "connected_MIPS_instructions": 854795171,
+  "connected_AVD_PC": "0x702",
+  "connected_AVD_instructions": 863,
+  "genuine_connected_OSD_pixels": false
+}

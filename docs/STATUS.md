@@ -1,5 +1,13 @@
 # Status of the research build
 
+The [post-HTotal polling study](avd-post-htotal-boundary.md) executes nine
+additional original prefix fixtures through genuine COMB/gain programming to
+the next status getter. A named reference matches original `80503080` as AFEC
+co-channel status, `BF206B94.3`. This is conditional on explicitly isolated
+mode/patch/history inputs, not a new connected stop or a supplied detector
+value. Production binaries, all connected milestones and the full validated
+replay remain unchanged; no HTotal sample or OSD pixels are created.
+
 The [HTotal interleaving extension](htotal-publication-interleavings.md) adds
 128 isolated original two-processor publication cases, including publication
 between MIPS getter reads followed by the original stability decision. It

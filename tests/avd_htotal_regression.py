@@ -18,6 +18,7 @@ with tempfile.TemporaryDirectory(prefix='manta-timing-fragments-') as directory:
     assert report['mixed_generation_samples']==34 and report['additional_fragment_instructions']==6400
     assert report['publication_between_getter_reads_cases']==64 and report['between_read_mixed_samples']==34
     assert report['interleaved_original_stability_cases']==64
+    assert report['post_stability_cochannel_boundary_cases']==9
     assert not report['TV_sample_supplied'] and not report['TV_publisher_executed'] and not report['pixels_generated']
     damaged=bytearray(main);damaged[0x80627a00-0x803b3980+0xaa9]^=1;image.write_bytes(damaged)
     rejected=subprocess.run([a.probe,str(image)],capture_output=True,text=True)
@@ -27,5 +28,6 @@ report['firmware_sha256']=digest
 report['probe_sha256']=hashlib.sha256(Path(a.probe).read_bytes()).hexdigest()
 report['scope_note']='8051 synthetic harness copies unchanged original AA9..ABE and 75E..78D fragments; not original reset-to-publisher execution. MIPS isolated functions/blocks use the unchanged original image. Additional cases execute both processors with publication between stores or getter reads, then original history/stability instructions with isolated mode8/history RAM.'
 report['mapping_note']='Verifies software lane/width/order under the candidate shared bus; physical MSD309 wiring remains unverified.'
+report['post_stability_scope_note']='Nine isolated original getter/history/continuation cases use mode0, patchflags0 and synthetic samples; observe actual COMB/gain stores and stop before co-channel getter. Not connected configuration or a supplied co-channel result.'
 Path(a.report).write_text(json.dumps(report,indent=2)+'\n')
 print('PASS: original timing/getter/stability cases plus 128 two-processor publication interleavings; no TV measurement or event generated')

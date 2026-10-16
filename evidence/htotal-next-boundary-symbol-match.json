@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "scope": "named related getter matches original code after masking three linked data-address immediate fields; no hardware state inferred",
+  "symbol": "HAL_AVD_AFEC_GetCoChannelOn",
+  "original_entry": "0x80503080",
+  "original_read_pc": "0x80503098",
+  "MIPS_MMIO": "0xBF206B94",
+  "consumed_bit": 3,
+  "bytes": 40,
+  "normalized_data_address_offsets": [
+    0,
+    4,
+    20
+  ],
+  "normalized_sha256": "9b0f8988967a874438bebf93669d045612121fe492ffccec5fec061b5fd7b738",
+  "original_code_sha256": "e535e292581987ac02422ab638f7c7d8687367e03743c6575dda511c6aa9084d",
+  "reference_library_sha256": "dc3971ef4cd806c30df4475f8ed9b63c3d4566f13dd357fd149a4063a67e6ea7",
+  "reference_url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/core/drv_bsp/marlon_nos_mips/lib/libdrvAVD.a"
+}
