@@ -102,6 +102,10 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-audio-no-ack")o.exploratoryAudioNoAck=true;
       else if (a == "--exploratory-avd-mcu-startup")o.exploratoryAvdMcuStartup=true;
       else if (a == "--exploratory-avd-suspended-boundary")o.exploratoryAvdSuspendedBoundary=true;
+      else if(a=="--exploratory-avd-shared-run")o.exploratoryAvdSharedRun=true;
+      else if(a=="--diagnostic-avd-deferred-startup-writes")o.diagnosticAvdDeferredStartup=true;
+      else if(a=="--avd-dispatch-divider")o.avdDivider=std::stoull(value(i),nullptr,0);
+      else if(a=="--max-avd-instructions")o.avdBudget=std::stoull(value(i),nullptr,0);
       else if (a == "--exploratory-vd-mcu-startup")o.exploratoryVdMcuStartup=true;
       else if (a == "--defer-vd-sfr8e-write")o.deferVdSfr8eWrite=true;
       else if (a == "--defer-vd-reset-key-writes")o.deferVdResetKeyWrites=true;
@@ -254,6 +258,9 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-fetch-revision-byte N: explicit unverified immutable BF003C05 byte; not a validated Titania4 stepping\n"
                "--candidate-vd-mcu-program: shared MCU upload/readback ports; current original payload is DVB-T; no synthetic acknowledgment\n"
                  "--candidate-avd-mcu-program: original analog-video MCU programming/readback port; no ready signaling\n"
+                 "--exploratory-avd-shared-run: candidate XDATA/shared-register and private RAM wiring, standard Timer0 and explicit scheduling; no mailbox reset value\n"
+                 "--diagnostic-avd-deferred-startup-writes: separately retain unresolved original startup configuration writes; assume no asynchronous reset/clock disruption during bounded execution; no readback/status inferred\n"
+                 "--avd-dispatch-divider N --max-avd-instructions N: explicit virtual-cycle ratio and original-instruction diagnostic budget\n"
                  "--candidate-audio-idma: observed 24-bit addressed upload/readback protocol, atomic functional timing; no DSP ISA/ready replies\n"
                  "--exploratory-audio-no-ack: constrain only original ack!=E3 predicate; byte remains INVALID, guest executes finite timeout; not a hardware reset-value/ready model\n"
                  "--exploratory-avd-mcu-startup: bounded original AVD execution under standard 8052 reset hypothesis; unknown XDATA/SFR stops\n"

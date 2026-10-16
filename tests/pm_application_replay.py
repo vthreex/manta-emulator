@@ -78,6 +78,11 @@ if not a.validate_only:
         if 'exploratory_vif_chip_revision_byte' in ref:command+=['--exploratory-vif-chip-revision-byte',str(ref['exploratory_vif_chip_revision_byte'])]
         if ref.get('exploratory_vif_ideal_zero_energy'):
             command+=['--exploratory-vif-zero-input-settle-cycles',str(ref['vif_zero_input_settle_cycles'])]
+        if ref.get('exploratory_avd_shared_run'):
+            command+=['--exploratory-avd-shared-run','--avd-dispatch-divider',str(ref['avd_dispatch_divider']),
+                      '--max-avd-instructions',str(ref['avd_instruction_budget'])]
+            if ref.get('diagnostic_avd_deferred_startup_writes'):
+                command+=['--diagnostic-avd-deferred-startup-writes']
         if ref.get('opaque_policy_enabled'):
             assert a.opaque_read_policy and Path(a.opaque_read_policy).exists(),'policy-enabled replay needs its final rules'
             command+=['--opaque-read-policy',str(Path(a.opaque_read_policy).resolve())]

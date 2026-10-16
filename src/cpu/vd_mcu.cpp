@@ -22,6 +22,7 @@ struct VdMcuCpu::Impl {
   std::array<uint8_t,256> registerKnown{};
   std::array<uint16_t,256> registerOrigin{};
   bool parityUnknown=false;
+  bool carryKnown=true;
   std::array<VdByte,128> uartRegisters{};
   bool uartTxPending=false;
   static bool uartRegister(uint8_t a){
@@ -85,6 +86,10 @@ struct VdMcuCpu::Impl {
   }
   static void unknownSfrWrite(em8051* cpu,uint8_t address){
     auto& m=self(cpu);auto value=cpu->mSFR[address-128];
+    auto opcode=cpu->mCodeMem[cpu->mPC];
+    if(m.outer->unsupportedSfrWrite && (opcode==0x75 || opcode==0xf5) &&
+       m.outer->unsupportedSfrWrite(address,{value,opcode==0x75?uint8_t(255):m.aKnown,
+         opcode==0x75?uint16_t(0):m.aOrigin}))return;
     if(m.outer->candidateR8051Uart && uartRegister(address)){
       auto op=cpu->mCodeMem[cpu->mPC];auto& v=m.uartRegisters[address-128];
       if(op==0x75){v={value,255,0};}
@@ -135,6 +140,11 @@ struct VdMcuCpu::Impl {
     // invalid MOVX result across register copies and reject unmodeled uses.
     auto operand=cpu->mCodeMem[uint16_t(pc+1)];
     auto sp=cpu->mSFR[REG_SP];
+    bool consumesCarry=opcode==0x40 || opcode==0x50 || opcode==0x92 || opcode==0xb3 || opcode==0xd4 ||
+      opcode==0x72 || opcode==0x82 || opcode==0xa0 || opcode==0xb0 ||
+      (opcode>=0x34 && opcode<=0x3f) || (opcode>=0x94 && opcode<=0x9f);
+    if(!m.carryKnown && consumesCarry)
+      throw VdHardwareBoundary("MCU unknown carry affects instruction/decision");
     if(opcode==0x22 || opcode==0x32){
       if(m.registerKnown[sp]!=255 || m.registerKnown[uint8_t(sp-1)]!=255)
         throw VdHardwareBoundary("MCU unknown IRAM register alias consumed through stack/return address");}
@@ -179,11 +189,16 @@ struct VdMcuCpu::Impl {
     }
     if(bitRead && operand==0xd0 && m.parityUnknown)
       throw VdHardwareBoundary("VD MCU unknown parity consumed through PSW");
+    if(bitRead && operand==0xd7 && !m.carryKnown)
+      throw VdHardwareBoundary("MCU unknown carry consumed through PSW bit");
     if(opcode==0xc0){
       uint8_t known=255;uint16_t origin=0;
       if(operand<128){known=m.registerKnown[operand];origin=m.registerOrigin[operand];}
       else if(operand==0xe0){known=m.aKnown;origin=m.aOrigin;}
-      else if(operand==0xd0 && m.parityUnknown){known=0xfe;origin=m.aOrigin;}
+      else if(operand==0xd0){
+        known=uint8_t((m.parityUnknown?0xfe:255)&(m.carryKnown?255:0x7f));
+        origin=m.parityUnknown && m.carryKnown?m.aOrigin:0;
+      }
       auto address=uint8_t(sp+1);
       m.registerKnown[address]=known;m.registerOrigin[address]=origin;
     }
@@ -191,8 +206,9 @@ struct VdMcuCpu::Impl {
       auto known=m.registerKnown[sp];auto origin=m.registerOrigin[sp];
       if(operand<128){m.registerKnown[operand]=known;m.registerOrigin[operand]=origin;}
       else if(operand==0xe0){m.aKnown=known;m.aOrigin=origin;m.parityUnknown=known!=255;}
-      else if((operand==0xd0 && (known&0xfe)!=0xfe) || (operand!=0xd0 && known!=255))
+      else if((operand==0xd0 && (known&0x7e)!=0x7e) || (operand!=0xd0 && known!=255))
         throw VdHardwareBoundary("MCU unknown stack byte affects SFR control/address");
+      if(operand==0xd0)m.carryKnown=(known&0x80)!=0;
     }
     if(opcode==0x12 || (opcode&0x1f)==0x11){
       for(unsigned i=1;i<=2;++i){auto address=uint8_t(sp+i);
@@ -219,13 +235,46 @@ struct VdMcuCpu::Impl {
         }
       }
     }
+    // Carry and ACC bits are separate architectural values. Permuting an
+    // invalid byte does not consume it, but must invalidate its former
+    // same-register RMW identity. In particular original AVD 1EDA rotates
+    // a masked configuration byte before selecting a code-table entry.
+    bool partialPermutation=false;
+    if((opcode==0x13 || opcode==0x33) && (m.aKnown!=255 || !m.carryKnown)){
+      auto before=m.aKnown;auto carry=m.carryKnown;
+      m.aKnown=opcode==0x13?uint8_t((before>>1)|(carry?0x80:0)):
+        uint8_t((before<<1)|(carry?1:0));
+      m.carryKnown=(before&(opcode==0x13?1:0x80))!=0;
+      m.aOrigin=0;m.parityUnknown=m.aKnown!=255;partialPermutation=true;
+    }else if(m.aKnown!=255 && (opcode==0x03 || opcode==0x23 || opcode==0xc4)){
+      auto before=m.aKnown;
+      m.aKnown=opcode==0x03?uint8_t((before>>1)|(before<<7)):
+        opcode==0x23?uint8_t((before<<1)|(before>>7)):uint8_t((before<<4)|(before>>4));
+      m.aOrigin=0;m.parityUnknown=m.aKnown!=255;partialPermutation=true;
+    }
+    if(opcode==0xc3 || opcode==0xd3 || ((opcode==0xc2 || opcode==0xd2) && operand==0xd7) ||
+       opcode==0xa2 || (opcode>=0x24 && opcode<=0x2f) || (opcode>=0xb4 && opcode<=0xbf) ||
+       (opcode>=0x34 && opcode<=0x3f) || (opcode>=0x94 && opcode<=0x9f) || opcode==0xa4 || opcode==0x84 ||
+       ((opcode==0x75 || opcode==0xf5 || (opcode>=0x88 && opcode<=0x8f)) && operand==0xd0) ||
+       (opcode==0x85 && cpu->mCodeMem[uint16_t(pc+2)]==0xd0))m.carryKnown=true;
     if(m.aKnown!=255){
       bool independent=opcode==0 || opcode==0x22 || opcode==0x32 || opcode==0x02 ||
         opcode==0x12 || (opcode&0x1f)==0x11 || opcode==0x80 || opcode==0x90 ||
-        opcode==0xa3 || opcode==0xf0 || opcode==0xc0 || opcode==0xd0;
+        opcode==0xa3 || opcode==0xf0 || opcode==0xc0 || opcode==0xd0 || opcode==0xc3 || opcode==0xd3 ||
+        opcode==0x40 || opcode==0x50 || partialPermutation;
       if(opcode==0x54 || opcode==0x44 || opcode==0x64){
         auto bits=cpu->mCodeMem[uint16_t(pc+1)];
         if(opcode!=0x64)m.aKnown|=opcode==0x54?uint8_t(~bits):bits;
+        m.parityUnknown=m.aKnown!=255;independent=true;
+      }
+      // AVD's original 0ECB ORL A,R5 merges a known low-six-bit field
+      // into an invalid same-origin register read. A fully known Rn has
+      // exactly the same bit-validity effect as an immediate operand.
+      // The usesRn guard above still rejects partially unknown operands.
+      if((opcode>=0x48 && opcode<=0x4f) || (opcode>=0x58 && opcode<=0x5f) ||
+         (opcode>=0x68 && opcode<=0x6f)){
+        auto bits=cpu->mLowerData[index];
+        if(opcode<0x60)m.aKnown|=opcode<0x50?bits:uint8_t(~bits);
         m.parityUnknown=m.aKnown!=255;independent=true;
       }
       bool overwrite=opcode==0xe4 || opcode==0x74 || opcode==0xe6 || opcode==0xe7 ||
@@ -233,6 +282,10 @@ struct VdMcuCpu::Impl {
         (opcode==0xe5 && cpu->mCodeMem[uint16_t(pc+1)]!=0xd0 && cpu->mCodeMem[uint16_t(pc+1)]!=0xe0);
       if(overwrite){m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;independent=true;}
       if(registerStore || registerImmediate || (opcode==0x75 && operand!=0xe0))independent=true;
+      // Original AVD 076E copies the known register index from direct IRAM
+      // into R3 while ACC still carries the masked value being stored.
+      // The directSource guard above verifies the source independently.
+      if(opcode>=0xa8 && opcode<=0xaf && operand<128)independent=true;
       if((opcode==0xc2 || opcode==0xd2) && (operand<0xe0 || operand>0xe7))independent=true;
       if(opcode==0x20 || opcode==0x30){
         auto bit=cpu->mCodeMem[uint16_t(pc+1)];
@@ -247,6 +300,8 @@ struct VdMcuCpu::Impl {
     }
     if(m.parityUnknown && opcode==0xe5 && cpu->mCodeMem[uint16_t(pc+1)]==0xd0)
       throw VdHardwareBoundary("VD MCU unknown parity consumed through PSW");
+    if(!m.carryKnown && opcode==0xe5 && cpu->mCodeMem[uint16_t(pc+1)]==0xd0)
+      throw VdHardwareBoundary("MCU unknown carry consumed through PSW byte");
     if(opcode==0x83 || opcode==0x93){
       auto base=opcode==0x83?uint16_t(pc+1):uint16_t(cpu->mSFR[REG_DPL]|(cpu->mSFR[REG_DPH]<<8));
       if(!m.byteKnown(uint16_t(base+cpu->mSFR[REG_ACC])))throw VdHardwareBoundary("VD MCU MOVC reads unwritten code byte");
@@ -307,14 +362,14 @@ void VdMcuCpu::resetProgramStorage(std::span<const uint8_t> code,
   cpu.instruction_boundary=Impl::boundary;
   m.executed=m.ticks=0;m.deferredKeyCount=0;
   if(!m.byteKnown){m.registerKnown.fill(255);m.registerOrigin.fill(0);}
-  m.byteKnown=std::move(byteKnown);m.running=true;m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;
+  m.byteKnown=std::move(byteKnown);m.running=true;m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;m.carryKnown=true;
   m.uartRegisters.fill({});m.uartTxPending=false;
 }
 void VdMcuCpu::step(){
   auto& m=*impl_;
   if(!m.running)throw VdHardwareBoundary("VD MCU dispatch while stopped");
   auto known=m.registerKnown;auto origins=m.registerOrigin;
-  auto accumulatorKnown=m.aKnown;auto accumulatorOrigin=m.aOrigin;auto parity=m.parityUnknown;
+  auto accumulatorKnown=m.aKnown;auto accumulatorOrigin=m.aOrigin;auto parity=m.parityUnknown;auto carry=m.carryKnown;
   try{
     auto previousInterrupt=m.context.cpu.mInterruptActive;
     if(tick(&m.context.cpu)){++m.executed;++m.total;}++m.ticks;
@@ -325,7 +380,7 @@ void VdMcuCpu::step(){
   }
   catch(...){
     m.registerKnown=known;m.registerOrigin=origins;
-    m.aKnown=accumulatorKnown;m.aOrigin=accumulatorOrigin;m.parityUnknown=parity;
+    m.aKnown=accumulatorKnown;m.aOrigin=accumulatorOrigin;m.parityUnknown=parity;m.carryKnown=carry;
     m.running=false;throw;
   }
 }
@@ -371,6 +426,9 @@ std::vector<uint8_t> VdMcuCpu::stateBytes()const{
     append(1,1);append(m.uartTxPending,1);
     for(const auto& v:m.uartRegisters){append(v.value,1);append(v.known,1);append(v.origin,2);}
   }
+  // Existing all-known-carry fingerprints retain their exact byte layout.
+  // An unknown carry is additional state and cannot hash as a known flag.
+  if(!m.carryKnown){append(0x434b,2);append(0,1);}
   return b;
 }
 }

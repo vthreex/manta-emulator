@@ -1,5 +1,19 @@
 # Status of the research build
 
+Latest [connected AVD diagnostic](avd-shared-prefix.md) executes 379 original
+AVD instructions with shared RIU backing, seven genuine register stores and
+sixteen private-RAM stores. Startup control effects and the bus/clock mapping
+remain explicit hypotheses. The next AVD boundary is `1C26`, consuming captured
+unknown XDATA `119C` (candidate `BF206B38`). No request or idle byte is invented;
+main remains at `805032A0 / BF206BB8` after 854,795,125 dispatches. Main coverage,
+UART and all earlier non-AVD summary fields are unchanged. Strict/default AVD
+still stops at `0802/C008`. No ZUI dispatcher or authentic pixels yet.
+1,387 native checks and all regression suites pass. The complete new-mode
+replay matches all 6,592,227 events, summary, coverage and PM history; see the
+[validation manifest](../evidence/avd-shared-validation.json).
+
+The following paragraphs preserve earlier checkpoints.
+
 Latest [VIF zero-energy experiment](vif-zero-energy-experiment.md) implements
 an opt-in, configuration-gated ideal IF/gain equilibrium model. The original
 VIF handler passes `80509D54` and returns; main reaches `805032A0 / BF206BB8`

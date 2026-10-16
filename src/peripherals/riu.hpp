@@ -1,6 +1,7 @@
 #pragma once
 #include "peripherals/pm_ir_fifo.hpp"
 #include "peripherals/vif_zero_input.hpp"
+#include "peripherals/avd_mcu_bus.hpp"
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -48,6 +49,9 @@ class Riu {
   AvdMcuProgram avdMcuProgram_;
   VdMcuCpu vdMcuCpu_;
   VdMcuCpu avdMcuCpu_;
+  AvdMcuBus avdMcuBus_;
+  uint64_t avdTick_=0;
+  void advanceAvd(uint64_t tick);
   AudioIdma audioIdma_[2];
   bool avdMcuSuspended_=false;
   std::string avdMcuBoundaryReason_;
@@ -158,6 +162,10 @@ public:
   bool candidateAudioIdma=false;
   const AudioIdma& audioIdma(unsigned i)const{return audioIdma_[i];}
   bool exploratoryAvdMcuStartup=false,exploratoryAvdSuspendedBoundary=false;
+  bool exploratoryAvdSharedRun=false,diagnosticAvdDeferredStartup=false;
+  uint64_t avdDispatchDivider=32,avdInstructionBudget=1000000;
+  const AvdMcuBus& avdMcuBus()const{return avdMcuBus_;}
+  std::string avdSharedStateSha()const;
   const VdMcuCpu& avdMcuCpu()const{return avdMcuCpu_;}
   bool avdMcuSuspended()const{return avdMcuSuspended_;}
   const std::string& avdMcuBoundaryReason()const{return avdMcuBoundaryReason_;}

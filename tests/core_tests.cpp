@@ -1950,6 +1950,111 @@ void vifZeroInputTests(){
   require(bus.stopReason.empty() && bus.knownBits(0x1f22465d,1)==31 && bus.knownBits(0x1f224650,2)==0,
     "RIU publishes only the supported hypothetical fields, preserving invalid VGA and PGA high bits");
 }
+void avdBusTests(){
+  for(auto opcode:{0x03,0x23,0xc4,0x13,0x33}){
+    bool exact=true;
+    for(unsigned value=0;value<256;++value)for(auto known:{0u,1u,8u,128u,255u}){
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      for(auto b:{0x90,0x11,0x9c,0xe0,0xc3,opcode,0xf0,0x40,0})p.write(0x18,uint8_t(b));
+      manta::VdMcuCpu cpu;manta::VdByte written{};
+      cpu.busRead=[&](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{uint8_t(value),uint8_t(known),a};};
+      cpu.busWrite=[&](uint16_t,manta::VdByte v){written=v;return true;};cpu.resetProgram(p);
+      while(cpu.instructions()<5)cpu.step();
+      auto permute=[&](unsigned v,bool validity){switch(opcode){
+        case 0x03:return uint8_t((v>>1)|(v<<7));case 0x23:return uint8_t((v<<1)|(v>>7));
+        case 0xc4:return uint8_t((v<<4)|(v>>4));case 0x13:return uint8_t((v>>1)|(validity?0x80:0));
+        default:return uint8_t((v<<1)|(validity?1:0));}};
+      exact &= written.value==permute(value,false) && written.known==permute(known,true);
+      if(known!=255)exact &= written.origin==0; // permuted unknowns cannot masquerade as a same-byte RMW
+      bool rejected=false;try{while(cpu.instructions()<6)cpu.step();}catch(const manta::VdHardwareBoundary&){rejected=true;}
+      bool carryUnknown=(opcode==0x13 && !(known&1)) || (opcode==0x33 && !(known&0x80));
+      exact &= rejected==carryUnknown;
+    }
+    require(exact,"all-byte rotate/swap validity matches executed CPU results; unknown carry cannot control JC; permuted origins cannot escape as a masked restore");
+  }
+  for(auto tail:std::vector<std::vector<uint8_t>>{{0xc0,0xd0,0xc3,0xd0,0xd0,0x50,0},
+       {0xe4,0x34,0},{0xe4,0xa2,0xd7},{0xe4,0x92,0x00},{0xe4,0x24,0,0x50,0}}){
+    manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+    for(auto b:{0x90,0x11,0x9c,0xe0,0xc3,0x13})p.write(0x18,uint8_t(b));
+    for(auto b:tail)p.write(0x18,b);
+    manta::VdMcuCpu cpu;cpu.busRead=[](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{0xa5,0,a};};
+    cpu.resetProgram(p);bool unknownCarry=false;
+    try{for(unsigned i=0;i<100;++i)cpu.step();}catch(const manta::VdHardwareBoundary& e){unknownCarry=std::string(e.what()).find("unknown carry")!=std::string::npos;}
+    require(unknownCarry==(tail[1]!=0x24),"unknown carry survives PSW push/pop and ACC overwrite; ADD replaces it but ADC/PSW/bit writes cannot consume it");
+  }
+  {
+    // Architectural scheduling fixture, not a TV boot or injected firmware
+    // reply: the MCU itself executes MOV DPTR / MOV A / MOVX / SJMP.
+    manta::Riu r;r.event=[](auto,auto,auto,auto,auto){};r.symbolicInit=true;
+    r.candidateAvdMcuProgram=true;r.exploratoryAvdMcuStartup=true;r.exploratoryAvdSharedRun=true;
+    uint64_t tick=0;auto w=[&](unsigned off,unsigned v,uint64_t at){r.write(0x1f2068c0+off,1,v,0,255,at);};
+    w(1,0,++tick);w(5,0x51,++tick);w(8,0,++tick);w(9,0,++tick);
+    for(auto b:{0x90,0x11,0xdc,0x74,0x09,0xf0,0x80,0xfe})w(0x18,b,++tick);
+    w(5,0,++tick);w(1,1,++tick);w(8,0,10000);
+    require(r.avdMcuCpu().instructions()==0 && r.knownBits(0x1f206bb8,1)==0,
+      "new scheduler cannot assume a power-on freeze value or manufacture an idle command");
+    w(0,1,10001);w(8,0,1000000);
+    require(r.avdMcuCpu().instructions()==0,"original freeze bit pauses genuine MCU dispatch");
+    w(0,0,1000001);
+    require(r.read(0x1f206bb8,1,0,255,1000321)==9 && r.avdMcuBus().sharedWrites==1,
+      "after explicit unfreeze, original MOVX instruction publishes a request into actual MIPS-visible backing");
+    auto count=r.avdMcuCpu().instructions();w(0,1,1000321);w(8,0,2000000);
+    require(r.avdMcuCpu().instructions()==count && r.knownBits(0x1f206bb8,1)==255,
+      "later freeze retains CPU/request state without accruing instruction debt");
+    rejects([&]{w(8,0,1999999);});
+    require(r.avdMcuCpu().instructions()==count,"AVD scheduler rejects backwards virtual time without executing guest instructions");
+  }
+  for(auto opcode:{0x4d,0x5d,0x6d}){
+    bool exact=true;
+    for(unsigned value=0;value<256;++value)for(auto mask:{0u,0x3du,0xc0u,255u}){
+      manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+      for(auto b:{0x90,0x11,0x58,0xe0,0x7d,int(mask),opcode,0xab,0x07,0xc3,0xf0})p.write(0x18,uint8_t(b));
+      manta::VdMcuCpu cpu;manta::VdByte written{};unsigned writes=0;
+      cpu.busRead=[&](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{uint8_t(value),0,a};};
+      cpu.busWrite=[&](uint16_t a,manta::VdByte v){written=v;++writes;return a==0x1158;};
+      cpu.resetProgram(p);while(cpu.instructions()<7)cpu.step();
+      auto expected=opcode==0x4d?(value|mask):opcode==0x5d?(value&mask):(value^mask);
+      auto known=opcode==0x4d?mask:opcode==0x5d?uint8_t(~mask):0;
+      exact &= writes==1 && written.value==expected && written.known==known && written.origin==0x1158;
+    }
+    require(exact,"8051 register AND/OR/XOR preserves per-bit unknown provenance for every source byte and boundary mask");
+  }
+  manta::AvdMcuBus bus;std::map<uint32_t,manta::VdByte> shared;
+  bus.sharedRead=[&](uint32_t a){return shared[a];};bus.sharedWrite=[&](uint32_t a,manta::VdByte v){shared[a]=v;};
+  require(bus.sharedAddress(0x11dc)==0x1f206bb8 && bus.sharedAddress(0x11dd)==0x1f206bb9 &&
+    bus.sharedAddress(0x11de)==0x1f206bbc && bus.sharedAddress(0x11df)==0x1f206bbd,
+    "original AVD command/payload aliases match complete original MIPS host-service protocol");
+  require(bus.sharedAddress(0x11c0)==0x1f206b80 && bus.sharedAddress(0x1200)==0x1f206c00 &&
+    !bus.sharedAddress(0xc008) && !bus.sharedAddress(0x101a),"AVD watchdog/internal config are never confused with AFEC/COMB aliases");
+  require(bus.read(0x11dc)->known==0 && bus.read(0x11dc)->origin==0x11dc,
+    "new shared bus has no invented idle command");
+  require(!bus.write(0xc008,{0x55,255,0}) && !bus.deferSfr(0x8e,{1,255,0}),
+    "default AVD hardware rejects unresolved startup writes");
+  bus.configureDeferredStartup();
+  for(auto [address,value]:std::array<std::pair<uint16_t,uint8_t>,4>{{{0xc008,0x55},{0xc009,0xaa},{0x101a,6},{0x101b,7}}}){
+    require(bus.write(address,{value,255,0}) && !bus.read(address),
+      "explicit diagnostic retains exact original startup writes without fabricating device readback");
+    require(!bus.write(address,{uint8_t(value^1),255,0}) && !bus.write(address,{value,0,address}),
+      "other or unknown startup configuration never accepted");
+  }
+  for(auto [address,value]:std::array<std::pair<uint8_t,uint8_t>,3>{{{0xd8,0},{0x8e,1},{0xe2,0}}})
+    require(bus.deferSfr(address,{value,255,0}) && !bus.deferSfr(address,{value,0,0}),
+      "diagnostic SFR writes require defined original data; no SFR output supplied");
+  require(bus.configurationWrites==7 && bus.read(0x11dc)->known==0,
+    "unresolved startup configurations cannot create an AVD command");
+  require(bus.write(0x11dc,{9,255,0}) && shared[0x1f206bb8].value==9 &&
+    bus.read(0x11dc)->known==255,"actual MCU store publishes command through shared bytes");
+  shared[0x1f206bb8]={1,255,0};
+  require(bus.read(0x11dc)->value==1,"actual MIPS command clear is visible to MCU; bus does not manufacture completion");
+  require(bus.write(0x11dc,{1,12,0x11dc}) && shared[0x1f206bb8].known==12 &&
+    !bus.write(0x11dd,{0,0,0x11dc}) && !bus.write(0x1200,{0,1,0x1200}),
+    "same-byte AFEC masks preserve invalid fields; foreign and bank-ambiguous COMB restores reject");
+  require(bus.read(0x8000)->known==0 && bus.read(0x8000)->origin==0x8000 &&
+    bus.read(0x8001)->origin==0x8001,"unwritten private XRAM retains distinct invalid origins");
+  require(bus.write(0x8000,{0xa5,0x0f,0x11dc}) && bus.read(0x8000)->known==0x0f &&
+    bus.read(0x8000)->origin==0x11dc,"private RAM copying preserves unknown peripheral provenance");
+  require(!bus.write(0x8100,{0,255,0}) && !bus.read(0x8100),"private XRAM extent remains bounded");
+}
 int main() {
   try {
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
@@ -2317,6 +2422,7 @@ int main() {
     }
     vdSharedExecutionTests();
     vifZeroInputTests();
+    avdBusTests();
     flashTests();
     riuTests();
     bdmaCopyTests();

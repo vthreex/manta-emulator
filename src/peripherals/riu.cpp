@@ -145,6 +145,36 @@ void Riu::advanceVd(uint64_t tick){
     event("exploratory_vd_boundary_suspension",0,0,vdMcuCpu_.pc(),"scheduled original MCU stopped on unresolved hardware: "+vdMcuBoundaryReason_);
   }
 }
+void Riu::advanceAvd(uint64_t tick){
+  if(!exploratoryAvdSharedRun || avdMcuSuspended_ || !avdMcuCpu_.running())return;
+  if(tick<avdTick_)throw std::runtime_error("AVD virtual time moved backwards");
+  // Original 80504434 HAL_AVD_VDMCU_SetFreeze programs bit0 separately
+  // from program-port hold. No unknown power-on freeze value is selected:
+  // begin diagnostic scheduling only after the guest explicitly unfreezes.
+  if(avdMcuProgram_.held() || !(knownBits(0x1f2068c0,1)&1) || (get(0x1f2068c0,1)&1)){
+    avdTick_=tick;return;
+  }
+  try{
+    while(tick-avdTick_>=avdDispatchDivider){
+      if(executionStopped && executionStopped())return;
+      if(avdMcuCpu_.totalInstructions()>=avdInstructionBudget)
+        throw VdHardwareBoundary("AVD original-instruction diagnostic budget reached; no hardware completion inferred");
+      avdTick_+=avdDispatchDivider;avdMcuCpu_.step();
+    }
+  }catch(const VdHardwareBoundary& boundary){
+    avdMcuBoundaryReason_=boundary.what();
+    if(!exploratoryAvdSuspendedBoundary)throw;
+    avdMcuSuspended_=true;
+    event("exploratory_avd_boundary_suspension",0,0,avdMcuCpu_.pc(),
+      "scheduled original AVD stopped on unresolved input/effect: "+avdMcuBoundaryReason_);
+  }
+}
+std::string Riu::avdSharedStateSha()const{
+  auto bytes=avdMcuCpu_.stateBytes(),bus=avdMcuBus_.stateBytes();bytes.insert(bytes.end(),bus.begin(),bus.end());
+  for(auto value:{avdTick_,avdDispatchDivider,avdInstructionBudget})for(unsigned i=0;i<8;++i)bytes.push_back(uint8_t(value>>(8*i)));
+  bytes.push_back(uint8_t(avdMcuSuspended_));bytes.push_back(uint8_t(avdMcuProgram_.held()));
+  return sha256(bytes);
+}
 std::string Riu::tspCoreStateSha()const{
   auto bytes=tspCpu_.stateBytes(),qmem=tspDownload_.stateBytes();bytes.insert(bytes.end(),qmem.begin(),qmem.end());
   for(unsigned i=0;i<8;++i)bytes.push_back(uint8_t(tspCpuTick_>>(i*8)));
@@ -521,6 +551,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   advancePm(tick);
   advanceTsp(tick);
   advanceVd(tick);
+  advanceAvd(tick);
   if(a==0x1f001d84 && n==1 && pmPowerGood_.configured()){
     auto input=pmPowerGood_.sample();
     event("exploratory_pm_power_good",a,n,input.value,
@@ -808,6 +839,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   advancePm(tick);
   advanceTsp(tick);
   advanceVd(tick);
+  advanceAvd(tick);
   if(candidatePmIrFifo_ && a<=0x1f007b59 && uint64_t(a)+n>0x1f007b59)
     throw std::runtime_error("PM IR FIFO status is hardware-owned, not writable storage");
   if(candidatePmIrFifo_ && a<=0x1f007b51 && uint64_t(a)+n>0x1f007b51)
@@ -943,8 +975,19 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         avdMcuCpu_.specialRegister=[this](uint8_t address,bool write,uint8_t value){
           event("avd_mcu_sfr_unresolved",address,1,value,std::string(write?"write":"read")+"; original AVD nonstandard SFR remains unmodeled");
         };
-        avdMcuCpu_.resetProgram(avdMcuProgram_);
-        try{
+        if(exploratoryAvdSharedRun){
+          if(!avdDispatchDivider || !avdInstructionBudget)throw std::runtime_error("invalid AVD diagnostic scheduler configuration");
+          avdMcuBus_.event=[this](const auto& k,auto a,auto n,auto v,const auto& d){event(k,a,n,v,d);};
+          avdMcuBus_.sharedRead=[this](uint32_t a){return VdByte{uint8_t(get(a,1)),uint8_t(knownBits(a,1)),0};};
+          avdMcuBus_.sharedWrite=[this](uint32_t a,VdByte v){bytes_[storageKey(a)]={v.value,v.known};};
+          if(diagnosticAvdDeferredStartup)avdMcuBus_.configureDeferredStartup();
+          avdMcuCpu_.busRead=[this](uint16_t a){return avdMcuBus_.read(a);};
+          avdMcuCpu_.busWrite=[this](uint16_t a,VdByte v){return avdMcuBus_.write(a,v);};
+          avdMcuCpu_.unsupportedSfrWrite=[this](uint8_t a,VdByte v){return avdMcuBus_.deferSfr(a,v);};
+          avdMcuCpu_.standardInterrupts=true;
+        }
+        avdMcuCpu_.resetProgram(avdMcuProgram_);avdTick_=tick;
+        if(!exploratoryAvdSharedRun)try{
           // Bounded startup diagnostic only: no unsupported clock ratio or
           // peripheral reset value is installed. Stop at the first boundary.
           for(unsigned i=0;i<10000;++i)avdMcuCpu_.step();

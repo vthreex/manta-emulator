@@ -1,6 +1,7 @@
 // Executes the original AVD upload independently. No guessed XDATA/SFRs,
 // DSP readiness or television boot progress are supplied by this diagnostic.
 #include "cpu/vd_mcu.hpp"
+#include "peripherals/avd_mcu_bus.hpp"
 #include "storage/sha256.hpp"
 #include "cpu/third_party/emu8051/emu8051.h"
 #include <fstream>
@@ -23,7 +24,8 @@ int main(int argc,char** argv){try{
       std::cout<<std::hex<<pc<<' '<<text<<'\n';pc+=n;}
     return 0;
   }
-  check(argc==2 || argc==4,"supply the original 13312-byte AVD payload [disassembly start end]");
+  bool shared=argc==3 && std::string(argv[2])=="--deferred-shared-prefix";
+  check(argc==2 || argc==4 || shared,"supply the original 13312-byte AVD payload [disassembly start end | --deferred-shared-prefix]");
   std::ifstream f(argv[1],std::ios::binary);
   std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});
   check(code.size()==13312 && manta::sha256(code)=="48ab58a5689d3135b2cdf78fa77da92fa912776f741c33c7afa97fdcfc4ee4fd",
@@ -42,6 +44,17 @@ int main(int argc,char** argv){try{
   p.write(8,0,255);p.write(9,0,255);for(auto b:code)check(p.read()==b,"AVD port readback mismatch");
   p.write(5,0,255);check(p.write(1,1,255),"original program release missing");
   manta::VdMcuCpu cpu;std::set<uint16_t> visits;
+  manta::AvdMcuBus bus;std::map<uint32_t,manta::VdByte> registers;
+  if(shared){
+    std::cout<<"DIAGNOSTIC original startup writes retained; no asynchronous reset/clock disturbance during bounded prefix is an EXPLORATORY assumption; no input/readback/ready value supplied\n";
+    bus.configureDeferredStartup();
+    bus.sharedRead=[&](uint32_t a){return registers[a];};
+    bus.sharedWrite=[&](uint32_t a,manta::VdByte v){registers[a]=v;};
+    bus.event=[](const auto& k,auto a,auto,auto v,const auto& d){std::cout<<k<<" address 0x"<<std::hex<<a<<" value 0x"<<v<<" "<<d<<'\n';};
+    cpu.busRead=[&](uint16_t a){return bus.read(a);};cpu.busWrite=[&](uint16_t a,manta::VdByte v){return bus.write(a,v);};
+    cpu.unsupportedSfrWrite=[&](uint8_t a,manta::VdByte v){return bus.deferSfr(a,v);};
+    cpu.standardInterrupts=true;
+  }
   cpu.instruction=[&](uint16_t pc,uint8_t opcode,const std::string& s){
     check(pc<code.size() && opcode==code[pc],"AVD opcode differs from uploaded original");
     if(visits.insert(pc).second)std::cout<<std::hex<<std::setfill('0')<<std::setw(4)<<pc<<' '<<std::setw(2)<<unsigned(opcode)<<' '<<s<<'\n';
@@ -54,5 +67,8 @@ int main(int argc,char** argv){try{
   check(!boundary.empty(),"AVD did not reach an observable hardware boundary within budget");
   std::cout<<"AVD_BOUNDARY "<<boundary<<'\n';
   std::cout<<"AVD_ORIGINAL_INSTRUCTIONS "<<std::dec<<cpu.totalInstructions()<<" PC 0x"<<std::hex<<cpu.pc()<<" SP 0x"<<unsigned(cpu.stack())<<'\n';
+  if(shared)std::cout<<"AVD_SHARED_PREFIX instructions="<<std::dec<<cpu.totalInstructions()<<" configurations="<<bus.configurationWrites
+    <<" shared_reads="<<bus.sharedReads<<" shared_writes="<<bus.sharedWrites<<" ram_writes="<<bus.ramWrites
+    <<" interrupts="<<cpu.interruptEntries()<<" state="<<manta::sha256(bus.stateBytes())<<'\n';
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

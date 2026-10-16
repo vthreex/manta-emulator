@@ -54,6 +54,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     throw std::runtime_error("AVD boundary suspension requires original auxiliary instruction execution");
   riu_.exploratoryAvdMcuStartup=o.exploratoryAvdMcuStartup;
   riu_.exploratoryAvdSuspendedBoundary=o.exploratoryAvdSuspendedBoundary;
+  if(o.exploratoryAvdSharedRun && (!o.exploratoryAvdMcuStartup || !o.symbolicInit || !o.deferDiagnosticReads ||
+      !o.avdDivider || o.avdDivider>4096 || !o.avdBudget || o.avdBudget>100000000))
+    throw std::runtime_error("AVD shared execution requires guarded uploaded startup, explicit bounded scheduling and unknown-value guards");
+  if(o.diagnosticAvdDeferredStartup && !o.exploratoryAvdSharedRun)
+    throw std::runtime_error("AVD unresolved startup-write retention requires the separate shared-run diagnostic; no effects/reset values inferred");
+  riu_.exploratoryAvdSharedRun=o.exploratoryAvdSharedRun;
+  riu_.diagnosticAvdDeferredStartup=o.diagnosticAvdDeferredStartup;
+  riu_.avdDispatchDivider=o.avdDivider;riu_.avdInstructionBudget=o.avdBudget;
   if(o.deferVdResetKeyWrites && (!o.deferVdSfr8eWrite || !o.exploratoryVdMcuStartup))
     throw std::runtime_error("VD reset-key write deferral requires explicit SFR deferral and original startup experiment");
   riu_.deferVdResetKeyWrites=o.deferVdResetKeyWrites;
@@ -1719,6 +1727,17 @@ std::string Msd309Machine::summary() const {
       <<",\n  \"avd_mcu_instructions\": "<<riu_.avdMcuCpu().totalInstructions();
     if(options_.exploratoryAvdMcuStartup)s<<",\n  \"exploratory_avd_mcu_startup\": true,\n  \"avd_mcu_pc\": \""<<hex(riu_.avdMcuCpu().pc())
       <<"\",\n  \"avd_mcu_suspended\": "<<(riu_.avdMcuSuspended()?"true":"false");
+    if(options_.exploratoryAvdSharedRun)s<<",\n  \"exploratory_avd_shared_run\": true"
+      <<",\n  \"diagnostic_avd_deferred_startup_writes\": "<<(options_.diagnosticAvdDeferredStartup?"true":"false")
+      <<",\n  \"avd_dispatch_divider\": "<<options_.avdDivider<<",\n  \"avd_instruction_budget\": "<<options_.avdBudget
+      <<",\n  \"avd_interrupt_entries\": "<<riu_.avdMcuCpu().interruptEntries()
+      <<",\n  \"avd_shared_register_reads\": "<<riu_.avdMcuBus().sharedReads
+      <<",\n  \"avd_shared_register_writes\": "<<riu_.avdMcuBus().sharedWrites
+      <<",\n  \"avd_private_ram_reads\": "<<riu_.avdMcuBus().ramReads<<",\n  \"avd_private_ram_writes\": "<<riu_.avdMcuBus().ramWrites
+      <<",\n  \"avd_deferred_configuration_writes\": "<<riu_.avdMcuBus().configurationWrites
+      <<",\n  \"avd_hardware_boundary_reason\": "<<std::quoted(riu_.avdMcuBoundaryReason())
+      <<",\n  \"avd_shared_state_sha256\": \""<<riu_.avdSharedStateSha()<<"\""
+      <<",\n  \"avd_shared_mapping_clock_reset_verified\": false";
   }
   if(options_.candidateAudioIdma){
     // Existing audio diagnostics retain invalid ACK bytes independently of PM.

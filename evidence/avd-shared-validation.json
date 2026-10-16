@@ -1,0 +1,90 @@
+{
+  "base_git": "b67392d",
+  "scope": "candidate AVD shared mapping/clock and deferred startup-effect experiment; NOT verified cold boot or OSD",
+  "native_checks": 1387,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "reports": {
+    "cold-summary": {
+      "file": "avd-shared-cold-summary.json.gz",
+      "sha256_uncompressed": "2b8a435a76c978ca2a39b4460f2752503ac09293f55fd738416ef10104ff9ea6"
+    },
+    "full-replay": {
+      "file": "avd-shared-full-replay.json.gz",
+      "sha256_uncompressed": "bfa627adf3b755b4fe2baf6ede1450e56147f59272827bc6ebb2a5084492966e"
+    },
+    "analysis": {
+      "file": "avd-shared-analysis.json.gz",
+      "sha256_uncompressed": "a9c4bf0c71177a173596edfe0addba078211f8f9eccab15f526c6743a8169d98"
+    },
+    "baseline-regression": {
+      "file": "avd-shared-baseline-regression.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display-regression": {
+      "file": "avd-shared-display-regression.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "clock-regression": {
+      "file": "avd-shared-clock-regression.json.gz",
+      "sha256_uncompressed": "4bbe223f3d5877131b10fcd3ef6e6961afd076115eb9f4107ab504b7a09ba81d"
+    },
+    "AVD-regression": {
+      "file": "avd-shared-AVD-regression.json.gz",
+      "sha256_uncompressed": "8b229c8fa35cdef6b7dd556df2c82065246fae8628baa085a015e777976a99a8"
+    },
+    "DVB-T-regression": {
+      "file": "avd-shared-DVB-T-regression.json.gz",
+      "sha256_uncompressed": "bc10fd5778faa8144e543a2997f1983636983d65e71d73f3e1653f0317bba694"
+    },
+    "PM51-regression": {
+      "file": "avd-shared-PM51-regression.json.gz",
+      "sha256_uncompressed": "9e79b279c32604c083d0cd328d0f9cf59f5df96592fb8f3a99569487b30fd848"
+    },
+    "copro-regression": {
+      "file": "avd-shared-copro-regression.json.gz",
+      "sha256_uncompressed": "e9073952f5e323048d1b72acf3613c6df1fbac03333068c2faff138432896ba8"
+    },
+    "immutable-regression": {
+      "file": "avd-shared-immutable-regression.json.gz",
+      "sha256_uncompressed": "1dc5131b12d620147ed8f628a7156f82f042c2fcfa1ea6c5a0855232c6a7a8f1"
+    },
+    "DSP-decoder-regression": {
+      "file": "avd-shared-DSP-decoder-regression.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "VIF-regression": {
+      "file": "avd-shared-VIF-regression.json.gz",
+      "sha256_uncompressed": "cb861ee5b6b11bc83cf4c7a70f99357c6bb2652c6658980c9c6d982b936a5eef"
+    },
+    "AVD-request-regression": {
+      "file": "avd-shared-AVD-request-regression.json.gz",
+      "sha256_uncompressed": "c5bca99206af49eb9a3ee1074d71e5489826c776fe5f6dc923d433f143b36f3e"
+    },
+    "packaged-window": {
+      "file": "avd-shared-packaged-window.json.gz",
+      "sha256_uncompressed": "94bc5cd01014b0774135ac630c0d40a2f5f41f89229664808b1bb6980ddedfce"
+    }
+  },
+  "strict_AVD_instructions": 6,
+  "conditional_AVD_instructions": 379,
+  "invented_idle_command": false,
+  "original_firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "binaries": {
+    "manta.exe": "f5dcc5a300f3ce5ca2d14538d2c3be85d4aa68f2340395263b91bae741649151",
+    "core_tests.exe": "e8970f460a42ffc075a3792239c4fb8281a43ec7f4effe4e7bd902fae7fa80b7",
+    "avd_mcu_probe.exe": "062c513976920ebf0a2ed7b66ca2414c45559011ebd97e3cd70aa7e34d03af6c",
+    "vd_mcu_probe.exe": "2f410ed92b0dc8e0692717cc8ce5560a2d27d81fcd505f92d4916fec893cf746"
+  },
+  "native_stdout": "1387 checks passed",
+  "raw_trace_private_path": "<private-trace-cache>\\trace-cache-2026-10-13\\avd-shared-final-cold.jsonl",
+  "trace_sha256": "3d7b828b406e228bfb4568fe945931d301ccbb5ce1c9bb3b209dc848eb12dc2a",
+  "trace_events": 6592227,
+  "MIPS_dispatches": 854795125,
+  "MIPS_stop_pc": "0x805032a0",
+  "AVD_pc": "0x1C26",
+  "coverage_sha256": "d7bfcc70fd232484fb0d1076c48c43ffba9d7eeb5c29a6c34d3291728d132093",
+  "PM51_history_sha256": "d5366f766c3c7962f68627ae1be4ab485aa31e5ed552ac1b107ffee1cc4b7487"
+}

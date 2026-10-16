@@ -33,6 +33,9 @@ public:
   std::function<void(uint16_t,uint8_t)> deferredResetKey;
   std::function<std::optional<VdByte>(uint16_t)> busRead;
   std::function<bool(uint16_t,VdByte)> busWrite;
+  // Optional peripheral callback; false retains the unsupported-SFR boundary.
+  // It supplies no SFR read value and never marks a deferred effect known.
+  std::function<bool(uint8_t,VdByte)> unsupportedSfrWrite;
   bool standardInterrupts=false;
   bool candidateR8051Uart=false; // configuration only; no guessed RX/TX completion
   void resetProgram(VdMcuProgram& program);

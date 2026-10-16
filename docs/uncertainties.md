@@ -1,5 +1,16 @@
 # Evidence still needed
 
+The [connected AVD diagnostic](avd-shared-prefix.md) now reaches original
+`1C26` after 379 instructions, requiring bits 1, 2 and 4 from captured native
+`119C` for its first table address. Candidate `BF206B38` has an identified
+MIPS Hsync-sensitivity configuration writer, but it has not executed and the
+native mapping/reset value remain unverified. Seven startup writes may retire
+only under a separately enabled deferred-effect hypothesis. No C008 watchdog
+disable, readback, clock behavior, idle command or request completion is proved.
+Default startup still stops at `0802/C008`; main still stops at
+`805032A0/BF206BB8`. Full replay validates determinism, not these hardware
+assumptions. Subsequent paragraphs retain their historical scope.
+
 The new [ideal zero-energy VIF experiment](vif-zero-energy-experiment.md) lets
 the original handler return under an explicitly configured gain/clock/settling
 hypothesis. It does not establish actual disconnected-antenna measurements;

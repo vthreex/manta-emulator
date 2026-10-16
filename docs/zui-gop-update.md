@@ -1,5 +1,11 @@
 # Original ZUI entry and GOP update boundary
 
+The [connected AVD investigation](avd-shared-prefix.md) preserves the same
+main coverage: `80488844`, `8045CFC4`, `8046CA74` and `805016C8` execute, but
+the AVD service has not returned to `8050170C`. The next application call at
+`80488864`, ZUI wrapper `8047602C`, dispatcher call `8047606C` and dispatcher
+`804E0DC4` remain unentered. The new auxiliary prefix is not graphics progress.
+
 Latest [VIF continuation](vif-zero-energy-experiment.md) reaches the original
 AVD host-register service at `805032A0/BF206BB8` after an explicitly hypothetical
 ideal-input AGC return. ZUI initialization/return remain demonstrated; dispatcher

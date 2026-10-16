@@ -19,6 +19,16 @@ with tempfile.TemporaryDirectory(prefix='manta-original-avd-') as directory:
     assert 'AVD_ORIGINAL_INSTRUCTIONS 6 PC 0x802 SP 0xae' in lines
     assert any(x.startswith('AVD_BOUNDARY ') and 'address 0xc008' in x for x in lines)
     assert '0000 02 LJMP  #0003h' in lines and '0219 f1 ACALL 07FDh' in lines
+    prefixes=[subprocess.run([a.probe,str(image),'--deferred-shared-prefix'],text=True,capture_output=True) for _ in range(2)]
+    assert all(x.returncode==0 for x in prefixes),[(x.returncode,x.stderr) for x in prefixes]
+    assert prefixes[0].stdout==prefixes[1].stdout,'all original AVD instructions, writes and unknown-state fingerprints must replay'
+    prefix=prefixes[0].stdout
+    assert 'AVD_ORIGINAL_INSTRUCTIONS 379 PC 0x1c26 SP 0xb4' in prefix
+    assert 'configurations=7 shared_reads=3 shared_writes=7 ram_writes=16 interrupts=0' in prefix
+    assert '1eda 13 RRC' in prefix and '1c24 54 ANL' in prefix and '1c26 24 ADD' not in prefix
+    assert 'avd_shared_register_read address 0x1f206b38' in prefix and 'known=0' in prefix
+    assert 'avd_shared_register_write address 0x1f206bb8' not in prefix,'startup configuration cannot invent an idle/request command'
+    assert 'AVD_BOUNDARY AVD MCU unknown XDATA bits affect instruction/decision/address' in prefix
     pm=stock[0x10000:0x20000]
     assert hashlib.sha256(pm).hexdigest()=='5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c'
     candidate=Path(directory)/'original-pm-candidate.bin';candidate.write_bytes(pm)
@@ -33,5 +43,9 @@ report={'result':'PASS','scope':'original AVD auxiliary diagnostic, not complete
         'stdout':r.stdout,'probe_sha256':hashlib.sha256(Path(a.probe).read_bytes()).hexdigest(),
         'PM51_candidate_static_disassembly':'PASS; reset LJMP 60D8 and truncated-range rejection; no PM execution',
         'PM51_candidate_sha256':hashlib.sha256(pm).hexdigest()}
+report['conditional_shared_prefix']={'result':'PASS; exact two-run replay','instructions':379,'pc':'0x1C26',
+    'unresolved_source_xdata':'0x119C','unresolved_source_MIPS_alias':'0xBF206B38',
+    'scope':'explicit deferred-startup effects and candidate bus/standard-clock experiment, NOT verified AVD hardware startup',
+    'invented_read_or_idle_values':False,'startup_command_written':False,'stdout':prefix}
 Path(a.report).write_text(json.dumps(report,indent=2)+'\n')
 print('PASS: original AVD reset/startup instructions; first unknown transaction stopped without acknowledgment')

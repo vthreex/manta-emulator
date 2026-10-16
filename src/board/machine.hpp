@@ -73,6 +73,8 @@ struct Options {
   bool candidateAudioIdma=false;
   bool exploratoryAudioNoAck=false;
   bool exploratoryAvdMcuStartup=false,exploratoryAvdSuspendedBoundary=false;
+  bool exploratoryAvdSharedRun=false,diagnosticAvdDeferredStartup=false;
+  uint64_t avdDivider=32,avdBudget=1000000;
   bool exploratoryVdMcuStartup=false;
   bool deferVdSfr8eWrite=false;
   bool deferVdResetKeyWrites=false;
