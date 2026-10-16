@@ -1,0 +1,96 @@
+{
+  "result": "PASS",
+  "base_git": "3033b23",
+  "scope": "isolated original OSD3 paint and GE clip execution; no connected rendering change",
+  "reports": {
+    "zui-paint-audio": {
+      "file": "zui-paint-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "zui-paint-avd": {
+      "file": "zui-paint-avd.json.gz",
+      "sha256_uncompressed": "86ab3e1f7c140b97e34f01e5db39a72482f59cbb5299d50121b20694b219aa88"
+    },
+    "zui-paint-baseline": {
+      "file": "zui-paint-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "zui-paint-clock": {
+      "file": "zui-paint-clock.json.gz",
+      "sha256_uncompressed": "c8e3ca5600be4bb3da3a9d4b3864101c98858f263fdb975c9c06066e77239bdb"
+    },
+    "zui-paint-cochannel": {
+      "file": "zui-paint-cochannel.json.gz",
+      "sha256_uncompressed": "7a03081534483bda7090f7d23868788f1a1fda7d5823f25ddea5d173b0a4b895"
+    },
+    "zui-paint-copro": {
+      "file": "zui-paint-copro.json.gz",
+      "sha256_uncompressed": "018e0bd337fb6564f9fda5976c3282724b2b35e183d8ce62edb3d96a6df5d9f6"
+    },
+    "zui-paint-display": {
+      "file": "zui-paint-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "zui-paint-events": {
+      "file": "zui-paint-events.json.gz",
+      "sha256_uncompressed": "ca27761fa240c9af90ea5851f2b82073da9ac8313c57c572a7956ece2a9e15fe"
+    },
+    "zui-paint-htotal": {
+      "file": "zui-paint-htotal.json.gz",
+      "sha256_uncompressed": "e27075a5c54664d9f5be62b98bd2f6d265ef6aebb7e4559247c7a17334c29c6c"
+    },
+    "zui-paint-immutable": {
+      "file": "zui-paint-immutable.json.gz",
+      "sha256_uncompressed": "42759f77c3ca94dfa36854c15bff86eec65f8af320c2451916998a445d953825"
+    },
+    "zui-paint-packaged-window": {
+      "file": "zui-paint-packaged-window.json.gz",
+      "sha256_uncompressed": "ecc2ee4f70aa92c01e611ebf08d4f54ac9ecc72f60d0d34bcbb563b268789090"
+    },
+    "zui-paint-pm": {
+      "file": "zui-paint-pm.json.gz",
+      "sha256_uncompressed": "5f5df2ff21366bec58152986af53dff6cfdfb3890763ecb90b0d1e4920d0a20a"
+    },
+    "zui-paint-request": {
+      "file": "zui-paint-request.json.gz",
+      "sha256_uncompressed": "d92bb7be9f76eb51fc2c1213864f1b34c6085a249c2aa37229b19f8ed9034a53"
+    },
+    "zui-paint-selector": {
+      "file": "zui-paint-selector.json.gz",
+      "sha256_uncompressed": "335147c3a79cad442233382bb37d77eb6d79e02fcc1724941d74448396ea6bab"
+    },
+    "zui-paint-symbolic": {
+      "file": "zui-paint-symbolic.json.gz",
+      "sha256_uncompressed": "10a7567437c9cf4a41152c605c888af2b86237d1876ed2ccf8ca1c5ac3805cb2"
+    },
+    "zui-paint-vd": {
+      "file": "zui-paint-vd.json.gz",
+      "sha256_uncompressed": "9bc6a80fbc2edec820797ef33c0d39b3d3ce2b120082505924a088322d176b33"
+    },
+    "zui-paint-vif": {
+      "file": "zui-paint-vif.json.gz",
+      "sha256_uncompressed": "260e4afa8707f82dbf0738349f1e71e3eaef8e3cacf5d53d6b23a4eaac874e42"
+    },
+    "zui-paint-zui": {
+      "file": "zui-paint-zui.json.gz",
+      "sha256_uncompressed": "9dafcd176d5ec6165451bf4a786c8cb357a142c88448bc33a250451e53e6da4c"
+    },
+    "native-tools": {
+      "file": "zui-paint-native-tools.json.gz",
+      "sha256_uncompressed": "b82957147caa12e4266201a4cd1da65bdbeef4e5b632adcd2148280780757988"
+    }
+  },
+  "native_checks": 1457,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "production_sha256": "e6255cc602b23996f87479102184a3ec6cd8fdceb98781b4896f29557bcdc7f7",
+  "connected_dispatcher": false,
+  "connected_pixels": false,
+  "new_hardware_values": false,
+  "replay_validation": "Production binary identical to complete 6592741-event cold run and fresh-reset replay in zui-timeout-validation.json; no new full replay run",
+  "replay_manifest": "zui-timeout-validation.json",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "probe_sha256": "8ba84b55956850f27c960283f88fff32ccdc2f1c15b6c068f5217ae31fa24a0a"
+}

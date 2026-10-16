@@ -1,5 +1,11 @@
 # Evidence still needed
 
+The [isolated paint extension](osd3-paint-and-ge-clipping.md) reaches the first
+window-4 component and actual GE clip submissions using explicit synthetic RAM
+and the existing conditional queue reset. A real surface/framebuffer context,
+bitmap metadata/data, raster execution and scan-out remain unestablished. No
+connected hardware input or display milestone changes.
+
 The [startup-selection study](zui-startup-selection-and-timeout.md) now observes
 wrapper 11/source phase 0 in genuine connected execution. Its original worker
 can select OSD 3 after platform polling returns without a state change; the

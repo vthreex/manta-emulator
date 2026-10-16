@@ -1,5 +1,14 @@
 # Status of the research build
 
+The [OSD 3 paint continuation](osd3-paint-and-ge-clipping.md) now executes the
+original dirty-region worker past its old boundary in isolation. Window 4
+selects component 4/index 65 and rectangle `(531,42,7,44)`. Explicit RAM/context
+fixtures run original geometry and GE clipping APIs: 64 configuration
+submissions across 16 cases. No raster command, framebuffer, GWIN enable or
+pixels is claimed. Strict GE stops on unknown status without the existing
+queue-reset experiment. Connected counts/boundaries, production binary and
+validated replay remain unchanged.
+
 The [co-channel publisher study](avd-cochannel-publisher.md) identifies the
 original AVD startup clear and recurring `2C.3 -> 11CA.3` software publisher
 behind the MIPS co-channel getter. New two-processor fragment tests and both

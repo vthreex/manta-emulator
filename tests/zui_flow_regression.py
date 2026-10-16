@@ -30,6 +30,12 @@ with tempfile.TemporaryDirectory(prefix='manta-original-zui-') as directory:
     assert functions['OSD_open_original_assert_ids']==3
     assert functions['resource3_creation_routes']==113 and functions['isolated_empty_queue_reaches_paint_boundary']
     assert functions['original_window_timer_cases']==6
+    assert functions['paint_window']==4 and functions['paint_primitive_type']==4 and functions['paint_primitive_id']==65
+    assert functions['paint_resource_address']==0x80686ad0
+    assert functions['paint_clip_synthetic_RAM_cases']==16 and functions['paint_GE_context_cases']==16
+    assert functions['paint_GE_clip_writes']==64 and functions['paint_GE_context_executed']
+    assert functions['paint_strict_GE_unknown_stops']
+    assert not functions['paint_surface_allocated'] and not functions['paint_GE_raster_issued']
     assert not functions['TV_dispatcher_invoked'] and not functions['TV_events_injected'] and not functions['pixels_generated']
     damaged=d/'damaged-main.bin';bad=bytearray(main);bad[0x804e0dc4-0x803b3980]^=1;damaged.write_bytes(bad)
     result=subprocess.run([a.probe,str(damaged)],capture_output=True,text=True)
@@ -53,4 +59,4 @@ report={'result':'PASS','scope':'isolated original ZUI functions with synthetic 
         'probe_sha256':hashlib.sha256(Path(a.probe).read_bytes()).hexdigest(),
         'emulator_sha256':hashlib.sha256(Path(a.emulator).read_bytes()).hexdigest()}
 Path(a.report).write_text(json.dumps(report,indent=2)+'\n')
-print('PASS: original 40-slot queue, standby and active dispatcher branches; strict execution unchanged; no TV UI invoked')
+print('PASS: original queue/dispatcher and isolated OSD3 paint through GE clipping; strict execution unchanged; no TV UI invoked or raster output')

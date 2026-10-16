@@ -2,13 +2,15 @@
 // fixtures never enter the television machine; no UI event is injected there.
 #include "cpu/engine.hpp"
 #include "board/zui_flow.hpp"
+#include "peripherals/riu.hpp"
 #include "storage/sha256.hpp"
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <set>
+#include <memory>
 static void need(bool condition,const char* why){if(!condition)throw std::runtime_error(why);}
-struct Fixture {uint32_t stopAt=0;unsigned instructions=0;std::set<uint32_t> visits,alternatives;};
+struct Fixture {uint32_t stopAt=0,paintWindow=0xffff;unsigned instructions=0;std::set<uint32_t> visits,alternatives;};
 int main(int argc,char** argv){try{
   need(argc==2,"supply original decompressed MIPS image; isolated synthetic-RAM function tests only");
   std::ifstream f(argv[1],std::ios::binary);std::vector<uint8_t> image(std::istreambuf_iterator<char>(f),{});
@@ -21,6 +23,10 @@ int main(int argc,char** argv){try{
       auto& f=*static_cast<Fixture*>(data);
       if(address==0x803b0000 || address==f.stopAt || f.alternatives.contains(uint32_t(address))){uc_emu_stop(engine);return;}
       need(address>=0x803b3980 && address<0x80613000,"fixture escaped original instruction range");
+      if(address==0x804a071c){uint32_t message=0,window=0;
+        uc_reg_read(engine,UC_MIPS_REG_5,&message);uc_reg_read(engine,UC_MIPS_REG_4,&window);
+        if(message==0x1e)f.paintWindow=window;
+      }
       ++f.instructions;f.visits.insert(uint32_t(address));
     }),&fixture,1,0));
   auto write=[&](uint32_t address,uint32_t value,unsigned width=4){uint8_t b[4]{};
@@ -34,6 +40,35 @@ int main(int argc,char** argv){try{
     cpu.reg(UC_MIPS_REG_5,argument1);cpu.reg(UC_MIPS_REG_6,argument2);
     manta::check(cpu.run(entry,50000));auto pc=cpu.reg(UC_MIPS_REG_PC);
     need(pc==(stopAt?stopAt:0x803b0000) || alternatives.contains(pc),"original function failed to reach its own return or explicit fixture observation boundary");
+  };
+  struct GeFixture {std::unique_ptr<manta::Riu> riu;Fixture* execution;
+    std::vector<std::pair<uint32_t,uint16_t>> writes;unsigned reads=0;} ge{nullptr,&fixture,{},0};
+  manta::check(uc_mmio_map(cpu.handle,0x1f205000,0x1000,
+    +[](uc_engine* engine,uint64_t offset,unsigned width,void* data)->uint64_t{
+      auto& g=*static_cast<GeFixture*>(data);uint32_t pc=0;uc_reg_read(engine,UC_MIPS_REG_PC,&pc);
+      need(g.riu && width==2 && ((offset==4 && pc==0x8052624c) || (offset==0x1c && pc==0x8052639c)),
+        "isolated clipping accessed an unexamined GE status field");
+      auto mask=offset==4?2u:0xf800u;auto address=0x1f205000+uint32_t(offset);
+      g.riu->prepareMaskedRead(address,mask);++g.reads;
+      auto value=g.riu->read(address,width,pc,mask,g.execution->instructions);
+      if(!g.riu->stopReason.empty())uc_emu_stop(engine);
+      return value;
+    },&ge,+[](uc_engine* engine,uint64_t offset,unsigned width,uint64_t value,void* data){
+      auto& g=*static_cast<GeFixture*>(data);uint32_t pc=0;uc_reg_read(engine,UC_MIPS_REG_PC,&pc);
+      need(g.riu && width==2 && (offset==0x154 || offset==0x158 || offset==0x15c || offset==0x160),
+        "isolated clipping submitted an unexpected GE operation");
+      auto address=0x1f205000+uint32_t(offset);
+      g.riu->write(address,width,uint32_t(value),pc,0xffff,g.execution->instructions);
+      need(g.riu->stopReason.empty(),"original clipping command was rejected");
+      g.writes.emplace_back(address,uint16_t(value));
+    },&ge));
+  auto resetGe=[&](bool exploratory){ge.riu=std::make_unique<manta::Riu>();ge.writes.clear();ge.reads=0;
+    ge.riu->event=[](const auto&,auto,auto,auto,const auto&){};ge.riu->candidateGe=true;
+    if(exploratory)ge.riu->configureExploratoryGeReset();
+    // Explicit ordinary-RAM, nested-call context fixture. No mutex response
+    // or hardware context is generated, and no production machine uses it.
+    write(0x006ada64,0x80701000);write(0x00701538,0x55aabeef);
+    write(0x00701524,0);write(0x00701528,1,2);write(0x0070100c,0xbf200000);
   };
   using Z=manta::ZuiFlow;unsigned cases=0,queueInstructions=0;
   write(0x006e561c,0x12345678);
@@ -230,6 +265,66 @@ int main(int argc,char** argv){try{
   need(read(0x006d4fb4,1)==0 && fixture.visits.contains(0x8049f040) && fixture.visits.contains(0x8049f180),
     "original active dispatcher must consume the invalid region after observing an empty queue");
   auto paintBoundaryInstructions=fixture.instructions;
+  // Continue the stopped original dispatcher with its registers and stack
+  // intact. Observe the first resource primitive BEFORE its backend runs.
+  fixture={};fixture.stopAt=0x8049d8d8;
+  manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),50000));
+  need(cpu.reg(UC_MIPS_REG_PC)==fixture.stopAt && fixture.visits.contains(0x8049e820),
+    "original dirty-region paint must reach its own resource primitive");
+  auto paintPrimitiveInstructions=fixture.instructions;
+  auto paintPrimitiveType=cpu.reg(UC_MIPS_REG_4),paintPrimitiveId=cpu.reg(UC_MIPS_REG_5);
+  auto paintRectangle=cpu.reg(UC_MIPS_REG_7)&0x1fffffff;
+  auto paintWindow=fixture.paintWindow;
+  need(paintPrimitiveType==4 && paintPrimitiveId==65 && read(paintRectangle,2)==531 &&
+    read(paintRectangle+2,2)==42 && read(paintRectangle+4,2)==7 && read(paintRectangle+6,2)==44,
+    "original resource3 paint must select its own component and original rectangle");
+  fixture={};fixture.stopAt=0x8049da4c;
+  manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),50000));
+  need(cpu.reg(UC_MIPS_REG_PC)==fixture.stopAt && fixture.visits.contains(0x8049cd90),
+    "original resource primitive must request the graphics-surface geometry");
+  auto paintGeometryInstructions=fixture.instructions;
+  auto paintResource=read((cpu.reg(UC_MIPS_REG_SP)&0x1fffffff)+0x5c);
+  need(paintResource==0x80686ad0 && !(read(0x006d4f9c)&1),
+    "original paint must select its actual descriptor; no surface has been allocated in this fixture");
+  // The missing surface makes further geometry unusable. Separate synthetic
+  // RAM cases explicitly describe a logical surface and panel width, without
+  // allocating any framebuffer, supplying GWIN IDs, or executing the backend.
+  unsigned paintClipCases=0,paintClipInstructions=0,paintGeInstructions=0,paintGeWrites=0;
+  for(auto origin:{0u,3u})for(auto width:{530u,531u,532u,537u,538u,541u,1366u,1920u}){
+    write(0x006d4f9c,1);write(0x006d4fa4,origin,2);write(0x006d4fa6,520,2);
+    write(0x006d4fa8,1360,2);write(0x006d4faa,248,2);write(0x006f6a5c,width,2);
+    write(0x006d4fb4,0,1);run(0x804a071c,0,0,{},0x14,0);
+    run(0x804e0dc4,0,0x80520274);
+    auto first=cpu.reg(UC_MIPS_REG_4)&0x1fffffff, last=cpu.reg(UC_MIPS_REG_5)&0x1fffffff;
+    auto clippedWidth=width<origin+538?uint16_t(width-origin-531):7u;
+    need(read(first,2)==531 && read(first+2,2)==42 &&
+      read(last,2)==uint16_t(531+clippedWidth-1) && read(last+2,2)==85,
+      "original geometry callback must clamp the resource rectangle and form inclusive GE clip endpoints");
+    need(fixture.visits.contains(0x805e4974) && fixture.visits.contains(0x803ea14c) &&
+      !fixture.visits.contains(0x80522b64) && read(Z::headAddress)==0 && read(Z::tailAddress)==0,
+      "isolated paint must use original callbacks and stop before GE context access without a queued event");
+    paintClipInstructions+=fixture.instructions;++paintClipCases;
+    resetGe(true);fixture={};fixture.stopAt=0x80529430;
+    manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),50000));
+    need(cpu.reg(UC_MIPS_REG_PC)==fixture.stopAt && fixture.visits.contains(0x80522b64) &&
+      fixture.visits.contains(0x80526540),"original paint must program GE clipping then select its framebuffer");
+    need(ge.writes==std::vector<std::pair<uint32_t,uint16_t>>{{0x1f205154,531},{0x1f20515c,42},
+      {0x1f205158,uint16_t(531+clippedWidth-1)},{0x1f205160,85}} && ge.reads==8 &&
+      ge.riu->geSubmitted()==4 && read(0x00701528,2)==1,
+      "original GE context must submit four ordered clip coordinates and restore its nesting depth");
+    need((ge.riu->knownBits(0x1f205004,2)&~2u)==0 &&
+      ge.riu->knownBits(0x1f20501c,2)==manta::GeQueue::statusKnown,
+      "conditional queue occupancy must not validate unrelated GE reset bits");
+    paintGeInstructions+=fixture.instructions;paintGeWrites+=ge.writes.size();
+  }
+  resetGe(false);write(0x00700080,531,2);write(0x00700082,42,2);
+  write(0x00700084,537,2);write(0x00700086,85,2);
+  run(0x80520274,0x80700080,0x8052624c,{},0x80700084);
+  fixture={};manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),100));
+  need(!ge.riu->stopReason.empty() && ge.reads==1 && ge.writes.empty() && ge.riu->geSubmitted()==0,
+    "without the existing conditional GE reset, original clipping must stop at unknown hardware status");
+  cpu.write(0x006ada64,image.data()+0x806ada64-0x803b3980,4);
+  run(0x8049e2ac); // original surface-variable reset, not a hardware reset
   unsigned timerCreationCases=0,timerCreationInstructions=0;
   for(auto start:{1234u,0xfffffff0u})for(auto elapsed:{99u,100u,101u}){
     write(0x006e561c,start);initialize();write(0x006d4fb4,0,1);
@@ -266,6 +361,14 @@ int main(int argc,char** argv){try{
     <<",\"resource3_creation_routes\":"<<creationRoutes<<",\"creation_route_instructions\":"<<creationInstructions
     <<",\"root_creation_instructions\":"<<rootCreationInstructions<<",\"paint_boundary_instructions\":"<<paintBoundaryInstructions
     <<",\"isolated_empty_queue_reaches_paint_boundary\":true"
+    <<",\"paint_primitive_instructions\":"<<paintPrimitiveInstructions
+    <<",\"paint_primitive_type\":"<<paintPrimitiveType<<",\"paint_primitive_id\":"<<paintPrimitiveId
+    <<",\"paint_geometry_instructions\":"<<paintGeometryInstructions
+    <<",\"paint_window\":"<<paintWindow<<",\"paint_resource_address\":"<<paintResource
+    <<",\"paint_clip_synthetic_RAM_cases\":"<<paintClipCases<<",\"paint_clip_original_instructions\":"<<paintClipInstructions
+    <<",\"paint_GE_context_cases\":"<<paintClipCases<<",\"paint_GE_original_instructions\":"<<paintGeInstructions
+    <<",\"paint_GE_clip_writes\":"<<paintGeWrites<<",\"paint_strict_GE_unknown_stops\":true"
+    <<",\"paint_GE_context_executed\":true,\"paint_surface_allocated\":false,\"paint_GE_raster_issued\":false"
     <<",\"original_window_timer_cases\":"<<timerCreationCases<<",\"window_timer_creation_instructions\":"<<timerCreationInstructions
     <<",\"TV_dispatcher_invoked\":false,\"TV_events_injected\":false,\"pixels_generated\":false,"
     <<"\"program_sha256\":\""<<manta::sha256(image)<<"\"}\n";
