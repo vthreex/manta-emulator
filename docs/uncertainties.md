@@ -1,5 +1,11 @@
 # Evidence still needed
 
+The [1555 alpha-helper study](original-1555-alpha-register.md) verifies the
+original `GE11 |= coefficient << 8` operation. Do not interpret its FF value
+as a proven format-C output threshold. Source-alpha expansion and destination
+quantization are distinct in later documentation; exact Titania4 output-alpha
+and filter semantics remain required before retiring OSD 3's raster request.
+
 The [plain-fill implementation](ge-plain-rectangle-execution.md) is intentionally
 limited to known RGB565/ARGB8888, MIU0, untransformed/unblended rectangles under
 an explicit option. It does not establish Titania4 reset or cycle timing, and

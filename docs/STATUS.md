@@ -1,5 +1,12 @@
 # Status of the research build
 
+The [original 1555 alpha-helper tests](original-1555-alpha-register.md) verify
+12 actual `8051FC34 -> 80521ECC` cases and the observed register-11 high-byte
+**OR**, including its inability to clear previously set bits. A named related
+driver supports the helper identity, but this is not evidence for a format-C
+destination threshold. No conversion default, pixel or connected state is
+added. Production and all other binaries match the fully replayed `190c65c`.
+
 The opt-in [plain GE rectangle model](ge-plain-rectangle-execution.md) now
 performs real guest-RAM writes for fully known, enabled, unblended **RGB565**
 and **ARGB8888** command **0030** requests. Two isolated original constructor

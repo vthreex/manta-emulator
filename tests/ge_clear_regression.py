@@ -26,6 +26,7 @@ with tempfile.TemporaryDirectory(prefix='manta-original-clear-') as directory:
     assert result['original_plain_fill_instructions']==3517
     assert result['original_BitBlt_mode_cases']==4 and result['original_BitBlt_stretch_errors']==1
     assert result['original_BitBlt_mode_instructions']==10087
+    assert result['original_alpha1555_register_cases']==12 and result['original_alpha1555_instructions']==2292
     damaged=bytearray(image);damaged[0x8049e158-0x803b3980]^=1;target.write_bytes(damaged)
     rejected=subprocess.run([a.probe,str(target)],capture_output=True,text=True,timeout=30)
     assert rejected.returncode==1 and 'original main image mismatch' in rejected.stderr

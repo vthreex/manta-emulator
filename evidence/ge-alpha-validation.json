@@ -1,0 +1,35 @@
+{
+  "result": "PASS",
+  "base_git": "190c65c",
+  "scope": "isolated original 8051FC34 -> 80521ECC alpha helper, no production behavior change",
+  "original_alpha1555_register_cases": 12,
+  "original_alpha1555_instructions": 2292,
+  "observed_operation": "GE11 = previous GE11 OR ((argument & FF) << 8); low byte unchanged",
+  "destination_format_C_semantics_established": false,
+  "new_connected_pixels": false,
+  "new_hardware_values": false,
+  "production_and_other_test_binaries_identical": true,
+  "production_sha256": "ab4c489b35e1af85de8b6ba75b59dba0302974b10c67c9f087f946c058d52fbc",
+  "probe_sha256": "5a1227cabd0de9cc6f1eda1d60177babf6d9b30f79af93118ca7a0c36ecef8bb",
+  "full_previous_validation": "ge-fill-validation.json",
+  "full_previous_validation_sha256": "54361fdb8be64ccd90a2e5ebdc51b3cabfbb51ff4cbf2df6b019d5b52f238647",
+  "report": {
+    "file": "ge-alpha-clear.json.gz",
+    "sha256_uncompressed": "96a4992714ceef1f700bc779062951fad33cd07a8bd8c5a0a72cd9cbee07e248"
+  },
+  "references": [
+    {
+      "url": "https://git.sigmastar.com.cn/html/sgs_docs/D3/NLSSV01C12/platform/MI/gfx.html",
+      "sha256": "7c7db92a36354787264975cb016d0936c44836266e43295ea16e195e5e3bbcef",
+      "scope": "later SigmaStar alpha expansion/threshold API distinction; no Titania4 register/default transfer"
+    },
+    {
+      "url": "https://github.com/Toysoft/mstar/blob/5d447aa5b54b60ede27d5fda42d481efa4b10ff8/Chakra3_017a0d6_20170731/core/drv_bsp/marlon_nos_mips/lib/libapiGFX.a",
+      "sha256": "387279a5ff0d3053756b5afdaa1185a00cf1a7c9612f5a19478c165feb418df8",
+      "scope": "static named MDrv_GE_SetAlpha_ARGB1555 comparison only; no imported or executed reference code"
+    }
+  ],
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "native_checks": 1499,
+  "full_replay_events_for_identical_binary": 6592741
+}

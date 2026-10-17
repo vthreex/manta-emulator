@@ -50,7 +50,7 @@ struct Case {
         return value;
       },this,+[](uc_engine* engine,uint64_t offset,unsigned width,uint64_t value,void* data){
         auto& c=*static_cast<Case*>(data);auto index=unsigned(offset/4);
-        need(width==2 && !(offset&3) && (index==0 || index==1 || index==0x59 || index==0x60 ||
+        need(width==2 && !(offset&3) && (index==0 || index==1 || index==0x11 || index==0x59 || index==0x60 ||
           (index>=0x55 && index<=0x58) || (index>=0x68 && index<=0x6f) || index==0x70 || index==0x71 ||
           index==0x64 || index==0x65 || index==0x5e || index==0x5f ||
           index==0x34 || index==0x26 || index==0x27 || index==0x33 || index==0x20 || index==0x21 || index==0x30),
@@ -290,6 +290,20 @@ int main(int argc,char** argv){try{
     need(c->riu.geRectangles==0 && c->rasterWrites==0,"guarded original BitBlt tests cannot create pixels");
     ++blitCases;blitInstructions+=c->instructions;
   }
+  unsigned alphaCases=0;uint64_t alphaInstructions=0;
+  for(auto initial:{0x005au,0xa55au})for(auto coefficient:{0u,1u,127u,128u,254u,255u}){
+    auto c=std::make_unique<Case>(image);
+    c->entry(0x80526540,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701008);
+    c->cpu.reg(UC_MIPS_REG_5,0x11);c->cpu.reg(UC_MIPS_REG_6,initial);
+    manta::check(c->cpu.run(0x80526540,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original alpha register setup failed");
+    c->writes.clear();c->entry(0x8051fc34,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,coefficient);
+    manta::check(c->cpu.run(0x8051fc34,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==1 &&
+      c->writes==std::vector<std::pair<unsigned,unsigned>>{{0x11,initial|(coefficient<<8)}} &&
+      c->read(0x00701528,2)==1 && c->riu.geRectangles==0 && c->rasterWrites==0,
+      "original 1555 alpha helper must preserve its actual OR operation, low byte and nesting without inferring output conversion");
+    ++alphaCases;alphaInstructions+=c->instructions;
+  }
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original clear/allocation instructions; synthetic RAM, conditional GE reset and explicit plain-fill model, not TV execution\","
     <<"\"cases\":"<<cases<<",\"raster_requests_rejected\":"<<requests<<",\"zero_size_returns\":"<<empty
     <<",\"original_instructions\":"<<instructions<<",\"raster_command\":48,\"legacy_guard_cases_pixels_generated\":false,\"pixels_generated\":true,\"framebuffer_allocated\":false"
@@ -303,6 +317,7 @@ int main(int argc,char** argv){try{
     <<",\"isolated_plain_fill_pixels\":24,\"connected_pixels_generated\":false"
     <<",\"original_BitBlt_mode_cases\":"<<blitCases<<",\"original_BitBlt_stretch_errors\":"<<blitMismatchReturns
     <<",\"original_BitBlt_mode_instructions\":"<<blitInstructions
+    <<",\"original_alpha1555_register_cases\":"<<alphaCases<<",\"original_alpha1555_instructions\":"<<alphaInstructions
     <<",\"connected_framebuffer_allocated\":false,\"GOP_window_enabled\":false}\n";
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
