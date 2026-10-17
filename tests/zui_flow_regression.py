@@ -1,11 +1,14 @@
 """Original ZUI queue/dispatcher function tests and read-only strict-boot probes."""
-import argparse,hashlib,json,subprocess,tempfile,zlib
+import argparse,hashlib,json,subprocess,tempfile,zlib,sys
 from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
+from firmware_resources import recover
 p=argparse.ArgumentParser(description=__doc__)
 for n in ('firmware','probe','emulator','report'):p.add_argument('--'+n,required=True)
 a=p.parse_args();stock=Path(a.firmware).read_bytes();sha=hashlib.sha256(stock).hexdigest()
 assert sha=='d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9'
 main=zlib.decompress(stock[0x23880:0x16124e],-15)
+_,resources=recover(stock);bitmaps=resources[0x816];prefix=stock[0x20080:0x23880]
 assert hashlib.sha256(main).hexdigest()=='149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236'
 signatures={}
 for address,size,digest in ((0x804e0d48,0x1cc,'9da8c036aca630ca87967416a7c79bb6bf2a891d5f570de86be61fabaaba3f92'),
@@ -15,8 +18,11 @@ for address,size,digest in ((0x804e0d48,0x1cc,'9da8c036aca630ca87967416a7c79bb6b
     signatures[hex(address)]={'bytes':size,'sha256':digest}
 with tempfile.TemporaryDirectory(prefix='manta-original-zui-') as directory:
     d=Path(directory);image=d/'original-main.bin';image.write_bytes(main)
-    first=subprocess.check_output([a.probe,str(image)],text=True,timeout=30)
-    assert subprocess.check_output([a.probe,str(image)],text=True,timeout=30)==first
+    bitmap_image=d/'original-bitmaps.bin';bitmap_image.write_bytes(bitmaps)
+    prefix_image=d/'original-prefix.bin';prefix_image.write_bytes(prefix)
+    command=[a.probe,str(image),str(bitmap_image),str(prefix_image)]
+    first=subprocess.check_output(command,text=True,timeout=30)
+    assert subprocess.check_output(command,text=True,timeout=30)==first
     functions=json.loads(first)
     assert functions['result']=='PASS' and functions['queue_cases']==40
     assert functions['standby_default_cases']==4 and functions['active_dispatch_cases']==4
@@ -36,10 +42,26 @@ with tempfile.TemporaryDirectory(prefix='manta-original-zui-') as directory:
     assert functions['paint_GE_clip_writes']==64 and functions['paint_GE_context_executed']
     assert functions['paint_strict_GE_unknown_stops']
     assert not functions['paint_surface_allocated'] and not functions['paint_GE_raster_issued']
+    assert functions['bitmap_metadata_cases']==350
+    assert functions['bitmap_copy_original_instructions']==16175389
+    assert functions['bitmap_registration_original_instructions']==410295
+    bitmap_offset=0
+    for index in range(196):
+        pos=66+4*index;width=int.from_bytes(bitmaps[pos:pos+2],'big');height=int.from_bytes(bitmaps[pos+2:pos+4],'big')
+        bitmap_offset=(bitmap_offset+width*height*2+7)&~7
+    assert functions['bitmap196_source_address']==0x03c3d000+bitmap_offset
+    assert functions['bitmap196_source_sha256']==hashlib.sha256(bitmaps[1816+bitmap_offset:1816+bitmap_offset+7*42*2]).hexdigest()
+    assert functions['bitmap_source_GE_writes']==4 and functions['bitmap_source_original_instructions']==412
+    assert functions['bitmap_symbolic_source_GE_writes']==5 and functions['bitmap_symbolic_source_original_instructions']==508
     assert not functions['TV_dispatcher_invoked'] and not functions['TV_events_injected'] and not functions['pixels_generated']
     damaged=d/'damaged-main.bin';bad=bytearray(main);bad[0x804e0dc4-0x803b3980]^=1;damaged.write_bytes(bad)
     result=subprocess.run([a.probe,str(damaged)],capture_output=True,text=True)
     assert result.returncode==1 and 'size/hash mismatch' in result.stderr
+    for path,label in ((bitmap_image,'bitmap resource mismatch'),(prefix_image,'directory prefix mismatch')):
+        original=path.read_bytes();bad=bytearray(original);bad[0]^=1;path.write_bytes(bad)
+        result=subprocess.run(command,capture_output=True,text=True,timeout=30)
+        assert result.returncode==1 and label in result.stderr
+        path.write_bytes(original)
     states=[]
     for enabled in (False,True):
         summary=d/f'{enabled}.json'
@@ -57,6 +79,8 @@ report={'result':'PASS','scope':'isolated original ZUI functions with synthetic 
         'original_functions':functions,'original_code_signatures':signatures,'corrupted_image_rejected':True,
         'strict_summary_identical_except_empty_observer':True,'firmware_sha256':sha,
         'probe_sha256':hashlib.sha256(Path(a.probe).read_bytes()).hexdigest(),
+        'bitmap_resource_sha256':hashlib.sha256(bitmaps).hexdigest(),'bitmap_resource_corruption_rejected':True,
+        'directory_prefix_sha256':hashlib.sha256(prefix).hexdigest(),'directory_prefix_corruption_rejected':True,
         'emulator_sha256':hashlib.sha256(Path(a.emulator).read_bytes()).hexdigest()}
 Path(a.report).write_text(json.dumps(report,indent=2)+'\n')
-print('PASS: original queue/dispatcher and isolated OSD3 paint through GE clipping; strict execution unchanged; no TV UI invoked or raster output')
+print('PASS: original OSD3 clipping, 350 original bitmap records and asset196 source binding with retained unknown controls; no connected UI/raster output')

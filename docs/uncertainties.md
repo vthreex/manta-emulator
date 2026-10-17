@@ -1,5 +1,13 @@
 # Evidence still needed
 
+Original [bitmap-source binding](osd3-original-bitmap-source.md) and
+[clear requests](original-ge-clear-command.md) now execute in isolated tests.
+Destination allocation, format/composition semantics and raster retirement
+remain required. A read-only audit of the complete 6,592,741-event connected
+trace finds one `1F206BB5` read (known mask zero) and no event at paired lane
+`1F206BB4`. This supplies no coefficient-selector producer and cannot justify
+assigning `11DB.7`. Connected MIPS/AVD stops remain unchanged.
+
 The [isolated paint extension](osd3-paint-and-ge-clipping.md) reaches the first
 window-4 component and actual GE clip submissions using explicit synthetic RAM
 and the existing conditional queue reset. A real surface/framebuffer context,

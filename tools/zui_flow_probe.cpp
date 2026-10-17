@@ -3,6 +3,7 @@
 #include "cpu/engine.hpp"
 #include "board/zui_flow.hpp"
 #include "peripherals/riu.hpp"
+#include "board/preserved_bits.hpp"
 #include "storage/sha256.hpp"
 #include <fstream>
 #include <iostream>
@@ -10,9 +11,10 @@
 #include <set>
 #include <memory>
 static void need(bool condition,const char* why){if(!condition)throw std::runtime_error(why);}
-struct Fixture {uint32_t stopAt=0,paintWindow=0xffff;unsigned instructions=0;std::set<uint32_t> visits,alternatives;};
+struct Fixture {uint32_t stopAt=0,paintWindow=0xffff;unsigned instructions=0;std::set<uint32_t> visits,alternatives;
+  manta::PreservedBits* preserved=nullptr;manta::Riu* riu=nullptr;};
 int main(int argc,char** argv){try{
-  need(argc==2,"supply original decompressed MIPS image; isolated synthetic-RAM function tests only");
+  need(argc==2 || argc==4,"supply original MIPS image [decoded resource816 original runtime prefix]; isolated tests only");
   std::ifstream f(argv[1],std::ios::binary);std::vector<uint8_t> image(std::istreambuf_iterator<char>(f),{});
   need(image.size()==3167072 && manta::sha256(image)=="149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
     "original MIPS image size/hash mismatch");
@@ -23,6 +25,12 @@ int main(int argc,char** argv){try{
       auto& f=*static_cast<Fixture*>(data);
       if(address==0x803b0000 || address==f.stopAt || f.alternatives.contains(uint32_t(address))){uc_emu_stop(engine);return;}
       need(address>=0x803b3980 && address<0x80613000,"fixture escaped original instruction range");
+      if(f.preserved){uint32_t word=0;manta::check(uc_mem_read(engine,address&0x1fffffff,&word,4));
+        auto why=f.preserved->observe(word,[&](unsigned reg){uint32_t value=0;uc_reg_read(engine,UC_MIPS_REG_0+int(reg),&value);return value;},
+          [&](uint32_t target){return f.riu->preservedStoreKey(target);},
+          [&](uint32_t target,unsigned width,uint32_t unknown){f.riu->preparePreservedWrite(target,width,unknown);});
+        need(why.empty(),why.c_str());
+      }
       if(address==0x804a071c){uint32_t message=0,window=0;
         uc_reg_read(engine,UC_MIPS_REG_5,&message);uc_reg_read(engine,UC_MIPS_REG_4,&window);
         if(message==0x1e)f.paintWindow=window;
@@ -33,29 +41,35 @@ int main(int argc,char** argv){try{
     for(unsigned i=0;i<width;++i)b[i]=uint8_t(value>>(8*i));cpu.write(address,b,width);};
   auto read=[&](uint32_t address,unsigned width=4){uint8_t b[4]{};cpu.read(address,b,width);uint32_t value=0;
     for(unsigned i=0;i<width;++i)value|=uint32_t(b[i])<<(8*i);return value;};
-  auto run=[&](uint32_t entry,uint32_t argument=0,uint32_t stopAt=0,std::set<uint32_t> alternatives={},uint32_t argument1=0,uint32_t argument2=0){
+  auto run=[&](uint32_t entry,uint32_t argument=0,uint32_t stopAt=0,std::set<uint32_t> alternatives={},uint32_t argument1=0,uint32_t argument2=0,uint64_t budget=50000){
     fixture={};fixture.stopAt=stopAt;fixture.alternatives=alternatives;
     for(int r=UC_MIPS_REG_0;r<=UC_MIPS_REG_31;++r)cpu.reg(r,0);
     cpu.reg(UC_MIPS_REG_SP,0x8070ff00);cpu.reg(UC_MIPS_REG_RA,0x803b0000);cpu.reg(UC_MIPS_REG_4,argument);
     cpu.reg(UC_MIPS_REG_5,argument1);cpu.reg(UC_MIPS_REG_6,argument2);
-    manta::check(cpu.run(entry,50000));auto pc=cpu.reg(UC_MIPS_REG_PC);
+    manta::check(cpu.run(entry,budget));auto pc=cpu.reg(UC_MIPS_REG_PC);
     need(pc==(stopAt?stopAt:0x803b0000) || alternatives.contains(pc),"original function failed to reach its own return or explicit fixture observation boundary");
   };
   struct GeFixture {std::unique_ptr<manta::Riu> riu;Fixture* execution;
-    std::vector<std::pair<uint32_t,uint16_t>> writes;unsigned reads=0;} ge{nullptr,&fixture,{},0};
+    std::vector<std::pair<uint32_t,uint16_t>> writes;unsigned reads=0;
+    manta::PreservedBits preserved;bool symbolicControl=false;} ge{nullptr,&fixture,{},0,{},false};
   manta::check(uc_mmio_map(cpu.handle,0x1f205000,0x1000,
     +[](uc_engine* engine,uint64_t offset,unsigned width,void* data)->uint64_t{
       auto& g=*static_cast<GeFixture*>(data);uint32_t pc=0;uc_reg_read(engine,UC_MIPS_REG_PC,&pc);
-      need(g.riu && width==2 && ((offset==4 && pc==0x8052624c) || (offset==0x1c && pc==0x8052639c)),
+      need(g.riu && width==2 && ((offset==4 && (pc==0x8052624c || pc==0x805268dc)) || (offset==0x1c && pc==0x8052639c)),
         "isolated clipping accessed an unexamined GE status field");
-      auto mask=offset==4?2u:0xf800u;auto address=0x1f205000+uint32_t(offset);
+      auto mask=pc==0x805268dc?0xfc8fu:offset==4?2u:0xf800u;auto address=0x1f205000+uint32_t(offset);
+      if(g.symbolicControl && pc==0x805268dc){
+        g.preserved.seed(4,width,g.riu->knownBits(address,width),[&](unsigned byte){return g.riu->controlByteKey(address+byte);});
+        g.riu->prepareOpaqueRead(address);
+      }
       g.riu->prepareMaskedRead(address,mask);++g.reads;
       auto value=g.riu->read(address,width,pc,mask,g.execution->instructions);
       if(!g.riu->stopReason.empty())uc_emu_stop(engine);
       return value;
     },&ge,+[](uc_engine* engine,uint64_t offset,unsigned width,uint64_t value,void* data){
       auto& g=*static_cast<GeFixture*>(data);uint32_t pc=0;uc_reg_read(engine,UC_MIPS_REG_PC,&pc);
-      need(g.riu && width==2 && (offset==0x154 || offset==0x158 || offset==0x15c || offset==0x160),
+      need(g.riu && width==2 && (offset==0x154 || offset==0x158 || offset==0x15c || offset==0x160 ||
+        offset==0xd0 || offset==0x80 || offset==0x84 || offset==0xc0 || (offset==4 && g.symbolicControl)),
         "isolated clipping submitted an unexpected GE operation");
       auto address=0x1f205000+uint32_t(offset);
       g.riu->write(address,width,uint32_t(value),pc,0xffff,g.execution->instructions);
@@ -63,6 +77,7 @@ int main(int argc,char** argv){try{
       g.writes.emplace_back(address,uint16_t(value));
     },&ge));
   auto resetGe=[&](bool exploratory){ge.riu=std::make_unique<manta::Riu>();ge.writes.clear();ge.reads=0;
+    ge.preserved={};ge.symbolicControl=false;
     ge.riu->event=[](const auto&,auto,auto,auto,const auto&){};ge.riu->candidateGe=true;
     if(exploratory)ge.riu->configureExploratoryGeReset();
     // Explicit ordinary-RAM, nested-call context fixture. No mutex response
@@ -345,6 +360,90 @@ int main(int argc,char** argv){try{
     need(read(Z::headAddress)==0 && read(Z::tailAddress)==0,"timer service must not fabricate a queue event");
     ++timerCreationCases;
   }
+  unsigned bitmapMetadataCases=0;uint64_t bitmapCopyInstructions=0,bitmapRegistrationInstructions=0;
+  uint32_t bitmap196Address=0;std::string bitmap196Sha;unsigned bitmapSourceWrites=0,bitmapSourceInstructions=0;
+  unsigned bitmapSymbolicSourceWrites=0,bitmapSymbolicSourceInstructions=0;
+  if(argc==4){
+    auto load=[](const char* path){std::ifstream input(path,std::ios::binary);
+      return std::vector<uint8_t>(std::istreambuf_iterator<char>(input),{});};
+    auto resource=load(argv[2]),prefix=load(argv[3]);
+    need(resource.size()==2310744 && manta::sha256(resource)=="67811a4bd3b115e8221a8d233646f4f036be76e0d3cc585353fd92bed675f0aa",
+      "original decoded bitmap resource mismatch");
+    need(prefix.size()==0x3800 && manta::sha256(prefix)=="006c07f45891c9f85cd92af34b175854a3db8e6d66212e7a94c7661b782d2cea",
+      "original runtime directory prefix mismatch");
+    cpu.write(0x003b0180,prefix.data(),prefix.size());
+    cpu.map(0x027aa000,0x10000);cpu.map(0x028aa000,0x235000);cpu.map(0x03c3d000,0x234000);
+    cpu.write(0x028aa000,resource.data(),resource.size());
+    // Diagnostic starts AFTER decompression with exact hash-verified data.
+    // Execute the original split/copy instructions, without claiming that
+    // this fixture performed connected firmware loading or decompression.
+    run(0x803e57c8,0,0x803e58cc,{},0,0,30000000);bitmapCopyInstructions=fixture.instructions;
+    std::vector<uint8_t> copied(resource.size()-1816);cpu.read(0x03c3d000,copied.data(),copied.size());
+    need(std::equal(copied.begin(),copied.end(),resource.begin()+1816),"original bitmap pixel-pool copy differs");
+    std::vector<uint8_t> header(1816);cpu.read(0x027aa000,header.data(),header.size());
+    need(std::equal(header.begin(),header.end(),resource.begin()),"original bitmap metadata split differs");
+    run(0x803e457c); // original pool-cursor initialization
+    run(0x803e5498,0x80702000,0,{},0,0,1000000);bitmapRegistrationInstructions=fixture.instructions;
+    uint32_t cursor=0x03c3d000;
+    for(unsigned id=0;id<350;++id){
+      auto width=(uint32_t(header[66+4*id])<<8)|header[67+4*id];
+      auto height=(uint32_t(header[68+4*id])<<8)|header[69+4*id];
+      need(header[66+1400+id]==1,"unexpected original bitmap encoding in this pinned image");
+      need(read(0x00702000+2*id,2)==id,"original allocator must assign bitmap handles in original order");
+      run(0x803ee5c0,id,0,{},0x80700080);
+      need(cpu.reg(UC_MIPS_REG_2)==0 && read(0x00700080)==cursor && read(0x00700084)==width*height*2 &&
+        read(0x00700088,1)==1 && read(0x0070008c)==width && read(0x00700090)==width*2 &&
+        read(0x00700094)==height && read(0x00700098)==9,
+        "original bitmap callback must describe its actual allocated source bytes and native format");
+      if(id==196){bitmap196Address=cursor;auto offset=cursor-0x03c3d000;
+        need(width==7 && height==42,"first paint bitmap metadata must be original 7x42 asset196");
+        bitmap196Sha=manta::sha256(std::span(copied).subspan(offset,width*height*2));
+      }
+      cursor=(cursor+width*height*2+7)&~7u;++bitmapMetadataCases;
+    }
+    need(cursor==0x03c3d000+copied.size(),"original bitmap allocations must account for the complete pixel pool");
+    for(auto id:{350u,0xffffu,0xffffffffu}){
+      write(0x00700080,0xdeadbeef);run(0x803ee5c0,id,0,{},0x80700080);
+      need(cpu.reg(UC_MIPS_REG_2)==6 && read(0x00700080)==0xdeadbeef,
+        "original metadata callback must reject invalid IDs without inventing an output descriptor");
+    }
+    // The original initialization fragment registers both real resource
+    // callbacks. No host callback returns bitmap data or reports success.
+    run(0x804044ec,0,0x805cbbd8);
+    need(read(0x006ada4c)==0x803ee5c0 && read(0x006ada50)==0x803ee508,
+      "original graphics setup must register its own bitmap and font callbacks");
+    resetGe(true);write(0x0070107c,0,2); // explicit synthetic software-shadow format, not a hardware reset
+    run(0x8051ff80,196,0x805254ec,{},0x80700080);
+    auto sp=cpu.reg(UC_MIPS_REG_SP)&0x1fffffff;
+    need(cpu.reg(UC_MIPS_REG_5)==9 && cpu.reg(UC_MIPS_REG_6)==7 && cpu.reg(UC_MIPS_REG_7)==42 &&
+      read(sp+0x10)==bitmap196Address && read(sp+0x14)==14 && read(sp+0x18)==0 &&
+      fixture.visits.contains(0x803ee5c0),
+      "original bitmap frontend must obtain real asset196 through the registered callback before source-buffer binding");
+    fixture={};manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),50000));
+    need(!ge.riu->stopReason.empty() && cpu.reg(UC_MIPS_REG_PC)==0x805268dc &&
+      ge.writes==std::vector<std::pair<uint32_t,uint16_t>>{{0x1f2050d0,9},
+        {0x1f205080,uint16_t(bitmap196Address)},{0x1f205084,uint16_t(bitmap196Address>>16)},{0x1f2050c0,14}},
+      "original source binding must program actual asset format/address/pitch then stop on unresolved GE control bits");
+    bitmapSourceWrites=ge.writes.size();bitmapSourceInstructions=fixture.instructions;
+    need(ge.riu->knownBits(0x1f205004,2)==2 && ge.riu->geSubmitted()==4,
+      "source setup cannot turn unknown GE control fields into valid bits or raster work");
+    // A second isolated continuation uses the EXISTING bit-origin tracker.
+    // Unchanged unknown control bits may only return to their original RIU
+    // identities; decisions, changed unknown bits and new destinations reject.
+    resetGe(true);ge.symbolicControl=true;ge.riu->symbolicInit=true;
+    run(0x8051ff80,196,0x805254ec,{},0x80700080);
+    fixture={};fixture.stopAt=0x8051fff8;fixture.preserved=&ge.preserved;fixture.riu=ge.riu.get();
+    manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),50000));
+    need(cpu.reg(UC_MIPS_REG_PC)==fixture.stopAt && ge.riu->stopReason.empty() &&
+      cpu.reg(UC_MIPS_REG_2)==1 && !ge.preserved.mask(2) && read(0x00701528,2)==1,
+      "original source binding must return itself with preserved unknown control bits and restored nesting");
+    need(ge.writes.size()==5 && ge.writes.back().first==0x1f205004 &&
+      ge.riu->knownBits(0x1f205004,2)==0x372 && ge.riu->geSubmitted()==5,
+      "same-register original control RMW must validate only its known fields, never unrelated hardware bits");
+    bitmapSymbolicSourceWrites=ge.writes.size();bitmapSymbolicSourceInstructions=fixture.instructions;
+    cpu.write(0x006ada64,image.data()+0x806ada64-0x803b3980,4);
+    cpu.write(0x006ada4c,image.data()+0x806ada4c-0x803b3980,8);
+  }
   std::vector<uint8_t> after(image.size());cpu.read(0x003b3980,after.data(),after.size());need(after==image,"original instruction/resource image changed");
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"ISOLATED original-function execution with synthetic RAM, not television boot or events\","
     <<"\"queue_cases\":"<<cases-4<<",\"standby_default_cases\":4,\"active_dispatch_cases\":"<<runningCases
@@ -370,6 +469,12 @@ int main(int argc,char** argv){try{
     <<",\"paint_GE_clip_writes\":"<<paintGeWrites<<",\"paint_strict_GE_unknown_stops\":true"
     <<",\"paint_GE_context_executed\":true,\"paint_surface_allocated\":false,\"paint_GE_raster_issued\":false"
     <<",\"original_window_timer_cases\":"<<timerCreationCases<<",\"window_timer_creation_instructions\":"<<timerCreationInstructions
+    <<",\"bitmap_metadata_cases\":"<<bitmapMetadataCases<<",\"bitmap_copy_original_instructions\":"<<bitmapCopyInstructions
+    <<",\"bitmap_registration_original_instructions\":"<<bitmapRegistrationInstructions
+    <<",\"bitmap196_source_address\":"<<bitmap196Address<<",\"bitmap196_source_sha256\":\""<<bitmap196Sha<<"\""
+    <<",\"bitmap_source_GE_writes\":"<<bitmapSourceWrites<<",\"bitmap_source_original_instructions\":"<<bitmapSourceInstructions
+    <<",\"bitmap_symbolic_source_GE_writes\":"<<bitmapSymbolicSourceWrites
+    <<",\"bitmap_symbolic_source_original_instructions\":"<<bitmapSymbolicSourceInstructions
     <<",\"TV_dispatcher_invoked\":false,\"TV_events_injected\":false,\"pixels_generated\":false,"
     <<"\"program_sha256\":\""<<manta::sha256(image)<<"\"}\n";
   return 0;

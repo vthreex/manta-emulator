@@ -1,5 +1,20 @@
 # Status of the research build
 
+The [constructor-clear probe](original-ge-clear-command.md) recovers raster
+request **0030**, rectangle endpoints and colour **FF000000** through original
+instructions in three isolated cases. Two empty rectangles return without it.
+The raster guard rejects the request; no completion, framebuffer writes or
+pixels are fabricated. Destination indices `26/27/33` are distinct from the
+bitmap source's `20/21/30`.
+
+The [original bitmap-source continuation](osd3-original-bitmap-source.md)
+executes firmware metadata/pixel-pool copies and registration of all 350 bitmap
+records in isolation. The first paint component resolves bitmap 196 to its
+original 7x42 source at `03D6E128`, then programs GE source address/format/pitch.
+Existing per-bit provenance permits the original control RMW and return while
+unrelated bits remain invalid. No destination surface, raster operation or
+displayed frame is produced, and connected execution is unchanged.
+
 The [OSD 3 paint continuation](osd3-paint-and-ge-clipping.md) now executes the
 original dirty-region worker past its old boundary in isolation. Window 4
 selects component 4/index 65 and rectangle `(531,42,7,44)`. Explicit RAM/context

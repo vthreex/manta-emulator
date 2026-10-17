@@ -1,0 +1,119 @@
+{
+  "result": "PASS",
+  "base_git": "94faf5d",
+  "scope": "isolated original OSD3 bitmap pool, source programming and clear requests; no connected rendering change",
+  "reports": {
+    "zui-bitmaps-audio": {
+      "file": "zui-bitmaps-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "zui-bitmaps-avd": {
+      "file": "zui-bitmaps-avd.json.gz",
+      "sha256_uncompressed": "86ab3e1f7c140b97e34f01e5db39a72482f59cbb5299d50121b20694b219aa88"
+    },
+    "zui-bitmaps-baseline": {
+      "file": "zui-bitmaps-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "zui-bitmaps-clock": {
+      "file": "zui-bitmaps-clock.json.gz",
+      "sha256_uncompressed": "c8e3ca5600be4bb3da3a9d4b3864101c98858f263fdb975c9c06066e77239bdb"
+    },
+    "zui-bitmaps-cochannel": {
+      "file": "zui-bitmaps-cochannel.json.gz",
+      "sha256_uncompressed": "7a03081534483bda7090f7d23868788f1a1fda7d5823f25ddea5d173b0a4b895"
+    },
+    "zui-bitmaps-copro": {
+      "file": "zui-bitmaps-copro.json.gz",
+      "sha256_uncompressed": "018e0bd337fb6564f9fda5976c3282724b2b35e183d8ce62edb3d96a6df5d9f6"
+    },
+    "zui-bitmaps-display": {
+      "file": "zui-bitmaps-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "zui-bitmaps-events": {
+      "file": "zui-bitmaps-events.json.gz",
+      "sha256_uncompressed": "ca27761fa240c9af90ea5851f2b82073da9ac8313c57c572a7956ece2a9e15fe"
+    },
+    "zui-bitmaps-htotal": {
+      "file": "zui-bitmaps-htotal.json.gz",
+      "sha256_uncompressed": "e27075a5c54664d9f5be62b98bd2f6d265ef6aebb7e4559247c7a17334c29c6c"
+    },
+    "zui-bitmaps-immutable": {
+      "file": "zui-bitmaps-immutable.json.gz",
+      "sha256_uncompressed": "42759f77c3ca94dfa36854c15bff86eec65f8af320c2451916998a445d953825"
+    },
+    "zui-bitmaps-packaged-window": {
+      "file": "zui-bitmaps-packaged-window.json.gz",
+      "sha256_uncompressed": "ecc2ee4f70aa92c01e611ebf08d4f54ac9ecc72f60d0d34bcbb563b268789090"
+    },
+    "zui-bitmaps-pm": {
+      "file": "zui-bitmaps-pm.json.gz",
+      "sha256_uncompressed": "5f5df2ff21366bec58152986af53dff6cfdfb3890763ecb90b0d1e4920d0a20a"
+    },
+    "zui-bitmaps-request": {
+      "file": "zui-bitmaps-request.json.gz",
+      "sha256_uncompressed": "d92bb7be9f76eb51fc2c1213864f1b34c6085a249c2aa37229b19f8ed9034a53"
+    },
+    "zui-bitmaps-selector": {
+      "file": "zui-bitmaps-selector.json.gz",
+      "sha256_uncompressed": "335147c3a79cad442233382bb37d77eb6d79e02fcc1724941d74448396ea6bab"
+    },
+    "zui-bitmaps-symbolic": {
+      "file": "zui-bitmaps-symbolic.json.gz",
+      "sha256_uncompressed": "10a7567437c9cf4a41152c605c888af2b86237d1876ed2ccf8ca1c5ac3805cb2"
+    },
+    "zui-bitmaps-vd": {
+      "file": "zui-bitmaps-vd.json.gz",
+      "sha256_uncompressed": "9bc6a80fbc2edec820797ef33c0d39b3d3ce2b120082505924a088322d176b33"
+    },
+    "zui-bitmaps-vif": {
+      "file": "zui-bitmaps-vif.json.gz",
+      "sha256_uncompressed": "260e4afa8707f82dbf0738349f1e71e3eaef8e3cacf5d53d6b23a4eaac874e42"
+    },
+    "zui-bitmaps-zui": {
+      "file": "zui-bitmaps-zui.json.gz",
+      "sha256_uncompressed": "6172f281844907eba66c7608eae1ffccbfbd3e52a0f489cb3e52257ed45ea084"
+    },
+    "native-tools": {
+      "file": "zui-bitmaps-native-tools.json.gz",
+      "sha256_uncompressed": "3bb41447801ef06287177ad313b258b5bf68cabe447441255016e530be7f6b25"
+    },
+    "ge-clear-regression": {
+      "file": "ge-clear-regression.json.gz",
+      "sha256_uncompressed": "844d2dfb3d06edaa78cdd8f04568b29786b3aef5b5faa7bc97fcce3d79b95774"
+    },
+    "avd-coefficient-full-trace-audit": {
+      "file": "avd-coefficient-full-trace-audit.json.gz",
+      "sha256_uncompressed": "9a0afb2764861e9c3e10ffeb5b9c5f8808a1763f40a7bbe6281de76fee02e935"
+    }
+  },
+  "native_checks": 1457,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "production_sha256": "e6255cc602b23996f87479102184a3ec6cd8fdceb98781b4896f29557bcdc7f7",
+  "connected_dispatcher": false,
+  "connected_pixels": false,
+  "new_hardware_values": false,
+  "replay_validation": "Production binary identical to complete 6592741-event cold run and fresh-reset replay in zui-timeout-validation.json; no new full replay run",
+  "replay_manifest": "zui-timeout-validation.json",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "probe_sha256": "647a2ac5076307ee9e03d5b51974333e5df03a3ae39e2abc3f7cea04eceaef5d",
+  "clear_probe_sha256": "e5af1623243305646a369387d379691f3f892f822ee3d682eeafb9d0db3d1ef1",
+  "isolated_bitmap_records": 350,
+  "isolated_bitmap_copy_MIPS_instructions": 16175389,
+  "isolated_bitmap_registration_MIPS_instructions": 410295,
+  "isolated_clear_requests_rejected": 3,
+  "isolated_clear_zero_size_returns": 2,
+  "connected_MIPS_instructions": 854795171,
+  "connected_AVD_instructions": 863,
+  "connected_TSP_instructions": 2453934820,
+  "connected_DVB_T_instructions": 1454515,
+  "connected_PM51_instructions": 3474,
+  "connected_audio_DSP_instructions": 0,
+  "connected_MIPS_boundary": "80501BFC / unknown HTotal",
+  "connected_AVD_boundary": "0702 / 11DB.7",
+  "native_new_clear_probe_copied_to_package": true
+}

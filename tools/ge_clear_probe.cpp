@@ -1,0 +1,109 @@
+// Original surface-clear instructions with explicit isolated software contexts.
+// No connected CPU, display surface, ready reply or host rasterizer is used.
+#include "cpu/engine.hpp"
+#include "board/preserved_bits.hpp"
+#include "peripherals/riu.hpp"
+#include "storage/sha256.hpp"
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <set>
+static void need(bool value,const char* why){if(!value)throw std::runtime_error(why);}
+struct Case {
+  manta::Engine cpu;manta::Riu riu;manta::PreservedBits provenance;
+  uint64_t instructions=0;uint32_t stop=0;std::string boundary;
+  std::vector<std::pair<unsigned,unsigned>> writes;
+  Case(const std::vector<uint8_t>& image){
+    cpu.map(0x003b0000,0x350000);cpu.map(0x00700000,0x10000);
+    cpu.write(0x003b3980,image.data(),image.size());
+    riu.candidateGe=true;riu.symbolicInit=true;riu.configureExploratoryGeReset();
+    riu.event=[](const auto&,auto,auto,auto,const auto&){};
+    uc_hook hook;manta::check(uc_hook_add(cpu.handle,&hook,UC_HOOK_CODE,reinterpret_cast<void*>(
+      +[](uc_engine* engine,uint64_t pc,uint32_t,void* data){auto& c=*static_cast<Case*>(data);
+        if(pc==c.stop){uc_emu_stop(engine);return;}
+        need(pc>=0x803b3980 && pc<0x80613000,"clear probe escaped original instructions");
+        uint32_t word=0;c.cpu.read(uint32_t(pc)&0x1fffffff,&word,4);
+        auto why=c.provenance.observe(word,[&](unsigned reg){return c.cpu.reg(UC_MIPS_REG_0+int(reg));},
+          [&](uint32_t address){return c.riu.preservedStoreKey(address);},
+          [&](uint32_t address,unsigned width,uint32_t unknown){c.riu.preparePreservedWrite(address,width,unknown);});
+        need(why.empty(),why.c_str());++c.instructions;
+      }),this,1,0));
+    manta::check(uc_mmio_map(cpu.handle,0x1f205000,0x1000,
+      +[](uc_engine* engine,uint64_t offset,unsigned width,void* data)->uint64_t{
+        auto& c=*static_cast<Case*>(data);auto pc=c.cpu.reg(UC_MIPS_REG_PC);
+        need(width==2 && ((offset==4 && (pc==0x8052624c || pc==0x805268dc)) ||
+          (offset==0x1c && pc==0x8052639c)),"clear probe accessed an unexamined hardware field");
+        auto address=0x1f205000+uint32_t(offset);
+        if(pc==0x805268dc){
+          c.provenance.seed(4,width,c.riu.knownBits(address,width),[&](unsigned byte){return c.riu.controlByteKey(address+byte);});
+          c.riu.prepareOpaqueRead(address);
+        }else c.riu.prepareMaskedRead(address,offset==4?2:0xf800);
+        auto value=c.riu.read(address,width,pc,0,c.instructions);
+        if(!c.riu.stopReason.empty()){c.boundary=c.riu.stopReason;uc_emu_stop(engine);}
+        return value;
+      },this,+[](uc_engine* engine,uint64_t offset,unsigned width,uint64_t value,void* data){
+        auto& c=*static_cast<Case*>(data);auto index=unsigned(offset/4);
+        need(width==2 && !(offset&3) && (index==1 || index==0x59 || index==0x60 ||
+          (index>=0x55 && index<=0x58) || (index>=0x68 && index<=0x6b) || index==0x70 || index==0x71),
+          "clear probe encountered an unexamined GE command");
+        c.writes.emplace_back(index,unsigned(value));
+        try{c.riu.write(0x1f205000+uint32_t(offset),width,uint32_t(value),c.cpu.reg(UC_MIPS_REG_PC),0xffff,c.instructions);}
+        catch(const std::runtime_error& e){
+          need(index==0x60 && std::string(e.what())=="GE raster command 60h unsupported; no pixels or completion fabricated",
+            "unexpected clear peripheral exception");
+          c.boundary=e.what();uc_emu_stop(engine);
+        }
+        need(c.riu.stopReason.empty(),"clear configuration submission failed");
+      },this));
+    write(0x006ada64,0x80701000);write(0x00701538,0x55aabeef);
+    write(0x00701524,0);write(0x00701528,1,2);write(0x0070100c,0xbf200000);
+  }
+  void write(uint32_t address,uint32_t value,unsigned width=4){uint8_t bytes[4]{};
+    for(unsigned i=0;i<width;++i)bytes[i]=uint8_t(value>>(8*i));cpu.write(address,bytes,width);}
+  void entry(uint32_t pc,uint32_t until){
+    for(int reg=UC_MIPS_REG_0;reg<=UC_MIPS_REG_31;++reg)cpu.reg(reg,0);
+    cpu.reg(UC_MIPS_REG_SP,0x8070ff00);cpu.reg(UC_MIPS_REG_RA,0x803b0000);stop=until;
+    cpu.reg(UC_MIPS_REG_PC,pc);
+  }
+};
+int main(int argc,char** argv){try{
+  need(argc==2,"supply original main image; isolated constructor-clear packet tests only");
+  std::ifstream input(argv[1],std::ios::binary);std::vector<uint8_t> image(std::istreambuf_iterator<char>(input),{});
+  need(image.size()==3167072 && manta::sha256(image)=="149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+    "original main image mismatch");
+  unsigned cases=0,requests=0,empty=0;uint64_t instructions=0;
+  for(auto dimensions:std::vector<std::pair<unsigned,unsigned>>{{1360,248},{4,3},{1,1},{0,3},{4,0}}){
+    auto [width,height]=dimensions;auto c=std::make_unique<Case>(image);
+    c->write(0x00700080,0,2);c->write(0x00700082,0,2);
+    c->write(0x00700084,width,2);c->write(0x00700086,height,2);
+    c->entry(0x80520274,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80700080);c->cpu.reg(UC_MIPS_REG_5,0x80700084);
+    manta::check(c->cpu.run(0x80520274,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original clear clip setup failed");
+    c->writes.clear();auto before=c->riu.geSubmitted();
+    // Unchanged constructor fragment creates its own clear descriptor from
+    // explicit width/height/scratch register fixtures. No allocation result,
+    // framebuffer base or completed operation is supplied.
+    c->entry(0x8049e158,0x8049e18c);c->cpu.reg(UC_MIPS_REG_19,0x806fca54);
+    c->cpu.reg(UC_MIPS_REG_20,width);c->cpu.reg(UC_MIPS_REG_21,0x806d0000);c->cpu.reg(UC_MIPS_REG_22,height);
+    manta::check(c->cpu.run(0x8049e158,50000));
+    if(width && height){
+      need(c->boundary=="GE raster command 60h unsupported; no pixels or completion fabricated" &&
+        c->cpu.reg(UC_MIPS_REG_PC)==0x80526598,"original nonempty clear must stop on its actual unsupported raster submission");
+      need(c->writes.size()==9 && !(c->writes[1].second&0x372),"clear must consume only known GE control fields");
+      need(c->writes==std::vector<std::pair<unsigned,unsigned>>{{0x59,0},{1,c->writes[1].second},{0x68,0},{0x69,0},
+        {0x6a,width-1},{0x6b,height-1},{0x70,0},{0x71,0xff00},{0x60,0x30}},
+        "original clear packet differs from recovered rectangle/color/command sequence");
+      need(c->riu.geSubmitted()-before==8,"unsupported raster trigger must not enter or retire in the configuration queue");++requests;
+    }else{
+      // 803EACF0 overwrites the lower API's return with descriptor+28 (0).
+      need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==0 && c->boundary.empty() && c->writes.empty(),
+        "original zero-size clear must return without a raster request");++empty;
+    }
+    need(c->riu.knownBits(0x1f205004,2)==(width&&height?0x372u:2u),"clear must preserve unresolved control-bit provenance");
+    instructions+=c->instructions;++cases;
+  }
+  std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original constructor-clear fragment; synthetic RAM context and existing conditional GE reset, not TV execution\","
+    <<"\"cases\":"<<cases<<",\"raster_requests_rejected\":"<<requests<<",\"zero_size_returns\":"<<empty
+    <<",\"original_instructions\":"<<instructions<<",\"raster_command\":48,\"pixels_generated\":false,\"framebuffer_allocated\":false}\n";
+  return 0;
+}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
