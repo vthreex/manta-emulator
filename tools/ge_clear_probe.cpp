@@ -45,7 +45,8 @@ struct Case {
       },this,+[](uc_engine* engine,uint64_t offset,unsigned width,uint64_t value,void* data){
         auto& c=*static_cast<Case*>(data);auto index=unsigned(offset/4);
         need(width==2 && !(offset&3) && (index==1 || index==0x59 || index==0x60 ||
-          (index>=0x55 && index<=0x58) || (index>=0x68 && index<=0x6b) || index==0x70 || index==0x71),
+          (index>=0x55 && index<=0x58) || (index>=0x68 && index<=0x6b) || index==0x70 || index==0x71 ||
+          index==0x34 || index==0x26 || index==0x27 || index==0x33),
           "clear probe encountered an unexamined GE command");
         c.writes.emplace_back(index,unsigned(value));
         try{c.riu.write(0x1f205000+uint32_t(offset),width,uint32_t(value),c.cpu.reg(UC_MIPS_REG_PC),0xffff,c.instructions);}
@@ -61,6 +62,8 @@ struct Case {
   }
   void write(uint32_t address,uint32_t value,unsigned width=4){uint8_t bytes[4]{};
     for(unsigned i=0;i<width;++i)bytes[i]=uint8_t(value>>(8*i));cpu.write(address,bytes,width);}
+  uint32_t read(uint32_t address,unsigned width=4){uint8_t bytes[4]{};cpu.read(address,bytes,width);uint32_t value=0;
+    for(unsigned i=0;i<width;++i)value|=uint32_t(bytes[i])<<(8*i);return value;}
   void entry(uint32_t pc,uint32_t until){
     for(int reg=UC_MIPS_REG_0;reg<=UC_MIPS_REG_31;++reg)cpu.reg(reg,0);
     cpu.reg(UC_MIPS_REG_SP,0x8070ff00);cpu.reg(UC_MIPS_REG_RA,0x803b0000);stop=until;
@@ -102,8 +105,38 @@ int main(int argc,char** argv){try{
     need(c->riu.knownBits(0x1f205004,2)==(width&&height?0x372u:2u),"clear must preserve unresolved control-bit provenance");
     instructions+=c->instructions;++cases;
   }
+  unsigned capabilityCases=0,destinationCases=0;uint64_t destinationInstructions=0;
+  for(auto test:std::vector<std::array<unsigned,5>>{{9,1,1,2,2},{12,1,6,4,4},{12,0,1,2,2},{15,0,1,4,4}}){
+    auto c=std::make_unique<Case>(image);c->entry(0x80525e28,0x803b0000);
+    c->cpu.reg(UC_MIPS_REG_4,0x80701008);c->cpu.reg(UC_MIPS_REG_5,test[0]);
+    c->cpu.reg(UC_MIPS_REG_6,test[1]);c->cpu.reg(UC_MIPS_REG_7,0x80700080);
+    manta::check(c->cpu.run(0x80525e28,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==test[2] &&
+      c->read(0x00700084,1)==test[3] && c->read(0x00700085,1)==test[4] && c->writes.empty(),
+      "original format capability must distinguish source9, rejected sourceC, destinationC and destinationF");
+    ++capabilityCases;
+  }
+  for(auto format:{9u,12u,15u,4u})for(auto physical:{0x01000000u,0x09000000u}){
+    auto c=std::make_unique<Case>(image);auto pitch=1360*(format==15?4:format==4?1:2);
+    // A descriptor fixture is not an allocated/active framebuffer. The
+    // pointed-to physical region is deliberately NOT mapped in this probe.
+    c->write(0x00700080,physical);c->write(0x00700084,1360);c->write(0x00700088,248);
+    c->write(0x0070008c,pitch);c->write(0x00700090,format);
+    c->entry(0x8051fef8,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80700080);
+    manta::check(c->cpu.run(0x8051fef8,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==1 && c->boundary.empty() &&
+      c->read(0x00701528,2)==1 && c->read(0x0070153d,1)==unsigned(format==4),
+      "original destination binding must return and restore its nesting; only format4 selects palette handling");
+    need(c->writes.size()==5 && c->writes==std::vector<std::pair<unsigned,unsigned>>{{0x34,format<<8},
+      {0x26,0},{0x27,physical==0x01000000?0x100u:0x8100u},{0x33,pitch},{1,c->writes.back().second}} &&
+      !(c->writes.back().second&0x372) && c->riu.knownBits(0x1f205004,2)==0x372 && c->riu.geSubmitted()==5,
+      "original destination API must program its distinct format/address/pitch fields without validating unknown controls");
+    destinationInstructions+=c->instructions;++destinationCases;
+  }
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original constructor-clear fragment; synthetic RAM context and existing conditional GE reset, not TV execution\","
     <<"\"cases\":"<<cases<<",\"raster_requests_rejected\":"<<requests<<",\"zero_size_returns\":"<<empty
-    <<",\"original_instructions\":"<<instructions<<",\"raster_command\":48,\"pixels_generated\":false,\"framebuffer_allocated\":false}\n";
+    <<",\"original_instructions\":"<<instructions<<",\"raster_command\":48,\"pixels_generated\":false,\"framebuffer_allocated\":false"
+    <<",\"original_format_capability_cases\":"<<capabilityCases<<",\"original_destination_binding_cases\":"<<destinationCases
+    <<",\"original_destination_binding_instructions\":"<<destinationInstructions<<"}\n";
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

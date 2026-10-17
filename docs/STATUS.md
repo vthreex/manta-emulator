@@ -1,5 +1,11 @@
 # Status of the research build
 
+[Destination-binding tests](ge-destination-binding.md) now execute original
+format capabilities and eight descriptor cases, including both MIU selectors.
+Format C is destination-only in the tested original API; physical bit 27 packs
+into GE address bit 31. Successful register programming remains distinct from
+allocation and drawing. No connected execution or pixel milestone changes.
+
 The [constructor-clear probe](original-ge-clear-command.md) recovers raster
 request **0030**, rectangle endpoints and colour **FF000000** through original
 instructions in three isolated cases. Two empty rectangles return without it.

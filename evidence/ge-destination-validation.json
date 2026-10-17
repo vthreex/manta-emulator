@@ -1,0 +1,20 @@
+{
+  "result": "PASS",
+  "base_git": "af339d9",
+  "scope": "isolated original GE format/destination extension only; no framebuffer or TV pixels",
+  "reports": {
+    "destination": {
+      "file": "ge-destination-regression.json.gz",
+      "sha256_uncompressed": "a33c36e24d15222a38b9a077146f5fecd74b7fbf545d2d4f7c6778d19e21eaad"
+    }
+  },
+  "native_stdout": "1457 checks passed\n",
+  "window_stdout": "NATIVE_WINDOW_CREATED; guest display not initialized\n",
+  "production_sha256": "e6255cc602b23996f87479102184a3ec6cd8fdceb98781b4896f29557bcdc7f7",
+  "probe_sha256": "f48dd2e9e719504d8f9bdf505848e61aa1326b138f567bb74c25983f12b600ec",
+  "unchanged_full_validation": "osd3-bitmap-validation.json",
+  "full_validation_note": "Same production/core/other probe binaries; prior 18 baseline,9 display, auxiliary, forensics and complete 6592741-event replay remain applicable. Current extended diagnostic independently repeated, corruption rejected, clean PATH passed.",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "connected_execution_changed": false,
+  "pixels_generated": false
+}
