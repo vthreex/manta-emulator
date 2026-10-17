@@ -133,10 +133,99 @@ int main(int argc,char** argv){try{
       "original destination API must program its distinct format/address/pitch fields without validating unknown controls");
     destinationInstructions+=c->instructions;++destinationCases;
   }
+  // Original CPU-side GOP allocation, not a supplied descriptor/return value.
+  // These are isolated ordinary-RAM fixtures. The observed boot pool arguments
+  // do not prove a connected surface exists or that its memory contains pixels.
+  unsigned allocationCases=0,allocationRejects=0,allocatedBindings=0,allocatedClearRequests=0;uint64_t allocationInstructions=0;
+  for(auto extent:{0x72f400u,128u}){
+    auto c=std::make_unique<Case>(image);
+    constexpr uint32_t local=0x006ff0b0,shared=0x006ffb4c,base=0x00ddd800;
+    c->write(0x006d87f8,0x806ff0b0);c->write(local,0x806ffb4c);
+    c->write(local+4,0x80700040);c->write(0x00700054,6,2);
+    c->write(0x00700080,1920,2);c->write(0x00700082,1080,2);
+    c->write(0x00700088,base);c->write(0x0070008c,extent);
+    c->entry(0x80533424,0x805334a4);c->cpu.reg(UC_MIPS_REG_20,0x80700080);
+    c->cpu.reg(UC_MIPS_REG_21,0x806e0000);c->write(0x0070ff18,1,1);
+    manta::check(c->cpu.run(0x80533424,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->writes.empty() &&
+      c->read(local+0x1c)==base && c->read(local+0x20)==extent &&
+      c->read(local+0x24,2)==0xffff && c->read(local+0x38)==1 &&
+      c->read(shared+8,2)==1920 && c->read(shared+10,2)==1080,
+      "original GOP initialization fragment must establish its own empty RAM pool");
+    const auto width=extent==128?8u:1360u,height=extent==128?8u:248u;
+    const auto bytes=width*2*height;
+    auto allocate=[&](unsigned id){
+      c->entry(0x8052c3c0,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,id);
+      c->cpu.reg(UC_MIPS_REG_5,0);c->cpu.reg(UC_MIPS_REG_6,0);c->cpu.reg(UC_MIPS_REG_7,width);
+      c->write(0x0070ff10,height,2);c->write(0x0070ff14,12,2);c->write(0x0070ff18,0);
+      manta::check(c->cpu.run(0x8052c3c0,50000));
+      need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->writes.empty(),
+        "original RAM allocation must return without a hardware response or drawing");
+      return c->cpu.reg(UC_MIPS_REG_2);
+    };
+    for(unsigned id=0;id<(extent==128?1u:2u);++id){
+      need(allocate(id)==1,"original GOP allocation must create its own record");
+      const auto record=local+44*id;
+      need((c->read(record+0x3c)&0x300)==0x200 && c->read(record+0x50)==base+bytes*id &&
+        c->read(record+0x54)==bytes && c->read(record+0x4a,2)==width*2 &&
+        c->read(record+0x46,2)==width && c->read(record+0x48,2)==height &&
+        c->read(record+0x4c,2)==0x0c0c && c->read(record+0x5c,2)==0xffff,
+        "original allocation record address/dimensions/pitch/format/links differ");
+      if(id)need(c->read(local+0x5c,2)==id,"original allocator must link consecutive records");
+      ++allocationCases;
+    }
+    std::array<uint8_t,0xa9c> before{},after{};
+    c->cpu.read(local,before.data(),before.size());
+    for(auto invalid:{0u,32u,255u}){
+      need(allocate(invalid)==255,"duplicate/out-of-range framebuffer IDs must be rejected");
+      c->cpu.read(local,after.data(),after.size());
+      need(before==after,"rejected allocation must leave GOP metadata unchanged");++allocationRejects;
+    }
+    // The real selector obtains pitch/address/format from the record above and
+    // invokes the original registered 803EE738 callback. No host descriptor is
+    // substituted. Only the mutex's ordinary software ownership is a fixture;
+    // original 805CB82C returns -1 without any host system-call replacement.
+    c->entry(0x805293f8,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x803ee738);
+    manta::check(c->cpu.run(0x805293f8,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->read(0x006d880c)==0x803ee738,
+      "original framebuffer callback registration failed");
+    c->write(local+0xc,0);c->write(local+0x10,0xffffffff);c->write(local+0x14,1);
+    c->entry(0x80529430,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0);
+    manta::check(c->cpu.run(0x80529430,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==1 &&
+      c->read(local+0x14)==1 && c->read(0x00701528,2)==1 && c->boundary.empty(),
+      "original allocated-record binding must return and preserve nested software ownership");
+    need(c->writes.size()==5 && c->writes==std::vector<std::pair<unsigned,unsigned>>{{0x34,0xc00},
+      {0x26,base&0xffff},{0x27,base>>16},{0x33,width*2},{1,c->writes.back().second}} &&
+      c->riu.knownBits(0x1f205004,2)==0x372 && c->read(0x0070153d,1)==0,
+      "original allocated framebuffer must bind its own GE address/pitch/format without palette or raster work");
+    ++allocatedBindings;
+    c->write(0x00700080,0,2);c->write(0x00700082,0,2);
+    c->write(0x00700084,width,2);c->write(0x00700086,height,2);
+    c->entry(0x80520274,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80700080);c->cpu.reg(UC_MIPS_REG_5,0x80700084);
+    manta::check(c->cpu.run(0x80520274,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"allocated clear clip setup failed");
+    c->writes.clear();auto submitted=c->riu.geSubmitted();
+    c->entry(0x8049e158,0x8049e18c);c->cpu.reg(UC_MIPS_REG_19,0x806fca54);
+    c->cpu.reg(UC_MIPS_REG_20,width);c->cpu.reg(UC_MIPS_REG_21,0x806d0000);c->cpu.reg(UC_MIPS_REG_22,height);
+    manta::check(c->cpu.run(0x8049e158,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==0x80526598 &&
+      c->boundary=="GE raster command 60h unsupported; no pixels or completion fabricated" && c->writes.size()==9 &&
+      c->writes==std::vector<std::pair<unsigned,unsigned>>{{0x59,0},{1,c->writes[1].second},
+        {0x68,0},{0x69,0},{0x6a,width-1},{0x6b,height-1},{0x70,0},{0x71,0xff00},{0x60,0x30}} &&
+      c->riu.geSubmitted()-submitted==8 && c->read(local+0x50)==base,
+      "allocated original clear must reach the real unsupported raster trigger without completing or writing pixels");
+    ++allocatedClearRequests;
+    allocationInstructions+=c->instructions;
+  }
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original constructor-clear fragment; synthetic RAM context and existing conditional GE reset, not TV execution\","
     <<"\"cases\":"<<cases<<",\"raster_requests_rejected\":"<<requests<<",\"zero_size_returns\":"<<empty
     <<",\"original_instructions\":"<<instructions<<",\"raster_command\":48,\"pixels_generated\":false,\"framebuffer_allocated\":false"
     <<",\"original_format_capability_cases\":"<<capabilityCases<<",\"original_destination_binding_cases\":"<<destinationCases
-    <<",\"original_destination_binding_instructions\":"<<destinationInstructions<<"}\n";
+    <<",\"original_destination_binding_instructions\":"<<destinationInstructions
+    <<",\"isolated_original_GOP_allocations\":"<<allocationCases<<",\"original_GOP_rejections\":"<<allocationRejects
+    <<",\"original_GOP_allocation_instructions\":"<<allocationInstructions
+    <<",\"original_allocated_record_bindings\":"<<allocatedBindings
+    <<",\"original_allocated_clear_requests_rejected\":"<<allocatedClearRequests
+    <<",\"connected_framebuffer_allocated\":false,\"GOP_window_enabled\":false}\n";
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

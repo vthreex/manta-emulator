@@ -1,5 +1,21 @@
 # Status of the research build
 
+The [connected graphics / original BitBlt continuation](connected-graphics-and-original-bitblt.md)
+confirms that the original bitmap-196 source bytes and registration already
+exist in connected RAM, while surface flags and destination fields remain zero.
+Isolated tests now execute all 113 creation callbacks, original GOP allocation,
+record-to-GE binding and the actual OSD 3 bitmap painter to rejected command
+**8040**. Source `03D6E128`, destination `00DDD800`, formats `0C09`, geometry and
+all 51 attempted parameter/command writes are preserved. Clear **0030** and
+BitBlt **8040** still have no raster effects or fabricated completion. Connected
+MIPS/AVD stops and all processor counts remain unchanged; no dispatcher, active
+surface, enabled GWIN or authentic pixels are claimed in connected boot.
+All **1,461 native checks**, 18 baseline runs, nine display runs, auxiliary and
+forensics suites, native startup and a fresh-reset **6,592,741-event replay**
+pass. The read-only production observer preserves every old trace byte, UART,
+coverage, PM history and nonobserver summary field. See the
+[22-report validation manifest](../evidence/ge-state-validation.json).
+
 [Destination-binding tests](ge-destination-binding.md) now execute original
 format capabilities and eight descriptor cases, including both MIU selectors.
 Format C is destination-only in the tested original API; physical bit 27 packs

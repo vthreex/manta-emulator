@@ -2212,6 +2212,21 @@ int main() {
       require(!unknown.state && !unknown.head && !unknown.indicesValid,"unknown ZUI globals remain unavailable rather than defaulting to standby or empty");
       require(!unknown.softwareTick && !unknown.sourceTimeoutTimestamp && !unknown.softwareFlags && !unknown.sourcePhase,
         "read-only source timeout diagnostics do not invent initial software state");
+      require(!unknown.bitmap196Address && !unknown.bitmap196Valid && !unknown.geContextPointer && !unknown.geStaticSignature,
+        "graphics observations retain missing/unknown asset and context fields rather than inventing ready objects");
+      words[0x006bb54c]=0x03d6e128;words[0x006bb550]=588;words[0x006bb554]=14;
+      words[0x006bb556]=42;words[0x006bb558]=7;words[0x006bb55a]=9;words[0x006bb55b]=1;
+      words[0x006ada64]=0xffffffff;words[0x006ff098]=0x55aabeef;words[0x006d4f9c]=0;
+      auto graphicWords=words;auto graphics=Z::capture(0,0,read);
+      require(graphics.bitmap196Address==0x03d6e128 && graphics.bitmap196Bytes==588 && graphics.bitmap196Pitch==14 &&
+        graphics.bitmap196Width==7 && graphics.bitmap196Height==42 && graphics.bitmap196Format==9 && graphics.bitmap196Valid==1,
+        "fixed original bitmap slot observations distinguish source bytes, dimensions and validity");
+      require(graphics.geContextPointer==0xffffffff && graphics.geStaticSignature==0x55aabeef && graphics.surfaceFlags==0 && words==graphicWords,
+        "raw graphics observation never dereferences an invalid context pointer or allocates/enables a surface");
+      std::vector<uint8_t> asset(588);for(unsigned i=0;i<asset.size();++i){asset[i]=uint8_t(i);words[0x03d6e128+i]=asset[i];}
+      auto knownAsset=Z::capture(0,0,read);words.erase(0x03d6e128+123);auto partialAsset=Z::capture(0,0,read);
+      require(!graphics.bitmap196Sha256 && knownAsset.bitmap196Sha256==manta::sha256(asset) && !partialAsset.bitmap196Sha256,
+        "fixed original bitmap checksum requires every source byte to be known; a missing byte never becomes a pixel");
       words[0x006e561c]=0xfffffff0;words[0x006b9050]=0;words[0x006bedf0]=4;words[0x006d4a08]=3;
       saved=words;auto source=Z::capture(0,0,read);
       require(source.softwareTick==0xfffffff0u && source.sourceTimeoutTimestamp==0 && source.softwareFlags==4 && source.sourcePhase==3 && words==saved,

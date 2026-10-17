@@ -5,6 +5,7 @@
 #include <map>
 #include <optional>
 #include <vector>
+#include "storage/sha256.hpp"
 namespace manta {
 // Read-only observations of original MIPS globals. No queue producer, event
 // injection, guest write, hardware read or CPU control operation exists here.
@@ -13,6 +14,10 @@ struct ZuiFlowSnapshot {
   std::optional<uint32_t> state,previous,active,head,tail,windowCount,windowList;
   std::optional<uint32_t> softwareTick,wrapperState,inputServiceState,inputKey,
     sourceId,sourcePhase,sourceTimeoutTimestamp,softwareFlags;
+  std::optional<uint32_t> bitmap196Address,bitmap196Bytes,bitmap196Pitch,bitmap196Width,
+    bitmap196Height,bitmap196Format,bitmap196Valid,surfaceFlags,geContextPointer,
+    geStaticSignature,geStaticFormat,geStaticDestinationLow,geStaticDestinationHigh,geStaticDestinationPitch;
+  std::optional<std::string> bitmap196Sha256;
   unsigned knownSlots=0,occupiedSlots=0;
   bool indicesValid=false;
 };
@@ -42,6 +47,23 @@ public:
     s.inputServiceState=read(0x006c08a0,4);s.inputKey=read(0x006b910c,1);
     s.sourceId=read(0x006f8f8c,4);s.sourcePhase=read(0x006d4a08,4);
     s.sourceTimeoutTimestamp=read(0x006b9050,4);s.softwareFlags=read(0x006bedf0,4);
+    // Fixed original bitmap table slot and original static GE context. Never
+    // follow the data/context pointers or treat these raw fields as scan-out.
+    s.bitmap196Address=read(0x006bb54c,4);s.bitmap196Bytes=read(0x006bb550,4);
+    s.bitmap196Pitch=read(0x006bb554,2);s.bitmap196Height=read(0x006bb556,2);
+    s.bitmap196Width=read(0x006bb558,2);s.bitmap196Format=read(0x006bb55a,1);s.bitmap196Valid=read(0x006bb55b,1);
+    s.surfaceFlags=read(0x006d4f9c,4);s.geContextPointer=read(0x006ada64,4);
+    s.geStaticSignature=read(0x006ff098,4);s.geStaticFormat=read(0x006febdc,2);
+    s.geStaticDestinationLow=read(0x006febc0,2);s.geStaticDestinationHigh=read(0x006febc2,2);
+    s.geStaticDestinationPitch=read(0x006febda,2);
+    if(s.bitmap196Address==0x03d6e128 && s.bitmap196Bytes==588 && s.bitmap196Pitch==14 &&
+       s.bitmap196Width==7 && s.bitmap196Height==42 && s.bitmap196Valid==1){
+      // Fixed, bounded original asset range, not an arbitrary guest pointer.
+      // A checksum is absent if even one byte retains unknown provenance.
+      std::vector<uint8_t> asset;asset.reserve(588);
+      for(unsigned i=0;i<588;++i){auto byte=read(0x03d6e128+i,1);if(!byte)break;asset.push_back(uint8_t(*byte));}
+      if(asset.size()==588)s.bitmap196Sha256=sha256(asset);
+    }
     s.indicesValid=s.head && s.tail && *s.head<queueSize && *s.tail<queueSize;
     // Fixed bounded storage only: never dereference a guest queue index or
     // resource pointer, including an invalid or uncertain value.

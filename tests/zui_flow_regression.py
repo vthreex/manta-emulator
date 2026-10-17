@@ -53,6 +53,17 @@ with tempfile.TemporaryDirectory(prefix='manta-original-zui-') as directory:
     assert functions['bitmap196_source_sha256']==hashlib.sha256(bitmaps[1816+bitmap_offset:1816+bitmap_offset+7*42*2]).hexdigest()
     assert functions['bitmap_source_GE_writes']==4 and functions['bitmap_source_original_instructions']==412
     assert functions['bitmap_symbolic_source_GE_writes']==5 and functions['bitmap_symbolic_source_original_instructions']==508
+    assert functions['complete_creation_callback_windows']==113
+    assert functions['complete_creation_queue_head']==functions['complete_creation_queue_tail']==0
+    assert functions['post_creation_first_paint_window']==4 and functions['post_creation_first_paint_type']==4
+    assert functions['post_creation_first_paint_resource']==65
+    assert functions['allocated_paint_stop_PC']==0x80526598 and functions['allocated_paint_command']==0x8040
+    assert functions['allocated_paint_GE_writes']==51 and functions['allocated_paint_original_instructions']==5598
+    packet=functions['allocated_paint_GE_registers']
+    assert packet[:4]==[[0x55,531,65535],[0x57,42,65535],[0x56,537,65535],[0x58,85,65535]]
+    assert packet[4:8]==[[0x34,0xc09,65535],[0x26,0xd800,65535],[0x27,0xdd,65535],[0x33,2720,65535]]
+    assert packet[25:29]==[[0x34,0xc09,65535],[0x20,0xe128,65535],[0x21,0x3d6,65535],[0x30,14,65535]]
+    assert packet[-1][:2]==[0x60,0x8040] and packet[-2][0]==1 and packet[-2][2]==0x372
     assert not functions['TV_dispatcher_invoked'] and not functions['TV_events_injected'] and not functions['pixels_generated']
     damaged=d/'damaged-main.bin';bad=bytearray(main);bad[0x804e0dc4-0x803b3980]^=1;damaged.write_bytes(bad)
     result=subprocess.run([a.probe,str(damaged)],capture_output=True,text=True)

@@ -1,5 +1,15 @@
 # Evidence still needed
 
+The [original bitmap raster-request continuation](connected-graphics-and-original-bitblt.md)
+now reaches **8040** through real allocation, framebuffer selection and original
+resource callbacks in isolation. Connected bitmap registration/source bytes are
+verified, but connected HTotal still blocks UI dispatch. Neither isolated
+allocation nor a submitted primitive proves pixels: raster enable/control,
+scaling, alpha/keying, format-C semantics, RAM effects and completion remain
+required. The later SSD20x GE reference corroborates offsets/primitive types
+without establishing Titania4 reset or blending details. Strict inputs and all
+connected hardware status fields remain unchanged.
+
 Original [bitmap-source binding](osd3-original-bitmap-source.md) and
 [clear requests](original-ge-clear-command.md) now execute in isolated tests.
 Destination allocation, format/composition semantics and raster retirement

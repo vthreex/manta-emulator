@@ -1,0 +1,187 @@
+{
+  "base_git": "92719e1",
+  "result": "PASS",
+  "scope": "read-only connected source/context observations; isolated original OSD3 allocation and rejected raster requests, no TV pixels",
+  "native_checks": 1461,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "MIPS_instructions": 854795171,
+  "TSP_instructions": 2453934820,
+  "DVB_T_instructions": 1454515,
+  "PM51_instructions": 3474,
+  "AVD_instructions": 863,
+  "audio_DSP_instructions": 0,
+  "main_timer_entries": 38589,
+  "DVB_T_IRQ_entries": 161,
+  "PM51_IRQ_entries": 0,
+  "AVD_IRQ_entries": 0,
+  "MIPS_boundary": "80501BFC / unknown HTotal",
+  "AVD_boundary": "0702 / 11DB.7 unknown",
+  "connected_dispatcher": false,
+  "connected_OSD3_activation": false,
+  "connected_framebuffer": false,
+  "enabled_GWIN": false,
+  "raster_operations_retired": false,
+  "guest_framebuffer_pixels": false,
+  "TV_events_or_inputs_added": false,
+  "isolated_original_GOP_allocations": 3,
+  "isolated_allocated_clear_requests_rejected": 2,
+  "isolated_original_bitmap_paint_request": 32832,
+  "reports": {
+    "analysis": {
+      "file": "ge-state-analysis.json.gz",
+      "sha256_uncompressed": "7e9859536d1db886469bb1bf6ab2f65d14af3b59b43c2fce4e92629ae69a115d"
+    },
+    "htotal": {
+      "file": "ge-state-htotal.json.gz",
+      "sha256_uncompressed": "c1ef850af70d469ec5a81f88d7dacd401b5b2e97d25c3238e7b0422598c961fe"
+    },
+    "zui": {
+      "file": "ge-state-zui.json.gz",
+      "sha256_uncompressed": "62dc3d9e11add986c31f00c793c7062028141a228a6042961dbfa0903f6a2ff0"
+    },
+    "events": {
+      "file": "ge-state-events.json.gz",
+      "sha256_uncompressed": "386e98d59038a73d68fbc4fcd3f2f93a7a79f227f778cfd55c8f962996ebd0bc"
+    },
+    "symbolic": {
+      "file": "ge-state-symbolic.json.gz",
+      "sha256_uncompressed": "21c8f85a42b7f4c5347fd54649f4a20ffff415e4726ae01766e5b646f10db0a8"
+    },
+    "selector": {
+      "file": "ge-state-selector.json.gz",
+      "sha256_uncompressed": "29b48c55ad959b5f317e46b9fc03aa5f2318c78245e9d56809ff0f0ec72b5fc7"
+    },
+    "full-replay": {
+      "file": "ge-state-full-replay.json.gz",
+      "sha256_uncompressed": "d94d96338424839154aa43f7d5e6d400880b599e836762146e3bb819df134c2d"
+    },
+    "baseline": {
+      "file": "ge-state-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display": {
+      "file": "ge-state-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "avd": {
+      "file": "ge-state-avd.json.gz",
+      "sha256_uncompressed": "edfe6da8ee9fab7701705bfd6f3f682959b4e7da43eea51a28dcf938cbb44de0"
+    },
+    "vd": {
+      "file": "ge-state-vd.json.gz",
+      "sha256_uncompressed": "dcaa44f6501be2fb902582e1dd186868ddd462f5b79ab26afc775cdff0bc0035"
+    },
+    "pm": {
+      "file": "ge-state-pm.json.gz",
+      "sha256_uncompressed": "0358c5ca94510aad91a30cb488d0b8a914e6f8a3033227696af265e57402d670"
+    },
+    "clock": {
+      "file": "ge-state-clock.json.gz",
+      "sha256_uncompressed": "deae45b70ed8cd6b45e7cc0c108f9484a18451b1487b005fa52b6294cdc59ffe"
+    },
+    "copro": {
+      "file": "ge-state-copro.json.gz",
+      "sha256_uncompressed": "b1648dbf1f0a81ddba16bb2fe7904bf3105ad045fb682ff17d56091c14d4c9df"
+    },
+    "immutable": {
+      "file": "ge-state-immutable.json.gz",
+      "sha256_uncompressed": "c68d12bee1dc83daa7cdfbc00b0a3e88d2172cbc227a4338e0ccbce6e34714ca"
+    },
+    "audio": {
+      "file": "ge-state-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "vif": {
+      "file": "ge-state-vif.json.gz",
+      "sha256_uncompressed": "a245c345dd5bc6c8f4eac249b76dfa3a62e6ba6d8c27ae450d672d6b2447a6a5"
+    },
+    "request": {
+      "file": "ge-state-request.json.gz",
+      "sha256_uncompressed": "06157d27f829e49b60e2fc3674ae0078cfaac0265e3f29728c572507c1f432dc"
+    },
+    "packaged-window": {
+      "file": "ge-state-packaged-window.json.gz",
+      "sha256_uncompressed": "76674afa66c07de60790f619cdbdeee627e9208b61b5af13c1031a8a20e17fa5"
+    },
+    "cochannel": {
+      "file": "ge-state-cochannel.json.gz",
+      "sha256_uncompressed": "4f869ad2e9901d94bbc67bc62b5ad41f6a9d7bea0fef019e9bfed3e5679238cf"
+    },
+    "clear": {
+      "file": "ge-state-clear.json.gz",
+      "sha256_uncompressed": "4b33be83d6f1d68ca345ce34de614b58dbf2daad7a9f404e7ab35001c8792aef"
+    },
+    "native-tools": {
+      "file": "ge-state-native-tools.json.gz",
+      "sha256_uncompressed": "e2811f564061cf1b525acfc0db65d814a0c2507dc9352c82e2bc1acff0dbd0cd"
+    }
+  },
+  "binaries": {
+    "audio_dsp_disasm.exe": "c431d54f1c0473b35a84bf843fb357dcec862cfe228688c7eb1caa277d98b47a",
+    "avd_cochannel_probe.exe": "73944d95279a83ab85df371f3e3afacd301f688225831f766a18567a4d8b03a6",
+    "avd_htotal_probe.exe": "61a181b59364e2f70391ef1571eeac20db2e4e76f71fb00d517a01e6d1979619",
+    "avd_mcu_probe.exe": "727b20157a45ce6c2eb2bfd1da91ae0fd4fa9161c128fb9295a44ad5e118c556",
+    "avd_request_probe.exe": "1f394cb194863029c8e009998e2637b008e54019c0c16a9ac1c26fe58709a0ca",
+    "copro_probe.exe": "153016d0d57e37874045883b02f7b79d6c4db0162a352a9b227bfefac4627798",
+    "core_tests.exe": "13586e21396089952d0df0ba11cdaf4b53130df692acb10a68302540abc653fc",
+    "ge_clear_probe.exe": "eef7877a98ed5f7bd635ce1b749aaf974a02736c15c7bf9900b4c2ac68571a85",
+    "manta.exe": "a05799df40699b98b42a486676a587b7d0a43a667825ce2d00642e0b079993b6",
+    "pm51_probe.exe": "88f992df228286984c14c28f0672a5e981fe91f9b59e9774bfc36cfc43da9b97",
+    "vd_mcu_probe.exe": "f09f0d86f82c5e234fc07c44d340013c2c9d7bedd7c1088353231c5369d5d311",
+    "vif_agc_probe.exe": "ae4f4a4234755f55a915349eff52d981ad225db9df85b8f8e4d11c079121a4e5",
+    "zui_flow_probe.exe": "6d965e03e6c4c4a1741f78a8a555253aed15ec45fff68bfffaab1f7de336c473"
+  },
+  "trace_sha256": "0876e686f72f6ffbf993cd6d4b01648cd231972b43223b352fb6dd69243035bd",
+  "trace_events": 6592741,
+  "connected_final_graphics": {
+    "pc": "0x80501bfc",
+    "tick": 854795171,
+    "state": 1,
+    "previous_state": 0,
+    "active_osd": 0,
+    "queue_head": 0,
+    "queue_tail": 0,
+    "window_count": 0,
+    "window_list": 0,
+    "software_tick": 38589,
+    "wrapper_state": 11,
+    "input_service_state": 0,
+    "input_key_raw": 255,
+    "source_id_raw": 20,
+    "source_phase_raw": 0,
+    "source_timeout_timestamp": 0,
+    "software_flags_raw": 4,
+    "bitmap196_address_raw": 64413992,
+    "bitmap196_bytes_raw": 588,
+    "bitmap196_pitch_raw": 14,
+    "bitmap196_width_raw": 7,
+    "bitmap196_height_raw": 42,
+    "bitmap196_format_raw": 9,
+    "bitmap196_valid_raw": 1,
+    "surface_flags_raw": 0,
+    "bitmap196_source_sha256": "9807355bf74b824e9ecb65c07ece6dca892f3d0ac7a96627f360c52ab0f1541f",
+    "ge_context_pointer_raw": 2154818400,
+    "ge_static_signature_raw": 1437253359,
+    "ge_static_format_raw": 2313,
+    "ge_static_destination_low_raw": 0,
+    "ge_static_destination_high_raw": 0,
+    "ge_static_destination_pitch_raw": 0,
+    "queue_indices_valid": true,
+    "known_hwnd_slots": 40,
+    "raw_occupied_hwnd_slots": 0
+  },
+  "related_GE_reference": {
+    "url": "https://raw.githubusercontent.com/linux-chenxing/linux/5b16308ae546df24c218e3785942e741f04ae326/drivers/gpu/drm/mstar/mstar_ge.c",
+    "sha256": "5747b9e96c79144da0b2cbb9dec149c2a95a2fccbc782845617c1c12d574b4c9",
+    "commit": "5b16308ae546df24c218e3785942e741f04ae326",
+    "bytes": 42892
+  },
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "UART_sha256": "23e5aff1fc2bfc449985ade1c6e83436905985514aaa32710125a195eb1c7f3c",
+  "UART_unchanged": true,
+  "native_stdout": "1461 checks passed",
+  "replay_note": "Read-only observation is the only production change; all prior complete trace bytes, coverage, PM history, UART and nonobserver summary fields match. Final production binary is used for cold boot and fresh-reset replay."
+}

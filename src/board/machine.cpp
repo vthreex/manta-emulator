@@ -1862,6 +1862,15 @@ std::string Msd309Machine::summary() const {
       field("input_service_state",observation.inputServiceState);field("input_key_raw",observation.inputKey);
       field("source_id_raw",observation.sourceId);field("source_phase_raw",observation.sourcePhase);
       field("source_timeout_timestamp",observation.sourceTimeoutTimestamp);field("software_flags_raw",observation.softwareFlags);
+      field("bitmap196_address_raw",observation.bitmap196Address);field("bitmap196_bytes_raw",observation.bitmap196Bytes);
+      field("bitmap196_pitch_raw",observation.bitmap196Pitch);field("bitmap196_width_raw",observation.bitmap196Width);
+      field("bitmap196_height_raw",observation.bitmap196Height);field("bitmap196_format_raw",observation.bitmap196Format);
+      field("bitmap196_valid_raw",observation.bitmap196Valid);field("surface_flags_raw",observation.surfaceFlags);
+      s<<",\"bitmap196_source_sha256\":";
+      if(observation.bitmap196Sha256)s<<'\"'<<*observation.bitmap196Sha256<<'\"';else s<<"null";
+      field("ge_context_pointer_raw",observation.geContextPointer);field("ge_static_signature_raw",observation.geStaticSignature);
+      field("ge_static_format_raw",observation.geStaticFormat);field("ge_static_destination_low_raw",observation.geStaticDestinationLow);
+      field("ge_static_destination_high_raw",observation.geStaticDestinationHigh);field("ge_static_destination_pitch_raw",observation.geStaticDestinationPitch);
       s<<",\"queue_indices_valid\":"<<(observation.indicesValid?"true":"false")
         <<",\"known_hwnd_slots\":"<<observation.knownSlots<<",\"raw_occupied_hwnd_slots\":"<<observation.occupiedSlots<<'}';
     }

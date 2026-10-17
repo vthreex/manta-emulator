@@ -51,11 +51,12 @@ int main(int argc,char** argv){try{
   };
   struct GeFixture {std::unique_ptr<manta::Riu> riu;Fixture* execution;
     std::vector<std::pair<uint32_t,uint16_t>> writes;unsigned reads=0;
-    manta::PreservedBits preserved;bool symbolicControl=false;} ge{nullptr,&fixture,{},0,{},false};
+    manta::PreservedBits preserved;bool symbolicControl=false,paintParameters=false;std::string boundary;} ge{nullptr,&fixture,{},0,{},false,false,{}};
   manta::check(uc_mmio_map(cpu.handle,0x1f205000,0x1000,
     +[](uc_engine* engine,uint64_t offset,unsigned width,void* data)->uint64_t{
       auto& g=*static_cast<GeFixture*>(data);uint32_t pc=0;uc_reg_read(engine,UC_MIPS_REG_PC,&pc);
-      need(g.riu && width==2 && ((offset==4 && (pc==0x8052624c || pc==0x805268dc)) || (offset==0x1c && pc==0x8052639c)),
+      need(g.riu && width==2 && ((g.paintParameters && pc==0x805268dc && offset<0x200 && !(offset&3)) ||
+        (offset==4 && (pc==0x8052624c || pc==0x805268dc)) || (offset==0x1c && pc==0x8052639c)),
         "isolated clipping accessed an unexamined GE status field");
       auto mask=pc==0x805268dc?0xfc8fu:offset==4?2u:0xf800u;auto address=0x1f205000+uint32_t(offset);
       if(g.symbolicControl && pc==0x805268dc){
@@ -68,16 +69,22 @@ int main(int argc,char** argv){try{
       return value;
     },&ge,+[](uc_engine* engine,uint64_t offset,unsigned width,uint64_t value,void* data){
       auto& g=*static_cast<GeFixture*>(data);uint32_t pc=0;uc_reg_read(engine,UC_MIPS_REG_PC,&pc);
-      need(g.riu && width==2 && (offset==0x154 || offset==0x158 || offset==0x15c || offset==0x160 ||
+      need(g.riu && width==2 && ((g.paintParameters && pc==0x80526598 && offset<0x200 && !(offset&3)) ||
+        offset==0x154 || offset==0x158 || offset==0x15c || offset==0x160 ||
         offset==0xd0 || offset==0x80 || offset==0x84 || offset==0xc0 || (offset==4 && g.symbolicControl)),
         "isolated clipping submitted an unexpected GE operation");
       auto address=0x1f205000+uint32_t(offset);
-      g.riu->write(address,width,uint32_t(value),pc,0xffff,g.execution->instructions);
+      try{g.riu->write(address,width,uint32_t(value),pc,0xffff,g.execution->instructions);}
+      catch(const std::runtime_error& e){
+        need(g.paintParameters && offset==0x180 && std::string(e.what())==
+          "GE raster command 60h unsupported; no pixels or completion fabricated","unexpected original paint peripheral exception");
+        g.boundary=e.what();uc_emu_stop(engine);
+      }
       need(g.riu->stopReason.empty(),"original clipping command was rejected");
       g.writes.emplace_back(address,uint16_t(value));
     },&ge));
   auto resetGe=[&](bool exploratory){ge.riu=std::make_unique<manta::Riu>();ge.writes.clear();ge.reads=0;
-    ge.preserved={};ge.symbolicControl=false;
+    ge.preserved={};ge.symbolicControl=false;ge.paintParameters=false;ge.boundary.clear();
     ge.riu->event=[](const auto&,auto,auto,auto,const auto&){};ge.riu->candidateGe=true;
     if(exploratory)ge.riu->configureExploratoryGeReset();
     // Explicit ordinary-RAM, nested-call context fixture. No mutex response
@@ -360,9 +367,29 @@ int main(int argc,char** argv){try{
     need(read(Z::headAddress)==0 && read(Z::tailAddress)==0,"timer service must not fabricate a queue event");
     ++timerCreationCases;
   }
+  // Separate complete creation-callback phase. Resource selection/state setup
+  // still runs originally; no successful surface constructor is substituted.
+  run(0x804afdfc,0,0x8049dfc4);write(0x006e561c,38589);initialize();write(Z::stateAddress,2);write(Z::activeAddress,3);
+  write(0x006f8f8c,20);write(0x006c0918,11);write(0x006d4a08,0);write(0x006d4fb4,0,1);
+  write(0x006bedf0,4);write(0x006b910c,255,1);
+  unsigned completeCreationWindows=0;uint64_t completeCreationInstructions=0;
+  for(unsigned hwnd=0;hwnd<113;++hwnd){
+    try{run(0x804a071c,hwnd,0,{},0x14,0);}
+    catch(const std::exception& e){throw std::runtime_error("original creation HWND="+std::to_string(hwnd)+
+      " PC="+std::to_string(cpu.reg(UC_MIPS_REG_PC))+": "+e.what());}
+    completeCreationInstructions+=fixture.instructions;++completeCreationWindows;
+  }
+  need(read(Z::windowCountAddress,2)==113 && read(0x006d4fb4,1)==1,
+    "original creation callbacks must retain their resource set and invalidate it for painting");
+  auto completeCreationHead=read(Z::headAddress),completeCreationTail=read(Z::tailAddress);
+  run(0x804e0dc4,0,0x8049d8d8);
+  auto completePaintWindow=fixture.paintWindow,completePaintType=cpu.reg(UC_MIPS_REG_4),completePaintId=cpu.reg(UC_MIPS_REG_5);
+  auto completePaintInstructions=fixture.instructions;
   unsigned bitmapMetadataCases=0;uint64_t bitmapCopyInstructions=0,bitmapRegistrationInstructions=0;
   uint32_t bitmap196Address=0;std::string bitmap196Sha;unsigned bitmapSourceWrites=0,bitmapSourceInstructions=0;
   unsigned bitmapSymbolicSourceWrites=0,bitmapSymbolicSourceInstructions=0;
+  unsigned allocatedPaintInstructions=0,allocatedPaintWrites=0;uint32_t allocatedPaintPC=0,allocatedPaintCommand=0;
+  std::vector<std::array<uint32_t,3>> allocatedPaintRegisters;
   if(argc==4){
     auto load=[](const char* path){std::ifstream input(path,std::ios::binary);
       return std::vector<uint8_t>(std::istreambuf_iterator<char>(input),{});};
@@ -441,10 +468,51 @@ int main(int argc,char** argv){try{
       ge.riu->knownBits(0x1f205004,2)==0x372 && ge.riu->geSubmitted()==5,
       "same-register original control RMW must validate only its known fields, never unrelated hardware bits");
     bitmapSymbolicSourceWrites=ge.writes.size();bitmapSymbolicSourceInstructions=fixture.instructions;
+    // A separate isolated continuation joins original allocation with the
+    // original dirty-region painter. Surface geometry and software mutex
+    // ownership remain explicit RAM fixtures; no production CPU is affected.
+    constexpr uint32_t local=0x006ff0b0;
+    write(0x006d87f8,0x806ff0b0);write(local,0x806ffb4c);write(local+4,0x80700040);
+    write(0x00700054,6,2);write(0x00700080,1920,2);write(0x00700082,1080,2);
+    write(0x00700088,0x00ddd800);write(0x0070008c,0x72f400);
+    fixture={};fixture.stopAt=0x805334a4;
+    cpu.reg(UC_MIPS_REG_SP,0x8070ff00);cpu.reg(UC_MIPS_REG_20,0x80700080);cpu.reg(UC_MIPS_REG_21,0x806e0000);
+    write(0x0070ff18,1,1);manta::check(cpu.run(0x80533424,50000));
+    need(cpu.reg(UC_MIPS_REG_PC)==fixture.stopAt,"paint fixture original pool initialization failed");
+    fixture={};fixture.stopAt=0x803b0000;cpu.reg(UC_MIPS_REG_SP,0x8070ff00);cpu.reg(UC_MIPS_REG_RA,0x803b0000);
+    cpu.reg(UC_MIPS_REG_4,0);cpu.reg(UC_MIPS_REG_5,0);cpu.reg(UC_MIPS_REG_6,0);cpu.reg(UC_MIPS_REG_7,1360);
+    write(0x0070ff10,248,2);write(0x0070ff14,12,2);write(0x0070ff18,0);
+    manta::check(cpu.run(0x8052c3c0,50000));
+    need(cpu.reg(UC_MIPS_REG_PC)==fixture.stopAt && cpu.reg(UC_MIPS_REG_2)==1 &&
+      read(local+0x50)==0x00ddd800 && read(local+0x4a,2)==2720,
+      "paint fixture must use an original allocated framebuffer record");
+    run(0x805293f8,0x803ee738);write(local+0xc,0);write(local+0x10,0xffffffff);write(local+0x14,1);
+    write(0x006d4f9c,1);write(0x006d4fa4,0,2);write(0x006d4fa6,520,2);
+    write(0x006d4fa8,1360,2);write(0x006d4faa,248,2);write(0x006f6a5c,1920,2);
+    write(0x006d4fb4,0,1);run(0x804a071c,0,0,{},0x14,0);
+    run(0x804e0dc4,0,0x80520274);
+    resetGe(true);ge.symbolicControl=true;ge.paintParameters=true;ge.riu->symbolicInit=true;
+    fixture={};fixture.preserved=&ge.preserved;fixture.riu=ge.riu.get();
+    manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),100000));
+    allocatedPaintInstructions=fixture.instructions;allocatedPaintWrites=ge.writes.size();allocatedPaintPC=cpu.reg(UC_MIPS_REG_PC);
+    if(!ge.writes.empty() && ge.writes.back().first==0x1f205180)allocatedPaintCommand=ge.writes.back().second;
+    need(allocatedPaintPC==0x80526598 && allocatedPaintCommand==0x8040 && allocatedPaintWrites==51 &&
+      ge.boundary=="GE raster command 60h unsupported; no pixels or completion fabricated" && ge.riu->stopReason.empty() &&
+      fixture.visits.contains(0x80529430) && fixture.visits.contains(0x803ee738) && fixture.visits.contains(0x803ea1a4) &&
+      fixture.visits.contains(0x803ee5c0) && ge.riu->geSubmitted()==50,
+      "original resource3 bitmap painting must reach its own unsupported raster request through its real callbacks");
+    for(auto [address,value]:ge.writes)allocatedPaintRegisters.push_back({(address-0x1f205000)/4,value,ge.riu->knownBits(address,2)});
+    need(ge.riu->knownBits(0x1f205080,2)==0xffff && ge.riu->knownBits(0x1f205084,2)==0xffff &&
+      read(local+0x50)==0x00ddd800,"original bitmap paint must retain valid source binding and its allocated destination");
+    // These two linked RAM flags are changed by the original graphics setup:
+    // blend mode 80520100 and drawing mode 8051F9F8. Restore only these known
+    // mutable data bytes before checking the entire code/resource image.
+    for(auto address:{0x006ada54u,0x006ada5au})cpu.write(address,image.data()+address-0x003b3980,1);
     cpu.write(0x006ada64,image.data()+0x806ada64-0x803b3980,4);
     cpu.write(0x006ada4c,image.data()+0x806ada4c-0x803b3980,8);
   }
-  std::vector<uint8_t> after(image.size());cpu.read(0x003b3980,after.data(),after.size());need(after==image,"original instruction/resource image changed");
+  std::vector<uint8_t> after(image.size());cpu.read(0x003b3980,after.data(),after.size());
+  need(after==image,"original instruction/resource image changed");
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"ISOLATED original-function execution with synthetic RAM, not television boot or events\","
     <<"\"queue_cases\":"<<cases-4<<",\"standby_default_cases\":4,\"active_dispatch_cases\":"<<runningCases
     <<",\"queue_original_instructions\":"<<queueInstructions<<",\"window_resource_cases\":"<<resourceCases
@@ -469,12 +537,23 @@ int main(int argc,char** argv){try{
     <<",\"paint_GE_clip_writes\":"<<paintGeWrites<<",\"paint_strict_GE_unknown_stops\":true"
     <<",\"paint_GE_context_executed\":true,\"paint_surface_allocated\":false,\"paint_GE_raster_issued\":false"
     <<",\"original_window_timer_cases\":"<<timerCreationCases<<",\"window_timer_creation_instructions\":"<<timerCreationInstructions
+    <<",\"complete_creation_callback_windows\":"<<completeCreationWindows
+    <<",\"complete_creation_original_instructions\":"<<completeCreationInstructions
+    <<",\"complete_creation_queue_head\":"<<completeCreationHead<<",\"complete_creation_queue_tail\":"<<completeCreationTail
+    <<",\"post_creation_first_paint_window\":"<<completePaintWindow<<",\"post_creation_first_paint_type\":"<<completePaintType
+    <<",\"post_creation_first_paint_resource\":"<<completePaintId<<",\"post_creation_paint_original_instructions\":"<<completePaintInstructions
     <<",\"bitmap_metadata_cases\":"<<bitmapMetadataCases<<",\"bitmap_copy_original_instructions\":"<<bitmapCopyInstructions
     <<",\"bitmap_registration_original_instructions\":"<<bitmapRegistrationInstructions
     <<",\"bitmap196_source_address\":"<<bitmap196Address<<",\"bitmap196_source_sha256\":\""<<bitmap196Sha<<"\""
     <<",\"bitmap_source_GE_writes\":"<<bitmapSourceWrites<<",\"bitmap_source_original_instructions\":"<<bitmapSourceInstructions
     <<",\"bitmap_symbolic_source_GE_writes\":"<<bitmapSymbolicSourceWrites
     <<",\"bitmap_symbolic_source_original_instructions\":"<<bitmapSymbolicSourceInstructions
+    <<",\"allocated_paint_original_instructions\":"<<allocatedPaintInstructions
+    <<",\"allocated_paint_GE_writes\":"<<allocatedPaintWrites<<",\"allocated_paint_stop_PC\":"<<allocatedPaintPC
+    <<",\"allocated_paint_command\":"<<allocatedPaintCommand<<",\"allocated_paint_GE_registers\":[";
+  for(unsigned i=0;i<allocatedPaintRegisters.size();++i){if(i)std::cout<<',';auto v=allocatedPaintRegisters[i];
+    std::cout<<'['<<v[0]<<','<<v[1]<<','<<v[2]<<']';}
+  std::cout<<']'
     <<",\"TV_dispatcher_invoked\":false,\"TV_events_injected\":false,\"pixels_generated\":false,"
     <<"\"program_sha256\":\""<<manta::sha256(image)<<"\"}\n";
   return 0;

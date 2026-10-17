@@ -16,6 +16,10 @@ with tempfile.TemporaryDirectory(prefix='manta-original-clear-') as directory:
     assert result['raster_command']==0x30 and result['original_instructions']==4352
     assert result['original_format_capability_cases']==4 and result['original_destination_binding_cases']==8
     assert result['original_destination_binding_instructions']>4000
+    assert result['isolated_original_GOP_allocations']==3 and result['original_GOP_rejections']==6
+    assert result['original_allocated_record_bindings']==2 and result['original_GOP_allocation_instructions']>12000
+    assert result['original_allocated_clear_requests_rejected']==2
+    assert not result['connected_framebuffer_allocated'] and not result['GOP_window_enabled']
     assert not result['pixels_generated'] and not result['framebuffer_allocated']
     damaged=bytearray(image);damaged[0x8049e158-0x803b3980]^=1;target.write_bytes(damaged)
     rejected=subprocess.run([a.probe,str(target)],capture_output=True,text=True,timeout=30)
