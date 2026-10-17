@@ -12,12 +12,18 @@
 static void need(bool value,const char* why){if(!value)throw std::runtime_error(why);}
 struct Case {
   manta::Engine cpu;manta::Riu riu;manta::PreservedBits provenance;
-  uint64_t instructions=0;uint32_t stop=0;std::string boundary;
+  uint64_t instructions=0;uint32_t stop=0;std::string boundary;unsigned rasterWrites=0;
   std::vector<std::pair<unsigned,unsigned>> writes;
-  Case(const std::vector<uint8_t>& image){
+  Case(const std::vector<uint8_t>& image,bool raster=false){
     cpu.map(0x003b0000,0x350000);cpu.map(0x00700000,0x10000);
     cpu.write(0x003b3980,image.data(),image.size());
     riu.candidateGe=true;riu.symbolicInit=true;riu.configureExploratoryGeReset();
+    riu.candidateGeRectFill=raster;
+    if(raster){
+      cpu.map(0x01000000,0x1000);std::vector<uint8_t> sentinel(0x1000,0xa5);cpu.write(0x01000000,sentinel.data(),sentinel.size());
+      riu.dramWritable=[](uint32_t address,size_t size){return address>=0x01000000 && uint64_t(address)+size<=0x01001000;};
+      riu.dramWrite=[this](uint32_t address,std::span<const uint8_t> bytes){++rasterWrites;cpu.write(address,bytes.data(),bytes.size());};
+    }
     riu.event=[](const auto&,auto,auto,auto,const auto&){};
     uc_hook hook;manta::check(uc_hook_add(cpu.handle,&hook,UC_HOOK_CODE,reinterpret_cast<void*>(
       +[](uc_engine* engine,uint64_t pc,uint32_t,void* data){auto& c=*static_cast<Case*>(data);
@@ -44,9 +50,10 @@ struct Case {
         return value;
       },this,+[](uc_engine* engine,uint64_t offset,unsigned width,uint64_t value,void* data){
         auto& c=*static_cast<Case*>(data);auto index=unsigned(offset/4);
-        need(width==2 && !(offset&3) && (index==1 || index==0x59 || index==0x60 ||
-          (index>=0x55 && index<=0x58) || (index>=0x68 && index<=0x6b) || index==0x70 || index==0x71 ||
-          index==0x34 || index==0x26 || index==0x27 || index==0x33),
+        need(width==2 && !(offset&3) && (index==0 || index==1 || index==0x59 || index==0x60 ||
+          (index>=0x55 && index<=0x58) || (index>=0x68 && index<=0x6f) || index==0x70 || index==0x71 ||
+          index==0x64 || index==0x65 || index==0x5e || index==0x5f ||
+          index==0x34 || index==0x26 || index==0x27 || index==0x33 || index==0x20 || index==0x21 || index==0x30),
           "clear probe encountered an unexamined GE command");
         c.writes.emplace_back(index,unsigned(value));
         try{c.riu.write(0x1f205000+uint32_t(offset),width,uint32_t(value),c.cpu.reg(UC_MIPS_REG_PC),0xffff,c.instructions);}
@@ -217,15 +224,85 @@ int main(int argc,char** argv){try{
     ++allocatedClearRequests;
     allocationInstructions+=c->instructions;
   }
-  std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original constructor-clear fragment; synthetic RAM context and existing conditional GE reset, not TV execution\","
+  unsigned originalRasterCases=0;uint64_t rasterInstructions=0;
+  for(auto format:{8u,15u}){
+    auto c=std::make_unique<Case>(image,true);constexpr unsigned width=4,height=3,pitch=24;
+    // Actual original initializer's GE-enable write (805267C0..CC), using
+    // original GE_WriteReg. The input context/descriptor are isolated RAM;
+    // no connected UI or successful allocation is manufactured.
+    c->entry(0x80526540,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701008);
+    c->cpu.reg(UC_MIPS_REG_5,0);c->cpu.reg(UC_MIPS_REG_6,1);
+    manta::check(c->cpu.run(0x80526540,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original GE enable write failed");
+    c->write(0x00700080,0x01000000);c->write(0x00700084,width);c->write(0x00700088,height);
+    c->write(0x0070008c,pitch);c->write(0x00700090,format);
+    c->entry(0x8051fef8,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80700080);
+    manta::check(c->cpu.run(0x8051fef8,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original raster destination setup failed");
+    c->write(0x00700080,0,2);c->write(0x00700082,0,2);c->write(0x00700084,width-1,2);c->write(0x00700086,height-1,2);
+    c->entry(0x80520274,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80700080);c->cpu.reg(UC_MIPS_REG_5,0x80700084);
+    manta::check(c->cpu.run(0x80520274,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original raster clipping failed");
+    c->writes.clear();c->entry(0x8049e158,0x8049e18c);c->cpu.reg(UC_MIPS_REG_19,0x806fca54);
+    c->cpu.reg(UC_MIPS_REG_20,width);c->cpu.reg(UC_MIPS_REG_21,0x806d0000);c->cpu.reg(UC_MIPS_REG_22,height);
+    manta::check(c->cpu.run(0x8049e158,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->boundary.empty() && c->riu.geRectangles==0 && c->rasterWrites==0,
+      "original asynchronous fill must return with pending work, without immediate completion/pixels");
+    c->riu.prepareMaskedRead(0x1f20501c,manta::GeQueue::statusKnown);
+    c->riu.read(0x1f20501c,2,0,0,c->instructions+1000);
+    need(c->riu.stopReason.empty() && c->riu.geRectangles==1 && c->riu.geRasterPixels==12 && c->rasterWrites==3,
+      "queued original clear must retire only after its actual guest RAM row writes");
+    std::vector<uint8_t> pixels(0x1000);c->cpu.read(0x01000000,pixels.data(),pixels.size());
+    const auto bpp=format==15?4u:2u;
+    for(unsigned i=0;i<pixels.size();++i){auto x=i%pitch,y=i/pitch;
+      auto expected=y<height && x<width*bpp?(format==15 && x%4==3?0xff:0):0xa5;
+      need(pixels[i]==expected,"original clear raster memory differs or overwrites pitch padding/outside rows");}
+    ++originalRasterCases;rasterInstructions+=c->instructions;
+  }
+  unsigned blitCases=0,blitMismatchReturns=0;uint64_t blitInstructions=0;
+  for(auto parameters:std::vector<std::array<unsigned,3>>{{42,0,0x40},{44,0,0},{44,0x200,0x8040},{44,0x100200,0xc040}}){
+    auto c=std::make_unique<Case>(image);
+    c->entry(0x80526540,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701008);
+    c->cpu.reg(UC_MIPS_REG_5,0);c->cpu.reg(UC_MIPS_REG_6,1);
+    manta::check(c->cpu.run(0x80526540,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original blit enable setup failed");
+    c->entry(0x805254ec,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701000);
+    c->cpu.reg(UC_MIPS_REG_5,9);c->cpu.reg(UC_MIPS_REG_6,7);c->cpu.reg(UC_MIPS_REG_7,42);
+    c->write(0x0070ff10,0x03d6e128);c->write(0x0070ff14,14,2);c->write(0x0070ff18,0);
+    manta::check(c->cpu.run(0x805254ec,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original blit source setup failed");
+    c->write(0x00700080,0x00ddd800);c->write(0x00700084,1360);c->write(0x00700088,248);
+    c->write(0x0070008c,2720);c->write(0x00700090,12);
+    c->entry(0x8051fef8,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80700080);
+    manta::check(c->cpu.run(0x8051fef8,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original blit destination setup failed");
+    for(unsigned i=0;i<2;++i){auto rect=0x00700080+8*i;
+      c->write(rect,0,2);c->write(rect+2,0,2);c->write(rect+4,7,2);c->write(rect+6,i?parameters[0]:42,2);}
+    c->writes.clear();c->entry(0x80523bfc,0x803b0000);
+    c->cpu.reg(UC_MIPS_REG_4,0x80701000);c->cpu.reg(UC_MIPS_REG_5,0x80700080);
+    c->cpu.reg(UC_MIPS_REG_6,0x80700088);c->cpu.reg(UC_MIPS_REG_7,parameters[1]);c->write(0x0070ff10,0);
+    manta::check(c->cpu.run(0x80523bfc,50000));
+    if(parameters[2]){
+      need(c->cpu.reg(UC_MIPS_REG_PC)==0x80526598 && c->cpu.reg(UC_MIPS_REG_RA)==0x805242b0 &&
+        c->boundary=="GE raster command 60h unsupported; no pixels or completion fabricated" &&
+        c->writes.back()==std::pair<unsigned,unsigned>{0x60,parameters[2]},
+        "original BitBlt must select its actual unscaled/scaled command bits without completing it");
+    }else{
+      need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==9 && c->boundary.empty() &&
+        std::none_of(c->writes.begin(),c->writes.end(),[](auto v){return v.first==0x60;}),
+        "original unequal extents without scaling must return its own stretch error, not submit a raster");
+      ++blitMismatchReturns;
+    }
+    need(c->riu.geRectangles==0 && c->rasterWrites==0,"guarded original BitBlt tests cannot create pixels");
+    ++blitCases;blitInstructions+=c->instructions;
+  }
+  std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original clear/allocation instructions; synthetic RAM, conditional GE reset and explicit plain-fill model, not TV execution\","
     <<"\"cases\":"<<cases<<",\"raster_requests_rejected\":"<<requests<<",\"zero_size_returns\":"<<empty
-    <<",\"original_instructions\":"<<instructions<<",\"raster_command\":48,\"pixels_generated\":false,\"framebuffer_allocated\":false"
+    <<",\"original_instructions\":"<<instructions<<",\"raster_command\":48,\"legacy_guard_cases_pixels_generated\":false,\"pixels_generated\":true,\"framebuffer_allocated\":false"
     <<",\"original_format_capability_cases\":"<<capabilityCases<<",\"original_destination_binding_cases\":"<<destinationCases
     <<",\"original_destination_binding_instructions\":"<<destinationInstructions
     <<",\"isolated_original_GOP_allocations\":"<<allocationCases<<",\"original_GOP_rejections\":"<<allocationRejects
     <<",\"original_GOP_allocation_instructions\":"<<allocationInstructions
     <<",\"original_allocated_record_bindings\":"<<allocatedBindings
     <<",\"original_allocated_clear_requests_rejected\":"<<allocatedClearRequests
+    <<",\"isolated_original_plain_fills\":"<<originalRasterCases<<",\"original_plain_fill_instructions\":"<<rasterInstructions
+    <<",\"isolated_plain_fill_pixels\":24,\"connected_pixels_generated\":false"
+    <<",\"original_BitBlt_mode_cases\":"<<blitCases<<",\"original_BitBlt_stretch_errors\":"<<blitMismatchReturns
+    <<",\"original_BitBlt_mode_instructions\":"<<blitInstructions
     <<",\"connected_framebuffer_allocated\":false,\"GOP_window_enabled\":false}\n";
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

@@ -1,4 +1,4 @@
-"""Original surface-constructor clear packets; isolated, no framebuffer/raster effects."""
+"""Original clear packets and opt-in plain fills; isolated guest RAM, no connected OSD."""
 import argparse,hashlib,json,os,subprocess,tempfile,zlib
 from pathlib import Path
 p=argparse.ArgumentParser(description=__doc__)
@@ -20,7 +20,12 @@ with tempfile.TemporaryDirectory(prefix='manta-original-clear-') as directory:
     assert result['original_allocated_record_bindings']==2 and result['original_GOP_allocation_instructions']>12000
     assert result['original_allocated_clear_requests_rejected']==2
     assert not result['connected_framebuffer_allocated'] and not result['GOP_window_enabled']
-    assert not result['pixels_generated'] and not result['framebuffer_allocated']
+    assert result['pixels_generated'] and not result['legacy_guard_cases_pixels_generated']
+    assert not result['framebuffer_allocated'] and not result['connected_pixels_generated']
+    assert result['isolated_original_plain_fills']==2 and result['isolated_plain_fill_pixels']==24
+    assert result['original_plain_fill_instructions']==3517
+    assert result['original_BitBlt_mode_cases']==4 and result['original_BitBlt_stretch_errors']==1
+    assert result['original_BitBlt_mode_instructions']==10087
     damaged=bytearray(image);damaged[0x8049e158-0x803b3980]^=1;target.write_bytes(damaged)
     rejected=subprocess.run([a.probe,str(target)],capture_output=True,text=True,timeout=30)
     assert rejected.returncode==1 and 'original main image mismatch' in rejected.stderr
@@ -28,8 +33,8 @@ with tempfile.TemporaryDirectory(prefix='manta-original-clear-') as directory:
     env=os.environ.copy();env['PATH']=str(Path(os.environ['SystemRoot'])/'System32')
     assert subprocess.check_output([str(Path(a.probe).resolve()),str(target)],text=True,env=env,timeout=30)==first
 assert hashlib.sha256(Path(a.firmware).read_bytes()).hexdigest()==sha
-report={'result':'PASS','scope':'isolated original clear-constructor fragment with synthetic context; no TV frame or raster effects',
+report={'result':'PASS','scope':'isolated original clear instructions with synthetic context; two supported plain raster effects in guest RAM, no connected TV frame',
         'original_functions':result,'corrupted_main_rejected':True,'clean_PATH_probe_pass':True,
         'probe_sha256':hashlib.sha256(Path(a.probe).read_bytes()).hexdigest(),'firmware_sha256':sha}
 Path(a.report).write_text(json.dumps(report,indent=2)+'\n')
-print('PASS: original clear command30, rectangle/color writes, zero-size rejection and unresolved raster boundary')
+print('PASS: original clear30 packets, isolated RGB565/ARGB8888 RAM effects, preserved padding and guarded unsupported OSD raster')

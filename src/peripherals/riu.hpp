@@ -16,6 +16,7 @@
 #include "video/gamma.hpp"
 #include "video/scaler_timing.hpp"
 #include "video/ge_queue.hpp"
+#include "video/ge_rect_fill.hpp"
 #include "video/gop_palette.hpp"
 #include "video/gop_update.hpp"
 #include "peripherals/tsp.hpp"
@@ -299,6 +300,8 @@ public:
   unsigned paletteDefined(unsigned plane) const { return palette_.defined(plane); }
   std::optional<uint32_t> paletteColor(unsigned plane,unsigned index) const { return palette_.color(plane,index); }
   bool candidateGe=false;
+  bool candidateGeRectFill=false;
+  uint64_t geRectangles=0,geRasterPixels=0;
   void configureExploratoryGeReset() {
     ge_.exploratoryReset();
     // Only original engine enable and virtual-queue selector bits. All other
@@ -436,6 +439,7 @@ public:
   std::function<bool(uint32_t, size_t, uint16_t)> dramTest;
   std::function<std::vector<uint8_t>(uint32_t,size_t)> dramRead;
   std::function<void(uint32_t,std::span<const uint8_t>)> dramWrite;
+  std::function<bool(uint32_t,size_t)> dramWritable;
   std::function<bool()> executionStopped;
   uint32_t read(uint32_t a, unsigned size, uint32_t pc, uint32_t mask, uint64_t tick);
   void write(uint32_t a, unsigned size, uint32_t value, uint32_t pc, uint32_t mask, uint64_t tick);

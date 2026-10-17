@@ -58,8 +58,11 @@ with tempfile.TemporaryDirectory(prefix='manta-original-zui-') as directory:
     assert functions['post_creation_first_paint_window']==4 and functions['post_creation_first_paint_type']==4
     assert functions['post_creation_first_paint_resource']==65
     assert functions['allocated_paint_stop_PC']==0x80526598 and functions['allocated_paint_command']==0x8040
-    assert functions['allocated_paint_GE_writes']==51 and functions['allocated_paint_original_instructions']==5598
-    packet=functions['allocated_paint_GE_registers']
+    assert functions['allocated_paint_submit_RA']==0x805242b0
+    assert functions['allocated_paint_GE_writes']==52 and functions['allocated_paint_original_instructions']==5598
+    assert functions['allocated_paint_original_enable_instructions']>50
+    enabled_packet=functions['allocated_paint_GE_registers'];assert enabled_packet[0]==[0,1,65535]
+    packet=enabled_packet[1:]
     assert packet[:4]==[[0x55,531,65535],[0x57,42,65535],[0x56,537,65535],[0x58,85,65535]]
     assert packet[4:8]==[[0x34,0xc09,65535],[0x26,0xd800,65535],[0x27,0xdd,65535],[0x33,2720,65535]]
     assert packet[25:29]==[[0x34,0xc09,65535],[0x20,0xe128,65535],[0x21,0x3d6,65535],[0x30,14,65535]]

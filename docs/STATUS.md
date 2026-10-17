@@ -1,5 +1,20 @@
 # Status of the research build
 
+The opt-in [plain GE rectangle model](ge-plain-rectangle-execution.md) now
+performs real guest-RAM writes for fully known, enabled, unblended **RGB565**
+and **ARGB8888** command **0030** requests. Two isolated original constructor
+cases produce 24 diagnostic clear pixels, preserve pitch padding and retire
+only after queued memory effects. Unknown fields, format C/9, blending, scaled
+BitBlt and unsupported targets still reject. This is **not connected OSD output**.
+The original OSD 3 diagnostic now programs enable explicitly and still rejects
+its `8040` request. Four original BitBlt mode cases verify unscaled/stretched
+command selection and the firmware's own mismatch-error return.
+All **1,499 native checks**, 18 baseline runs, nine display runs, auxiliary and
+forensics suites, clean-PATH Windows startup and full **6,592,741-event** replay
+pass. Connected cold boot with fill support enabled requests zero raster work;
+all old trace bytes, coverage, PM history, UART and nonextension summary fields
+match. See the [23-report validation manifest](../evidence/ge-fill-validation.json).
+
 The [connected graphics / original BitBlt continuation](connected-graphics-and-original-bitblt.md)
 confirms that the original bitmap-196 source bytes and registration already
 exist in connected RAM, while surface flags and destination fields remain zero.

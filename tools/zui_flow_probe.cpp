@@ -388,7 +388,7 @@ int main(int argc,char** argv){try{
   unsigned bitmapMetadataCases=0;uint64_t bitmapCopyInstructions=0,bitmapRegistrationInstructions=0;
   uint32_t bitmap196Address=0;std::string bitmap196Sha;unsigned bitmapSourceWrites=0,bitmapSourceInstructions=0;
   unsigned bitmapSymbolicSourceWrites=0,bitmapSymbolicSourceInstructions=0;
-  unsigned allocatedPaintInstructions=0,allocatedPaintWrites=0;uint32_t allocatedPaintPC=0,allocatedPaintCommand=0;
+  unsigned allocatedPaintInstructions=0,allocatedPaintWrites=0,allocatedEnableInstructions=0;uint32_t allocatedPaintPC=0,allocatedPaintCommand=0,allocatedPaintRA=0;
   std::vector<std::array<uint32_t,3>> allocatedPaintRegisters;
   if(argc==4){
     auto load=[](const char* path){std::ifstream input(path,std::ios::binary);
@@ -489,21 +489,29 @@ int main(int argc,char** argv){try{
     run(0x805293f8,0x803ee738);write(local+0xc,0);write(local+0x10,0xffffffff);write(local+0x14,1);
     write(0x006d4f9c,1);write(0x006d4fa4,0,2);write(0x006d4fa6,520,2);
     write(0x006d4fa8,1360,2);write(0x006d4faa,248,2);write(0x006f6a5c,1920,2);
+    resetGe(true);ge.symbolicControl=true;ge.paintParameters=true;ge.riu->symbolicInit=true;
+    // Use the original GE initializer's enable write through GE_WriteReg.
+    // This defines the software shadow and device bit causally; do not assume
+    // an enabled engine from the empty-queue hypothesis or a zeroed context.
+    run(0x80526540,0x80701008,0,{},0,1);allocatedEnableInstructions=fixture.instructions;
     write(0x006d4fb4,0,1);run(0x804a071c,0,0,{},0x14,0);
     run(0x804e0dc4,0,0x80520274);
-    resetGe(true);ge.symbolicControl=true;ge.paintParameters=true;ge.riu->symbolicInit=true;
     fixture={};fixture.preserved=&ge.preserved;fixture.riu=ge.riu.get();
     manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),100000));
     allocatedPaintInstructions=fixture.instructions;allocatedPaintWrites=ge.writes.size();allocatedPaintPC=cpu.reg(UC_MIPS_REG_PC);
+    allocatedPaintRA=cpu.reg(UC_MIPS_REG_RA);
     if(!ge.writes.empty() && ge.writes.back().first==0x1f205180)allocatedPaintCommand=ge.writes.back().second;
-    need(allocatedPaintPC==0x80526598 && allocatedPaintCommand==0x8040 && allocatedPaintWrites==51 &&
+    need(allocatedPaintPC==0x80526598 && allocatedPaintCommand==0x8040 && allocatedPaintWrites==52 &&
       ge.boundary=="GE raster command 60h unsupported; no pixels or completion fabricated" && ge.riu->stopReason.empty() &&
       fixture.visits.contains(0x80529430) && fixture.visits.contains(0x803ee738) && fixture.visits.contains(0x803ea1a4) &&
-      fixture.visits.contains(0x803ee5c0) && ge.riu->geSubmitted()==50,
+      fixture.visits.contains(0x803ee5c0) && ge.riu->geSubmitted()==51,
       "original resource3 bitmap painting must reach its own unsupported raster request through its real callbacks");
     for(auto [address,value]:ge.writes)allocatedPaintRegisters.push_back({(address-0x1f205000)/4,value,ge.riu->knownBits(address,2)});
     need(ge.riu->knownBits(0x1f205080,2)==0xffff && ge.riu->knownBits(0x1f205084,2)==0xffff &&
       read(local+0x50)==0x00ddd800,"original bitmap paint must retain valid source binding and its allocated destination");
+    ge.riu->prepareMaskedRead(0x1f205000,1);
+    need((ge.riu->read(0x1f205000,2,0,1,fixture.instructions+1000)&1) && ge.riu->stopReason.empty(),
+      "original enable/configuration sequence must retain enabled engine bit without completing the unsupported raster");
     // These two linked RAM flags are changed by the original graphics setup:
     // blend mode 80520100 and drawing mode 8051F9F8. Restore only these known
     // mutable data bytes before checking the entire code/resource image.
@@ -549,7 +557,9 @@ int main(int argc,char** argv){try{
     <<",\"bitmap_symbolic_source_GE_writes\":"<<bitmapSymbolicSourceWrites
     <<",\"bitmap_symbolic_source_original_instructions\":"<<bitmapSymbolicSourceInstructions
     <<",\"allocated_paint_original_instructions\":"<<allocatedPaintInstructions
+    <<",\"allocated_paint_original_enable_instructions\":"<<allocatedEnableInstructions
     <<",\"allocated_paint_GE_writes\":"<<allocatedPaintWrites<<",\"allocated_paint_stop_PC\":"<<allocatedPaintPC
+    <<",\"allocated_paint_submit_RA\":"<<allocatedPaintRA
     <<",\"allocated_paint_command\":"<<allocatedPaintCommand<<",\"allocated_paint_GE_registers\":[";
   for(unsigned i=0;i<allocatedPaintRegisters.size();++i){if(i)std::cout<<',';auto v=allocatedPaintRegisters[i];
     std::cout<<'['<<v[0]<<','<<v[1]<<','<<v[2]<<']';}

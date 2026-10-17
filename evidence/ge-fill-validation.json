@@ -1,0 +1,194 @@
+{
+  "base_git": "081237c",
+  "result": "PASS",
+  "scope": "opt-in known plain RGB565/ARGB8888 GE fills verified through original instructions in isolation; connected UI/inputs/trace unchanged",
+  "native_checks": 1499,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "MIPS_instructions": 854795171,
+  "TSP_instructions": 2453934820,
+  "DVB_T_instructions": 1454515,
+  "PM51_instructions": 3474,
+  "AVD_instructions": 863,
+  "audio_DSP_instructions": 0,
+  "main_timer_entries": 38589,
+  "DVB_T_IRQ_entries": 161,
+  "PM51_IRQ_entries": 0,
+  "AVD_IRQ_entries": 0,
+  "MIPS_boundary": "80501BFC / unknown HTotal",
+  "AVD_boundary": "0702 / 11DB.7 unknown",
+  "connected_dispatcher": false,
+  "connected_OSD3_activation": false,
+  "connected_framebuffer": false,
+  "enabled_GWIN": false,
+  "connected_raster_operations_retired": false,
+  "guest_framebuffer_pixels": false,
+  "TV_events_or_inputs_added": false,
+  "isolated_original_GOP_allocations": 3,
+  "isolated_allocated_clear_requests_rejected": 2,
+  "isolated_original_bitmap_paint_request": 32832,
+  "isolated_original_plain_fills": 2,
+  "isolated_plain_fill_pixels": 24,
+  "isolated_BitBlt_modes": 4,
+  "reports": {
+    "analysis": {
+      "file": "ge-fill-analysis.json.gz",
+      "sha256_uncompressed": "b4817ccdc0fd8c4b9f35b2e4903d7d8faa43b3bcefec7b69a19e83c8f3c2c5ca"
+    },
+    "htotal": {
+      "file": "ge-fill-htotal.json.gz",
+      "sha256_uncompressed": "d5c50a46f68bca22ccc1c95c32de559ad3a2d29396f1b7ed36822a25e71539c9"
+    },
+    "zui": {
+      "file": "ge-fill-zui.json.gz",
+      "sha256_uncompressed": "59e92ecd2e0f194900db4612298ce4eb02773a775a11340e704abe833abef330"
+    },
+    "events": {
+      "file": "ge-fill-events.json.gz",
+      "sha256_uncompressed": "3309fcfa98f45f65a902e62a71ded907ad7b2001a1f295c7abe287d625454760"
+    },
+    "symbolic": {
+      "file": "ge-fill-symbolic.json.gz",
+      "sha256_uncompressed": "51cb51470839246ef9b7fdcb0762b2a40ffae42ae5b8614371a8ccc3b0584c2d"
+    },
+    "selector": {
+      "file": "ge-fill-selector.json.gz",
+      "sha256_uncompressed": "df0dc417cbaaa71d664f63c7406f5674a5e1fb3d2454852c87f295266fb9ea93"
+    },
+    "full-replay": {
+      "file": "ge-fill-full-replay.json.gz",
+      "sha256_uncompressed": "f0b1c47cff5fea58c26f1ac29b9db06074d257dfb233a56894ade512a613ed27"
+    },
+    "baseline": {
+      "file": "ge-fill-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display": {
+      "file": "ge-fill-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "avd": {
+      "file": "ge-fill-avd.json.gz",
+      "sha256_uncompressed": "584dc4cf8eee288c97630afc8fa37da3151f9c0b0ba1872fd455fa0f03e2e76d"
+    },
+    "vd": {
+      "file": "ge-fill-vd.json.gz",
+      "sha256_uncompressed": "fb86a64e808ac5eb7d5de05871e33a262419cb9ce6569c8e67c809f644b4fc3f"
+    },
+    "pm": {
+      "file": "ge-fill-pm.json.gz",
+      "sha256_uncompressed": "712b7d503b038b6ba299ec8fc7bbb98689a778988930449cc5e409873e5cf57f"
+    },
+    "clock": {
+      "file": "ge-fill-clock.json.gz",
+      "sha256_uncompressed": "abecdd5c524e1b8a9d4cd60934c81717a5fb50524a6ca5279486cd647e1e3977"
+    },
+    "copro": {
+      "file": "ge-fill-copro.json.gz",
+      "sha256_uncompressed": "65e01f6b876c04601b51e86d2e6c4390eec8570e71bfc3b06af8a1854a1d3dc4"
+    },
+    "immutable": {
+      "file": "ge-fill-immutable.json.gz",
+      "sha256_uncompressed": "350332418d9fe6c9758000d3a0e5fe1997adf127e5ed6bd7b56706c0a08320fc"
+    },
+    "audio": {
+      "file": "ge-fill-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "vif": {
+      "file": "ge-fill-vif.json.gz",
+      "sha256_uncompressed": "0e82547efdcb6d6c43a57a34f2a85fe4a6d5e17d871970f0f881afb4992f2350"
+    },
+    "request": {
+      "file": "ge-fill-request.json.gz",
+      "sha256_uncompressed": "076bc81080b8abdaea461e66bcfebaf76738e0189ec317371e9877e93747b634"
+    },
+    "packaged-window": {
+      "file": "ge-fill-packaged-window.json.gz",
+      "sha256_uncompressed": "c892001f131430441c38218f4be7e53497d090bb6524ab17e05fadde66a07c77"
+    },
+    "cochannel": {
+      "file": "ge-fill-cochannel.json.gz",
+      "sha256_uncompressed": "5fdf6243afde283204f253d4c68aba8fad7f757719559bd41639fd0fe7fcedc4"
+    },
+    "clear": {
+      "file": "ge-fill-clear.json.gz",
+      "sha256_uncompressed": "4b11f3a531cc55a480fbbed2e2fa2c6014c18955380116a10f8a385d5d5f52c2"
+    },
+    "option": {
+      "file": "ge-fill-option.json.gz",
+      "sha256_uncompressed": "79bf23d093d73f53af2c5cccbef9ea3459e69041288eb81957859f96e5f62c04"
+    },
+    "native-tools": {
+      "file": "ge-fill-native-tools.json.gz",
+      "sha256_uncompressed": "d5d7208e02d55075d8cf14054637fc3a5e9a3c42ebb69bd69493ea0f83c9001d"
+    }
+  },
+  "binaries": {
+    "audio_dsp_disasm.exe": "c431d54f1c0473b35a84bf843fb357dcec862cfe228688c7eb1caa277d98b47a",
+    "avd_cochannel_probe.exe": "30fc5ebd4b7ed188d8d8ac23c82b6d5f00c0b88f9605886b147fb14f68586a15",
+    "avd_htotal_probe.exe": "08d729b429626cf2336dcd97e9056f547d528e362fa414844cd3739ed6661904",
+    "avd_mcu_probe.exe": "94f91be8dba2f86239591ae6d658091aa33fe01323b1fa34141d5754cf821111",
+    "avd_request_probe.exe": "79d535bf3ee7b5ab47bdc70ede804a3b93ec58dea07ff8d4722eb1a0ca34ffbf",
+    "copro_probe.exe": "2e8eb708464b79043eb5c29f02352cb16f518b8305b0215b85317400c3b66e94",
+    "core_tests.exe": "3f2f2a5ac6cf59bd98b1b727c27e78a6fc977a5b985555f8ca831407958b4bdb",
+    "ge_clear_probe.exe": "5ab7ab232f0b1edeaebead26c4dd28f04ac17cf5c89662008fb3dd5751e6c506",
+    "manta.exe": "ab4c489b35e1af85de8b6ba75b59dba0302974b10c67c9f087f946c058d52fbc",
+    "pm51_probe.exe": "264c16ac3bb83307c910f4fc98ecda5c220333eb301943eb340e4e3a11bf5e57",
+    "vd_mcu_probe.exe": "963522744bb4fb99e2427ed2b491bc0ff529a1e81ff6a68b1133b63bc4edef4d",
+    "vif_agc_probe.exe": "56a1d09b337bcb10fd2ba06f3d97cce48d40b99c735b51a875fb793fd9bdb449",
+    "zui_flow_probe.exe": "49051ee430f145bbc278da57f89cd4dbd7f2fa20d61d68751c51f958100ecd81"
+  },
+  "trace_sha256": "0876e686f72f6ffbf993cd6d4b01648cd231972b43223b352fb6dd69243035bd",
+  "trace_events": 6592741,
+  "connected_final_graphics": {
+    "pc": "0x80501bfc",
+    "tick": 854795171,
+    "state": 1,
+    "previous_state": 0,
+    "active_osd": 0,
+    "queue_head": 0,
+    "queue_tail": 0,
+    "window_count": 0,
+    "window_list": 0,
+    "software_tick": 38589,
+    "wrapper_state": 11,
+    "input_service_state": 0,
+    "input_key_raw": 255,
+    "source_id_raw": 20,
+    "source_phase_raw": 0,
+    "source_timeout_timestamp": 0,
+    "software_flags_raw": 4,
+    "bitmap196_address_raw": 64413992,
+    "bitmap196_bytes_raw": 588,
+    "bitmap196_pitch_raw": 14,
+    "bitmap196_width_raw": 7,
+    "bitmap196_height_raw": 42,
+    "bitmap196_format_raw": 9,
+    "bitmap196_valid_raw": 1,
+    "surface_flags_raw": 0,
+    "bitmap196_source_sha256": "9807355bf74b824e9ecb65c07ece6dca892f3d0ac7a96627f360c52ab0f1541f",
+    "ge_context_pointer_raw": 2154818400,
+    "ge_static_signature_raw": 1437253359,
+    "ge_static_format_raw": 2313,
+    "ge_static_destination_low_raw": 0,
+    "ge_static_destination_high_raw": 0,
+    "ge_static_destination_pitch_raw": 0,
+    "queue_indices_valid": true,
+    "known_hwnd_slots": 40,
+    "raw_occupied_hwnd_slots": 0
+  },
+  "related_GE_reference": {
+    "url": "https://raw.githubusercontent.com/linux-chenxing/linux/5b16308ae546df24c218e3785942e741f04ae326/drivers/gpu/drm/mstar/mstar_ge.c",
+    "sha256": "5747b9e96c79144da0b2cbb9dec149c2a95a2fccbc782845617c1c12d574b4c9",
+    "commit": "5b16308ae546df24c218e3785942e741f04ae326",
+    "bytes": 42892
+  },
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "UART_sha256": "23e5aff1fc2bfc449985ade1c6e83436905985514aaa32710125a195eb1c7f3c",
+  "UART_unchanged": true,
+  "native_stdout": "1499 checks passed",
+  "replay_note": "Known plain GE fills are explicitly enabled in connected cold boot and fresh-reset replay. No raster is requested before the existing hardware stop: all prior trace bytes/coverage/PM history/UART/nonextension summary fields match. Actual RAM effects and failed-effect guards execute in isolated original-instruction/native tests, never as host TV graphics."
+}

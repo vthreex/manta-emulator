@@ -1105,6 +1105,49 @@ void geQueueTests() {
   bus.read(0x1f20501c,2,0,0,0);
   require(!bus.stopReason.empty(),"GE unrelated status bits remain invalid");
 }
+void geRectFillTests(){
+  using Fill=manta::GeRectFill;
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  auto set=[&](unsigned index,uint16_t value,uint16_t known=65535){regs[index]={value,known};};
+  set(0,1);set(1,0,0x372);set(0x59,0);set(0x34,0xf00,0x1f00);
+  set(0x26,0x1000);set(0x27,0);set(0x33,24);set(0x70,0xcdef);set(0x71,0x89ab);
+  set(0x68,1);set(0x69,1);set(0x6a,3);set(0x6b,2);
+  set(0x55,0);set(0x56,5);set(0x57,0);set(0x58,3);
+  auto read=[&](unsigned index){return regs[index];};
+  auto plan=Fill::decode(0x30,read);std::vector<uint8_t> memory(96,0xa5);unsigned writes=0,validations=0;
+  auto writable=[&](uint32_t address,size_t size){++validations;return address>=0x1000 && uint64_t(address-0x1000)+size<=memory.size();};
+  auto write=[&](uint32_t address,std::span<const uint8_t> bytes){++writes;
+    std::copy(bytes.begin(),bytes.end(),memory.begin()+address-0x1000);};
+  plan.execute(writable,write);
+  bool exact=true;for(unsigned i=0;i<memory.size();++i){auto x=i%24,y=i/24;
+    auto expected=y>=1 && y<=2 && x>=4 && x<16?uint8_t(0x89abcdefu>>(8*(x%4))):0xa5;
+    exact&=memory[i]==expected;}
+  require(exact && writes==2 && validations==1,"GE plain ARGB8888 fills only inclusive clipped pixels, preserves padding and validates complete range first");
+  auto saved=regs;
+  for(auto [index,pair]:saved){auto mask=pair.second;auto bit=uint16_t(mask&uint16_t(-mask));
+    regs[index].second&=uint16_t(~bit);rejects([&]{Fill::decode(0x30,read);});regs=saved;}
+  rejects([&]{Fill::decode(0x8040,read);});
+  for(auto format:{9u,12u}){set(0x34,uint16_t(format<<8));rejects([&]{Fill::decode(0x30,read);});}regs=saved;
+  for(auto control:{0u,3u,5u,0x401u}){set(0,uint16_t(control));rejects([&]{Fill::decode(0x30,read);});}regs=saved;
+  set(1,0x10);rejects([&]{Fill::decode(0x30,read);});regs=saved;
+  set(0x27,0x8000);rejects([&]{Fill::decode(0x30,read);});regs=saved;
+  set(0x33,12);rejects([&]{Fill::decode(0x30,read);});regs=saved;
+  writes=validations=0;set(0x55,4);auto empty=Fill::decode(0x30,read);empty.execute(writable,write);
+  require(empty.empty && writes==0 && validations==0,"GE fully clipped rectangle retires without inventing a destination read or pixel");regs=saved;
+  auto previous=memory;writes=0;
+  rejects([&]{plan.execute([](auto,auto){return false;},write);});
+  require(memory==previous && writes==0,"GE unavailable destination rejects before the first raster write");
+  set(0x34,0x800);set(0x70,0x8080);set(0x71,0xff80);set(0x68,0);set(0x69,0);set(0x6a,0);set(0x6b,0);
+  auto rgb565=Fill::decode(0x30,read);rgb565.execute(writable,write);
+  require(memory[0]==0x10 && memory[1]==0x84,"GE RGB565 packs the known ARGB start color using 5/6/5 channels");
+  manta::GeQueue q;q.exploratoryReset();unsigned effects=0;
+  require(q.submit(0x60,0x30,0,[&]{++effects;}),"validated raster work enters the existing GE queue");
+  q.advance(23);require(effects==0 && q.completed()==0,"GE raster effects never occur at submission or stage transfer");
+  q.advance(24);require(effects==1 && q.completed()==1,"GE raster completion follows its actual memory effect");
+  require(q.submit(0x60,0x30,24,[]{throw std::runtime_error("unavailable target");}),"pending raster retains its uncompleted work");
+  rejects([&]{q.advance(48);});
+  require(q.completed()==1,"failed raster effect never retires as success");
+}
 void opaquePolicyTests(){
   {
     manta::Riu bus;bus.event=[](auto&,auto,auto,auto,auto&){};
@@ -2632,6 +2675,7 @@ int main() {
     preservedRegisterRestoreTests();
     semaphoreTests();
     geQueueTests();
+    geRectFillTests();
     readMaskTests();
     opaquePolicyTests();
     gopSelectorProvenanceTests();

@@ -1151,11 +1151,27 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(a==0x1f20501c)throw std::runtime_error("GE queue status is hardware-owned, not a writable latch");
     if(a==0x1f205004 && (knownBits(a,2)&2) && (v&2))
       throw std::runtime_error("GE virtual command memory transport unsupported; no fabricated VCmd completion");
-    if(!ge_.submit(uint16_t((a-0x1f205000)/4),uint16_t(v),tick)) {
+    std::function<void()> raster;
+    if(candidateGeRectFill && a==0x1f205180){
+      if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
+      auto plan=GeRectFill::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
+        return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
+      raster=[this,plan]{
+        plan.execute(dramWritable,dramWrite);
+        ++geRectangles;
+        auto count=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);
+        geRasterPixels+=count;
+        event("ge_rectangle_retired",plan.destination,plan.pitch,count,
+          "original command 0030: known plain RGB565/ARGB8888 rectangle written to guest RAM; no GOP enable or UI generated");
+      };
+    }
+    if(!ge_.submit(uint16_t((a-0x1f205000)/4),uint16_t(v),tick,std::move(raster))) {
       stopReason="GE submission requires known initial occupancy and available queue capacity";
       event("blocked_write",a,n,v,stopReason);return;
     }
-    event("ge_queue_submit",a,n,v,"guest parameter register submission; two experimental timed stages; no raster operation retired");
+    event("ge_queue_submit",a,n,v,a==0x1f205180?
+      "validated original rectangle request queued; no completion until actual guest RAM writes":
+      "guest parameter register submission; two experimental timed stages; no raster operation retired");
   }
   if(exploratoryGopResetWindows_ && a==0x1f203e00 && n==2 &&
       (gopBank()==0 || gopBank()==3) && (knownBits(a,n)&1)){

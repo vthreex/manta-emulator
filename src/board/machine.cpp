@@ -36,6 +36,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateGamma = o.candidateGamma;
   riu_.candidateSemaphore=o.candidateSemaphore;
   riu_.candidateGe=o.candidateGe;
+  if(o.candidateGeRectFill && !o.candidateGe)throw std::runtime_error("GE rectangle model requires candidate GE queues");
+  riu_.candidateGeRectFill=o.candidateGeRectFill;
   riu_.candidateGopPalette=o.candidateGopPalette;
   riu_.candidateTsp=o.candidateTsp;
   riu_.candidateVdMcuProgram=o.candidateVdMcuProgram;
@@ -264,6 +266,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     cpu_.write(address,bytes.data(),bytes.size());
     preservedBits_.overwriteKnownMemory(address,bytes.size());
     unknownObservations_.overwriteKnownMemory(address,bytes.size());
+  };
+  riu_.dramWritable=[this](uint32_t address,size_t size){
+    return options_.candidateMiu && size>0 && uint64_t(address)+size<=0x08000000 &&
+      uint64_t(address)+size<=dramBacking_.size();
   };
   if(!o.pm51History.empty() && !o.exploratoryPm51SpiStartup)
     throw std::runtime_error("PM history requires original PM SPI startup experiment");
@@ -1701,6 +1707,9 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"ge_parameter_submissions\": " << riu_.geSubmitted()
     << ",\n  \"ge_parameter_transfers\": " << riu_.geTransferred()
     << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
+  if(options_.candidateGeRectFill)s<<",\n  \"candidate_ge_rect_fill\": true"
+    <<",\n  \"ge_rectangles_retired\": "<<riu_.geRectangles
+    <<",\n  \"ge_raster_pixels_written\": "<<riu_.geRasterPixels;
   s << ",\n  \"candidate_gop_palette\": " << (options_.candidateGopPalette?"true":"false")
     << ",\n  \"gop_palette_commits\": " << riu_.paletteCommits()
     << ",\n  \"gop_palette_defined_entries\": [" << riu_.paletteDefined(0) << ',' << riu_.paletteDefined(1) << ']';

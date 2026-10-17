@@ -1,5 +1,15 @@
 # Evidence still needed
 
+The [plain-fill implementation](ge-plain-rectangle-execution.md) is intentionally
+limited to known RGB565/ARGB8888, MIU0, untransformed/unblended rectangles under
+an explicit option. It does not establish Titania4 reset or cycle timing, and
+does not support OSD 3's format-C alpha behavior, scaling or command `8040`.
+Original instructions now distinguish command modes `0040/8040/C040` and a
+legitimate stretch-error return; the complete hardware sampling/filter rules
+remain unimplemented. Connected HTotal/AVD dependencies and lack of enabled
+OSD scan-out are unchanged. Diagnostic clear pixels must not be reported as
+an authentic TV frame.
+
 The [original bitmap raster-request continuation](connected-graphics-and-original-bitblt.md)
 now reaches **8040** through real allocation, framebuffer selection and original
 resource callbacks in isolation. Connected bitmap registration/source bytes are

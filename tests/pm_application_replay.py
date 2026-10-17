@@ -88,6 +88,7 @@ if not a.validate_only:
             if ref.get('exploratory_avd_host_request_reset_empty'):
                 command+=['--exploratory-avd-host-request-reset-empty']
         if ref.get('zui_flow_probes_enabled'):command+=['--zui-flow-probes']
+        if ref.get('candidate_ge_rect_fill'):command+=['--candidate-ge-rect-fill']
         if ref.get('opaque_policy_enabled'):
             assert a.opaque_read_policy and Path(a.opaque_read_policy).exists(),'policy-enabled replay needs its final rules'
             command+=['--opaque-read-policy',str(Path(a.opaque_read_policy).resolve())]
