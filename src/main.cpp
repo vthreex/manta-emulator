@@ -159,6 +159,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--candidate-semaphore") o.candidateSemaphore=true;
       else if(a=="--candidate-ge") o.candidateGe=true;
       else if(a=="--candidate-ge-rect-fill") o.candidateGeRectFill=true;
+      else if(a=="--candidate-ge-bitblt") o.candidateGeBitBlt=true;
       else if(a=="--candidate-tsp") o.candidateTsp=true;
       else if(a=="--exploratory-tsp-cpu") o.exploratoryTspCpu=true;
       else if(a=="--defer-platform-identity") o.deferPlatformIdentity=true;
@@ -238,7 +239,8 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-comb-paired-restore: HYPOTHETICAL quarantined T4 duplicate/restore transaction, no invented status values\n"
                "--exploratory-gop-bank N: HYPOTHETICAL initial selector only (0..15); no IRQ/ACK reset assumption\n"
                "--candidate-semaphore: stateful resource-ID acquire/release; reset owners stay unknown\n"
-               "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
+                "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
+                "--candidate-ge-bitblt: opt-in plain same-format RGB565/ARGB8888 0040 copies; requires GE queues; stretch/format C/alpha remain guarded\n"
                "--candidate-ge-rect-fill: opt-in known plain RGB565/ARGB8888 rectangle writes; requires GE queues, mapped RAM and known controls; format C/blending/BitBlt unsupported\n"
                "--candidate-tsp: queue count/full/empty derived from reset and actual pending descriptors; unsupported TS DMA never completes\n"
                "--exploratory-tsp-cpu: actual ORBIS32 execution with explicit hypothetical reset mapping/PC and 1:1 scheduling\n"

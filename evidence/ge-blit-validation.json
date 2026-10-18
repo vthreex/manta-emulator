@@ -1,0 +1,203 @@
+{
+  "base_git": "d405a59",
+  "result": "PASS",
+  "scope": "guarded plain 0040 copies verified with original instructions in isolated RAM; OSD3 scaled/keyed/blended/dithered format-C 8040 remains unsupported",
+  "native_checks": 1563,
+  "baseline_runs": 18,
+  "display_runs": 9,
+  "forensics_tests": 4,
+  "ctest_entries": 2,
+  "MIPS_instructions": 854795171,
+  "TSP_instructions": 2453934820,
+  "DVB_T_instructions": 1454515,
+  "PM51_instructions": 3474,
+  "AVD_instructions": 863,
+  "audio_DSP_instructions": 0,
+  "main_timer_entries": 38589,
+  "DVB_T_IRQ_entries": 161,
+  "PM51_IRQ_entries": 0,
+  "AVD_IRQ_entries": 0,
+  "MIPS_boundary": "80501BFC / unknown HTotal",
+  "AVD_boundary": "0702 / 11DB.7 unknown",
+  "PM51_boundary": "574F / 0E6A unknown",
+  "DVB_T_boundary": "4AE0 / 2200 unsupported transaction",
+  "connected_dispatcher": false,
+  "connected_OSD3_activation": false,
+  "connected_framebuffer": false,
+  "enabled_GWIN": false,
+  "connected_raster_operations_retired": false,
+  "authentic_TV_pixels": false,
+  "PNG_exported": false,
+  "TV_events_or_inputs_added": false,
+  "isolated_original_plain_BitBlts": 2,
+  "isolated_plain_BitBlt_pixels": 12,
+  "isolated_original_plain_fills": 2,
+  "isolated_plain_fill_pixels": 24,
+  "OSD3_8040_retired": false,
+  "format_C_alpha_conversion_implemented": false,
+  "scaled_sampling_implemented": false,
+  "blending_implemented": false,
+  "original_scale_cases": 800,
+  "original_source_key_cases": 8,
+  "original_dither_cases": 12,
+  "original_nearest_selector_cases": 6,
+  "reports": {
+    "analysis": {
+      "file": "ge-blit-analysis.json.gz",
+      "sha256_uncompressed": "61fdfdcc0ec0d5d81ba9326597874682603fa93f56dabfecf9798b44595d9983"
+    },
+    "htotal": {
+      "file": "ge-blit-htotal.json.gz",
+      "sha256_uncompressed": "cce1b4e9510409968b7fc20723f445d4f5278c8918db0be2e5e9b9bd113d46cd"
+    },
+    "zui": {
+      "file": "ge-blit-zui.json.gz",
+      "sha256_uncompressed": "8a3c10105400ade415cd67bdb98a21d2f98a7cda30722c495565d5c9e78f0c09"
+    },
+    "events": {
+      "file": "ge-blit-events.json.gz",
+      "sha256_uncompressed": "30f33ef5a62a79375984f30832fc26926521ce0cfdfb6c0bd19f29bf512e983d"
+    },
+    "symbolic": {
+      "file": "ge-blit-symbolic.json.gz",
+      "sha256_uncompressed": "b1ebca056584f734b3543331fcb477e8760debf8a46123c1d39b2e61d0221e92"
+    },
+    "selector": {
+      "file": "ge-blit-selector.json.gz",
+      "sha256_uncompressed": "4aaba1dc6e5d7cd0aaf845be266893da7fafa95b10dc7f9c09a52479a6c310f7"
+    },
+    "full-replay": {
+      "file": "ge-blit-full-replay.json.gz",
+      "sha256_uncompressed": "b746f202a2fbc9d2230ace0b2b262962d8558c0f44db3893adf319a4f7f199bc"
+    },
+    "baseline": {
+      "file": "ge-blit-baseline.json.gz",
+      "sha256_uncompressed": "2392ae8db76fbc2dcbbc0de5d622486753345acd66a91b0cbea2f7e191bed929"
+    },
+    "display": {
+      "file": "ge-blit-display.json.gz",
+      "sha256_uncompressed": "799f13efca954b3d2ca909ab306a2c0943fc331ee49cd7ded61bd8de8d6386de"
+    },
+    "avd": {
+      "file": "ge-blit-avd.json.gz",
+      "sha256_uncompressed": "dd61fecbb7320b3b18135f8a4385b5c6e9eef54cdbbb74f370490f143421ef3c"
+    },
+    "vd": {
+      "file": "ge-blit-vd.json.gz",
+      "sha256_uncompressed": "4f4622ff253247d57173e4dc38f20dae46580118b2b937ca9e49eca340aa77a8"
+    },
+    "pm": {
+      "file": "ge-blit-pm.json.gz",
+      "sha256_uncompressed": "3397fd52674b175ba95acee251aceeec88c4ec677181bb3bc6b0ef63a3e39dd7"
+    },
+    "clock": {
+      "file": "ge-blit-clock.json.gz",
+      "sha256_uncompressed": "0eb314b151fc5d378029ef4598976527961580ec9de38ff7477e2baedf2709e5"
+    },
+    "copro": {
+      "file": "ge-blit-copro.json.gz",
+      "sha256_uncompressed": "a9cb59b84957b1c9b798af612340cdb81fba74263fcb44f6596ac5b131809a89"
+    },
+    "immutable": {
+      "file": "ge-blit-immutable.json.gz",
+      "sha256_uncompressed": "b65c779e16872aaedbc4ad29b269d1e8aebc6558ab19d20973b4b87710ef6c74"
+    },
+    "audio": {
+      "file": "ge-blit-audio.json.gz",
+      "sha256_uncompressed": "3ed03773d65013fd2dab2681fc70670106bd097185eeb50d2300cb238b4d5672"
+    },
+    "vif": {
+      "file": "ge-blit-vif.json.gz",
+      "sha256_uncompressed": "c7be700160e8c7e60184c0270331f127cd474a4b20e615ade5ad45c40b1ab407"
+    },
+    "request": {
+      "file": "ge-blit-request.json.gz",
+      "sha256_uncompressed": "9105b54a1ec6787f20cdfc8941cae226e494855ea2f4e80d33024554e9f19aec"
+    },
+    "packaged-window": {
+      "file": "ge-blit-packaged-window.json.gz",
+      "sha256_uncompressed": "935978f554d51e0db296c44adc4d1738527ddadd9f7c9561468717cbc9b0b452"
+    },
+    "cochannel": {
+      "file": "ge-blit-cochannel.json.gz",
+      "sha256_uncompressed": "5ccbe36acf5271a080b2c1f44568e80adbbde6b6508423d937fec0e4f3c142a6"
+    },
+    "clear": {
+      "file": "ge-blit-clear.json.gz",
+      "sha256_uncompressed": "3b16cc2f1aa9b93a0572df9eb456748b4077c496edf3fa44ff3bc6d1df74ae4c"
+    },
+    "copy-option": {
+      "file": "ge-blit-copy-option.json.gz",
+      "sha256_uncompressed": "eeda340eef6f77bdcc582460402fcb12b3c833073600159bb4913527c531fbf7"
+    },
+    "fill-option": {
+      "file": "ge-blit-fill-option.json.gz",
+      "sha256_uncompressed": "8249ae77b1f642bb4762de4dd759d35846f5f667d6619bc52f652338169f361d"
+    },
+    "native-tools": {
+      "file": "ge-blit-native-tools.json.gz",
+      "sha256_uncompressed": "b690a5ff0036194ed36e8f63068a3e94762cd3834a3c187541db9ff620661a5c"
+    }
+  },
+  "binaries": {
+    "audio_dsp_disasm.exe": "c431d54f1c0473b35a84bf843fb357dcec862cfe228688c7eb1caa277d98b47a",
+    "avd_cochannel_probe.exe": "f25447aa9060a834155a957c2cd87e75c9dabebdac02ccb8f968c8a0eda6b089",
+    "avd_htotal_probe.exe": "1544090310dea052ef41f3a30f345e25c10575cc806ae83de85606ee495eb608",
+    "avd_mcu_probe.exe": "d476412189f66cc619c112a1b7a4f764b5f76e84e544ee90fbd654473b811d0a",
+    "avd_request_probe.exe": "11ec72bf589b5018ecc08180fc23a6ad33035c15283be40e34cbc2f9ddadaca7",
+    "copro_probe.exe": "4a32e2b020db3b43842ec983728fc0e3570f8d3d3c6f836d3d00016b5fafc56c",
+    "core_tests.exe": "35b2106f42ea0d299ef1527c91820ee5b369c491b54dd1ac19a222e1b48d5dbd",
+    "ge_clear_probe.exe": "b52ac628b12d9a1ce3945f42ccbece51aa4effb3454b1e10556e87c88f940664",
+    "manta.exe": "40cd22f37aa6954b9360239d1e99eacf0d25a9deac8459c787ee14dd4e8a8995",
+    "pm51_probe.exe": "442d926bb072361a4081ac0f9981f322975fe17686b185c8c3f377ecbe5b7945",
+    "vd_mcu_probe.exe": "d7a84cea0c47e29a84b527962e953337e1e8d83319a1e08a814512511b1b668c",
+    "vif_agc_probe.exe": "9abd22949d5715720b156c3038a6a03bec00754ca3c52899208eaaa7c0f6202a",
+    "zui_flow_probe.exe": "023578088852521ec651640203b19ad896e3b0a9ba9a32d92fbc056a013584c8"
+  },
+  "trace_sha256": "0876e686f72f6ffbf993cd6d4b01648cd231972b43223b352fb6dd69243035bd",
+  "trace_events": 6592741,
+  "UART_sha256": "23e5aff1fc2bfc449985ade1c6e83436905985514aaa32710125a195eb1c7f3c",
+  "UART_unchanged": true,
+  "diagnostic_RGB565_RAM_sha256": "b169287b82ec9ea7dd27b02b42add27b219501d11ebe7cc0214fdd540953d15a",
+  "diagnostic_ARGB8888_RAM_sha256": "a00680af4a4065a6657991d29b61a7be887b2aa7238c9929cc6d6ffc4ac6094c",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "native_stdout": "1563 checks passed",
+  "connected_final_graphics": {
+    "pc": "0x80501bfc",
+    "tick": 854795171,
+    "state": 1,
+    "previous_state": 0,
+    "active_osd": 0,
+    "queue_head": 0,
+    "queue_tail": 0,
+    "window_count": 0,
+    "window_list": 0,
+    "software_tick": 38589,
+    "wrapper_state": 11,
+    "input_service_state": 0,
+    "input_key_raw": 255,
+    "source_id_raw": 20,
+    "source_phase_raw": 0,
+    "source_timeout_timestamp": 0,
+    "software_flags_raw": 4,
+    "bitmap196_address_raw": 64413992,
+    "bitmap196_bytes_raw": 588,
+    "bitmap196_pitch_raw": 14,
+    "bitmap196_width_raw": 7,
+    "bitmap196_height_raw": 42,
+    "bitmap196_format_raw": 9,
+    "bitmap196_valid_raw": 1,
+    "surface_flags_raw": 0,
+    "bitmap196_source_sha256": "9807355bf74b824e9ecb65c07ece6dca892f3d0ac7a96627f360c52ab0f1541f",
+    "ge_context_pointer_raw": 2154818400,
+    "ge_static_signature_raw": 1437253359,
+    "ge_static_format_raw": 2313,
+    "ge_static_destination_low_raw": 0,
+    "ge_static_destination_high_raw": 0,
+    "ge_static_destination_pitch_raw": 0,
+    "queue_indices_valid": true,
+    "known_hwnd_slots": 40,
+    "raw_occupied_hwnd_slots": 0
+  },
+  "replay_note": "Fresh connected cold boot enables the new plain-copy option but submits zero raster operations. Final production binary independently re-executes from reset and matches all recorded events, full summary, coverage and PM history. Final copy bounds guard tightens only unsupported raster coordinates and cannot advance the blocked UI. Probe-only source-key/dither/nearest/scale extensions are repeated independently with final binaries."
+}

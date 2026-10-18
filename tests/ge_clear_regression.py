@@ -27,6 +27,20 @@ with tempfile.TemporaryDirectory(prefix='manta-original-clear-') as directory:
     assert result['original_BitBlt_mode_cases']==4 and result['original_BitBlt_stretch_errors']==1
     assert result['original_BitBlt_mode_instructions']==10087
     assert result['original_alpha1555_register_cases']==12 and result['original_alpha1555_instructions']==2292
+    assert result['isolated_original_plain_BitBlts']==2 and result['original_plain_BitBlt_instructions']==6515
+    assert result['isolated_plain_BitBlt_pixels']==12 and not result['OSD3_format_C_BitBlt_supported']
+    assert result['original_source_key_cases']==8 and result['original_source_key_instructions']==3492
+    assert result['original_dither_cases']==12 and result['original_dither_instructions']==2368
+    assert result['original_nearest_selector_cases']==6 and result['original_nearest_selector_instructions']==176
+    for bpp,name in ((2,'RGB565'),(4,'ARGB8888')):
+        memory=bytearray([0xa5])*4096
+        for i in range(96):memory[0x800+i]=(i*37+11)&255
+        for y in range(1,3):
+            memory[y*24+2*bpp:y*24+5*bpp]=memory[0x800+y*24+bpp:0x800+y*24+4*bpp]
+        assert result[f'plain_BitBlt_{name}_RAM_sha256']==hashlib.sha256(memory).hexdigest()
+    assert result['original_scale_cases']==800 and result['original_scale_instructions']==496964
+    assert result['original_scale_results_sha256']=='a904ebd994796325a1591ddc960dbe4e57261c300b00a728513f497037f01b0c'
+    assert not result['hardware_filter_rounding_verified']
     damaged=bytearray(image);damaged[0x8049e158-0x803b3980]^=1;target.write_bytes(damaged)
     rejected=subprocess.run([a.probe,str(target)],capture_output=True,text=True,timeout=30)
     assert rejected.returncode==1 and 'original main image mismatch' in rejected.stderr

@@ -1,5 +1,22 @@
 # Status of the research build
 
+The [plain BitBlt and scale continuation](ge-bitblt-copy-and-scale.md) adds a
+separate opt-in `--candidate-ge-bitblt` for fully known, unscaled, unblended,
+unkeyed RGB565/ARGB8888 **0040** copies. Two original-driver cases copy **12
+diagnostic pixels** with exact full-page checksums and preserved padding/source.
+800 original scale/packer cases recover the real phase/ratio encoding; eight
+source-key and twelve dither-helper cases recover more of the OSD request.
+The actual isolated OSD 3 paint trace enters the original dither helper before
+submitting **8040**. Its format-C alpha conversion, filter and dither rounding
+remain unsupported: no BitBlt completion or replacement bitmap is fabricated.
+Connected HTotal/AVD boundaries, dispatch/window counts and lack of visible OSD
+are unchanged. See the [validation manifest](../evidence/ge-blit-validation.json).
+All **1,563 native checks**, 18 baseline runs, nine display runs, auxiliary,
+clock/provenance/immutable-input and four forensics tests pass. Native startup
+passes with a System32-only PATH. The complete **6,592,741-event** fresh-reset
+replay matches; new connected copy counters are zero, and prior trace bytes,
+coverage, PM history, UART and nonextension summary fields are unchanged.
+
 The [original 1555 alpha-helper tests](original-1555-alpha-register.md) verify
 12 actual `8051FC34 -> 80521ECC` cases and the observed register-11 high-byte
 **OR**, including its inability to clear previously set bits. A named related

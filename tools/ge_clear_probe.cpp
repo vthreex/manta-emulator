@@ -23,6 +23,9 @@ struct Case {
       cpu.map(0x01000000,0x1000);std::vector<uint8_t> sentinel(0x1000,0xa5);cpu.write(0x01000000,sentinel.data(),sentinel.size());
       riu.dramWritable=[](uint32_t address,size_t size){return address>=0x01000000 && uint64_t(address)+size<=0x01001000;};
       riu.dramWrite=[this](uint32_t address,std::span<const uint8_t> bytes){++rasterWrites;cpu.write(address,bytes.data(),bytes.size());};
+      riu.dramRead=[this](uint32_t address,size_t size){
+        need(address>=0x01000000 && uint64_t(address)+size<=0x01001000,"unmapped original BitBlt source");
+        std::vector<uint8_t> bytes(size);cpu.read(address,bytes.data(),size);return bytes;};
     }
     riu.event=[](const auto&,auto,auto,auto,const auto&){};
     uc_hook hook;manta::check(uc_hook_add(cpu.handle,&hook,UC_HOOK_CODE,reinterpret_cast<void*>(
@@ -38,7 +41,7 @@ struct Case {
     manta::check(uc_mmio_map(cpu.handle,0x1f205000,0x1000,
       +[](uc_engine* engine,uint64_t offset,unsigned width,void* data)->uint64_t{
         auto& c=*static_cast<Case*>(data);auto pc=c.cpu.reg(UC_MIPS_REG_PC);
-        need(width==2 && ((offset==4 && (pc==0x8052624c || pc==0x805268dc)) ||
+        need(width==2 && ((offset==0 && pc==0x805268dc) || (offset==4 && (pc==0x8052624c || pc==0x805268dc)) ||
           (offset==0x1c && pc==0x8052639c)),"clear probe accessed an unexamined hardware field");
         auto address=0x1f205000+uint32_t(offset);
         if(pc==0x805268dc){
@@ -52,6 +55,7 @@ struct Case {
         auto& c=*static_cast<Case*>(data);auto index=unsigned(offset/4);
         need(width==2 && !(offset&3) && (index==0 || index==1 || index==0x11 || index==0x59 || index==0x60 ||
           (index>=0x55 && index<=0x58) || (index>=0x68 && index<=0x6f) || index==0x70 || index==0x71 ||
+          (index>=0x14 && index<=0x17) || index==0x1c ||
           index==0x64 || index==0x65 || index==0x5e || index==0x5f ||
           index==0x34 || index==0x26 || index==0x27 || index==0x33 || index==0x20 || index==0x21 || index==0x30),
           "clear probe encountered an unexamined GE command");
@@ -290,6 +294,49 @@ int main(int argc,char** argv){try{
     need(c->riu.geRectangles==0 && c->rasterWrites==0,"guarded original BitBlt tests cannot create pixels");
     ++blitCases;blitInstructions+=c->instructions;
   }
+  unsigned originalBlits=0;uint64_t originalBlitInstructions=0;std::vector<std::string> copyHashes;
+  for(auto format:{8u,15u}){
+    auto c=std::make_unique<Case>(image,true);c->riu.candidateGeBitBlt=true;
+    auto program=[&](unsigned index,unsigned value){
+      c->entry(0x80526540,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701008);
+      c->cpu.reg(UC_MIPS_REG_5,index);c->cpu.reg(UC_MIPS_REG_6,value);
+      manta::check(c->cpu.run(0x80526540,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original copy configuration failed");};
+    // Explicit original register writes establish configuration; no silicon
+    // reset, queue completion or source data is invented as a known default.
+    program(0,1);program(1,0);program(0x59,0);
+    c->write(0x00700080,0,2);c->write(0x00700082,0,2);c->write(0x00700084,5,2);c->write(0x00700086,3,2);
+    c->entry(0x80520274,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80700080);c->cpu.reg(UC_MIPS_REG_5,0x80700084);
+    manta::check(c->cpu.run(0x80520274,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original copy clip setup failed");
+    c->entry(0x805254ec,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701000);
+    c->cpu.reg(UC_MIPS_REG_5,format);c->cpu.reg(UC_MIPS_REG_6,6);c->cpu.reg(UC_MIPS_REG_7,4);
+    c->write(0x0070ff10,0x01000800);c->write(0x0070ff14,24,2);c->write(0x0070ff18,0);
+    manta::check(c->cpu.run(0x805254ec,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original copy source binding failed");
+    c->write(0x00700080,0x01000000);c->write(0x00700084,6);c->write(0x00700088,4);
+    c->write(0x0070008c,24);c->write(0x00700090,format);
+    c->entry(0x8051fef8,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80700080);
+    manta::check(c->cpu.run(0x8051fef8,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original copy destination binding failed");
+    for(unsigned i=0;i<2;++i){auto rect=0x00700080+8*i;
+      c->write(rect,i?2:1,2);c->write(rect+2,1,2);c->write(rect+4,3,2);c->write(rect+6,2,2);}
+    std::vector<uint8_t> before(4096,0xa5);
+    for(unsigned i=0;i<96;++i)before[0x800+i]=uint8_t(i*37+11);
+    c->cpu.write(0x01000000,before.data(),before.size());c->writes.clear();
+    c->entry(0x80523bfc,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701000);
+    c->cpu.reg(UC_MIPS_REG_5,0x80700080);c->cpu.reg(UC_MIPS_REG_6,0x80700088);
+    c->cpu.reg(UC_MIPS_REG_7,0);c->write(0x0070ff10,0);
+    manta::check(c->cpu.run(0x80523bfc,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==1 && c->boundary.empty() &&
+      c->writes.back()==std::pair<unsigned,unsigned>{0x60,0x40},"original plain copy must submit 0040 and return normally");
+    c->riu.prepareMaskedRead(0x1f20501c,manta::GeQueue::statusKnown);
+    c->riu.read(0x1f20501c,2,0,0,c->instructions+4096);
+    auto expected=before;unsigned bpp=format==8?2:4;
+    for(unsigned y=1;y<3;++y)for(unsigned x=0;x<3*bpp;++x)
+      expected[y*24+2*bpp+x]=before[0x800+y*24+bpp+x];
+    std::vector<uint8_t> after(4096);c->cpu.read(0x01000000,after.data(),after.size());
+    need(after==expected && c->riu.geBitBlts==1 && c->riu.geBitBltPixels==6 && c->rasterWrites==2,
+      "original 0040 must copy exact source bytes into target rows, preserve alpha, padding and source");
+    copyHashes.push_back(manta::sha256(after));
+    ++originalBlits;originalBlitInstructions+=c->instructions;
+  }
   unsigned alphaCases=0;uint64_t alphaInstructions=0;
   for(auto initial:{0x005au,0xa55au})for(auto coefficient:{0u,1u,127u,128u,254u,255u}){
     auto c=std::make_unique<Case>(image);
@@ -304,7 +351,85 @@ int main(int argc,char** argv){try{
       "original 1555 alpha helper must preserve its actual OR operation, low byte and nesting without inferring output conversion");
     ++alphaCases;alphaInstructions+=c->instructions;
   }
-  std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original clear/allocation instructions; synthetic RAM, conditional GE reset and explicit plain-fill model, not TV execution\","
+  unsigned keyCases=0;uint64_t keyInstructions=0;
+  for(auto control:{1u,0x47u})for(auto enabled:{0u,1u})for(auto mode:{0u,1u}){
+    auto c=std::make_unique<Case>(image);
+    for(auto initial:std::vector<std::pair<unsigned,unsigned>>{{0,control},{0x1c,0xa5a4}}){
+      c->entry(0x80526540,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701008);
+      c->cpu.reg(UC_MIPS_REG_5,initial.first);c->cpu.reg(UC_MIPS_REG_6,initial.second);
+      manta::check(c->cpu.run(0x80526540,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original key register setup failed");}
+    c->writes.clear();c->entry(0x805224fc,0x803b0000);
+    c->cpu.reg(UC_MIPS_REG_4,0x80701000);c->cpu.reg(UC_MIPS_REG_5,enabled);
+    c->cpu.reg(UC_MIPS_REG_6,mode);c->cpu.reg(UC_MIPS_REG_7,0x12345678);c->write(0x0070ff10,0x89abcdef);
+    manta::check(c->cpu.run(0x805224fc,50000));
+    std::vector<std::pair<unsigned,unsigned>> expected;
+    if(enabled)expected={{0x16,0x5678},{0x17,0x1234},{0x14,0xcdef},{0x15,0x89ab},{0x1c,0xa5a4|mode}};
+    expected.emplace_back(0,(control&~0x40u)|(enabled?0x40u:0));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==1 && c->writes==expected && c->rasterWrites==0,
+      "original source-key helper must program its actual range words/mode and preserve unrelated enable controls");
+    ++keyCases;keyInstructions+=c->instructions;
+  }
+  unsigned ditherCases=0;uint64_t ditherInstructions=0;
+  for(auto initial:{1u,3u,0x45u,0x47u})for(auto enabled:{0u,1u,255u}){
+    auto c=std::make_unique<Case>(image);
+    c->entry(0x80526540,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701008);
+    c->cpu.reg(UC_MIPS_REG_5,0);c->cpu.reg(UC_MIPS_REG_6,initial);
+    manta::check(c->cpu.run(0x80526540,50000));need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop,"original dither register setup failed");
+    c->writes.clear();c->entry(0x8052272c,0x803b0000);
+    c->cpu.reg(UC_MIPS_REG_4,0x80701000);c->cpu.reg(UC_MIPS_REG_5,enabled);
+    manta::check(c->cpu.run(0x8052272c,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==1 &&
+      c->writes==std::vector<std::pair<unsigned,unsigned>>{{0,(initial&~2u)|(enabled?2u:0u)}} && c->rasterWrites==0,
+      "original dither helper must change bit1 only; no unsupported dithered pixels are fabricated");
+    ++ditherCases;ditherInstructions+=c->instructions;
+  }
+  unsigned nearestCases=0;uint64_t nearestInstructions=0;
+  for(auto mode:{0u,1u,2u,127u,255u,256u}){
+    auto c=std::make_unique<Case>(image);
+    // Ordinary linked software flags only; no hardware filter/reset is set.
+    for(auto address:{0x006ada58u,0x006ada5bu,0x006ada5cu,0x006ada5du})c->write(address,0,1);
+    c->entry(0x8051f9e8,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,mode);
+    manta::check(c->cpu.run(0x8051f9e8,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==1,"original nearest-mode setter did not return");
+    c->entry(0x8051f938,0x803b0000);manta::check(c->cpu.run(0x8051f938,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==((mode&255)?0x100000u:0u) && c->writes.empty(),
+      "original low-byte nearest selector must supply actual driver flag20 without a hardware response");
+    ++nearestCases;nearestInstructions+=c->instructions;
+  }
+  unsigned scaleCases=0;uint64_t scaleInstructions=0;std::vector<uint8_t> scaleResults;
+  const std::vector<unsigned> sizes{1,2,3,4,5,6,7,8,31,32,33,42,44,63,64,65,127,255,1024,4095};
+  for(unsigned smallMode:{0u,1u})for(unsigned i=0;i<sizes.size();++i)for(unsigned j=0;j<sizes.size();++j){
+    auto c=std::make_unique<Case>(image);unsigned sw=sizes[i],dw=sizes[j];
+    unsigned sh=sizes[(i+3)%sizes.size()],dh=sizes[(j+7)%sizes.size()];
+    c->write(0x00701518,smallMode,1); // explicit context flag, not a hardware reset
+    c->entry(0x8052607c,0x803b0000);c->cpu.reg(UC_MIPS_REG_4,0x80701008);
+    c->cpu.reg(UC_MIPS_REG_5,sw);c->cpu.reg(UC_MIPS_REG_6,sh);c->cpu.reg(UC_MIPS_REG_7,dw);
+    c->write(0x0070ff10,dh);c->write(0x0070ff14,0x80700080);
+    manta::check(c->cpu.run(0x8052607c,50000));
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->cpu.reg(UC_MIPS_REG_2)==1,"original scale calculator did not return");
+    auto phase=[](unsigned source,unsigned target){
+      // Independent integer oracle: signed truncation towards zero; the
+      // original forces phase bit12 from the direction, discarding positive
+      // integer bits. No claim about silicon filter tap rounding.
+      int64_t numerator=(int64_t(source)-target)*4096;
+      return (uint32_t(numerator/(2*target))&0xfff)|(source<target?0x1000u:0u);
+    };
+    auto ratio=[](unsigned source,unsigned target){return source<target*32?(source*4096)/target:0xffffffffu;};
+    uint32_t expected[4]{phase(sw,dw),smallMode && sh<6?0x1000u:phase(sh,dh),ratio(sw,dw),ratio(sh,dh)};
+    for(unsigned k=0;k<4;++k)need(c->read(0x00700080+4*k)==expected[k],"original scale fixed-point phase/ratio differs from signed integer oracle");
+    c->writes.clear();c->entry(0x80526ba0,0x803b0000);
+    c->cpu.reg(UC_MIPS_REG_4,0x80701008);c->cpu.reg(UC_MIPS_REG_5,0x80700080);
+    manta::check(c->cpu.run(0x80526ba0,50000));
+    std::vector<std::pair<unsigned,unsigned>> encoded{{0x64,expected[2]&0xffff},{0x65,expected[3]&0xffff},
+      {0x5e,expected[0]&0xffff},{0x5f,expected[1]&0xffff},
+      {0x5e,(expected[0]&0x7fff)|((expected[2]>>16)<<15&0xffff)},
+      {0x5f,(expected[1]&0x7fff)|((expected[3]>>16)<<15&0xffff)}};
+    need(c->cpu.reg(UC_MIPS_REG_PC)==c->stop && c->writes==encoded && c->rasterWrites==0,
+      "original scale register packer must preserve phase and pack ratio extension into bit15 without drawing");
+    for(auto v:expected)for(unsigned byte=0;byte<4;++byte)scaleResults.push_back(uint8_t(v>>(8*byte)));
+    ++scaleCases;scaleInstructions+=c->instructions;
+  }
+  std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original clear/allocation instructions; synthetic RAM, conditional GE reset and explicit plain-fill/copy models, not TV execution\","
     <<"\"cases\":"<<cases<<",\"raster_requests_rejected\":"<<requests<<",\"zero_size_returns\":"<<empty
     <<",\"original_instructions\":"<<instructions<<",\"raster_command\":48,\"legacy_guard_cases_pixels_generated\":false,\"pixels_generated\":true,\"framebuffer_allocated\":false"
     <<",\"original_format_capability_cases\":"<<capabilityCases<<",\"original_destination_binding_cases\":"<<destinationCases
@@ -318,6 +443,14 @@ int main(int argc,char** argv){try{
     <<",\"original_BitBlt_mode_cases\":"<<blitCases<<",\"original_BitBlt_stretch_errors\":"<<blitMismatchReturns
     <<",\"original_BitBlt_mode_instructions\":"<<blitInstructions
     <<",\"original_alpha1555_register_cases\":"<<alphaCases<<",\"original_alpha1555_instructions\":"<<alphaInstructions
+    <<",\"isolated_original_plain_BitBlts\":"<<originalBlits<<",\"original_plain_BitBlt_instructions\":"<<originalBlitInstructions
+    <<",\"isolated_plain_BitBlt_pixels\":12,\"OSD3_format_C_BitBlt_supported\":false"
+    <<",\"plain_BitBlt_RGB565_RAM_sha256\":\""<<copyHashes[0]<<"\",\"plain_BitBlt_ARGB8888_RAM_sha256\":\""<<copyHashes[1]<<"\""
+    <<",\"original_source_key_cases\":"<<keyCases<<",\"original_source_key_instructions\":"<<keyInstructions
+    <<",\"original_dither_cases\":"<<ditherCases<<",\"original_dither_instructions\":"<<ditherInstructions
+    <<",\"original_nearest_selector_cases\":"<<nearestCases<<",\"original_nearest_selector_instructions\":"<<nearestInstructions
+    <<",\"original_scale_cases\":"<<scaleCases<<",\"original_scale_instructions\":"<<scaleInstructions
+    <<",\"original_scale_results_sha256\":\""<<manta::sha256(scaleResults)<<"\",\"hardware_filter_rounding_verified\":false"
     <<",\"connected_framebuffer_allocated\":false,\"GOP_window_enabled\":false}\n";
   return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

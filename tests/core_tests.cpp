@@ -1148,6 +1148,72 @@ void geRectFillTests(){
   rejects([&]{q.advance(48);});
   require(q.completed()==1,"failed raster effect never retires as success");
 }
+void geBitBltTests(){
+  using Blit=manta::GeBitBlt;
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  auto set=[&](unsigned i,uint16_t v,uint16_t k=65535){regs[i]={v,k};};
+  set(0,1);set(1,0,0x372);set(0x59,0);set(0x34,0x0f0f,0x1f1f);
+  set(0x20,0x1000);set(0x21,0);set(0x26,0x2000);set(0x27,0);
+  set(0x30,24);set(0x33,28);set(0x68,1);set(0x69,1);set(0x6a,3);set(0x6b,2);
+  set(0x6c,2);set(0x6d,1);set(0x6e,3);set(0x6f,2);
+  set(0x55,2);set(0x56,5);set(0x57,0);set(0x58,3);
+  auto get=[&](unsigned i){return regs[i];};auto saved=regs;
+  std::vector<uint8_t> src(96),dst(112,0xa5);
+  for(unsigned i=0;i<src.size();++i)src[i]=uint8_t(i*37+11);
+  src[24+3*4+3]=0;src[24+4*4+3]=255;src[48+3*4+3]=127;
+  unsigned reads=0,writes=0;
+  auto read=[&](uint32_t a,size_t n){++reads;
+    if(a<0x1000 || uint64_t(a-0x1000)+n>src.size())throw std::runtime_error("unmapped source");
+    return std::vector<uint8_t>(src.begin()+a-0x1000,src.begin()+a-0x1000+n);};
+  auto writable=[&](uint32_t a,size_t n){return a>=0x2000 && uint64_t(a-0x2000)+n<=dst.size();};
+  auto write=[&](uint32_t a,std::span<const uint8_t> b){++writes;std::copy(b.begin(),b.end(),dst.begin()+a-0x2000);};
+  for(auto format:{0x0f0fu,0x0808u}){
+    regs=saved;set(0x34,uint16_t(format));auto plan=Blit::decode(0x40,get);
+    std::fill(dst.begin(),dst.end(),0xa5);reads=writes=0;plan.execute(read,writable,write);
+    unsigned bpp=format==0x0808?2:4;bool exact=true;
+    for(unsigned i=0;i<dst.size();++i){auto y=i/28,x=i%28;
+      uint8_t expected=0xa5;
+      if(y>=1 && y<=2 && x>=2*bpp && x<4*bpp)expected=src[y*24+(x-2*bpp)+3*bpp];
+      exact&=dst[i]==expected;
+    }
+    require(exact && reads==2 && writes==2,"GE plain copy preserves exact alpha/color bytes, source offset, clipping and both pitch paddings");
+    if(bpp==4)require(dst[28+2*4+3]==0 && dst[28+3*4+3]==255 && dst[56+2*4+3]==127,
+      "disabled GE blending preserves fully transparent, opaque and intermediate source alpha exactly");
+  }
+  regs=saved;
+  for(auto [index,pair]:saved){
+    auto bit=uint16_t(pair.second&uint16_t(-pair.second));regs[index].second&=uint16_t(~bit);
+    rejects([&]{Blit::decode(0x40,get);});regs=saved;
+  }
+  for(auto cmd:{0x30,0x8040,0xc040,0x41,0x140})rejects([&]{Blit::decode(uint16_t(cmd),get);});
+  for(auto format:{0x0c09,0x0909,0x0f08,0x080f}){set(0x34,uint16_t(format));rejects([&]{Blit::decode(0x40,get);});}regs=saved;
+  for(auto control:{0,3,5,0x47,0x401}){set(0,uint16_t(control));rejects([&]{Blit::decode(0x40,get);});}regs=saved;
+  for(auto control:{0x10,0x20,0x40,0x100,0x200}){set(1,uint16_t(control));rejects([&]{Blit::decode(0x40,get);});}regs=saved;
+  set(0x6e,4);rejects([&]{Blit::decode(0x40,get);});regs=saved;
+  set(0x59,1);rejects([&]{Blit::decode(0x40,get);});regs=saved;
+  for(auto index:{0x21,0x27}){set(index,0x8000);rejects([&]{Blit::decode(0x40,get);});regs=saved;}
+  for(auto index:{0x30,0x33}){set(index,7);rejects([&]{Blit::decode(0x40,get);});regs=saved;}
+  set(0x20,0x2000);rejects([&]{Blit::decode(0x40,get);});regs=saved;
+  set(0x55,4096);rejects([&]{Blit::decode(0x40,get);});regs=saved;
+  set(0x6c,4095);set(0x30,65532);rejects([&]{Blit::decode(0x40,get);});regs=saved;
+  set(0x6d,4095);rejects([&]{Blit::decode(0x40,get);});regs=saved;
+  set(0x27,0x7ff);set(0x26,0xfff0);rejects([&]{Blit::decode(0x40,get);});regs=saved;
+  auto plan=Blit::decode(0x40,get);auto before=dst;reads=writes=0;
+  rejects([&]{plan.execute(read,[](auto,auto){return false;},write);});
+  require(reads==0 && writes==0 && dst==before,"unmapped BitBlt target fails before source read and writes");
+  rejects([&]{plan.execute({},writable,write);});
+  rejects([&]{plan.execute(read,writable,{});});
+  auto shortRead=[&](uint32_t,size_t n){return std::vector<uint8_t>(n-1);};
+  rejects([&]{plan.execute(shortRead,writable,write);});
+  require(writes==0 && dst==before,"short BitBlt source never paints or retires");
+  unsigned sourceRow=0;
+  auto invalidRead=[&](uint32_t a,size_t n){if(++sourceRow==2)throw std::runtime_error("invalid hardware-origin bits");return read(a,n);};
+  manta::GeQueue q;q.exploratoryReset();q.submit(0x60,0x40,0,[&]{plan.execute(invalidRead,writable,write);});
+  rejects([&]{q.advance(24);});
+  require(writes==0 && dst==before && q.completed()==0,"unknown late source row preserves all destination bytes and prevents queue retirement");
+  set(0x55,4);auto empty=Blit::decode(0x40,get);empty.execute({}, {}, {});
+  require(empty.empty,"fully clipped copy consumes no guest bytes");
+}
 void opaquePolicyTests(){
   {
     manta::Riu bus;bus.event=[](auto&,auto,auto,auto,auto&){};
@@ -2676,6 +2742,7 @@ int main() {
     semaphoreTests();
     geQueueTests();
     geRectFillTests();
+    geBitBltTests();
     readMaskTests();
     opaquePolicyTests();
     gopSelectorProvenanceTests();

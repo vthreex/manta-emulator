@@ -38,6 +38,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateGe=o.candidateGe;
   if(o.candidateGeRectFill && !o.candidateGe)throw std::runtime_error("GE rectangle model requires candidate GE queues");
   riu_.candidateGeRectFill=o.candidateGeRectFill;
+  if(o.candidateGeBitBlt && !o.candidateGe)throw std::runtime_error("GE BitBlt model requires candidate GE queues");
+  riu_.candidateGeBitBlt=o.candidateGeBitBlt;
   riu_.candidateGopPalette=o.candidateGopPalette;
   riu_.candidateTsp=o.candidateTsp;
   riu_.candidateVdMcuProgram=o.candidateVdMcuProgram;
@@ -1707,6 +1709,9 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"ge_parameter_submissions\": " << riu_.geSubmitted()
     << ",\n  \"ge_parameter_transfers\": " << riu_.geTransferred()
     << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
+  if(options_.candidateGeBitBlt)s<<",\n  \"candidate_ge_bitblt\": true"
+    <<",\n  \"ge_bitblts_retired\": "<<riu_.geBitBlts
+    <<",\n  \"ge_bitblt_pixels_written\": "<<riu_.geBitBltPixels;
   if(options_.candidateGeRectFill)s<<",\n  \"candidate_ge_rect_fill\": true"
     <<",\n  \"ge_rectangles_retired\": "<<riu_.geRectangles
     <<",\n  \"ge_raster_pixels_written\": "<<riu_.geRasterPixels;

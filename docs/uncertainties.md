@@ -1,5 +1,14 @@
 # Evidence still needed
 
+The [plain-copy/scale study](ge-bitblt-copy-and-scale.md) identifies another
+required OSD 3 control: original `8052272C` sets GE control bit 1, matching the
+related driver's dither API. The actual OSD paint trace executes that helper.
+Exact Titania4 dither/filter rounding and destination-alpha conversion remain
+unresolved. Source format 9 must not be assigned either all-transparent or
+all-opaque alpha merely from the resource's clear high bits or another chip's
+RGB555 note. The new plain-copy option rejects these modes. Its successful
+synthetic-RAM tests do not establish bitmap 196 painting or connected pixels.
+
 The [1555 alpha-helper study](original-1555-alpha-register.md) verifies the
 original `GE11 |= coefficient << 8` operation. Do not interpret its FF value
 as a proven format-C output threshold. Source-alpha expansion and destination

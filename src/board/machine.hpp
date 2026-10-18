@@ -35,7 +35,7 @@ struct Options {
   bool exploratoryDlcTimeout=false;
   bool exploratoryCombRestore=false;
   bool candidateSemaphore=false, exploratorySemaphoreIdle=false;
-  bool candidateGe=false, candidateGeRectFill=false, exploratoryGeReset=false;
+  bool candidateGe=false, candidateGeRectFill=false, candidateGeBitBlt=false, exploratoryGeReset=false;
   bool candidateGopPalette=false;
   bool candidateTsp=false, exploratoryTspResetLow=false;
   bool exploratoryTspCpu=false;

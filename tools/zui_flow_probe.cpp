@@ -390,6 +390,7 @@ int main(int argc,char** argv){try{
   unsigned bitmapSymbolicSourceWrites=0,bitmapSymbolicSourceInstructions=0;
   unsigned allocatedPaintInstructions=0,allocatedPaintWrites=0,allocatedEnableInstructions=0;uint32_t allocatedPaintPC=0,allocatedPaintCommand=0,allocatedPaintRA=0;
   std::vector<std::array<uint32_t,3>> allocatedPaintRegisters;
+  bool allocatedPaintDither=false;
   if(argc==4){
     auto load=[](const char* path){std::ifstream input(path,std::ios::binary);
       return std::vector<uint8_t>(std::istreambuf_iterator<char>(input),{});};
@@ -500,11 +501,12 @@ int main(int argc,char** argv){try{
     manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),100000));
     allocatedPaintInstructions=fixture.instructions;allocatedPaintWrites=ge.writes.size();allocatedPaintPC=cpu.reg(UC_MIPS_REG_PC);
     allocatedPaintRA=cpu.reg(UC_MIPS_REG_RA);
+    allocatedPaintDither=fixture.visits.contains(0x8052272c);
     if(!ge.writes.empty() && ge.writes.back().first==0x1f205180)allocatedPaintCommand=ge.writes.back().second;
     need(allocatedPaintPC==0x80526598 && allocatedPaintCommand==0x8040 && allocatedPaintWrites==52 &&
       ge.boundary=="GE raster command 60h unsupported; no pixels or completion fabricated" && ge.riu->stopReason.empty() &&
       fixture.visits.contains(0x80529430) && fixture.visits.contains(0x803ee738) && fixture.visits.contains(0x803ea1a4) &&
-      fixture.visits.contains(0x803ee5c0) && ge.riu->geSubmitted()==51,
+      fixture.visits.contains(0x803ee5c0) && allocatedPaintDither && ge.riu->geSubmitted()==51,
       "original resource3 bitmap painting must reach its own unsupported raster request through its real callbacks");
     for(auto [address,value]:ge.writes)allocatedPaintRegisters.push_back({(address-0x1f205000)/4,value,ge.riu->knownBits(address,2)});
     need(ge.riu->knownBits(0x1f205080,2)==0xffff && ge.riu->knownBits(0x1f205084,2)==0xffff &&
@@ -560,6 +562,7 @@ int main(int argc,char** argv){try{
     <<",\"allocated_paint_original_enable_instructions\":"<<allocatedEnableInstructions
     <<",\"allocated_paint_GE_writes\":"<<allocatedPaintWrites<<",\"allocated_paint_stop_PC\":"<<allocatedPaintPC
     <<",\"allocated_paint_submit_RA\":"<<allocatedPaintRA
+    <<",\"allocated_paint_original_dither_helper\":"<<(allocatedPaintDither?"true":"false")
     <<",\"allocated_paint_command\":"<<allocatedPaintCommand<<",\"allocated_paint_GE_registers\":[";
   for(unsigned i=0;i<allocatedPaintRegisters.size();++i){if(i)std::cout<<',';auto v=allocatedPaintRegisters[i];
     std::cout<<'['<<v[0]<<','<<v[1]<<','<<v[2]<<']';}

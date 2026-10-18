@@ -1152,7 +1152,18 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(a==0x1f205004 && (knownBits(a,2)&2) && (v&2))
       throw std::runtime_error("GE virtual command memory transport unsupported; no fabricated VCmd completion");
     std::function<void()> raster;
-    if(candidateGeRectFill && a==0x1f205180){
+    if(candidateGeBitBlt && a==0x1f205180 && (v&0x70)==0x40){
+      if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
+      auto plan=GeBitBlt::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
+        return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
+      raster=[this,plan]{
+        plan.execute(dramRead,dramWritable,dramWrite);++geBitBlts;
+        auto count=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);
+        geBitBltPixels+=count;
+        event("ge_bitblt_retired",plan.destination,plan.pitch,count,
+          "original command 0040: known plain same-format RGB565/ARGB8888 copy; no stretch, format C or GOP enable assumed");
+      };
+    }else if(candidateGeRectFill && a==0x1f205180){
       if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
       auto plan=GeRectFill::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
         return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
@@ -1170,7 +1181,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       event("blocked_write",a,n,v,stopReason);return;
     }
     event("ge_queue_submit",a,n,v,a==0x1f205180?
-      "validated original rectangle request queued; no completion until actual guest RAM writes":
+      "validated original raster request queued; no completion until actual guest RAM effects":
       "guest parameter register submission; two experimental timed stages; no raster operation retired");
   }
   if(exploratoryGopResetWindows_ && a==0x1f203e00 && n==2 &&

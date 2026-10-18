@@ -61,6 +61,7 @@ with tempfile.TemporaryDirectory(prefix='manta-original-zui-') as directory:
     assert functions['allocated_paint_submit_RA']==0x805242b0
     assert functions['allocated_paint_GE_writes']==52 and functions['allocated_paint_original_instructions']==5598
     assert functions['allocated_paint_original_enable_instructions']>50
+    assert functions['allocated_paint_original_dither_helper'] is True
     enabled_packet=functions['allocated_paint_GE_registers'];assert enabled_packet[0]==[0,1,65535]
     packet=enabled_packet[1:]
     assert packet[:4]==[[0x55,531,65535],[0x57,42,65535],[0x56,537,65535],[0x58,85,65535]]

@@ -17,6 +17,7 @@
 #include "video/scaler_timing.hpp"
 #include "video/ge_queue.hpp"
 #include "video/ge_rect_fill.hpp"
+#include "video/ge_bitblt.hpp"
 #include "video/gop_palette.hpp"
 #include "video/gop_update.hpp"
 #include "peripherals/tsp.hpp"
@@ -301,6 +302,8 @@ public:
   std::optional<uint32_t> paletteColor(unsigned plane,unsigned index) const { return palette_.color(plane,index); }
   bool candidateGe=false;
   bool candidateGeRectFill=false;
+  bool candidateGeBitBlt=false;
+  uint64_t geBitBlts=0,geBitBltPixels=0;
   uint64_t geRectangles=0,geRasterPixels=0;
   void configureExploratoryGeReset() {
     ge_.exploratoryReset();
