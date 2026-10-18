@@ -30,29 +30,60 @@ def mips_address(xdata):
 
 
 def avd_accesses(probe, avd_path, size):
-    out = subprocess.run([str(Path(probe).resolve()), str(Path(avd_path).resolve()), '0', str(size)], capture_output=True, text=True, check=True).stdout
+    """AVD program accesses to 11xx by three forms: immediate DPTR + MOVX; the
+    8-bit write helper 02AA (R7 = low address, R5 = value); and the 16-bit write
+    helper 076E (R7 low address, R5 -> xx, R4 -> xx+1). R7 computed from other
+    state (table-driven loops) is not resolved here and is counted separately."""
+    out = subprocess.run([str(Path(probe).resolve()), str(Path(avd_path).resolve()), '0', str(size)],
+                         capture_output=True, text=True, check=True).stdout
     ins = []
     for line in out.splitlines():
         m = re.match(r'([0-9a-f]+) (\S+)\s*(.*)', line)
         if m:
             ins.append((int(m.group(1), 16), m.group(2), m.group(3)))
     found = {}
+
+    def add(addr, kind, pc):
+        found.setdefault(addr, {'read': [], 'write': [], 'other': [], 'helper_write8': [], 'helper_write16': []})[kind].append(hex(pc))
+
+    computed_helper_calls = []
     for i, (pc, op, arg) in enumerate(ins):
         m = re.match(r'DPTR, #0?([0-9A-Fa-f]{4})h', arg) if op == 'MOV' else None
-        if not m or not m.group(1).upper().startswith('11'):
-            continue
-        kind = 'other'
-        for j in range(i + 1, min(i + 6, len(ins))):
-            o, a = ins[j][1], ins[j][2]
-            if o == 'MOVX' and a.startswith('A, @DPTR'):
-                kind = 'read'
-                break
-            if o == 'MOVX' and a.startswith('@DPTR, A'):
-                kind = 'write'
-                break
-            if o in ('LCALL', 'ACALL', 'LJMP', 'AJMP', 'SJMP', 'RET', 'RETI'):
-                break
-        found.setdefault(int(m.group(1), 16), {'read': [], 'write': [], 'other': []})[kind].append(hex(pc))
+        if m and m.group(1).upper().startswith('11'):
+            kind = 'other'
+            for j in range(i + 1, min(i + 6, len(ins))):
+                o, a = ins[j][1], ins[j][2]
+                if o == 'MOVX' and a.startswith('A, @DPTR'):
+                    kind = 'read'
+                    break
+                if o == 'MOVX' and a.startswith('@DPTR, A'):
+                    kind = 'write'
+                    break
+                if o in ('LCALL', 'ACALL', 'LJMP', 'AJMP', 'SJMP', 'RET', 'RETI'):
+                    break
+            add(int(m.group(1), 16), kind, pc)
+        if op in ('LCALL', 'ACALL'):
+            target = re.search(r'([0-9A-Fa-f]{4})h', arg)
+            t = int(target.group(1), 16) if target else None
+            if t in (0x02AA, 0x076E, 0x2C63, 0x2C6B):   # 2C63/2C6B are bare tails calling 076E
+                reg = None
+                for j in range(i - 1, max(i - 5, -1), -1):
+                    mm = re.match(r'R7, #([0-9A-Fa-f]{2})h', ins[j][2]) if ins[j][1] == 'MOV' else None
+                    if mm:
+                        reg = int(mm.group(1), 16)
+                        break
+                    if ins[j][1] in ('LCALL', 'ACALL', 'RET', 'SJMP', 'LJMP') or re.match(r'R7', ins[j][2]):
+                        break
+                if t is not None and t != 0x02AA and reg is not None and t != 0x076E:
+                    pass
+                if reg is None:
+                    computed_helper_calls.append(hex(pc))
+                elif t == 0x02AA:
+                    add(0x1100 + reg, 'helper_write8', pc)
+                else:
+                    add(0x1100 + reg, 'helper_write16', pc)
+                    add(0x1100 + reg + 1, 'helper_write16', pc)
+    found['_computed_r7_helper_calls'] = computed_helper_calls
     return found
 
 
@@ -101,27 +132,46 @@ def mips_constant_mmio(image):
 
 
 def mips_pointer_based(image):
-    """Loads/stores `op rt, 0x6A00..0x6BFF(rs)` whose rs was loaded by the HAL
-    context-pointer LW (offset -0x268c, as in the original getters/setters)
-    within fifteen instructions. LUI-based RAM bases (for example 806F6BB5) and
-    stack restores are excluded."""
+    """Function-level linear tracker for the original HAL accessors.
+
+    A register is `hal-base` after `LW rt,-0x268c(rs)` (the RIU base loaded from
+    the HAL context global) until it is overwritten, copied (MOVE/OR/ADDU with
+    zero propagates it), or clobbered by a call. State resets after each
+    `JR RA` + delay slot. Branch joins are not modeled (state is carried along
+    the linear order), which is exact for the straight-line accessors but can
+    over-report after a branch that redefines the register; hits are therefore
+    reported with the tracking evidence so a reviewer can confirm them.
+    LUI-based RAM bases (for example 806F6BB5) are never `hal-base`."""
     words = struct.unpack('<%dI' % (len(image) // 4), image)
-    hits = []
+    caller_saved = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 24, 25}
+    hits, base, delay_reset = [], {}, False
     for i, w in enumerate(words[:(0x80613000 - BASE) // 4]):
-        op, rs, imm = w >> 26, (w >> 21) & 31, w & 0xffff
-        if op not in (32, 33, 35, 36, 37, 40, 41, 43) or not 0x6A00 <= imm <= 0x6BFF or (imm & 2):
-            continue
-        origin = 'unknown'
-        for j in range(i - 1, max(i - 15, -1), -1):
-            v = words[j]
-            if (v >> 26) in (15, 35, 9, 13, 36, 37) and ((v >> 16) & 31) == rs:
-                # The original HAL getters/setters load the RIU base from the
-                # same context global (LW offset -0x268c); stack restores and
-                # LUI-based RAM bases do not match.
-                origin = 'hal-base' if (v >> 26) == 35 and (v & 0xffff) == 0xd974 else 'other'
-                break
-        if origin == 'hal-base':
-            hits.append((0xBF200000 + imm, BASE + 4 * i, 'store' if op >= 40 else 'load'))
+        pc = BASE + 4 * i
+        op, rs, rt, rd, fn = w >> 26, (w >> 21) & 31, (w >> 16) & 31, (w >> 11) & 31, w & 63
+        imm = w & 0xffff
+        if op in (32, 33, 35, 36, 37, 40, 41, 43) and 0x6A00 <= imm <= 0x6BFF and not imm & 2 and base.get(rs):
+            hits.append((0xBF200000 + imm, pc, 'store' if op >= 40 else 'load'))
+        dest = None
+        if op == 35 and imm == 0xd974:
+            base[rt] = True
+        elif op in (15, 8, 9, 10, 11, 12, 13, 14, 32, 33, 34, 35, 36, 37, 38, 49, 53):
+            dest = rt
+        elif op == 0 and fn not in (8, 9, 12, 13, 24, 25, 26, 27, 17, 19):
+            if fn in (33, 37, 45) and (rt == 0 or rs == 0):   # MOVE / zero-extend copies
+                base[rd] = base.get(rs if rt == 0 else rt, False)
+            else:
+                dest = rd
+        elif op == 31:
+            dest = rt
+        if dest is not None and not (op == 35 and imm == 0xd974):
+            base[dest] = False
+        if op == 3:
+            for r in caller_saved:
+                base[r] = False
+        if delay_reset:
+            base, delay_reset = {}, False
+        if op == 0 and fn == 8 and rs == 31:
+            delay_reset = True
     return hits
 
 
@@ -181,17 +231,18 @@ def main():
         m = mips_address(r)
         report['registers'][hex(r)] = {
             'mips_address': hex(m),
-            'avd_mcu_immediate_dptr': avd.get(r, {}),
+            'avd_mcu_accesses': {k: v for k, v in avd.get(r, {}).items() if v},
             'original_mips_register_accesses': [dict(pc=hex(pc), kind=k) for addr, pc, k in mips if addr == m],
             'original_mips_init_table_entries': [dict(bank=hex(b), index=hex(i), value=hex(v))
                                                  for b, i, v in table if b == 0x35 and i == (r & 0xff)],
             'reference_driver_function_hits': {d: h.get(hex(m), []) for d, h in drivers.items()},
         }
-    report['caveat'] = ('Absence is limited to immediate-DPTR AVD accesses, straight-line constant MIPS MMIO, '
+    report['avd_computed_r7_helper_calls'] = avd.get('_computed_r7_helper_calls', [])
+    report['caveat'] = ('Absence is limited to immediate-DPTR and immediate-R7 helper (02AA/076E) AVD accesses (computed-R7 helper calls are listed, not resolved), straight-line constant MIPS MMIO, '
                         'the 8062AE00 init table and immediate offsets in the named archives.')
     Path(a.report).write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     for r, v in report['registers'].items():
-        print(r, v['mips_address'], 'avd:', {k: len(x) for k, x in v['avd_mcu_immediate_dptr'].items()},
+        print(r, v['mips_address'], 'avd:', {k: len(x) for k, x in v['avd_mcu_accesses'].items()},
               'mips:', len(v['original_mips_register_accesses']), 'table:', len(v['original_mips_init_table_entries']),
               'drivers:', {d: len(x) for d, x in v['reference_driver_function_hits'].items()})
 

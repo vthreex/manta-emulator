@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "join_live_registers": [
+    "a1",
+    "a2",
+    "a3",
+    "fp",
+    "gp",
+    "s1",
+    "s3",
+    "s5",
+    "s6",
+    "s7",
+    "sp"
+  ],
+  "analysis_nodes": 431
+}

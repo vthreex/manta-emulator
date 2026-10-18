@@ -1,0 +1,92 @@
+{
+  "runtime_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+  "branch": "0x80501bfc",
+  "join": "0x80501758",
+  "function_start": "0x80501698",
+  "analysis_end": "0x80502800",
+  "paths": {
+    "mismatch": [
+      "0x80501c00",
+      "0x80501750",
+      "0x80501754"
+    ],
+    "match_counter_lt4": [
+      "0x80501c00",
+      "0x80501c04",
+      "0x80501c08",
+      "0x80501c0c",
+      "0x80501c14",
+      "0x80502018",
+      "0x80502020"
+    ],
+    "match_counter_ge4": [
+      "0x80501c00",
+      "0x80501c04",
+      "0x80501c08",
+      "0x80501c0c",
+      "0x80501c14",
+      "0x80501c18",
+      "0x80501c20"
+    ]
+  },
+  "path_effects": {
+    "mismatch": [
+      [
+        "store8",
+        "0x806d83d4",
+        "('const', 0)",
+        "0x80501750"
+      ]
+    ],
+    "match_counter_lt4": [
+      [
+        "load8",
+        "0x806d83d4",
+        "0x80501c08"
+      ],
+      [
+        "store8",
+        "0x806d83d4",
+        "('add', ('load8', 2154660820), 1)",
+        "0x80502018"
+      ]
+    ],
+    "match_counter_ge4": [
+      [
+        "load8",
+        "0x806d83d4",
+        "0x80501c08"
+      ],
+      [
+        "store16",
+        "0x806ad960",
+        "('reg', 7)",
+        "0x80501c20"
+      ]
+    ]
+  },
+  "registers_differing_between_paths": [
+    "a0",
+    "v0",
+    "v1"
+  ],
+  "registers_live_at_join": [
+    "a1",
+    "a2",
+    "a3",
+    "fp",
+    "gp",
+    "s1",
+    "s3",
+    "s5",
+    "s6",
+    "s7",
+    "sp"
+  ],
+  "differing_and_live": [],
+  "non_ram_stores": [],
+  "unexpected_instructions": [],
+  "analysis_nodes": 431,
+  "join_is_register_compatible": true,
+  "join_has_no_mmio_or_control_effects": true
+}

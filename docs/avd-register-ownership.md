@@ -1,96 +1,96 @@
-# AVD register ownership map: who produces `11DB`, `11FC` and the HTotal chain
+# AVD register ownership map (corrected) and the host-assist mailbox
 
-Continues `f59cf26`. **No production emulator code changes; connected state is
-unchanged** (MIPS `80501BFC`, AVD `0702 / 11DB.7`, 863 AVD instructions, no
-dispatcher, no pixels). This note adds a reproducible static search
-([`tools/avd_register_ownership.py`](../tools/avd_register_ownership.py), report
-[`evidence/avd-register-ownership.json`](../evidence/avd-register-ownership.json))
-and what it implies for the producer question. Nothing here assigns a register
-value.
+Continues `e5427a4`, **correcting its conclusions**. The first version searched
+only immediate-DPTR AVD accesses and missed one known host setter. Both are
+fixed: [`tools/avd_register_ownership.py`](../tools/avd_register_ownership.py)
+now also resolves the AVD's helper-call writes (`02AA`, `076E`, and the bare
+`2C63/2C6B` tails) and tracks the HAL context base pointer per function in the
+original MIPS image. It finds **all five** previously known host accessors
+(`11C7`, `11C8`, `11CA`, `11DC`, `119C`; the last two via
+`805032A0` and `80503644/50`). Report:
+[`evidence/avd-register-ownership.json`](../evidence/avd-register-ownership.json).
 
-## Address mapping (confirmed against three known pairs)
+## Address mapping
 
-AVD MCU XDATA `11xx` reaches the host at
-`BF206A00 + (xx>>1)*4 + (xx&1)`. This reproduces the original HTotal pair
-`11C7/11C8 -> BF206B8D/BF206B90` and co-channel `11CA -> BF206B94`, and
-places the other registers at `11DB -> BF206BB5`, `11FC -> BF206BF8`,
-`113C/113D -> BF206A78/79`.
+AVD XDATA `11xx` reaches the host at `BF206A00 + (xx>>1)*4 + (xx&1)`
+(reproduces `11C7/11C8 -> BF206B8D/90` and `11CA -> BF206B94`). The MST786
+datasheet's `AFEC Register (Bank = 1035)` is byte-indexed the same way. This
+generation documents only a few AFEC bytes (`D6/D8/DA` are "Move to SW", i.e.
+firmware-owned) and nothing for `DB`, `FC`, `3C/3D`; it is another chip, so it
+is a layout clue, not a Titania4 reset value.
 
-The related MST786 datasheet's
-`AFEC Register (Bank = 1035)` is byte-indexed by the same low byte, so these
-are bank-`1035` AFEC bytes. That generation documents only a few of them
-(`D6/D8/DA` are labeled "Move to SW", meaning firmware-owned); it lists nothing
-for `DB`, `FC`, `3C/3D` or `C7/C8`. It is a different chip, so this is a
-naming/layout clue, not a Titania4 reset value.
-
-## Ownership results
-
-Search forms: AVD program `MOV DPTR,#11xx` + `MOVX`; original MIPS accesses
-through the HAL context base pointer (`LW -0x268c`); the 78-entry MIPS init
-table; and immediate offsets in the related Amethyst and Marlon
-`libdrvAVD.a` archives.
+## Results (who touches each register)
 
 | XDATA | Host alias | AVD program | Original MIPS | Related host drivers |
 |---|---|---|---|---|
-| `113C/113D` | `BF206A78/79` | read only (`0AA9`, `2208`; `2203`) | none | none |
-| `11C7/11C8` | `BF206B8D/90` | published by `0775/0784` via `076E` (computed DPTR) | read, `805030FC/F8` | `HAL_AVD_AFEC_GetHTotal` |
-| `11CA` | `BF206B94` | read (`1130`) | read, `80503098` | `GetCoChannelOn` |
-| `11DA/11DB` | `BF206BB4/B5` | read only (`2A11`; **`06FE`**) | none | none |
-| `11DC` | `BF206BB8` | read (`12D2`) | read, `805032A0` | `HAL_AVD_AFEC_SetRegFromDSP` |
-| `11FA` | `BF206BF4` | none by immediate DPTR | none | none |
-| `11FC` | `BF206BF8` | read only (**`098D`**) | none | none |
-| `119C` | `BF206B38` | read x4 | writer `80503650`* | `SetHsyncSensitivity` |
+| `113C/D` | `BF206A78/79` | read only | none | none |
+| `11C7/C8` | `BF206B8D/90` | **written** by the publisher (`076E`, from `0ABC`) | read `805030FC/F8` | `GetHTotal` |
+| `11CA` | `BF206B94` | read + written twice (`02AA`) | read `80503098` | `GetCoChannelOn` |
+| `11DA` | `BF206BB4` | **written** `2B1A` (averaged result, `0xFF` or computed) + read | none | none |
+| `11DB` | `BF206BB5` | **read only** (`06FE`) | none | none |
+| `11DC..DF` | `BF206BB8..BD` | mailbox, below | `805032A0..` | `SetRegFromDSP` |
+| `11FA` | `BF206BF4` | written (`=1` at `027E..0282`) | none | none |
+| `11FC` | `BF206BF8` | read `098D` and **written back** `099F` (`~captured`) | none | none |
+| `119C` | `BF206B38` | read x4, written x4 | read `80503644`, write `80503650` | `SetHsyncSensitivity` |
 
-\\* The search finds four of the five known host accessors by itself but misses
-the `119C` setter, whose base pointer is loaded outside the lookback window.
-The table is therefore strong for the driver archives (which also find that
-setter) and weaker, not conclusive, for absence in the original MIPS image.
+So the previous "silicon-owned, nobody writes it" statement was wrong for
+`11DA`, `11FA` and `11FC`: the AVD MCU writes them. For `11DB` the narrower
+claim still holds in the forms searched: no immediate-address AVD write, no
+original MIPS access, no init-table entry (bank `35`, index `DB`), no
+Marlon/Amethyst host access. Six AVD helper calls use a computed `R7`
+(`4DF`, `6AD`, `17CF`, `2C63`, `2C6B`, `2DE1`); the first, second, fifth and
+sixth resolve to fixed registers (`11A2`, `11A2`, `115D`, `1100`), and
+`2C63/2C6B` are shared tails whose callers were resolved individually. A
+table-driven loop with a computed register number is not excluded. **What can
+be said:** `11DB` has no identified software writer and could be reset-latched,
+driven by hardware, or written through a path not enumerated; this study
+cannot tell which.
 
-## What this implies
+## The host-assist mailbox (decoded)
 
-1. **`11DB.7` is not written by anything we can find.** The AVD program reads
-   it once (`06FE`), never stores to it, and neither the original MIPS image,
-   its 78-entry init table, nor the Marlon/Amethyst drivers touch it. A bit that
-   no shipping software writes holds its silicon reset value or is driven by
-   hardware. Either way it is a per-chip constant that cannot depend on whether
-   a video signal is present.
-2. **It is also not the gate.** Both `11DB.7` outcomes were already run from the
-   original reset vector (2,278 and 2,309 instructions); both reach the main
-   loop and stop at `0993`, which needs `11FC.2`. Resolving `11DB.7` alone would
-   move the connected AVD stop from `0702` to `0993`, not publish HTotal.
-3. **`11FC` and `113C/113D` are hardware-owned.** The AVD program only reads
-   them and no host code touches them. So the event bits (`.0` gates the
-   measurement, `.2` clears private counters) and the raw H-period counter come
-   from the AFEC/VD silicon. Neither the firmware nor any related driver says
-   what they hold with no sync input.
-4. **The one host-side indirect path is the `11DC` mailbox.**
-   `HAL_AVD_AFEC_SetRegFromDSP` is the host performing register accesses that
-   the AVD side requests. That is the only candidate indirect writer for
-   registers the AVD does not drive itself, and it is already represented by
-   the existing request-channel model; whether it ever targets `11DB` is
-   unknown and would have to come from AVD-posted requests, not a guess.
+`HAL_AVD_AFEC_SetRegFromDSP` (`8050328C`) is a generic register
+read-modify-write that the MIPS performs for the AVD:
 
-## Soundness note for the MIPS HTotal comparison
+| Byte (`XDATA`/host) | Role |
+|---|---|
+| `11DC` / `BF206BB8` | command: bits `3:2` = `2` write, `1` read; bits `1:0` select the bank (`0` = `0x3600`, non-zero = `0x3500`); MIPS clears bits `3:2` when a write completes and sets them (`|0xC`) when a read completes |
+| `11DD` / `BB9` | write mask |
+| `11DE` / `BBC` | register index within the bank |
+| `11DF` / `BBD` | write data; receives the read value |
 
-`80501BFC` (`bne a3,a1`) compares the unknown sample with history. Both
-outcomes rejoin at `80501758` and differ only in the stability counter and
-accepted-total stores. A sound way past it would be an explicit
-**unknown-effect join** (those cells become unknown, later consumption stops
-again), not choosing a branch. That changes strict-mode behavior and later code
-conditionally writes hardware based on further unknown status (`BF206B94`,
-`BF206B98`), so it is recorded as a design option here and **not implemented**.
+Address formed is `bank + index`, converted to bytes as `2*addr - (addr&1)`
+(so `0x35DB -> 0x6BB5`). Write: `new = (old & ~mask) | (mask & data)`.
 
-## Remaining blockers and the evidence that would remove them
+The AVD program issues **one** such request in its static code (`12DA..130D`):
+mask `FF`, register `0x3526`, value `0x30` or `0x10` chosen by a measured
+range, command `0x09` (write, bank `0x35`). It is not a request for
+`0x35DB`. The mailbox is the only mechanism by which the host writes AFEC
+registers on the AVD's behalf, and nothing here makes it write `11DB`.
 
-- Silicon behavior of `11FC` events and `113C/113D` with no sync input (a
-  register capture from a real MSD309/Titania4 board, or a register-level AFEC
-  specification for this generation).
-- Reset value of `11DB.7` and `11DA/11DC` (same sources).
-- Whether the join abstraction above is acceptable for strict mode.
+## Join soundness (supports the diagnostic experiment)
+
+[`tools/mips_join_proof.py`](../tools/mips_join_proof.py) analyzes the original
+instruction words for the HTotal comparison at `80501BFC`:
+
+- Three paths (mismatch; match with counter `<4`; match with counter `>=4`)
+  all rejoin at `80501758`.
+- Only `v0`, `v1`, `a0` differ between paths, and all three are **dead at the
+  join** (liveness over 431 reachable instructions of the same function).
+- Memory differences are exactly two RAM cells: counter `806D83D4`
+  (`0` / `counter+1` / unchanged) and accepted total `806AD960` (unchanged,
+  or the matched value, equal to history `a1`).
+- No MMIO store, call, trap or scheduler-visible effect on any path.
+
+The branch outcome depends on the unknown sample only through mismatch vs
+match; the counter sub-branch uses a known value. See
+[htotal-branch-join.md](htotal-branch-join.md) for the guarded experiment.
+
+## Remaining producer questions (unchanged)
+
+Silicon behavior of `11FC` events and `113C/113D` with no sync input, and the
+reset/producer of `11DB.7`, remain unestablished by any available source.
 
 ## Validation
 
-Report regenerated from the unchanged original images; hashes recorded in the
-JSON. Because only a tool, an evidence file and this note were added, the
-connected counts, 1,619 native checks and previous full-suite results are not
-newly re-run and are not claimed fresh for this commit.
+Tool and evidence only; the scanner's five-accessor check is a regression
+anchor. See the join note for the machine-level results.
