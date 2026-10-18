@@ -112,6 +112,8 @@ class Riu {
   uint64_t avdHsyncReads_=0;
   bool exploratoryUsbNoDevice_=false;
   int diagnosticUsbUnpoweredDplus_=-1;
+  int diagnosticVifCrLock_=-1;
+  uint64_t vifCrLockReads_=0;
   bool exploratoryAvdNoSyncEvents_=false;
   int diagnosticAvd11dbBit7_=-1;
   int exploratoryVifRevision_=-1;
@@ -486,6 +488,9 @@ public:
     }
     return 0;
   }
+  // BRACKETING: VIF carrier-recovery lock status (0x1F224471 bit 0, reference CR_LOCK_STATUS). Bit 0 only; run 0 and 1.
+  void configureDiagnosticVifCrLock(unsigned bit) { diagnosticVifCrLock_ = int(bit & 1); }
+  uint64_t vifCrLockReads() const { return vifCrLockReads_; }
   void configureDiagnosticUsbUnpoweredDplus(unsigned dplus) { diagnosticUsbUnpoweredDplus_ = int(dplus & 1); }
   // DIAGNOSTIC: a stored register bit whose value is, by construction, the original unknown bit again.
   void forgetBits(uint32_t a, uint8_t mask) { bytes_[storageKey(a)].known &= uint8_t(~mask); }

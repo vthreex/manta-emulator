@@ -2831,6 +2831,7 @@ int main() {
     spiTests();
     spiNorProgramTests();
     usbNoDeviceTests();
+    vifCrLockBracketTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

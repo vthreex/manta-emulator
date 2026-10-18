@@ -122,6 +122,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   }
   if(o.diagnosticRestoreByIdentityBranch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.candidateSpiNorWrite))
     throw std::runtime_error("restore-by-identity branch diagnostic requires guarded exploration and the SPI NOR write model");
+  if(o.diagnosticVifCrLock>=0){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("VIF carrier-lock bracketing requires guarded exploration");
+    riu_.configureDiagnosticVifCrLock(unsigned(o.diagnosticVifCrLock));
+  }
   if(o.diagnosticUsbUnpoweredDplus>=0){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("USB powered-down line-state bracketing requires guarded exploration");
     riu_.configureDiagnosticUsbUnpoweredDplus(unsigned(o.diagnosticUsbUnpoweredDplus));
@@ -1872,6 +1876,7 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
   if(options_.exploratoryAvdNoSyncEvents)s<<",\n  \"exploratory_avd_no_sync_events\": true,\n  \"avd_event_acks\": "<<riu_.avdMcuBus().eventAcks;
   if(options_.diagnosticAvd11dbBit7>=0)s<<",\n  \"diagnostic_avd_11db_bit7\": "<<options_.diagnosticAvd11dbBit7;
+  if(options_.diagnosticVifCrLock>=0)s<<",\n  \"diagnostic_vif_cr_lock\": "<<options_.diagnosticVifCrLock;
   if(options_.exploratoryUsbNoDevice)s<<",\n  \"exploratory_usb_no_device\": true";
   if(options_.diagnosticHtotalBranchJoin)s<<",\n  \"diagnostic_htotal_branch_join\": true,\n  \"diagnostic_htotal_branch_joins\": "<<htotalJoins_;
   if(options_.candidateGeBitBlt)s<<",\n  \"candidate_ge_bitblt\": true"

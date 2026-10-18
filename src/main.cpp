@@ -124,6 +124,11 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--diagnostic-htotal-branch-join")o.diagnosticHtotalBranchJoin=true;
       else if(a=="--candidate-spi-nor-write")o.candidateSpiNorWrite=true;
       else if(a=="--exploratory-usb-no-device")o.exploratoryUsbNoDevice=true;
+      else if(a=="--diagnostic-vif-cr-lock"){
+        auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
+        if(used!=token.size() || n>1)throw std::runtime_error("VIF carrier-lock bracketing value must be 0 or 1");
+        o.diagnosticVifCrLock=int(n);
+      }
       else if(a=="--diagnostic-usb-unpowered-dplus"){
         auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
         if(used!=token.size() || n>1)throw std::runtime_error("USB powered-down D+ bracketing value must be 0 or 1");
@@ -258,6 +263,7 @@ static int appMain(const std::vector<std::string> &args) {
                 "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
                 "--exploratory-avd-no-sync-events: HYPOTHESIS: with no sync input the AVD event latch 11FC bits 0 and 2 stay clear (other bits invalid); acks are clear-only; requires absent-HSYNC and shared AVD run\n"
                 "--diagnostic-avd-invalid-publication: DIAGNOSTIC: AVD stores of invalid/partially known data into 11C0..11DF are kept with their exact known mask (no information created); requires the shared AVD run\n"
+                "--diagnostic-vif-cr-lock N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines only 0x1F224471 bit0 (VIF carrier-recovery lock status); requires guarded exploration\n"
                 "--diagnostic-avd-11db-bit7 N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines AFEC 11DB bit 7 whose producer is unknown\n"
                 "--candidate-spi-nor-write: opt-in guest SPI NOR WRSR/page-program/erase (06/01/02/20/52/D8) into a copy-on-write overlay; stock image never written; requires --candidate-spi\n"
                 "--diagnostic-restore-by-identity-branch: DIAGNOSTIC ONLY: SerFlash write routine 8053CB80 branch whose both arms restore ISP 1C8 bit 2 to its tested value; requires --candidate-spi-nor-write\n"

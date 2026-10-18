@@ -436,6 +436,9 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
       v&=~(255u<<(8*i));v|=uint32_t(vifZeroInput_.sample(a+i).known)<<(8*i);
     }
   }
+  // Live VIF carrier-recovery lock status; only bit 0 is defined, and only by the explicit bracketing diagnostic.
+  if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471)
+    v|=1u<<(8*(0x1f224471-a));
   // Live AFEC status, not writable storage. Only the named HSYNC field is
   // supplied by the explicit absent-input experiment; READY and all other
   // fields keep their original invalid provenance.
@@ -491,6 +494,9 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     }
     if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
     v |= byte << (i * 8);
+  }
+  if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471){
+    auto shift=8*(0x1f224471-a);v=(v&~(1u<<shift))|(uint32_t(diagnosticVifCrLock_)<<shift);
   }
   if(exploratoryAvdNoHsync_ && analogDisconnected_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99)
     v&=~(0x40u<<(8*(0x1f206b99-a)));
@@ -657,6 +663,11 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     ++vifRevisionReads_;
     event("exploratory_vif_chip_revision",a,n,unsigned(exploratoryVifRevision_),
       "EXPLICIT unverified silicon-revision input; Titania4 header REG_CHIP_REVISION1ECF maps byte3D9D; actual Manta stepping unknown; independent of fetch byte3C05, no completion generated");
+  }
+  if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471){
+    ++vifCrLockReads_;
+    event("diagnostic_vif_cr_lock",a,n,unsigned(diagnosticVifCrLock_),
+      "BRACKETING DIAGNOSTIC (run 0 and 1), not a reset value: only 0x1F224471 bit0 (reference CR_LOCK_STATUS, carrier-recovery lock) defined; hardware-owned status, other bits invalid, no tuner/IF signal modeled");
   }
   if(exploratoryAvdNoHsync_ && analogDisconnected_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99){
     ++avdHsyncReads_;
@@ -858,6 +869,8 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
+  if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471)
+    throw std::runtime_error("VIF carrier-recovery lock status is hardware-owned; guest writes cannot manufacture it");
   for(auto observed:{0x1f224644u,0x1f224650u,0x1f224651u,0x1f22465du})
     if(a<=observed && uint64_t(a)+n>observed)
       throw std::runtime_error("VIF live AGC observation is hardware-owned; guest writes cannot manufacture measurements");

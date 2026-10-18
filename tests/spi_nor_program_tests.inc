@@ -114,6 +114,22 @@ void spiNorProgramTests(){
   require(f3.read(0x13456)==0x00 && f3.read(0x13457)==uint8_t(makeStock()[0x13457]&0x12) && f3.read(0x13458)==uint8_t(makeStock()[0x13458]&0x34),
     "ISP page program lands at the address registers' location");
 }
+void vifCrLockBracketTests(){
+  using namespace manta;
+  Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};
+  require(off.knownBits(0x1f224471,1)==0 && off.knownBits(0x1f224470,2)==0,"without the bracket the VIF carrier-lock status and its neighbour stay invalid");
+  for(unsigned bit:{0u,1u}){
+    Riu r;r.symbolicInit=true;r.event=[](auto,auto,auto,auto,auto){};r.configureDiagnosticVifCrLock(bit);
+    require(r.knownBits(0x1f224471,1)==1 && r.knownBits(0x1f224470,1)==0,"only bit 0 of 0x1F224471 becomes known; CR_FOE (0x1F224470) stays invalid");
+    require(r.knownBits(0x1f224470,2)==0x0100 && r.knownBits(0x1f224470,4)==0x00000100,"halfword/word reads expose exactly that one bit at its byte lane");
+    auto v=r.read(0x1f224471,1,0x80509a94,0xff,10);r.stopReason.clear();
+    require((v&1)==bit && r.vifCrLockReads()==1,"bracketed value is returned and counted");
+    require(r.knownBits(0x1f224440,1)==0 && r.knownBits(0x1f224472,1)==0,"neighbouring VIF registers are untouched");
+    bool rejected=false;
+    try{r.write(0x1f224471,1,bit,0x80509a94,0xff,11);}catch(const std::exception&){rejected=true;}
+    require(rejected,"a guest write cannot manufacture the hardware-owned lock status");
+  }
+}
 void usbNoDeviceTests(){
   using namespace manta;
   Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};
