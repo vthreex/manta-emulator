@@ -1,0 +1,103 @@
+{
+ "commit": "ceb9475",
+ "binary": "manta_o.exe",
+ "native_checks": 1823,
+ "suites": {
+  "firmware": {
+   "rc": 0,
+   "sec": 227
+  },
+  "display": {
+   "rc": 0,
+   "sec": 400
+  },
+  "immutable_input": {
+   "rc": 0,
+   "sec": 1
+  },
+  "clock_profile": {
+   "rc": 0,
+   "sec": 7
+  },
+  "avd_firmware": {
+   "rc": 0,
+   "sec": 0
+  },
+  "avd_htotal": {
+   "rc": 0,
+   "sec": 1
+  },
+  "avd_request": {
+   "rc": 0,
+   "sec": 0
+  },
+  "avd_cochannel": {
+   "rc": 0,
+   "sec": 0
+  },
+  "avd_event": {
+   "rc": 0,
+   "sec": 2
+  },
+  "avd_selector": {
+   "rc": 0,
+   "sec": 1
+  },
+  "avd_symbolic_table": {
+   "rc": 0,
+   "sec": 2
+  },
+  "vd_firmware": {
+   "rc": 0,
+   "sec": 0
+  },
+  "vif_agc": {
+   "rc": 0,
+   "sec": 1
+  },
+  "zui_flow": {
+   "rc": 0,
+   "sec": 2
+  },
+  "ge_clear": {
+   "rc": 0,
+   "sec": 8
+  },
+  "ge_bitblt_option": {
+   "rc": 0,
+   "sec": 1
+  },
+  "ge_fill_option": {
+   "rc": 0,
+   "sec": 1
+  },
+  "diagnostic_options": {
+   "rc": 0,
+   "sec": 1
+  }
+ },
+ "strict_replay": {
+  "events": 6592741,
+  "summary_identical_to_a6db0cf": true,
+  "stop_pc": "0x80501bfc"
+ },
+ "connected_diagnostic_run": {
+  "stop_pc": "0x80509a94",
+  "stop_address": "0x1f224471",
+  "ge_rectangles_retired": 2,
+  "ge_raster_pixels_written": 674560,
+  "ge_bitblts_retired": 0
+ },
+ "connected_run_deterministic_across_two_runs": true,
+ "ge_request": {
+  "dest": "0x00DDD880",
+  "pitch": 2720,
+  "reg34": "0x0C09",
+  "clip": "0..0x550/0..0xF8",
+  "color": "0xFF000000",
+  "reg59": "0x40",
+  "fills_retired": 2,
+  "pixels": 674560
+ },
+ "category": "diagnostic connected run; not authentic displayed output; strict boot unchanged"
+}
