@@ -1,3 +1,4 @@
+#include "video/ge_stretch_request.hpp"
 #include "cpu/engine.hpp"
 #include "cpu/mcu_value_mask.hpp"
 #include "board/zui_flow.hpp"
@@ -1147,6 +1148,38 @@ void geRectFillTests(){
   require(q.submit(0x60,0x30,24,[]{throw std::runtime_error("unavailable target");}),"pending raster retains its uncompleted work");
   rejects([&]{q.advance(48);});
   require(q.completed()==1,"failed raster effect never retires as success");
+}
+void geStretchRequestTests(){
+  using Req=manta::GeStretchRequest;
+  // Final 0x60=8040 request recorded from original OSD 3 instructions
+  // (evidence/ge-osd-copy-guard.json.gz, allocated_paint_GE_registers).
+  static const std::pair<unsigned,uint16_t> recorded[]={{0x00,0x0001},{0x55,0x0213},{0x57,0x002a},{0x56,0x0219},{0x58,0x0055},{0x34,0x0c09},{0x26,0xd800},{0x27,0x00dd},{0x33,0x0aa0},{0x01,0xa485},{0x00,0x0003},{0x13,0x00ff},{0x12,0x0100},{0x11,0x0001},{0x00,0x0007},{0x13,0x00ff},{0x12,0x0100},{0x11,0x0001},{0x00,0x0007},{0x11,0xff01},{0x16,0x0078},{0x17,0x0078},{0x14,0xf0ff},{0x15,0x00ff},{0x1c,0x0000},{0x00,0x0047},{0x34,0x0c09},{0x20,0xe128},{0x21,0x03d6},{0x30,0x000e},{0x01,0xa485},{0x59,0x0000},{0x64,0x1000},{0x65,0x0f45},{0x5e,0x0000},{0x5f,0x1fa3},{0x5e,0x0000},{0x5f,0x1fa3},{0x68,0x0213},{0x69,0x002a},{0x6a,0x0219},{0x6b,0x0055},{0x6c,0x0000},{0x6d,0x0000},{0x6e,0x0007},{0x6f,0x002a},{0x68,0x0213},{0x69,0x002a},{0x6a,0x0219},{0x6b,0x0055},{0x01,0xa495}};
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  for(auto [i,v]:recorded)regs[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+  auto saved=regs;auto get=[&](unsigned i){return regs[i];};
+  auto r=Req::decode(0x8040,get);
+  require(!r.nearest && r.dither() && r.blend() && r.sourceKey(),"recorded OSD 3 request is stretched, dithered, blended and source-keyed");
+  require(r.sourceFormat==9 && r.destinationFormat==0xc && r.source==0x03d6e128 && r.destination==0x00ddd800,"recorded request source/destination formats and addresses");
+  require(r.sourcePitch==14 && r.destinationPitch==2720 && r.srcWidth==7 && r.srcHeight==42,"recorded request pitches and source extent");
+  require(r.destLeft==531 && r.destTop==42 && r.destRight==537 && r.destBottom==85,"recorded request destination rectangle is 7x44");
+  require(r.ratioX==0x1000 && r.ratioY==0xf45 && r.phaseX==0 && r.phaseY==-93 && r.phaseUpY && !r.phaseUpX,"recorded request fixed-point ratio and phase match original scale arithmetic");
+  require(r.keyLow==0x00780078 && r.keyHigh==0x00fff0ff,"recorded request key range halves");
+  require(r.alpha11==0xff01 && r.alpha12==0x100 && r.alpha13==0xff,"recorded request alpha registers");
+  require(r.unresolved().size()==7,"every unestablished hardware semantic of the recorded request is enumerated");
+  require(Req::decode(0xc040,get).nearest,"C040 is the nearest-mode variant of the same stretch request");
+  for(auto cmd:{0x40,0x30,0x8041,0x4040})rejects([&]{Req::decode(uint16_t(cmd),get);});
+  for(auto [index,pair]:saved){
+    auto bit=uint16_t(pair.second&uint16_t(-pair.second));regs[index].second&=uint16_t(~bit);
+    rejects([&]{Req::decode(0x8040,get);});regs=saved;}
+  regs[1].first=0xa485;rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  regs[0x65].first=0xf46;rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  regs[0x5f].first=0x1fa4;rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  regs[0x5e].first=0x1000;rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  regs[0x6f].first=43;rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  regs[0x6a].first=530;rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  regs[0].first=0;rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  require(Req::expectedRatio(7,7)==0x1000,"unit scale is exactly 1.0 in 4.12 fixed point");
+  require(Req::expectedRatio(1,32)==128 && Req::expectedRatio(32,1)==0xffffffffu && Req::expectedRatio(31,1)==31u*4096,"scale ratio boundaries match the original 32x limit");
 }
 void geBitBltTests(){
   using Blit=manta::GeBitBlt;
@@ -2743,6 +2776,7 @@ int main() {
     geQueueTests();
     geRectFillTests();
     geBitBltTests();
+    geStretchRequestTests();
     readMaskTests();
     opaquePolicyTests();
     gopSelectorProvenanceTests();
