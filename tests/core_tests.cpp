@@ -1129,7 +1129,24 @@ void geRectFillTests(){
   for(auto [index,pair]:saved){auto mask=pair.second;auto bit=uint16_t(mask&uint16_t(-mask));
     regs[index].second&=uint16_t(~bit);rejects([&]{Fill::decode(0x30,read);});regs=saved;}
   rejects([&]{Fill::decode(0x8040,read);});
-  for(auto format:{9u,12u}){set(0x34,uint16_t(format<<8));rejects([&]{Fill::decode(0x30,read);});}regs=saved;
+  for(auto format:{9u,0xdu}){set(0x34,uint16_t(format<<8));rejects([&]{Fill::decode(0x30,read);});}regs=saved;
+  // Format C: only rule-independent colours (alpha 00/FF, black/white); others stay guarded. Reg 59 bit 6 is the GE-init default.
+  set(0x34,0x0c00);set(0x70,0x0000);set(0x71,0xff00);set(0x59,0x40);set(0x33,24);
+  {auto c=Fill::decode(0x30,read);require(c.argb1555 && c.bpp==2,"format C fill with opaque black decodes");
+   std::vector<uint8_t> m2(96,0xa5);unsigned w2n=0;
+   c.execute([&](uint32_t a,size_t n){return a>=0x1000 && uint64_t(a-0x1000)+n<=m2.size();},
+     [&](uint32_t a,std::span<const uint8_t> b){++w2n;std::copy(b.begin(),b.end(),m2.begin()+a-0x1000);});
+   bool exact2=true;for(unsigned i=0;i<m2.size();++i){auto x=i%24,y=i/24;uint8_t e=0xa5;
+     if(y>=1 && y<=2 && x>=2 && x<8)e=(x%2)?0x80:0x00;
+     exact2&=m2[i]==e;}
+   require(exact2 && w2n==2,"opaque-black ARGB1555 fill writes 0x8000 per pixel in exactly the clipped rectangle and preserves padding");}
+  set(0x71,0x00ff);set(0x70,0xffff);{auto c=Fill::decode(0x30,read);require(c.color==0x00ffffffu,"transparent white decodes");}
+  set(0x71,0xff80);rejects([&]{Fill::decode(0x30,read);});   // grey: depends on the unestablished channel conversion
+  set(0x71,0xffff);set(0x70,0x00ff);rejects([&]{Fill::decode(0x30,read);});   // blue only: depends on channel order
+  set(0x71,0x7f00);set(0x70,0);rejects([&]{Fill::decode(0x30,read);});   // alpha 7F: depends on the alpha rule
+  set(0x71,0xff00);set(0x70,0);set(0x59,0x41);rejects([&]{Fill::decode(0x30,read);});   // orientation bit set
+  set(0x59,0x80);rejects([&]{Fill::decode(0x30,read);});
+  regs=saved;
   for(auto control:{0u,3u,5u,0x401u}){set(0,uint16_t(control));rejects([&]{Fill::decode(0x30,read);});}regs=saved;
   set(1,0x10);rejects([&]{Fill::decode(0x30,read);});regs=saved;
   set(0x27,0x8000);rejects([&]{Fill::decode(0x30,read);});regs=saved;
