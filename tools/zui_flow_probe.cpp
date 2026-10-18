@@ -76,8 +76,10 @@ int main(int argc,char** argv){try{
       auto address=0x1f205000+uint32_t(offset);
       try{g.riu->write(address,width,uint32_t(value),pc,0xffff,g.execution->instructions);}
       catch(const std::runtime_error& e){
-        need(g.paintParameters && offset==0x180 && std::string(e.what())==
-          "GE raster command 60h unsupported; no pixels or completion fabricated","unexpected original paint peripheral exception");
+        need(g.paintParameters && offset==0x180 &&
+          (std::string(e.what())=="GE raster command 60h unsupported; no pixels or completion fabricated" ||
+           (g.riu->candidateGeBitBlt && std::string(e.what())=="GE BitBlt stretch/filter/mode unsupported")),
+          "unexpected original paint peripheral exception");
         g.boundary=e.what();uc_emu_stop(engine);
       }
       need(g.riu->stopReason.empty(),"original clipping command was rejected");
@@ -391,6 +393,7 @@ int main(int argc,char** argv){try{
   unsigned allocatedPaintInstructions=0,allocatedPaintWrites=0,allocatedEnableInstructions=0;uint32_t allocatedPaintPC=0,allocatedPaintCommand=0,allocatedPaintRA=0;
   std::vector<std::array<uint32_t,3>> allocatedPaintRegisters;
   bool allocatedPaintDither=false;
+  bool allocatedPaintCopyGuard=false;unsigned allocatedPaintRetryInstructions=0;
   if(argc==4){
     auto load=[](const char* path){std::ifstream input(path,std::ios::binary);
       return std::vector<uint8_t>(std::istreambuf_iterator<char>(input),{});};
@@ -511,6 +514,16 @@ int main(int argc,char** argv){try{
     for(auto [address,value]:ge.writes)allocatedPaintRegisters.push_back({(address-0x1f205000)/4,value,ge.riu->knownBits(address,2)});
     need(ge.riu->knownBits(0x1f205080,2)==0xffff && ge.riu->knownBits(0x1f205084,2)==0xffff &&
       read(local+0x50)==0x00ddd800,"original bitmap paint must retain valid source binding and its allocated destination");
+    // Resume the blocked original SH, at its existing PC, after enabling only
+    // the new plain-copy option. No packet is submitted by a host shortcut.
+    // This is an isolated diagnostic retry, never connected cold-boot progress.
+    ge.riu->candidateGeBitBlt=true;ge.boundary.clear();auto beforeRetry=fixture.instructions;
+    manta::check(cpu.run(cpu.reg(UC_MIPS_REG_PC),1));
+    allocatedPaintRetryInstructions=fixture.instructions-beforeRetry;
+    allocatedPaintCopyGuard=cpu.reg(UC_MIPS_REG_PC)==allocatedPaintPC && allocatedPaintRetryInstructions==1 &&
+      ge.boundary=="GE BitBlt stretch/filter/mode unsupported" && ge.riu->geSubmitted()==51 &&
+      ge.riu->geBitBlts==0 && ge.riu->geBitBltPixels==0 && ge.writes.back().second==0x8040;
+    need(allocatedPaintCopyGuard,"plain copy option must reject the actual original OSD3 SH without accepting/retiring a stretched format-C bitmap");
     ge.riu->prepareMaskedRead(0x1f205000,1);
     need((ge.riu->read(0x1f205000,2,0,1,fixture.instructions+1000)&1) && ge.riu->stopReason.empty(),
       "original enable/configuration sequence must retain enabled engine bit without completing the unsupported raster");
@@ -563,6 +576,8 @@ int main(int argc,char** argv){try{
     <<",\"allocated_paint_GE_writes\":"<<allocatedPaintWrites<<",\"allocated_paint_stop_PC\":"<<allocatedPaintPC
     <<",\"allocated_paint_submit_RA\":"<<allocatedPaintRA
     <<",\"allocated_paint_original_dither_helper\":"<<(allocatedPaintDither?"true":"false")
+    <<",\"allocated_paint_plain_copy_guard\":"<<(allocatedPaintCopyGuard?"true":"false")
+    <<",\"allocated_paint_isolated_retry_instructions\":"<<allocatedPaintRetryInstructions
     <<",\"allocated_paint_command\":"<<allocatedPaintCommand<<",\"allocated_paint_GE_registers\":[";
   for(unsigned i=0;i<allocatedPaintRegisters.size();++i){if(i)std::cout<<',';auto v=allocatedPaintRegisters[i];
     std::cout<<'['<<v[0]<<','<<v[1]<<','<<v[2]<<']';}

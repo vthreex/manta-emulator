@@ -143,6 +143,16 @@ every source pixel as opaque, or using its clear high bit as a proved transparen
 alpha, would both be unsupported substitutions. `8040` remains rejected and
 unretired; no host bitmap replacement or fabricated completion is used.
 
+A further isolated test enables the new plain-copy option at this existing
+blocked instruction, then resumes the original `SH` at its unchanged current
+PC. That one instruction reaches the new peripheral decoder and is rejected
+specifically as an unsupported stretch/filter mode. There are still only
+51 accepted configuration submissions; copy/pixel counters stay zero.
+The production CPU is never repositioned and no host command is injected.
+This diagnostic retry proves the new option does not silently accept OSD 3;
+it does not make the unavailable format-C result known. See the
+[guard-test evidence](../evidence/ge-osd-copy-guard-validation.json).
+
 ## Connected boundary
 
 Connected MIPS still stops at `80501BFC`, requiring HTotal from

@@ -1,0 +1,36 @@
+{
+  "base_git": "ea21233",
+  "result": "PASS",
+  "scope": "isolated original blocked-SH retry, no connected progress or rendered TV pixels",
+  "only_changed_executable": [
+    "zui_flow_probe.exe"
+  ],
+  "production_and_all_other_binary_hashes_identical": true,
+  "binaries": {
+    "audio_dsp_disasm.exe": "c431d54f1c0473b35a84bf843fb357dcec862cfe228688c7eb1caa277d98b47a",
+    "avd_cochannel_probe.exe": "f25447aa9060a834155a957c2cd87e75c9dabebdac02ccb8f968c8a0eda6b089",
+    "avd_htotal_probe.exe": "1544090310dea052ef41f3a30f345e25c10575cc806ae83de85606ee495eb608",
+    "avd_mcu_probe.exe": "d476412189f66cc619c112a1b7a4f764b5f76e84e544ee90fbd654473b811d0a",
+    "avd_request_probe.exe": "11ec72bf589b5018ecc08180fc23a6ad33035c15283be40e34cbc2f9ddadaca7",
+    "copro_probe.exe": "4a32e2b020db3b43842ec983728fc0e3570f8d3d3c6f836d3d00016b5fafc56c",
+    "core_tests.exe": "35b2106f42ea0d299ef1527c91820ee5b369c491b54dd1ac19a222e1b48d5dbd",
+    "ge_clear_probe.exe": "b52ac628b12d9a1ce3945f42ccbece51aa4effb3454b1e10556e87c88f940664",
+    "manta.exe": "40cd22f37aa6954b9360239d1e99eacf0d25a9deac8459c787ee14dd4e8a8995",
+    "pm51_probe.exe": "442d926bb072361a4081ac0f9981f322975fe17686b185c8c3f377ecbe5b7945",
+    "vd_mcu_probe.exe": "d7a84cea0c47e29a84b527962e953337e1e8d83319a1e08a814512511b1b668c",
+    "vif_agc_probe.exe": "9abd22949d5715720b156c3038a6a03bec00754ca3c52899208eaaa7c0f6202a",
+    "zui_flow_probe.exe": "de2c5f06dce22faf1183da62cbf9274e940da557ccb75e48f719d37805950394"
+  },
+  "fresh_reset_replay_reference": "ge-blit-validation.json",
+  "reference_trace_events": 6592741,
+  "unchanged_production_replay_reused": true,
+  "clean_PATH_probe_pass": true,
+  "native_checks": 1563,
+  "OSD3_8040_accepted": false,
+  "OSD3_8040_retired": false,
+  "connected_raster": false,
+  "report": {
+    "file": "ge-osd-copy-guard.json.gz",
+    "sha256_uncompressed": "65d1f37432fba4d3815d9736a530083b21db5865a7fd5757c9f235ae4830c3e5"
+  }
+}

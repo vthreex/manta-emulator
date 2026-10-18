@@ -16,6 +16,10 @@ clock/provenance/immutable-input and four forensics tests pass. Native startup
 passes with a System32-only PATH. The complete **6,592,741-event** fresh-reset
 replay matches; new connected copy counters are zero, and prior trace bytes,
 coverage, PM history, UART and nonextension summary fields are unchanged.
+The [subsequent isolated guard test](../evidence/ge-osd-copy-guard-validation.json)
+resumes the actual original OSD `SH` with the new plain-copy option enabled.
+It rejects `8040` without accepting or retiring the primitive. Production and
+every other executable remain byte-identical to the fully replayed `ea21233`.
 
 The [original 1555 alpha-helper tests](original-1555-alpha-register.md) verify
 12 actual `8051FC34 -> 80521ECC` cases and the observed register-11 high-byte
