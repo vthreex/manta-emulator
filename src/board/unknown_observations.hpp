@@ -22,6 +22,10 @@ public:
   void seedSpiCache(uint32_t address) { seed(4); spiCacheAddress_ = address & 0x1fffffff; spiCacheArmed_ = true; }
   void seed(unsigned reg) { registers_.at(reg) = true; timingRegisters_[reg] = false; clockOrigins_[reg] = 0; }
   const auto &bytes() const { return bytes_; }
+  void markMemoryUnknown(uint32_t address,size_t size,uint32_t origin){
+    for(size_t i=0;i<size;++i)bytes_[(address+uint32_t(i))&0x1fffffff]=origin;
+  }
+  void markRegisterKnown(unsigned reg){ registers_.at(reg)=false; timingRegisters_[reg]=false; clockOrigins_[reg]=0; }
   void overwriteKnownMemory(uint32_t address,size_t size) {
     for(size_t i=0;i<size;++i)bytes_.erase((address+uint32_t(i))&0x1fffffff);
   }

@@ -20,6 +20,15 @@ public:
   // configuration bytes. A merged table result may overwrite them INVALID;
   // it is never treated as a same-register preserved value or device reply.
   bool symbolicTableConfiguration=false;
+  // EXPLORATORY: 11FC is treated as a latched event register on which a software
+  // write can only clear bits. Never set by this model; reads are supplied by the
+  // owner of the backing. Off by default (strict stop).
+  bool eventAckClearOnly=false;
+  // DIAGNOSTIC: stores into the published block 11C0..11DF may carry INVALID or partially
+  // known data (copies/derivations of raw hardware bytes). The known mask is preserved
+  // exactly, so no information is created; off by default.
+  bool invalidDataPublication=false;
+  uint64_t eventAcks=0;
   static std::optional<uint32_t> sharedAddress(uint16_t address){
     if(address<0x1100 || address>=0x1300)return {};
     auto logical=uint32_t(address)+0x2400;
@@ -45,7 +54,13 @@ public:
     // Plain RW storage would turn acknowledged zero bits into new events.
     // Its clearing/latching semantics are unresolved: stop, never fabricate
     // events from this software write (or guess write-zero-to-clear behavior).
-    if(address==0x11fc)return false;
+    if(address==0x11fc){
+      if(!eventAckClearOnly)return false;
+      ++eventAcks;
+      if(event)event("avd_event_ack_clear_only",0x1f206bf8,1,value.value,
+        "EXPLORATORY: original ack of the captured event byte; modeled as clear-only, no event bit is created or set; valid under write-0 or write-1 clear semantics");
+      return true;
+    }
     if(address>=0x8000 && address<0x8100){
       ram_[address-0x8000]=value;++ramWrites;return true;
     }
@@ -65,7 +80,8 @@ public:
       bool timingCopy=symbolicTableConfiguration &&
         ((address==0x11c7 && value.origin==0x113c) ||
          (address==0x11c8 && value.origin==0x113d && (value.known&0xf8)==0xf8 && !(value.value&0xf8)));
-      if(!sharedWrite || (value.known!=255 && !tableData && !timerCopy && !timingCopy && (value.origin!=address || address>=0x1200)))return false;
+      bool publication=invalidDataPublication && address>=0x11c0 && address<0x11e0;
+      if(!sharedWrite || (value.known!=255 && !tableData && !timerCopy && !timingCopy && !publication && (value.origin!=address || address>=0x1200)))return false;
       sharedWrite(*physical,value);++sharedWrites;
       if(event)event("avd_shared_register_write",*physical,1,value.value,
         "original AVD MOVX XDATA="+std::to_string(address)+"; known="+std::to_string(value.known)+"; no host response generated");

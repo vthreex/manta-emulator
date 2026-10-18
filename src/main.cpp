@@ -121,6 +121,14 @@ static int appMain(const std::vector<std::string> &args) {
       }
       else if(a=="--exploratory-analog-disconnected")o.exploratoryAnalogDisconnected=true;
       else if(a=="--exploratory-avd-no-hsync")o.exploratoryAvdNoHsync=true;
+      else if(a=="--diagnostic-htotal-branch-join")o.diagnosticHtotalBranchJoin=true;
+      else if(a=="--exploratory-avd-no-sync-events")o.exploratoryAvdNoSyncEvents=true;
+      else if(a=="--diagnostic-avd-invalid-publication")o.diagnosticAvdInvalidPublication=true;
+      else if(a=="--diagnostic-avd-11db-bit7"){
+        auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
+        if(used!=token.size() || n>1)throw std::runtime_error("11DB bit 7 bracketing value must be 0 or 1");
+        o.diagnosticAvd11dbBit7=int(n);
+      }
       else if(a=="--exploratory-vif-zero-input-settle-cycles"){
         auto token=value(i);size_t used=0;auto n=std::stoull(token,&used,0);
         if(!n || used!=token.size() || token[0]=='-')throw std::runtime_error("VIF zero-energy settling interval must be positive virtual CPU cycles");
@@ -240,6 +248,10 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-gop-bank N: HYPOTHETICAL initial selector only (0..15); no IRQ/ACK reset assumption\n"
                "--candidate-semaphore: stateful resource-ID acquire/release; reset owners stay unknown\n"
                 "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
+                "--exploratory-avd-no-sync-events: HYPOTHESIS: with no sync input the AVD event latch 11FC bits 0 and 2 stay clear (other bits invalid); acks are clear-only; requires absent-HSYNC and shared AVD run\n"
+                "--diagnostic-avd-invalid-publication: DIAGNOSTIC: AVD stores of invalid/partially known data into 11C0..11DF are kept with their exact known mask (no information created); requires the shared AVD run\n"
+                "--diagnostic-avd-11db-bit7 N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines AFEC 11DB bit 7 whose producer is unknown\n"
+                "--diagnostic-htotal-branch-join: DIAGNOSTIC ONLY, not hardware behavior: execute both original outcomes of the HTotal comparison at 80501BFC separately, mark every differing RAM cell/register unknown, resume at the join 80501758\n"
                 "--candidate-ge-bitblt: opt-in plain same-format RGB565/ARGB8888 0040 copies; requires GE queues; stretch/format C/alpha remain guarded\n"
                "--candidate-ge-rect-fill: opt-in known plain RGB565/ARGB8888 rectangle writes; requires GE queues, mapped RAM and known controls; format C/blending/BitBlt unsupported\n"
                "--candidate-tsp: queue count/full/empty derived from reset and actual pending descriptors; unsupported TS DMA never completes\n"

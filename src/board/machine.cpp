@@ -1,5 +1,6 @@
 #include "board/machine.hpp"
 #include "board/mmio_read_mask.hpp"
+#include "board/htotal_join.hpp"
 #include "storage/sha256.hpp"
 #include "video/gop.hpp"
 #include <iomanip>
@@ -39,6 +40,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.candidateGeRectFill && !o.candidateGe)throw std::runtime_error("GE rectangle model requires candidate GE queues");
   riu_.candidateGeRectFill=o.candidateGeRectFill;
   if(o.candidateGeBitBlt && !o.candidateGe)throw std::runtime_error("GE BitBlt model requires candidate GE queues");
+  if(o.diagnosticHtotalBranchJoin && (!o.symbolicInit || !o.deferDiagnosticReads))
+    throw std::runtime_error("HTotal branch-join diagnostic requires guarded symbolic exploration");
   riu_.candidateGeBitBlt=o.candidateGeBitBlt;
   riu_.candidateGopPalette=o.candidateGopPalette;
   riu_.candidateTsp=o.candidateTsp;
@@ -111,6 +114,21 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if(!o.symbolicInit || !o.deferDiagnosticReads || !o.exploratoryAnalogDisconnected)
       throw std::runtime_error("AVD absent-HSYNC hypothesis requires guarded execution and explicit disconnected analog input");
     riu_.configureExploratoryAvdNoHsync();
+  }
+  if(o.exploratoryAvdNoSyncEvents){
+    if(!o.exploratoryAvdNoHsync || !o.exploratoryAvdSharedRun)
+      throw std::runtime_error("AVD no-sync event hypothesis requires the absent-HSYNC hypothesis and the shared AVD run");
+    riu_.configureExploratoryAvdNoSyncEvents();
+  }
+  if(o.diagnosticAvdInvalidPublication){
+    if(!o.exploratoryAvdSharedRun || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("AVD invalid-data publication diagnostic requires the guarded shared AVD run");
+    riu_.configureDiagnosticAvdInvalidPublication();
+  }
+  if(o.diagnosticAvd11dbBit7>=0){
+    if(!o.exploratoryAvdSharedRun || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("11DB bit 7 bracketing diagnostic requires the guarded shared AVD run");
+    riu_.configureDiagnosticAvd11dbBit7(unsigned(o.diagnosticAvd11dbBit7));
   }
   if(o.exploratoryVifRevision>=0){
     if(!o.symbolicInit || !o.deferDiagnosticReads)
@@ -608,6 +626,11 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
     if (m.recentInstructions_.size() > 4096)
       m.recentInstructions_.pop_front();
   }
+  if (m.options_.diagnosticHtotalBranchJoin && a == HtotalBranchJoin::branch && !m.stopped_ &&
+      (m.unknownObservations_.registerUnknown(7) || m.preservedBits_.mask(7)) &&
+      !m.unknownObservations_.registerUnknown(5) && !m.preservedBits_.mask(5) &&
+      m.applyHtotalBranchJoin())
+    return;
   if (m.options_.deferDiagnosticReads) {
     auto why = m.unknownObservations_.observe(
         uint32_t(a), w, [&](unsigned i) { return m.cpu_.reg(UC_MIPS_REG_0 + int(i)); });
@@ -617,6 +640,18 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       auto address = (m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 21) & 31)) + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
       m.stop(why, op >= 32 && op <= 38 ? address : 0);
       return;
+    }
+    if(a==0x80503828 && w==0xa4a46cbc && m.options_.exploratoryCombRestore) {
+      // HAL_AVD_COMB_Set3dCombSpeed: SH duplicates the nibble, SB restores the original low byte.
+      // Both instructions and the whole 0x58-byte function are verified against the original image.
+      std::vector<uint8_t> code(0x58);
+      m.cpu_.read(0x005037e0, code.data(), code.size());
+      uint32_t next = 0;
+      m.cpu_.read(0x0050382c, &next, 4);
+      if (sha256(code) == "98d17c412845002a953b5e10e3c10f67670f739d504546c6f1f0c25d90404500" && next == 0xa0a66cbc) {
+        auto target = (m.cpu_.reg(UC_MIPS_REG_5) + 0x6cbc) & 0x1fffffff;
+        m.riu_.beginCombRestoreInvalidLow(target, m.preservedBits_.mask(4) & 0xffff, 0x80503828, 0x8050382c);
+      }
     }
     if(a==0x805f883c && w==0xa4820000 && m.cpu_.reg(UC_MIPS_REG_31)==0x803c69f8) {
       auto target=m.cpu_.reg(UC_MIPS_REG_4)&0x1fffffff;
@@ -1543,6 +1578,66 @@ void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v,
     m.stop(e.what(), 0x1f000000 + uint32_t(off));
   }
 }
+bool Msd309Machine::applyHtotalBranchJoin() {
+  using J = HtotalBranchJoin;
+  const uint32_t counter = 0x006d83d4, total = 0x006ad960;
+  for (uint32_t cell : {counter, total, total + 1})
+    if (unknownObservations_.bytes().contains(cell) || preservedBits_.memoryUnknown(cell))
+      return false; // already-unknown cells: keep the strict stop
+  J::Regs entry{};
+  for (unsigned r = 0; r < 32; ++r) entry[r] = cpu_.reg(UC_MIPS_REG_0 + int(r));
+  auto fetch = [&](uint32_t pc) { uint32_t w = 0; cpu_.read(pc & 0x1fffffff, &w, 4); return w; };
+  auto load8 = [&](uint32_t address) { uint8_t b = 0; cpu_.read(address, &b, 1); return b; };
+  J::Merge merge;
+  try {
+    merge = J::run(entry, fetch, load8);
+  } catch (const std::exception& error) {
+    event("diagnostic_htotal_branch_join_refused", J::branch, 4, 0, error.what());
+    return false;
+  }
+  std::ostringstream detail;
+  detail << "DIAGNOSTIC ONLY, NOT HARDWARE EXECUTION: both original outcomes executed separately in a private copy;"
+            " live state identical, differing dead registers and RAM cells marked unknown;";
+  for (auto r : merge.differingRegisters) {
+    cpu_.reg(UC_MIPS_REG_0 + int(r), merge.outcomes[0].regs[r]);
+    unknownObservations_.seed(r);
+    preservedBits_.seed(r, 4, 0, [](unsigned) { return 0x1f206b90u; });
+    detail << " reg" << r << "=unknown";
+  }
+  for (unsigned r = 1; r < 32; ++r) {
+    if (r == 7) continue; // a3 keeps its unknown tag and placeholder
+    bool differing = std::find(merge.differingRegisters.begin(), merge.differingRegisters.end(), r) !=
+                     merge.differingRegisters.end();
+    if (differing) continue;
+    if (merge.common[r] != entry[r]) {
+      cpu_.reg(UC_MIPS_REG_0 + int(r), merge.common[r]);
+      unknownObservations_.markRegisterKnown(r);
+    }
+  }
+  for (auto& [address, unknown] : merge.unknownBytes) {
+    if (unknown) {
+      unknownObservations_.markMemoryUnknown(address, 1, 0x1f206b90);
+      preservedBits_.markMemoryUnknown(address, 0x1f206b90);
+      detail << " ram" << hex(address) << "=unknown";
+    } else {
+      // Every outcome leaves the same final byte: apply it as a definite effect.
+      uint8_t value = load8(address);
+      for (auto& store : merge.outcomes[1].stores)
+        for (unsigned i = 0; i < store.width; ++i)
+          if (store.address + i == address) value = uint8_t(store.value >> (8 * i));
+      cpu_.write(address, &value, 1);
+      unknownObservations_.overwriteKnownMemory(address, 1);
+      preservedBits_.overwriteKnownMemory(address, 1);
+    }
+  }
+  ++htotalJoins_;
+  event("diagnostic_htotal_branch_join", J::branch, 4, J::join, detail.str());
+  joinResume_ = true;
+  joinResumePc_ = J::join;
+  cpu_.reg(UC_MIPS_REG_PC, J::join);
+  uc_emu_stop(cpu_.handle);
+  return true;
+}
 int Msd309Machine::run() {
   if (options_.initPrefix) {
     if (!options_.stage2 || !options_.symbolicInit)
@@ -1560,6 +1655,12 @@ int Msd309Machine::run() {
           "MIU completion and stage copy bypassed");
   }
   auto e = cpu_.run(options_.stage2 ? 0x81000000 : 0xbfc00000, options_.limit);
+  while (!stopped_ && joinResume_) {
+    // DIAGNOSTIC HTotal join: the hook stored the resume PC and stopped Unicorn.
+    joinResume_ = false;
+    if (dispatches_ >= options_.limit)break;
+    e = cpu_.run(joinResumePc_, options_.limit - dispatches_);
+  }
   if (!stopped_) {
     blockingPc_ = cpu_.reg(UC_MIPS_REG_PC);
     reason_ = e == UC_ERR_OK ? "instruction budget exhausted" : uc_strerror(e);
@@ -1709,6 +1810,9 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"ge_parameter_submissions\": " << riu_.geSubmitted()
     << ",\n  \"ge_parameter_transfers\": " << riu_.geTransferred()
     << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
+  if(options_.exploratoryAvdNoSyncEvents)s<<",\n  \"exploratory_avd_no_sync_events\": true,\n  \"avd_event_acks\": "<<riu_.avdMcuBus().eventAcks;
+  if(options_.diagnosticAvd11dbBit7>=0)s<<",\n  \"diagnostic_avd_11db_bit7\": "<<options_.diagnosticAvd11dbBit7;
+  if(options_.diagnosticHtotalBranchJoin)s<<",\n  \"diagnostic_htotal_branch_join\": true,\n  \"diagnostic_htotal_branch_joins\": "<<htotalJoins_;
   if(options_.candidateGeBitBlt)s<<",\n  \"candidate_ge_bitblt\": true"
     <<",\n  \"ge_bitblts_retired\": "<<riu_.geBitBlts
     <<",\n  \"ge_bitblt_pixels_written\": "<<riu_.geBitBltPixels;

@@ -1,3 +1,4 @@
+#include "board/htotal_join.hpp"
 #include "video/ge_stretch_request.hpp"
 #include "cpu/engine.hpp"
 #include "cpu/mcu_value_mask.hpp"
@@ -1148,6 +1149,43 @@ void geRectFillTests(){
   require(q.submit(0x60,0x30,24,[]{throw std::runtime_error("unavailable target");}),"pending raster retains its uncompleted work");
   rejects([&]{q.advance(48);});
   require(q.completed()==1,"failed raster effect never retires as success");
+}
+void htotalBranchJoinTests(){
+  using J=manta::HtotalBranchJoin;
+  std::map<uint32_t,uint32_t> words;for(auto [pc,w]:J::expected)words[pc]=w;
+  auto fetch=[&](uint32_t pc){auto it=words.find(pc);if(it==words.end())throw std::runtime_error("unexpected fetch");return it->second;};
+  for(unsigned counter:{0u,1u,3u,4u,5u,255u}){
+    for(uint16_t history:{uint16_t(0),uint16_t(0x046f),uint16_t(0xffff)}){
+      std::map<uint32_t,uint8_t> ram;ram[0x006d83d4]=uint8_t(counter);ram[0x006ad960]=0x11;ram[0x006ad961]=0x22;
+      auto load8=[&](uint32_t a){return ram.at(a);};
+      J::Regs entry{};entry[2]=0x1111;entry[3]=0x2222;entry[4]=0x3333;entry[5]=history;entry[7]=0x9999;entry[19]=0x7777;
+      auto m=J::run(entry,fetch,load8);
+      require(m.outcomes.size()==2 && m.common[19]==0x806b0000u,"both original outcomes load the same s3 base before the join");
+      for(auto r:m.differingRegisters)require(r==2||r==3||r==4,"only dead v0/v1/a0 may differ between outcomes");
+      require(m.common[5]==history && m.common[6]==0,"live history/mode registers are untouched by either outcome");
+      bool counterUnknown=m.unknownBytes.at(0x006d83d4);
+      require(counterUnknown,"stability counter differs between mismatch and match outcomes for every entry counter");
+      if(counter<4)require(!m.unknownBytes.contains(0x006ad960),"accepted total is not written when the counter is below four");
+      else{
+        bool unknownTotal=m.unknownBytes.at(0x006ad960)||m.unknownBytes.at(0x006ad961);
+        require(unknownTotal==(history!=0x2211),"accepted total merge compares the exact matched value against its entry value");
+      }
+    }
+  }
+  // Execution must use the guest's words: any change rejects before anything is merged.
+  for(auto [pc,w]:J::expected){
+    auto saved=words[pc];words[pc]=w^1;
+    std::map<uint32_t,uint8_t> ram{{0x006d83d4,2},{0x006ad960,0},{0x006ad961,0}};
+    rejects([&]{J::run(J::Regs{},fetch,[&](uint32_t a){return ram.at(a);});});
+    words[pc]=saved;
+  }
+  // A live register differing between outcomes is refused (simulate by changing which register is cleared).
+  {
+    auto saved=words[0x80501750];words[0x80501750]=0xa05383d4; // sb $s3 instead of $zero: still verified-word mismatch
+    std::map<uint32_t,uint8_t> ram{{0x006d83d4,2},{0x006ad960,0},{0x006ad961,0}};
+    rejects([&]{J::run(J::Regs{},fetch,[&](uint32_t a){return ram.at(a);});});
+    words[0x80501750]=saved;
+  }
 }
 void geStretchRequestTests(){
   using Req=manta::GeStretchRequest;
@@ -2386,6 +2424,16 @@ int main() {
       for(auto [a,width]:std::array<std::pair<uint32_t,unsigned>,3>{{{0x1f206bf8,1},{0x1f206bf8,2},{0x1f206bf6,4}}})
         rejects([&]{r.write(a,width,0xffffffff,0,0xffffffff,1);});
       require(r.knownBits(0x1f206bf8,1)==0,"overlapping MIPS stores cannot turn unknown AVD event bits into status or acknowledgements");
+      {
+        manta::AvdMcuBus clearOnly;unsigned stored=0;clearOnly.sharedWrite=[&](uint32_t,manta::VdByte){++stored;};
+        clearOnly.eventAckClearOnly=true;unsigned events=0;
+        clearOnly.event=[&](const auto& k,auto,auto,auto,const auto&){events+=k=="avd_event_ack_clear_only";};
+        bool accepted=true;for(unsigned v=0;v<256;++v)accepted&=clearOnly.write(0x11fc,{uint8_t(v),255,0});
+        require(accepted && stored==0 && clearOnly.sharedWrites==0 && clearOnly.eventAcks==256 && events==256,
+          "opt-in clear-only event acknowledgement accepts every value but never stores or creates an event bit");
+        require(!clearOnly.write(0x11dc,{0,0,0x113c}) && clearOnly.sharedWrites==0,
+          "clear-only acknowledgement mode does not loosen any other AVD register write rule");
+      }
     }
     std::vector<uint8_t> abc = {'a', 'b', 'c'};
     require(manta::sha256(abc) ==
@@ -2777,6 +2825,7 @@ int main() {
     geRectFillTests();
     geBitBltTests();
     geStretchRequestTests();
+    htotalBranchJoinTests();
     readMaskTests();
     opaquePolicyTests();
     gopSelectorProvenanceTests();

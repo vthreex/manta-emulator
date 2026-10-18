@@ -110,6 +110,8 @@ class Riu {
   bool analogDisconnected_=false;
   bool exploratoryAvdNoHsync_=false;
   uint64_t avdHsyncReads_=0;
+  bool exploratoryAvdNoSyncEvents_=false;
+  int diagnosticAvd11dbBit7_=-1;
   int exploratoryVifRevision_=-1;
   uint64_t vifRevisionReads_=0;
   VifZeroInput vifZeroInput_;
@@ -141,7 +143,10 @@ class Riu {
   static uint32_t tspPayloadKey(uint32_t target,unsigned lane);
   std::optional<bool> lastOutputSync_;
   uint64_t outputSyncReads_=0, outputSyncTransitions_=0;
-  struct CombRestore { uint32_t address; uint8_t bank, low; uint32_t unknown; bool written=false; };
+  // pcWrite/pcRestore identify the verified original paired-write instructions; the second
+  // (HAL_AVD_COMB_Set3dCombSpeed, 80503828/8050382C) restores a low byte that is itself INVALID.
+  struct CombRestore { uint32_t address; uint8_t bank, low; uint32_t unknown; bool written=false;
+    uint32_t pcWrite=0x805f883c, pcRestore=0x805f887c; bool lowUnknown=false; };
   std::optional<CombRestore> combRestore_;
   uint64_t combRestoreCount_=0;
   RiuByte timingSnapshot_;
@@ -228,6 +233,14 @@ public:
   // matched HAL and driver identify bit14; detector gating/latency unverified.
   void configureExploratoryAvdNoHsync(bool absent=true){exploratoryAvdNoHsync_=absent;}
   uint64_t avdHsyncReads()const{return avdHsyncReads_;}
+  // EXPLORATORY no-sync hypothesis for the AVD event latch 11FC (host alias BF206BF8):
+  // with no HSYNC/VSYNC the sync-derived event bits 0 and 2 (the only bits the
+  // original AVD program consumes) stay clear; all other bits remain invalid.
+  void configureExploratoryAvdNoSyncEvents(){exploratoryAvdNoSyncEvents_=true;avdMcuBus_.eventAckClearOnly=true;}
+  // DIAGNOSTIC bracketing only (run both 0 and 1): defines AFEC 11DB bit 7, whose reset/producer is unknown.
+  void configureDiagnosticAvd11dbBit7(unsigned bit){diagnosticAvd11dbBit7_=int(bit&1);}
+  void configureDiagnosticAvdInvalidPublication(){avdMcuBus_.invalidDataPublication=true;}
+  bool exploratoryAvdNoSyncEvents()const{return exploratoryAvdNoSyncEvents_;}
   void configureExploratoryVifRevision(unsigned byte){
     if(byte>255)throw std::runtime_error("VIF chip revision hypothesis must be a byte");
     exploratoryVifRevision_=int(byte);
@@ -325,6 +338,8 @@ public:
   // high bits remain unknown; the temporary low byte is quarantined until
   // the original T4 workaround restores its saved, known low byte.
   bool beginCombRestore(uint32_t address,uint32_t unknown);
+  // Second verified paired write whose low byte is INVALID (identity preserved by the restoring SB).
+  bool beginCombRestoreInvalidLow(uint32_t address,uint32_t unknown,uint32_t pcWrite,uint32_t pcRestore);
   uint32_t preservedStoreKey(uint32_t address) const;
   uint64_t combRestoreCount() const { return combRestoreCount_; }
   bool combRestorePending() const { return combRestore_.has_value(); }

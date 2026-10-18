@@ -9,10 +9,21 @@
 #include <iterator>
 #include <iomanip>
 #include <set>
+#include <vector>
 static void check(bool c,const char* s){if(!c)throw std::runtime_error(s);}
 int main(int argc,char** argv){try{
-  bool symbolic=false;
-  if(argc>2 && std::string(argv[argc-1])=="--symbolic-code-tables"){symbolic=true;--argc;}
+  bool symbolic=false,clearOnlyAck=false,invalidPublication=false;
+  struct SyntheticXdata{unsigned address,value,known;};std::vector<SyntheticXdata> syntheticXdata;
+  for(bool more=true;more && argc>2;){
+    more=false;
+    if(argc>=6 && std::string(argv[argc-4])=="--synthetic-xdata"){
+      syntheticXdata.push_back({unsigned(std::stoul(argv[argc-3],nullptr,0)),unsigned(std::stoul(argv[argc-2],nullptr,0)),unsigned(std::stoul(argv[argc-1],nullptr,0))});
+      argc-=4;more=true;continue;
+    }
+    if(std::string(argv[argc-1])=="--symbolic-code-tables"){symbolic=true;--argc;more=true;}
+    else if(std::string(argv[argc-1])=="--clear-only-event-ack"){clearOnlyAck=true;--argc;more=true;}
+    else if(std::string(argv[argc-1])=="--invalid-publication"){invalidPublication=true;--argc;more=true;}
+  }
   if(argc==5 && std::string(argv[1])=="--disassemble-only"){
     std::ifstream f(argv[2],std::ios::binary);std::vector<uint8_t> code(std::istreambuf_iterator<char>(f),{});
     check(!code.empty() && code.size()<=65536,"candidate 8051 image must contain 1..65536 bytes");
@@ -54,6 +65,15 @@ int main(int argc,char** argv){try{
   cpu.symbolicCodeTables=symbolic;
   if(symbolic)std::cout<<"SYMBOLIC_CODE_TABLES: all possible uploaded ROM data bytes merged; no hardware input supplied\n";
   manta::AvdMcuBus bus;std::map<uint32_t,manta::VdByte> registers;
+  bus.eventAckClearOnly=clearOnlyAck;bus.invalidDataPublication=invalidPublication;
+  for(auto& fixture:syntheticXdata){
+    auto physical=manta::AvdMcuBus::sharedAddress(uint16_t(fixture.address));
+    check(physical && fixture.value<=255 && fixture.known<=255,"synthetic XDATA fixture must be a shared 11xx byte");
+    registers[*physical]={uint8_t(fixture.value),uint8_t(fixture.known),0};
+    std::cout<<"SYNTHETIC_ISOLATED_XDATA 0x"<<std::hex<<fixture.address<<" value 0x"<<fixture.value<<" known 0x"<<fixture.known<<std::dec
+      <<"; exploration of control flow only, not measured hardware, never TV input"<<'\n';
+  }
+  if(clearOnlyAck)std::cout<<"EXPLORATORY_CLEAR_ONLY_EVENT_ACK: 11FC writes can only clear event bits; hardware semantics unverified\n";
   bus.symbolicTableConfiguration=symbolic;
   if(syntheticFlag){
     size_t used=0;auto value=std::stoul(argv[4],&used,0);

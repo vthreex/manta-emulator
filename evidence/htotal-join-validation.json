@@ -1,0 +1,183 @@
+{
+  "base_git": "759991f",
+  "result": "PASS (diagnostic experiments; strict path unchanged)",
+  "scope": "opt-in diagnostics for the HTotal comparison, AVD no-sync events, invalid-data publication, 11DB.7 bracketing and a hash-bound COMB paired restore; NOT authentic connected boot progress",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "emulator_sha256": "db7ba38a735c5e683d642c88ed4112bf25af799b7baaa9c459dd8cacda8cde3b",
+  "native_checks": 1763,
+  "strict_replay": {
+    "events": 6592741,
+    "summary_fields_compared": 289,
+    "summary_differences": {},
+    "coverage_identical": true,
+    "pm_history_identical": true,
+    "strict_stop": "0x80501bfc"
+  },
+  "strict_baseline_fresh": {
+    "stop_pc": "0x80501bfc",
+    "instruction_dispatches": 854795171
+  },
+  "python_suites": {
+    "firmware": {
+      "rc": 0,
+      "seconds": 214
+    },
+    "display": {
+      "rc": 0,
+      "seconds": 383
+    },
+    "immutable_input": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "clock_profile": {
+      "rc": 0,
+      "seconds": 6
+    },
+    "avd_firmware": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "avd_htotal": {
+      "rc": 0,
+      "seconds": 1
+    },
+    "avd_request": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "avd_cochannel": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "avd_event": {
+      "rc": 0,
+      "seconds": 2
+    },
+    "avd_selector": {
+      "rc": 0,
+      "seconds": 1
+    },
+    "avd_symbolic_table": {
+      "rc": 0,
+      "seconds": 2
+    },
+    "vd_firmware": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "vif_agc": {
+      "rc": 0,
+      "seconds": 1
+    },
+    "zui_flow": {
+      "rc": 0,
+      "seconds": 2
+    },
+    "ge_clear": {
+      "rc": 0,
+      "seconds": 9
+    },
+    "ge_bitblt_option": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "ge_fill_option": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "diagnostic_options": {
+      "rc": 0,
+      "seconds": 1
+    }
+  },
+  "known_preexisting_failure": "tests/pm_power_boot_regression.py pm51_state_sha256 assertion fails identically on the packaged cc225d7 binary",
+  "diagnostic_runs": {
+    "join_only": {
+      "stop_pc": "0x80503138",
+      "stop_address": "0x1f206a04",
+      "reason": "unmodeled MMIO read",
+      "instruction_dispatches": 854795227,
+      "new_original_pcs_vs_baseline": 56,
+      "avd_mcu_instructions": 863,
+      "avd_mcu_pc": "0x702",
+      "diagnostic_htotal_branch_joins": 1
+    },
+    "join_noise_grant": {
+      "stop_pc": "0x80503098",
+      "stop_address": "0x1f206b94",
+      "reason": "unmodeled MMIO read",
+      "instruction_dispatches": 854795306,
+      "new_original_pcs_vs_baseline": 135,
+      "avd_mcu_instructions": 863,
+      "avd_mcu_pc": "0x702",
+      "diagnostic_htotal_branch_joins": 1
+    },
+    "avd_hyp_11db0": {
+      "stop_pc": "0x80503810",
+      "stop_address": "0x1f206cbd",
+      "reason": "unmodeled MMIO read",
+      "instruction_dispatches": 854795547,
+      "new_original_pcs_vs_baseline": 319,
+      "avd_mcu_instructions": 2495,
+      "avd_mcu_pc": "0xafa",
+      "diagnostic_htotal_branch_joins": 1
+    },
+    "avd_hyp_11db1": {
+      "stop_pc": "0x80503810",
+      "stop_address": "0x1f206cbd",
+      "reason": "unmodeled MMIO read",
+      "instruction_dispatches": 854795547,
+      "new_original_pcs_vs_baseline": 319,
+      "avd_mcu_instructions": 2526,
+      "avd_mcu_pc": "0xafa",
+      "diagnostic_htotal_branch_joins": 1
+    },
+    "hal_grants_11db0": {
+      "stop_pc": "0x80503828",
+      "stop_address": "0x1f206cbc",
+      "reason": "unknown preserved register bit affects guest decision/address/device",
+      "instruction_dispatches": 854795553,
+      "new_original_pcs_vs_baseline": 325,
+      "avd_mcu_instructions": 2495,
+      "avd_mcu_pc": "0xafa",
+      "diagnostic_htotal_branch_joins": 1
+    },
+    "hal_grants_11db1": {
+      "stop_pc": "0x80503828",
+      "stop_address": "0x1f206cbc",
+      "reason": "unknown preserved register bit affects guest decision/address/device",
+      "instruction_dispatches": 854795553,
+      "new_original_pcs_vs_baseline": 325,
+      "avd_mcu_instructions": 2526,
+      "avd_mcu_pc": "0xafa",
+      "diagnostic_htotal_branch_joins": 1
+    },
+    "comb_restore_11db0": {
+      "stop_pc": "0x8053c9a8",
+      "stop_address": "0x1f0011c8",
+      "reason": "unmodeled MMIO read",
+      "instruction_dispatches": 855202172,
+      "new_original_pcs_vs_baseline": 1243,
+      "avd_mcu_instructions": 2495,
+      "avd_mcu_pc": "0xafa",
+      "diagnostic_htotal_branch_joins": 1
+    },
+    "comb_restore_11db1": {
+      "stop_pc": "0x8053c9a8",
+      "stop_address": "0x1f0011c8",
+      "reason": "unmodeled MMIO read",
+      "instruction_dispatches": 855202172,
+      "new_original_pcs_vs_baseline": 1243,
+      "avd_mcu_instructions": 2526,
+      "avd_mcu_pc": "0xafa",
+      "diagnostic_htotal_branch_joins": 1
+    }
+  },
+  "connected_dispatcher": false,
+  "connected_OSD3_activation": false,
+  "connected_framebuffer": false,
+  "authentic_TV_pixels": false,
+  "platform_polling_returned": false,
+  "strict_mode_changes": "none: every new option is off by default and rejected without its guarded prerequisites"
+}

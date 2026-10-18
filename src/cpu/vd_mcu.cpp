@@ -365,8 +365,25 @@ struct VdMcuCpu::Impl {
        (opcode>=0x34 && opcode<=0x3f) || (opcode>=0x94 && opcode<=0x9f) || opcode==0xa4 || opcode==0x84 ||
        ((opcode==0x75 || opcode==0xf5 || (opcode>=0x88 && opcode<=0x8f)) && operand==0xd0) ||
        (opcode==0x85 && cpu->mCodeMem[uint16_t(pc+2)]==0xd0))m.carryKnown=true;
+    // INC A / DEC A on a partially known byte: the result bit is known exactly
+    // when every assignment of the unknown bits agrees on it. Carry is unaffected;
+    // parity follows result validity. This creates no information about the input.
+    bool incDecA=false;
+    if((opcode==0x04 || opcode==0x14) && m.aKnown!=255){
+      uint8_t knownMask=m.aKnown,value=cpu->mSFR[REG_ACC]&knownMask,agreeOnes=0xff,agreeZeros=0xff;
+      for(unsigned unknown=0;unknown<256;++unknown){
+        if(unknown&knownMask)continue;
+        uint8_t a=uint8_t(value|unknown),r=uint8_t(opcode==0x04?a+1:a-1);
+        agreeOnes&=r;agreeZeros&=uint8_t(~r);
+      }
+      m.aKnown=uint8_t(agreeOnes|agreeZeros);m.aOrigin=0;m.parityUnknown=m.aKnown!=255;incDecA=true;
+    }
+    // CPL A complements each bit independently: the known mask is unchanged and
+    // unknown bits stay unknown (only parity validity follows).
+    bool cplA=false;
+    if(opcode==0xf4 && m.aKnown!=255){m.aOrigin=0;m.parityUnknown=true;cplA=true;}
     if(m.aKnown!=255){
-      bool independent=opcode==0 || opcode==0x22 || opcode==0x32 || opcode==0x02 ||
+      bool independent=incDecA || cplA || (opcode&0x1f)==0x01 || opcode==0 || opcode==0x22 || opcode==0x32 || opcode==0x02 ||
         opcode==0x12 || (opcode&0x1f)==0x11 || opcode==0x80 || opcode==0x90 ||
         opcode==0xa3 || opcode==0xf0 || opcode==0xc0 || opcode==0xd0 || opcode==0xc3 || opcode==0xd3 ||
         opcode==0x40 || opcode==0x50 || partialPermutation || directImmediateLogical;

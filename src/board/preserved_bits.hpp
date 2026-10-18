@@ -34,6 +34,12 @@ public:
     uint32_t m=0; for(unsigned i=0;i<32;++i) if(registers_.at(rt)[i].byte) m|=uint32_t(1)<<i;
     return m;
   }
+  // DIAGNOSTIC join support: mark a RAM byte as holding an unknown value with the given identity.
+  void markMemoryUnknown(uint32_t address,uint32_t key){
+    started_=true;
+    std::array<Bit,8> v{};for(unsigned bit=0;bit<8;++bit)v[bit]={key,uint8_t(bit)};
+    memory_[backingAddress(address)]=v;
+  }
   bool memoryUnknown(uint32_t address) const { return memory_.contains(backingAddress(address)); }
   void overwriteKnownMemory(uint32_t address,size_t size) {
     for(size_t i=0;i<size;++i)memory_.erase(backingAddress(address+uint32_t(i)));

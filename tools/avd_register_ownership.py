@@ -131,7 +131,7 @@ def mips_constant_mmio(image):
     return hits
 
 
-def mips_pointer_based(image):
+def mips_pointer_based(image, low=0x6A00, high=0x6BFF):
     """Function-level linear tracker for the original HAL accessors.
 
     A register is `hal-base` after `LW rt,-0x268c(rs)` (the RIU base loaded from
@@ -149,7 +149,7 @@ def mips_pointer_based(image):
         pc = BASE + 4 * i
         op, rs, rt, rd, fn = w >> 26, (w >> 21) & 31, (w >> 16) & 31, (w >> 11) & 31, w & 63
         imm = w & 0xffff
-        if op in (32, 33, 35, 36, 37, 40, 41, 43) and 0x6A00 <= imm <= 0x6BFF and not imm & 2 and base.get(rs):
+        if op in (32, 33, 35, 36, 37, 40, 41, 43) and low <= imm <= high and not imm & 2 and base.get(rs):
             hits.append((0xBF200000 + imm, pc, 'store' if op >= 40 else 'load'))
         dest = None
         if op == 35 and imm == 0xd974:

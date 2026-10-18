@@ -337,6 +337,18 @@ bool Riu::beginCombRestore(uint32_t a,uint32_t unknown) {
     "HYPOTHETICAL side-effect-free T4 paired write; unknown high bits stay invalid, temporary low bits quarantined until original restore");
   return true;
 }
+bool Riu::beginCombRestoreInvalidLow(uint32_t a,uint32_t unknown,uint32_t pcWrite,uint32_t pcRestore) {
+  if(!exploratoryCombRestore || !symbolicInit || combRestore_ || !combBank() ||
+      (unknown&255)!=(unknown>>8) || !unknown || unknown>0xffff) return false;
+  auto off=a-0x1f206c00;
+  if(off!=0xbc)return false;
+  CombRestore c{a,uint8_t(*combBank()),uint8_t(get(a,1)),unknown};
+  c.pcWrite=pcWrite;c.pcRestore=pcRestore;c.lowUnknown=true;
+  combRestore_=c;
+  event("exploratory_comb_restore_begin",a,2,unknown,
+    "HYPOTHETICAL side-effect-free T4 paired write with INVALID original low byte; unknown nibble stays invalid, temporary low bits quarantined until the exact original restore");
+  return true;
+}
 uint32_t Riu::preservedStoreKey(uint32_t a) const {
   if(combRestore_ && !combRestore_->written && a==combRestore_->address)
     return storageKey(a+1);
@@ -868,8 +880,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   if(combRestore_) {
     auto &c=*combRestore_;
     if(combBank()!=c.bank || a!=c.address ||
-       (!c.written && (n!=2 || pc!=0x805f883c || (v&255)!=((v>>8)&255))) ||
-       (c.written && (n!=1 || pc!=0x805f887c || uint8_t(v)!=c.low))) {
+       (!c.written && (n!=2 || pc!=c.pcWrite || (v&255)!=((v>>8)&255))) ||
+       (c.written && (n!=1 || pc!=c.pcRestore || uint8_t(v)!=c.low))) {
       stopReason="COMB paired-write experiment requires original duplicate then exact low-byte restore";
       event("blocked_write",a,n,v,stopReason);return;
     }
@@ -987,7 +999,11 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         if(exploratoryAvdSharedRun){
           if(!avdDispatchDivider || !avdInstructionBudget)throw std::runtime_error("invalid AVD diagnostic scheduler configuration");
           avdMcuBus_.event=[this](const auto& k,auto a,auto n,auto v,const auto& d){event(k,a,n,v,d);};
-          avdMcuBus_.sharedRead=[this](uint32_t a){return VdByte{uint8_t(get(a,1)),uint8_t(knownBits(a,1)),0};};
+          avdMcuBus_.sharedRead=[this](uint32_t a){
+            VdByte v{uint8_t(get(a,1)),uint8_t(knownBits(a,1)),0};
+            if(exploratoryAvdNoSyncEvents_ && a==0x1f206bf8){v.value&=uint8_t(~0x05);v.known|=0x05;}
+            if(diagnosticAvd11dbBit7_>=0 && a==0x1f206bb5){v.value=uint8_t((v.value&~0x80)|(diagnosticAvd11dbBit7_<<7));v.known|=0x80;}
+            return v;};
           avdMcuBus_.sharedWrite=[this](uint32_t a,VdByte v){bytes_[storageKey(a)]={v.value,v.known};};
           if(diagnosticAvdDeferredStartup)avdMcuBus_.configureDeferredStartup();
           avdMcuCpu_.busRead=[this](uint16_t a){return avdMcuBus_.read(a);};
