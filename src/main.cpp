@@ -122,6 +122,8 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-analog-disconnected")o.exploratoryAnalogDisconnected=true;
       else if(a=="--exploratory-avd-no-hsync")o.exploratoryAvdNoHsync=true;
       else if(a=="--diagnostic-htotal-branch-join")o.diagnosticHtotalBranchJoin=true;
+      else if(a=="--candidate-spi-nor-write")o.candidateSpiNorWrite=true;
+      else if(a=="--diagnostic-restore-by-identity-branch")o.diagnosticRestoreByIdentityBranch=true;
       else if(a=="--exploratory-avd-no-sync-events")o.exploratoryAvdNoSyncEvents=true;
       else if(a=="--diagnostic-avd-invalid-publication")o.diagnosticAvdInvalidPublication=true;
       else if(a=="--diagnostic-avd-11db-bit7"){
@@ -251,6 +253,8 @@ static int appMain(const std::vector<std::string> &args) {
                 "--exploratory-avd-no-sync-events: HYPOTHESIS: with no sync input the AVD event latch 11FC bits 0 and 2 stay clear (other bits invalid); acks are clear-only; requires absent-HSYNC and shared AVD run\n"
                 "--diagnostic-avd-invalid-publication: DIAGNOSTIC: AVD stores of invalid/partially known data into 11C0..11DF are kept with their exact known mask (no information created); requires the shared AVD run\n"
                 "--diagnostic-avd-11db-bit7 N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines AFEC 11DB bit 7 whose producer is unknown\n"
+                "--candidate-spi-nor-write: opt-in guest SPI NOR WRSR/page-program/erase (06/01/02/20/52/D8) into a copy-on-write overlay; stock image never written; requires --candidate-spi\n"
+                "--diagnostic-restore-by-identity-branch: DIAGNOSTIC ONLY: SerFlash write routine 8053CB80 branch whose both arms restore ISP 1C8 bit 2 to its tested value; requires --candidate-spi-nor-write\n"
                 "--diagnostic-htotal-branch-join: DIAGNOSTIC ONLY, not hardware behavior: execute both original outcomes of the HTotal comparison at 80501BFC separately, mark every differing RAM cell/register unknown, resume at the join 80501758\n"
                 "--candidate-ge-bitblt: opt-in plain same-format RGB565/ARGB8888 0040 copies; requires GE queues; stretch/format C/alpha remain guarded\n"
                "--candidate-ge-rect-fill: opt-in known plain RGB565/ARGB8888 rectangle writes; requires GE queues, mapped RAM and known controls; format C/blending/BitBlt unsupported\n"

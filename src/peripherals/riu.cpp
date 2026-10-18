@@ -1296,9 +1296,11 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   }
   if (candidateSpi && n == 2 && a >= 0x1f001000 && a < 0x1f001100) {
     auto off = a - 0x1f001000;
-    if (off == 0 || off == 4 || off == 0x10 || off == 0x18 || off == 0x20 || off == 0x30 ||
+    if (off == 0 || off == 4 || (spi_.nor.writeSupport && (off == 8 || off == 0xc)) || off == 0x10 || off == 0x18 || off == 0x20 || off == 0x30 ||
         off == 0xa8) {
       spi_.flashByte = [this](uint32_t offset) { return flashRead(offset, 1).at(0); };
+      spi_.nor.flashProgram = flashProgram;
+      spi_.nor.flashErase = flashErase;
         spi_.busEvent = [this, a, n](const std::string &kind, uint32_t value) {
           event(kind, a, n, value, "CS-framed MSB-first SPI bus; CF output unknown unless explicit exploratory electrical input configured");
         };

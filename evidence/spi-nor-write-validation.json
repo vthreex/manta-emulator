@@ -1,0 +1,124 @@
+{
+  "base_git": "39e8530",
+  "result": "PASS (opt-in SPI NOR write model; strict path unchanged)",
+  "scope": "ISP command-mode address phase, SPI NOR WRSR/page-program/erase with block protection and BUSY, copy-on-write overlay mirroring, restore-by-identity diagnostic; diagnostic cold run executes the original flash routine to completion",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "firmware_sha256_unchanged_after_runs": true,
+  "flash_stock_sha256": "471e1f1c284e3c0fc9af68be0d8a79d0d635e0a1cca31066cd1e6df91e406d83",
+  "emulator_sha256": "c26ab507f2448b815695348638459a30eef9e23bea7ed26571bc41e180a8dd64",
+  "native_checks": 1806,
+  "strict_replay": {
+    "events": 6592741,
+    "original_summary_fields": 289,
+    "original_field_differences": [],
+    "new_diagnostic_fields": [
+      "flash_overlay_sectors",
+      "flash_overlay_sha256",
+      "flash_stock_sha256",
+      "spi_nor_erases",
+      "spi_nor_ignored_writes",
+      "spi_nor_programmed_bytes",
+      "spi_nor_programs",
+      "spi_nor_zero_to_one_requests"
+    ],
+    "coverage_identical": true,
+    "pm_history_identical": true
+  },
+  "python_suites": {
+    "firmware": {
+      "rc": 0,
+      "seconds": 226
+    },
+    "display": {
+      "rc": 0,
+      "seconds": 394
+    },
+    "immutable_input": {
+      "rc": 0,
+      "seconds": 1
+    },
+    "clock_profile": {
+      "rc": 0,
+      "seconds": 6
+    },
+    "avd_firmware": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "avd_htotal": {
+      "rc": 0,
+      "seconds": 1
+    },
+    "avd_request": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "avd_cochannel": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "avd_event": {
+      "rc": 0,
+      "seconds": 2
+    },
+    "avd_selector": {
+      "rc": 0,
+      "seconds": 1
+    },
+    "avd_symbolic_table": {
+      "rc": 0,
+      "seconds": 2
+    },
+    "vd_firmware": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "vif_agc": {
+      "rc": 0,
+      "seconds": 1
+    },
+    "zui_flow": {
+      "rc": 0,
+      "seconds": 2
+    },
+    "ge_clear": {
+      "rc": 0,
+      "seconds": 7
+    },
+    "ge_bitblt_option": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "ge_fill_option": {
+      "rc": 0,
+      "seconds": 0
+    },
+    "diagnostic_options": {
+      "rc": 0,
+      "seconds": 1
+    }
+  },
+  "known_preexisting_failure": "tests/pm_power_boot_regression.py pm51_state_sha256 fails identically on the packaged cc225d7 binary",
+  "diagnostic_flash_run": {
+    "stop_pc": "0x803bd910",
+    "stop_address": "0x1f200e10",
+    "reason": "unmodeled MMIO read",
+    "instruction_dispatches": 855843242,
+    "new_original_pcs_vs_strict": 1907,
+    "spi_nor_programs": 7,
+    "spi_nor_erases": 0,
+    "spi_nor_programmed_bytes": 1330,
+    "spi_nor_ignored_writes": 0,
+    "spi_nor_zero_to_one_requests": 0,
+    "flash_overlay_sectors": 2,
+    "flash_overlay_sha256": "a160e10a7f076c7a82caca5a126ba02b1b5d1ffbbcf6db9048d229d49e297d09",
+    "repeat_run_identical_summary": true,
+    "repeat_coverage_identical": true
+  },
+  "platform_polling_returned": false,
+  "connected_dispatcher": false,
+  "connected_OSD3_activation": false,
+  "connected_GE_drawing": false,
+  "GOP_scanout": false,
+  "authentic_TV_pixels": false
+}

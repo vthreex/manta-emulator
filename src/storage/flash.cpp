@@ -64,6 +64,31 @@ void Flash::erase4k(uint32_t a) {
   sector(a / 4096).fill(255);
   wel_ = false;
 }
+size_t Flash::programAnd(uint32_t a, std::span<const uint8_t> b) {
+  bounds(a, b.size());
+  size_t violations = 0;
+  for (size_t i = 0; i < b.size(); ++i) {
+    auto old = read(a + uint32_t(i));
+    violations += (old & b[i]) != b[i];
+    auto value = uint8_t(old & b[i]);
+    if (value != old) sector((a + uint32_t(i)) / 4096)[(a + i) % 4096] = value;
+  }
+  return violations;
+}
+void Flash::eraseRange(uint32_t a, uint32_t size) {
+  if ((size != 4096 && size != 32768 && size != 65536) || a % size) throw std::runtime_error("Invalid erase range");
+  bounds(a, size);
+  for (uint32_t s = a / 4096; s < (a + size) / 4096; ++s) sector(s).fill(255);
+}
+std::string Flash::overlayDigest() const {
+  std::vector<uint8_t> b;
+  for (auto &[n, s] : sectors_) {
+    for (int i = 0; i < 4; ++i) b.push_back(uint8_t(n >> (8 * i)));
+    b.insert(b.end(), s.begin(), s.end());
+  }
+  return sha256(b);
+}
+std::string Flash::stockDigest() const { return sha256(stock_); }
 static void u32(std::vector<uint8_t> &b, uint32_t x) {
   for (int i = 0; i < 4; ++i)
     b.push_back(uint8_t(x >> (8 * i)));

@@ -71,6 +71,8 @@ struct Options {
   bool exploratoryAvdNoSyncEvents=false;
   int diagnosticAvd11dbBit7=-1;
   bool diagnosticAvdInvalidPublication=false;
+  bool diagnosticRestoreByIdentityBranch=false;   // DIAGNOSTIC: branch whose two arms both rewrite the tested bit to its tested value
+  bool candidateSpiNorWrite=false;   // opt-in guest SPI NOR program/erase/WRSR into the copy-on-write overlay
   bool diagnosticHtotalBranchJoin=false; // DIAGNOSTIC: conservative join of the HTotal comparison outcomes
   bool exploratoryPqSramIdle=false;
   bool exploratoryPqDisabledPorts=false;
@@ -146,6 +148,7 @@ class Msd309Machine {
   uint64_t dispatches_ = 0, mmio_ = 0, flashReads_ = 0, dramWrites_ = 0;
   bool stopped_ = false;
   bool joinResume_ = false;
+  bool restoreBranchSeen_ = false;
   uint32_t joinResumePc_ = 0;
   uint64_t htotalJoins_ = 0;
   bool applyHtotalBranchJoin();

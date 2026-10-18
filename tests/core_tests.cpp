@@ -1187,6 +1187,7 @@ void htotalBranchJoinTests(){
     words[0x80501750]=saved;
   }
 }
+#include "spi_nor_program_tests.inc"
 void geStretchRequestTests(){
   using Req=manta::GeStretchRequest;
   // Final 0x60=8040 request recorded from original OSD 3 instructions
@@ -2811,6 +2812,7 @@ int main() {
     utmiTests();
     virtualTimeTests();
     spiTests();
+    spiNorProgramTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

@@ -120,6 +120,12 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
       throw std::runtime_error("AVD no-sync event hypothesis requires the absent-HSYNC hypothesis and the shared AVD run");
     riu_.configureExploratoryAvdNoSyncEvents();
   }
+  if(o.diagnosticRestoreByIdentityBranch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.candidateSpiNorWrite))
+    throw std::runtime_error("restore-by-identity branch diagnostic requires guarded exploration and the SPI NOR write model");
+  if(o.candidateSpiNorWrite){
+    if(!o.candidateSpi)throw std::runtime_error("SPI NOR write model requires the candidate SPI model");
+    riu_.enableSpiNorWrite();
+  }
   if(o.diagnosticAvdInvalidPublication){
     if(!o.exploratoryAvdSharedRun || !o.symbolicInit || !o.deferDiagnosticReads)
       throw std::runtime_error("AVD invalid-data publication diagnostic requires the guarded shared AVD run");
@@ -269,6 +275,26 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     for (size_t i = 0; i < n; ++i)
       b[i] = flash_.read(a + uint32_t(i));
     return b;
+  };
+  // Guest SPI NOR program/erase: modifies only the in-memory copy-on-write overlay (the stock image and the
+  // input file are never written) and refreshes the CPU-visible flash windows so later guest reads agree.
+  auto mirrorFlash = [this](uint32_t a, size_t n) {
+    std::vector<uint8_t> bytes(n);
+    for (size_t i = 0; i < n; ++i) bytes[i] = flash_.read(a + uint32_t(i));
+    if (a < 0x400000) cpu_.write(0x1fc00000 + a, bytes.data(), std::min<size_t>(n, 0x400000 - a));
+    if (options_.candidateSpi) cpu_.write(0x14000000 + a, bytes.data(), n);
+  };
+  riu_.flashProgram = [this, mirrorFlash](uint32_t a, std::span<const uint8_t> bytes) {
+    auto violations = flash_.programAnd(a, bytes);
+    mirrorFlash(a, bytes.size());
+    event("spi_nor_program", a, unsigned(bytes.size()), unsigned(violations),
+          "guest SPI NOR page program into the copy-on-write overlay; bits can only be cleared; stock image untouched");
+    return violations;
+  };
+  riu_.flashErase = [this, mirrorFlash](uint32_t a, uint32_t size) {
+    flash_.eraseRange(a, size);
+    mirrorFlash(a, size);
+    event("spi_nor_erase", a, size, 0, "guest SPI NOR erase into the copy-on-write overlay; neighbouring sectors unaffected");
   };
   riu_.dramRead=[this](uint32_t address,size_t size) {
     if(!options_.candidateMiu || size==0 || size>0x4000 || uint64_t(address)+size>dramBacking_.size())
@@ -657,11 +683,29 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       auto target=m.cpu_.reg(UC_MIPS_REG_4)&0x1fffffff;
       m.riu_.beginCombRestore(target,m.preservedBits_.mask(2)&0xffff);
     }
+    // DIAGNOSTIC restore-by-identity branch in the original SerFlash write routine: 8053CB7C..CB80 tests the saved
+    // copy of ISP register BF0011C8 bit 2; both arms (8053CB94..CB9C clears it, 8053CBE8..CBF4 sets it) rewrite that bit
+    // to exactly the value tested. The path consistent with the representative value is executed and the stored bit is
+    // relabelled unknown with its original identity at the join 8053CBA4.
+    bool restoreBranch = false;
+    if (m.options_.diagnosticRestoreByIdentityBranch && a == 0x8053cb80 && w == 0x14400017) {
+      std::vector<uint8_t> code(0x454);
+      m.cpu_.read(0x0053c914, code.data(), code.size());
+      restoreBranch = sha256(code) == "f196f19f68c656f8c079385b51e73ee725324ff4b6f2b012fa25c61bad11afad" &&
+                      m.preservedBits_.exactFieldOrigin(2, m.riu_.preservedStoreKey(0x1f0011c8), 4);
+      m.event(restoreBranch ? "diagnostic_restore_by_identity_branch" : "diagnostic_restore_by_identity_branch_refused", uint32_t(a), 4, w,
+              "DIAGNOSTIC ONLY: both arms rewrite ISP 1C8 bit2 to the tested value; representative path executed, bit relabelled unknown at the join");
+    }
+    if (m.options_.diagnosticRestoreByIdentityBranch && a == 0x8053cba4 && m.restoreBranchSeen_) {
+      m.riu_.forgetBits(0x1f0011c8, 4);
+      m.restoreBranchSeen_ = false;
+    }
+    if (restoreBranch) m.restoreBranchSeen_ = true;
     const bool scenarioXor=m.options_.explorePmNonresumeBranch &&
       m.pmActivityScenario_.xorPredicate(uint32_t(a),w,m.cpu_.reg(UC_MIPS_REG_2),
         m.preservedBits_.exactFieldOrigin(2,0x1f001cd1,15));
     if(scenarioXor)m.preservedBits_.scenarioXorImmediate(2,8);
-    auto preservedWhy=scenarioXor?std::string{}:m.preservedBits_.observe(w,[&](unsigned r){return m.cpu_.reg(UC_MIPS_REG_0+int(r));},
+    auto preservedWhy=(scenarioXor||restoreBranch)?std::string{}:m.preservedBits_.observe(w,[&](unsigned r){return m.cpu_.reg(UC_MIPS_REG_0+int(r));},
       [&](uint32_t address){return m.riu_.preservedStoreKey(address);},
       [&](uint32_t address,unsigned width,uint32_t unknown){
         m.riu_.preparePreservedWrite(address,width,unknown);
@@ -1713,6 +1757,14 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"spi_flash_model\": \"" << (options_.flashModel == NorModel::W25Q64BV ? "w25q64bv" : "mx25l6405d") << "\""
     << ",\n  \"spi_unknown_input_policy\": " << unsigned(options_.spiUnknownInput)
     << ",\n  \"spi_undocumented_samples\": " << riu_.undocumentedSpiSamples()
+    << ",\n  \"spi_nor_programs\": " << riu_.spiIsp().nor.programs
+    << ",\n  \"spi_nor_erases\": " << riu_.spiIsp().nor.erases
+    << ",\n  \"spi_nor_programmed_bytes\": " << riu_.spiIsp().nor.programmedBytes
+    << ",\n  \"spi_nor_ignored_writes\": " << riu_.spiIsp().nor.ignoredWrites
+    << ",\n  \"spi_nor_zero_to_one_requests\": " << riu_.spiIsp().nor.norViolations
+    << ",\n  \"flash_overlay_sectors\": " << flash_.overlaySectors()
+    << ",\n  \"flash_overlay_sha256\": \"" << flash_.overlayDigest() << "\""
+    << ",\n  \"flash_stock_sha256\": \"" << flash_.stockDigest() << "\""
     << ",\n  \"spi_jedec_read_returned\": " << (spiJedecRead_ ? "true" : "false")
     << ",\n  \"spi_descriptor_selected\": " << (spiDescriptorSelected_ ? "true" : "false")
     << ",\n  \"spi_jedec\": [" << unsigned(spiJedec_[0]) << ',' << unsigned(spiJedec_[1]) << ',' << unsigned(spiJedec_[2]) << ']'

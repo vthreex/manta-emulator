@@ -23,6 +23,8 @@ for name, extra, text in (
     ('no-sync-needs-hsync-and-avd-run', ['--exploratory-avd-no-sync-events'], 'requires the absent-HSYNC hypothesis'),
     ('invalid-publication-needs-avd-run', ['--diagnostic-avd-invalid-publication'], 'requires the guarded shared AVD run'),
     ('11db-bracket-needs-avd-run', ['--diagnostic-avd-11db-bit7', '1'], 'requires the guarded shared AVD run'),
+    ('nor-write-needs-candidate-spi', ['--candidate-spi-nor-write'], 'requires the candidate SPI model'),
+    ('restore-branch-needs-nor-write', ['--diagnostic-restore-by-identity-branch'], 'requires guarded exploration and the SPI NOR write model'),
 ):
     r = run(extra)
     assert r.returncode == 1 and text in r.stderr, (name, r.returncode, r.stderr)
@@ -36,7 +38,9 @@ help_text = subprocess.check_output([str(exe), '--help'], text=True, env=env, ti
 for flag, label in (('--diagnostic-htotal-branch-join', 'DIAGNOSTIC ONLY, not hardware behavior'),
                     ('--exploratory-avd-no-sync-events', 'HYPOTHESIS'),
                     ('--diagnostic-avd-invalid-publication', 'DIAGNOSTIC'),
-                    ('--diagnostic-avd-11db-bit7', 'BRACKETING DIAGNOSTIC')):
+                    ('--diagnostic-avd-11db-bit7', 'BRACKETING DIAGNOSTIC'),
+                    ('--candidate-spi-nor-write', 'copy-on-write overlay'),
+                    ('--diagnostic-restore-by-identity-branch', 'DIAGNOSTIC ONLY')):
     assert flag in help_text and label in help_text, flag
 checks['help-labels'] = True
 assert hashlib.sha256(firmware.read_bytes()).hexdigest() == sha

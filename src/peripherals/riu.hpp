@@ -454,6 +454,13 @@ public:
   std::string stopReason, uart;
   std::function<void(const std::string &, uint32_t, unsigned, uint32_t, const std::string &)> event;
   std::function<std::vector<uint8_t>(uint32_t, size_t)> flashRead;
+  // Guest SPI NOR program/erase into the copy-on-write flash overlay (set by the machine).
+  std::function<size_t(uint32_t, std::span<const uint8_t>)> flashProgram;
+  std::function<void(uint32_t, uint32_t)> flashErase;
+  const SpiIsp& spiIsp() const { return spi_; }
+  void enableSpiNorWrite() { spi_.nor.writeSupport = true; }
+  // DIAGNOSTIC: a stored register bit whose value is, by construction, the original unknown bit again.
+  void forgetBits(uint32_t a, uint8_t mask) { bytes_[storageKey(a)].known &= uint8_t(~mask); }
   std::function<bool(uint32_t, size_t, uint16_t)> dramTest;
   std::function<std::vector<uint8_t>(uint32_t,size_t)> dramRead;
   std::function<void(uint32_t,std::span<const uint8_t>)> dramWrite;

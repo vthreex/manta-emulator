@@ -23,6 +23,14 @@ public:
   void protect(bool b) { protected_ = b; }
   void program(uint32_t address, std::span<const uint8_t> bytes);
   void erase4k(uint32_t address);
+  // Guest SPI NOR effects. WEL/busy/page-wrap are enforced by the NOR model, not here. Programming
+  // can only clear bits (result = old AND new, as on real NOR); the number of 0->1 requests is
+  // returned so the caller can report them. The stock image is never modified.
+  size_t programAnd(uint32_t address, std::span<const uint8_t> bytes);
+  void eraseRange(uint32_t address, uint32_t size);
+  size_t overlaySectors() const { return sectors_.size(); }
+  std::string overlayDigest() const;   // SHA-256 over (sector index, 4096 bytes) of every modified sector
+  std::string stockDigest() const;
   void saveOverlay(const std::filesystem::path &path) const;
   void loadOverlay(const std::filesystem::path &path);
 };
