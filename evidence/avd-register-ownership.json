@@ -1,0 +1,210 @@
+{
+  "avd_sha256": "48ab58a5689d3135b2cdf78fa77da92fa912776f741c33c7afa97fdcfc4ee4fd",
+  "runtime_sha256": "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236",
+  "mapping": "BF206A00 + (xdata&0xFF)//2*4 + (xdata&1)",
+  "registers": {
+    "0x113c": {
+      "mips_address": "0xbf206a78",
+      "avd_mcu_immediate_dptr": {
+        "read": [
+          "0xaa9",
+          "0x2208"
+        ],
+        "write": [],
+        "other": []
+      },
+      "original_mips_register_accesses": [],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [],
+        "reference-marlon-libdrvAVD.a": []
+      }
+    },
+    "0x113d": {
+      "mips_address": "0xbf206a79",
+      "avd_mcu_immediate_dptr": {
+        "read": [
+          "0x2203"
+        ],
+        "write": [],
+        "other": []
+      },
+      "original_mips_register_accesses": [],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [],
+        "reference-marlon-libdrvAVD.a": []
+      }
+    },
+    "0x11c7": {
+      "mips_address": "0xbf206b8d",
+      "avd_mcu_immediate_dptr": {},
+      "original_mips_register_accesses": [
+        {
+          "pc": "0x805030fc",
+          "kind": "load"
+        }
+      ],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [
+          "HAL_AVD_AFEC_GetHTotal"
+        ],
+        "reference-marlon-libdrvAVD.a": [
+          "HAL_AVD_AFEC_GetHTotal"
+        ]
+      }
+    },
+    "0x11c8": {
+      "mips_address": "0xbf206b90",
+      "avd_mcu_immediate_dptr": {},
+      "original_mips_register_accesses": [
+        {
+          "pc": "0x805030f8",
+          "kind": "load"
+        }
+      ],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [
+          "HAL_AVD_AFEC_GetHTotal"
+        ],
+        "reference-marlon-libdrvAVD.a": [
+          "HAL_AVD_AFEC_GetHTotal"
+        ]
+      }
+    },
+    "0x11ca": {
+      "mips_address": "0xbf206b94",
+      "avd_mcu_immediate_dptr": {
+        "read": [
+          "0x1130"
+        ],
+        "write": [],
+        "other": []
+      },
+      "original_mips_register_accesses": [
+        {
+          "pc": "0x80503098",
+          "kind": "load"
+        }
+      ],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [
+          "HAL_AVD_AFEC_GetCoChannelOn"
+        ],
+        "reference-marlon-libdrvAVD.a": [
+          "HAL_AVD_AFEC_GetCoChannelOn"
+        ]
+      }
+    },
+    "0x11da": {
+      "mips_address": "0xbf206bb4",
+      "avd_mcu_immediate_dptr": {
+        "read": [
+          "0x2a11"
+        ],
+        "write": [],
+        "other": []
+      },
+      "original_mips_register_accesses": [],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [],
+        "reference-marlon-libdrvAVD.a": []
+      }
+    },
+    "0x11db": {
+      "mips_address": "0xbf206bb5",
+      "avd_mcu_immediate_dptr": {
+        "read": [
+          "0x6fe"
+        ],
+        "write": [],
+        "other": []
+      },
+      "original_mips_register_accesses": [],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [],
+        "reference-marlon-libdrvAVD.a": []
+      }
+    },
+    "0x11dc": {
+      "mips_address": "0xbf206bb8",
+      "avd_mcu_immediate_dptr": {
+        "read": [
+          "0x12d2"
+        ],
+        "write": [],
+        "other": []
+      },
+      "original_mips_register_accesses": [
+        {
+          "pc": "0x805032a0",
+          "kind": "load"
+        }
+      ],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [
+          "HAL_AVD_AFEC_SetRegFromDSP"
+        ],
+        "reference-marlon-libdrvAVD.a": [
+          "HAL_AVD_AFEC_SetRegFromDSP"
+        ]
+      }
+    },
+    "0x11fa": {
+      "mips_address": "0xbf206bf4",
+      "avd_mcu_immediate_dptr": {},
+      "original_mips_register_accesses": [],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [],
+        "reference-marlon-libdrvAVD.a": []
+      }
+    },
+    "0x11fc": {
+      "mips_address": "0xbf206bf8",
+      "avd_mcu_immediate_dptr": {
+        "read": [
+          "0x98d"
+        ],
+        "write": [],
+        "other": []
+      },
+      "original_mips_register_accesses": [],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [],
+        "reference-marlon-libdrvAVD.a": []
+      }
+    },
+    "0x119c": {
+      "mips_address": "0xbf206b38",
+      "avd_mcu_immediate_dptr": {
+        "read": [
+          "0x68b",
+          "0x1526",
+          "0x1ed3",
+          "0x2122"
+        ],
+        "write": [],
+        "other": []
+      },
+      "original_mips_register_accesses": [],
+      "original_mips_init_table_entries": [],
+      "reference_driver_function_hits": {
+        "amethyst-libdrvAVD.a": [
+          "HAL_AVD_AFEC_SetHsyncSensitivity"
+        ],
+        "reference-marlon-libdrvAVD.a": [
+          "HAL_AVD_AFEC_SetHsyncSensitivity"
+        ]
+      }
+    }
+  },
+  "caveat": "Absence is limited to immediate-DPTR AVD accesses, straight-line constant MIPS MMIO, the 8062AE00 init table and immediate offsets in the named archives."
+}
