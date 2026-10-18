@@ -2813,6 +2813,7 @@ int main() {
     virtualTimeTests();
     spiTests();
     spiNorProgramTests();
+    usbNoDeviceTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

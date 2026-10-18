@@ -72,6 +72,8 @@ struct Options {
   int diagnosticAvd11dbBit7=-1;
   bool diagnosticAvdInvalidPublication=false;
   bool diagnosticRestoreByIdentityBranch=false;   // DIAGNOSTIC: branch whose two arms both rewrite the tested bit to its tested value
+  int diagnosticUsbUnpoweredDplus=-1;   // BRACKETING: line-state D+ of a guest-powered-down USB PHY (run 0 and 1)
+  bool exploratoryUsbNoDevice=false;   // HYPOTHESIS: powered USB PHY, no device attached (SE0 line state)
   bool candidateSpiNorWrite=false;   // opt-in guest SPI NOR program/erase/WRSR into the copy-on-write overlay
   bool diagnosticHtotalBranchJoin=false; // DIAGNOSTIC: conservative join of the HTotal comparison outcomes
   bool exploratoryPqSramIdle=false;

@@ -447,6 +447,13 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;
     if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && irDma_.capturePresent().has_value())v|=bit;
   }
+  // Live USBC UTMI line state (D-/D+); defined only by the explicit no-device hypothesis on a guest-powered PHY.
+  for(uint32_t reg:{0x1f200e10u,0x1f200f10u}){
+    if(a<=reg && uint64_t(a)+n>reg){
+      auto bits=0xc0u<<(8*(reg-a));v&=~bits;
+      if(usbLineStateRegister(a,n)==reg)v|=bits;
+    }
+  }
   if(candidatePmIrFifo_ && a<=0x1f007b59 && uint64_t(a)+n>0x1f007b59){
     unsigned shift=8*(0x1f007b59-a);v&=~(3u<<shift);
     if(pmIrFifo_.known())v|=2u<<shift;
@@ -501,6 +508,12 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     v&=~8u;if(tspDownload_.done())v|=8;
   }
   if(a==0x1f205ea4 && (n==1 || n==2) && (scBank()==1 || scBank()==3) && analogDisconnected_)v&=~12u;
+  {
+    uint32_t lineValue=0;
+    if(auto reg=usbLineStateRegister(a,n,&lineValue)){
+      v&=~(0xc0u<<(8*(reg-a)));v|=lineValue<<(8*(reg-a));
+    }
+  }
   if(a<=0x1f205f05 && uint64_t(a)+n>0x1f205f05 && scBank()==0x23 && pqSram_.known()){
     auto bit=1u<<(8*(0x1f205f05-a));
     v&=~bit;if(pqSram_.busy())v|=bit;

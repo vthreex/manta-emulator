@@ -29,7 +29,12 @@ with tempfile.TemporaryDirectory(prefix='manta-pm-powered-prefix-') as directory
         assert j['instruction_dispatches']==300000
         assert j['pm51_instructions']==3474 and j['pm51_pc']=='0x574f'
         assert j['pm51_marker_writes']==j['pm51_interrupt_entries']==0
-        assert j['pm51_state_sha256']=='629b0453a0d986f1aa838941644d5f8b43030d624453f2dc4e8673f97b3011d5'
+        # 629b0453... was the hash before commit 195ac82 (MCU stack provenance became part of the state bytes). That commit
+        # recorded the intentional change in evidence/mcu-stack-validation.json; the expectation is read from there so it cannot
+        # drift silently again. PM51 instruction count and PC (asserted above) are unchanged.
+        change=json.loads((Path(__file__).resolve().parents[1]/'evidence/mcu-stack-validation.json').read_text())['prior_same_mode_comparison']['changed_summary_fields']['pm51_state_sha256']
+        assert change['before']=='629b0453a0d986f1aa838941644d5f8b43030d624453f2dc4e8673f97b3011d5'
+        assert j['pm51_state_sha256']==change['after']=='32c9489e015cfc475fa13aa1bad537ba4eb9625cff63102d0b80cb6f738d0b68'
         assert not j['osd_demonstrated']
         summaries.append(j);histories.append(history.read_bytes());coverage.append(cov.read_bytes())
     assert summaries[0]==summaries[1] and histories[0]==histories[1] and coverage[0]==coverage[1]

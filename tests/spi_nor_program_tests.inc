@@ -114,3 +114,24 @@ void spiNorProgramTests(){
   require(f3.read(0x13456)==0x00 && f3.read(0x13457)==uint8_t(makeStock()[0x13457]&0x12) && f3.read(0x13458)==uint8_t(makeStock()[0x13458]&0x34),
     "ISP page program lands at the address registers' location");
 }
+void usbNoDeviceTests(){
+  using namespace manta;
+  Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};
+  off.write(0x1f207500,2,0x6dc3,0,0xffff,1);
+  require(off.knownBits(0x1f200e10,2)==0,"without the hypothesis USBC+0x10 line state stays invalid even with the PHY powered");
+  Riu r;r.symbolicInit=true;r.event=[](auto,auto,auto,auto,auto){};r.configureExploratoryUsbNoDevice();
+  require(!r.usbPhyPowered() && r.knownBits(0x1f200e10,2)==0,"hypothesis alone defines nothing before the guest powers the PHY");
+  r.write(0x1f207500,2,0xefc7,0,0xffff,1);
+  require(!r.usbPhyPowered() && r.knownBits(0x1f200e10,2)==0,"a power-down PWRCTRL (bit 15 set) keeps the line state invalid");
+  r.write(0x1f207500,2,0x6dc3,0,0xffff,2);
+  require(r.usbPhyPowered(),"guest PWRCTRL 6DC3 powers the PHY");
+  auto lineState=r.read(0x1f200e10,2,0x803bd910,0xffff,100);r.stopReason.clear();
+  require(r.knownBits(0x1f200e10,2)==0xc0 && (lineState&0xc0)==0,"only D-/D+ line-state bits 7:6 become known (zero) in the low byte");
+  require(r.knownBits(0x1f200e10,1)==0xc0 && r.knownBits(0x1f200e11,1)==0,"the high byte of the halfword and neighbouring registers stay invalid");
+  require(r.knownBits(0x1f200e00,2)==0 && r.knownBits(0x1f200f10,2)==0,"other USBC registers and the second port are untouched while its own PHY is not powered");
+  r.write(0x1f207400,2,0xefc7,0,0xffff,3);
+  require(!r.usbPhyPowered(1) && r.knownBits(0x1f200f10,2)==0,"the second port stays invalid while its PHY is powered down (boot power-save value EFC7)");
+  r.write(0x1f207400,2,0x6dc3,0,0xffff,4);
+  auto lineState1=r.read(0x1f200f10,2,0x803bd910,0xffff,200);r.stopReason.clear();
+  require(r.usbPhyPowered(1) && r.knownBits(0x1f200f10,2)==0xc0 && (lineState1&0xc0)==0 && r.knownBits(0x1f200e10,2)==0xc0,"each port is defined only by its own guest-powered PHY");
+}

@@ -123,6 +123,12 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-avd-no-hsync")o.exploratoryAvdNoHsync=true;
       else if(a=="--diagnostic-htotal-branch-join")o.diagnosticHtotalBranchJoin=true;
       else if(a=="--candidate-spi-nor-write")o.candidateSpiNorWrite=true;
+      else if(a=="--exploratory-usb-no-device")o.exploratoryUsbNoDevice=true;
+      else if(a=="--diagnostic-usb-unpowered-dplus"){
+        auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
+        if(used!=token.size() || n>1)throw std::runtime_error("USB powered-down D+ bracketing value must be 0 or 1");
+        o.diagnosticUsbUnpoweredDplus=int(n);
+      }
       else if(a=="--diagnostic-restore-by-identity-branch")o.diagnosticRestoreByIdentityBranch=true;
       else if(a=="--exploratory-avd-no-sync-events")o.exploratoryAvdNoSyncEvents=true;
       else if(a=="--diagnostic-avd-invalid-publication")o.diagnosticAvdInvalidPublication=true;
@@ -255,6 +261,8 @@ static int appMain(const std::vector<std::string> &args) {
                 "--diagnostic-avd-11db-bit7 N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines AFEC 11DB bit 7 whose producer is unknown\n"
                 "--candidate-spi-nor-write: opt-in guest SPI NOR WRSR/page-program/erase (06/01/02/20/52/D8) into a copy-on-write overlay; stock image never written; requires --candidate-spi\n"
                 "--diagnostic-restore-by-identity-branch: DIAGNOSTIC ONLY: SerFlash write routine 8053CB80 branch whose both arms restore ISP 1C8 bit 2 to its tested value; requires --candidate-spi-nor-write\n"
+                "--exploratory-usb-no-device: HYPOTHESIS: a guest-powered USB port-0 PHY with no device attached shows SE0, so USBC+0x10 line-state bits 7:6 read 0; all other USBC bits stay invalid; requires guarded exploration\n"
+                "--diagnostic-usb-unpowered-dplus N: BRACKETING DIAGNOSTIC (run 0 and 1), not a reset value: line-state D+ (USBC+0x10 bit 6) of a USB port whose PHY the guest powered down; requires guarded exploration\n"
                 "--diagnostic-htotal-branch-join: DIAGNOSTIC ONLY, not hardware behavior: execute both original outcomes of the HTotal comparison at 80501BFC separately, mark every differing RAM cell/register unknown, resume at the join 80501758\n"
                 "--candidate-ge-bitblt: opt-in plain same-format RGB565/ARGB8888 0040 copies; requires GE queues; stretch/format C/alpha remain guarded\n"
                "--candidate-ge-rect-fill: opt-in known plain RGB565/ARGB8888 rectangle writes; requires GE queues, mapped RAM and known controls; format C/blending/BitBlt unsupported\n"

@@ -110,6 +110,8 @@ class Riu {
   bool analogDisconnected_=false;
   bool exploratoryAvdNoHsync_=false;
   uint64_t avdHsyncReads_=0;
+  bool exploratoryUsbNoDevice_=false;
+  int diagnosticUsbUnpoweredDplus_=-1;
   bool exploratoryAvdNoSyncEvents_=false;
   int diagnosticAvd11dbBit7_=-1;
   int exploratoryVifRevision_=-1;
@@ -459,6 +461,32 @@ public:
   std::function<void(uint32_t, uint32_t)> flashErase;
   const SpiIsp& spiIsp() const { return spi_; }
   void enableSpiNorWrite() { spi_.nor.writeSupport = true; }
+  // HYPOTHESIS (opt-in): a powered USB PHY with no device attached sees SE0 on the host port, so the UTMI
+  // line-state bits 7:6 of USBC+0x10 (D-/D+, per the cross-SoC Linux mstar_usbc.h) are 0. Applies only after the
+  // guest itself powered the port-0 PHY (UTMI PWRCTRL 1F207500 bit 15 = 0). All other USBC bits stay invalid.
+  void configureExploratoryUsbNoDevice() { exploratoryUsbNoDevice_ = true; }
+  // Port 0: USBC 1F200E00 / UTMI 1F207500; port 1: USBC 1F200F00 / UTMI 1F207400 (original boot writes both).
+  bool usbPhyPowered(unsigned port = 0) const {
+    uint32_t pwr = port ? 0x1f207400u : 0x1f207500u;
+    return (knownBits(pwr, 2) & 0x8000) && !(get(pwr, 2) & 0x8000);
+  }
+  // USBC+0x10 (UTMI signal) of a port whose line-state bits 7:6 the active USB hypothesis defines, or 0, and their value.
+  // no-device hypothesis: a guest-powered PHY with no device sees SE0 (D-/D+ = 0).
+  // bracketing diagnostic: a guest-POWERED-DOWN PHY (PWRCTRL bit 15 = 1 written by the guest) has no grounded line state;
+  // run D+ = 0 and D+ = 1 and report only conclusions that hold for both.
+  uint32_t usbLineStateRegister(uint32_t a, unsigned n, uint32_t* value = nullptr) const {
+    for (unsigned port = 0; port < 2; ++port) {
+      uint32_t reg = port ? 0x1f200f10u : 0x1f200e10u, pwr = port ? 0x1f207400u : 0x1f207500u;
+      if (!(a <= reg && uint64_t(a) + n > reg)) continue;
+      bool known = (knownBits(pwr, 2) & 0x8000) != 0;
+      bool powered = known && !(get(pwr, 2) & 0x8000);
+      if (exploratoryUsbNoDevice_ && powered) { if (value) *value = 0; return reg; }
+      if (diagnosticUsbUnpoweredDplus_ >= 0 && known && !powered) { if (value) *value = diagnosticUsbUnpoweredDplus_ ? 0x40u : 0u; return reg; }
+      return 0;
+    }
+    return 0;
+  }
+  void configureDiagnosticUsbUnpoweredDplus(unsigned dplus) { diagnosticUsbUnpoweredDplus_ = int(dplus & 1); }
   // DIAGNOSTIC: a stored register bit whose value is, by construction, the original unknown bit again.
   void forgetBits(uint32_t a, uint8_t mask) { bytes_[storageKey(a)].known &= uint8_t(~mask); }
   std::function<bool(uint32_t, size_t, uint16_t)> dramTest;
