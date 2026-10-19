@@ -35,7 +35,7 @@ struct GeI2Glyph {
     if (known != 0xffff) throw std::runtime_error("GE I2 glyph field contains unknown bits");
     return value;
   }
-  static GeI2Glyph decode(uint16_t command, const Reg& reg, const Read& read) {
+  static GeI2Glyph decode(uint16_t command, const Reg& reg, const Read& read, bool fullHeight = false) {
     if (command != 0x0040) throw std::runtime_error("GE I2 glyph: not the plain command");
     auto control = field(reg, 0);
     if (control != 0x0045) throw std::runtime_error("GE I2 glyph: control is not enable+blend+key");
@@ -71,7 +71,7 @@ struct GeI2Glyph {
     // All destination rows must read their source row from guest memory; the rows beyond the programmed height must be index 0.
     g.sourceBytes = read(g.source, size_t(g.sourcePitch) * g.rows);
     if (g.sourceBytes.size() != size_t(g.sourcePitch) * g.rows) throw std::runtime_error("GE I2 glyph: short source read");
-    if (sh + 5 == g.rows)
+    if (!fullHeight && sh + 5 == g.rows)
       for (uint32_t y = sh; y < g.rows; ++y)
         for (uint32_t x = 0; x < g.width; ++x)
           if (g.index(x, y)) throw std::runtime_error("GE I2 glyph: rows hidden by the height-5 quirk are not blank; semantics unestablished");

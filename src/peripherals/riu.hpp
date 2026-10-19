@@ -116,6 +116,11 @@ class Riu {
   std::string guardedStretchDetail_;
   int exploratoryAvdHtotal_=-1;
   int exploratoryAvdNoise_=-1;
+  struct HypothesisBits { uint32_t address; uint8_t mask, value; uint64_t reads; };
+  std::vector<HypothesisBits> hypothesisBits_;   // EXPLORATORY: bit-scoped constants for hardware-owned status bytes
+  int exploratoryAfecIndirect_=-1;   // -1 off, else initial 16-bit content of the indirectly addressed register 6A3C
+  uint16_t afecIndirectValue_=0;
+  uint64_t afecIndirectReads_=0,afecIndirectWrites_=0;
   uint64_t avdNoiseReads_=0;
   uint64_t avdHtotalReads_=0;
   uint64_t vifCrLockReads_=0;
@@ -334,7 +339,10 @@ public:
   bool exploratoryGeI2Glyph=false;
   // EXPLORATORY: offscreen-to-GOP surface copy with blend coefficient ONE (see video/ge_blend_copy.hpp).
   bool exploratoryGeBlendCopy=false;
+  std::string copyRefusal_;
+  bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': copies read/write every destination row despite register 6F = height-5
   uint64_t geBlendCopies=0,geBlendCopyPixels=0;
+  std::vector<std::string> geBlendCopyLog;   // one JSON object per retired exploratory copy (bounded)
   uint64_t geI2Glyphs=0,geI2GlyphPixels=0;
   void configureExploratoryGeReset() {
     ge_.exploratoryReset();
@@ -508,6 +516,27 @@ public:
   void configureExploratoryAvdHtotal(unsigned value) { exploratoryAvdHtotal_ = int(value & 0xffff); }
   // HYPOTHESIS: the AFEC noise-magnitude byte (HAL_AVD_AFEC_GetNoiseMag, BF206A04) reads a constant; bracket it.
   void configureExploratoryAvdNoise(unsigned value) { exploratoryAvdNoise_ = int(value & 0xff); }
+  // HYPOTHESIS (protocol decoded from the original routine 80503CE0, content unknown): the AFEC address pair 11A1:11A0 (BF206B41:BF206B40) latches a
+  // register address; with address 0x6A3C and bit 7 of the low byte set, the data pair 119D:119E (BF206B39:BF206B3C, high:low) reads and writes the
+  // content of that indirectly addressed 16-bit register instead of the plain bytes. The content is a bracketed constant until written.
+  void configureExploratoryAfecIndirect(unsigned value) { exploratoryAfecIndirect_ = int(value & 0xffff); afecIndirectValue_ = uint16_t(value); }
+  bool afecIndirectActive() const {
+    // raw stored bytes only (knownBits/get consult this predicate, so they must not be used here)
+    if (exploratoryAfecIndirect_ < 0) return false;
+    auto lo = bytes_.find(storageKey(0x1f206b40)), hi = bytes_.find(storageKey(0x1f206b41));
+    if (lo == bytes_.end() || hi == bytes_.end() || lo->second.known != 255 || hi->second.known != 255) return false;
+    return hi->second.value == 0x6a && lo->second.value == (0x3c | 0x80);
+  }
+  uint64_t afecIndirectReads() const { return afecIndirectReads_; }
+  uint64_t afecIndirectWrites() const { return afecIndirectWrites_; }
+  uint16_t afecIndirectValue() const { return afecIndirectValue_; }
+  // HYPOTHESIS: only the bits in `mask` of the byte at `address` read as `value`; every other bit keeps its provenance. Guest writes are rejected.
+  void addHypothesisBits(uint32_t address, unsigned mask, unsigned value) {
+    if (address < 0x1f200000u || address >= 0x1f400000u || !(mask & 255) || (value & ~mask & 255)) throw std::runtime_error("invalid bit hypothesis");
+    for (auto& h : hypothesisBits_) if (h.address == address) throw std::runtime_error("duplicate bit hypothesis");
+    hypothesisBits_.push_back({address, uint8_t(mask), uint8_t(value), 0});
+  }
+  const std::vector<HypothesisBits>& hypothesisBits() const { return hypothesisBits_; }
   uint64_t avdNoiseReads() const { return avdNoiseReads_; }
   uint64_t avdHtotalReads() const { return avdHtotalReads_; }
   const std::string& guardedStretchDetail() const { return guardedStretchDetail_; }

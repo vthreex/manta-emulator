@@ -27,7 +27,9 @@ struct GeBlendCopy {
     if (known != 0xffff) throw std::runtime_error("GE blend copy field contains unknown bits");
     return value;
   }
-  static GeBlendCopy decode(uint16_t command, const Reg& reg, const Read& read) {
+  // fullHeight = HYPOTHESIS B3': the hardware copies every destination row; register 6F = height-5 is only an encoding artefact
+  // (a real TV shows the full banner). false keeps the strict B3 acceptance rule.
+  static GeBlendCopy decode(uint16_t command, const Reg& reg, const Read& read, bool fullHeight = false) {
     if (command != 0x0040) throw std::runtime_error("GE blend copy: not the plain command");
     if (field(reg, 0) != 0x0005) throw std::runtime_error("GE blend copy: control is not enable+blend");
     auto mode = reg(1);
@@ -53,7 +55,7 @@ struct GeBlendCopy {
     uint32_t cl = field(reg, 0x55), cr = field(reg, 0x56), ct = field(reg, 0x57), cb = field(reg, 0x58);
     g.left = std::max(g.destLeft, cl); g.right = std::min(dr, cr); g.top = std::max(g.destTop, ct); g.bottom = std::min(db, cb);
     if (cl > cr || ct > cb || g.left > g.right || g.top > g.bottom) { g.left = 1; g.right = 0; return g; }
-    uint64_t sEnd = uint64_t(g.source) + uint64_t(g.srcY + g.rows) * g.sourcePitch + uint64_t(g.srcX + width) * 2;
+    uint64_t sEnd = uint64_t(g.source) + uint64_t(g.srcY + g.rows - 1) * g.sourcePitch + uint64_t(g.srcX + width) * 2;   // one past the last byte read
     uint64_t dEnd = uint64_t(g.destination) + uint64_t(g.bottom + 1) * g.destinationPitch + uint64_t(g.right + 1) * 2;
     if (uint64_t(g.right + 1) * 2 > g.destinationPitch || uint64_t(g.srcX + width) * 2 > g.sourcePitch) throw std::runtime_error("GE blend copy exceeds programmed pitch");
     if (sEnd > 0x08000000 || dEnd > 0x08000000) throw std::runtime_error("GE blend copy range overflows MIU0");
@@ -65,7 +67,7 @@ struct GeBlendCopy {
         uint32_t row = y - g.destTop;
         auto bytes = read(g.source + (g.srcY + row) * g.sourcePitch + (g.srcX + g.left - g.destLeft) * 2, size_t(w) * 2);
         if (bytes.size() != size_t(w) * 2) throw std::runtime_error("GE blend copy: short source read");
-        if (sh + 5 == g.rows && row >= sh) {   // B3: copying a hidden row must not change the destination
+        if (!fullHeight && sh + 5 == g.rows && row >= sh) {   // B3: copying a hidden row must not change the destination
           auto current = read(g.destination + y * g.destinationPitch + g.left * 2, size_t(w) * 2);
           if (current != bytes) throw std::runtime_error("GE blend copy: rows hidden by the height-5 quirk would change the destination; semantics unestablished");
         }

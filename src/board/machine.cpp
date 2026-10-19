@@ -123,6 +123,15 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   }
   if(o.diagnosticRestoreByIdentityBranch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.candidateSpiNorWrite))
     throw std::runtime_error("restore-by-identity branch diagnostic requires guarded exploration and the SPI NOR write model");
+  if(o.exploratoryAfecIndirect>=0){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("AFEC indirect-register hypothesis requires guarded exploration");
+    riu_.configureExploratoryAfecIndirect(unsigned(o.exploratoryAfecIndirect));
+  }
+  for(const auto& h:o.bitHypotheses){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("bit hypotheses: requires guarded exploration");
+    riu_.addHypothesisBits(h.address,h.mask,h.value);
+  }
   if(o.exploratoryAvdNoise>=0){
     if(!o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
       throw std::runtime_error("AVD noise constant hypothesis requires the absent-HSYNC hypothesis and guarded exploration");
@@ -136,6 +145,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(!o.watchPcRegs.empty()){
     watchSet_.assign((0x400000+7)/8,0);
     for(auto pc:o.watchPcRegs){auto i=(pc>>2)&0x3fffff;watchSet_[i>>3]|=uint8_t(1u<<(i&7));}
+  }
+  if(o.exploratoryGeHeight5Full){
+    if(!o.exploratoryGeBlendCopy && !o.exploratoryGeI2Glyph)throw std::runtime_error("height-5 full-copy hypothesis requires an exploratory blend-copy or I2 glyph model");
+    riu_.exploratoryGeHeight5Full=true;
   }
   if(o.exploratoryGeBlendCopy){
     if(!o.candidateGeBitBlt)throw std::runtime_error("blend-copy hypothesis requires the candidate GE BitBlt model");
@@ -515,7 +528,7 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
     if(entry.second.size()>=24)entry.second.erase(entry.second.begin()+6);
     entry.second.push_back(hit);
   }
-  if(m.options_.previewStore && (m.dispatches_ & 0x1fffff)==0)m.publishPreview();
+  if((m.options_.previewStore || !m.options_.gopFrameHistory.empty()) && (m.dispatches_ & 0xfffff)==0)m.publishPreview();
   if(m.options_.zuiFlowProbes && ZuiFlow::watches(uint32_t(a))){
     std::vector<uint8_t> initAndDispatch(0x1cc),queueCode(0x140);
     m.cpu_.read(0x004e0d48,initAndDispatch.data(),initAndDispatch.size());
@@ -1783,6 +1796,11 @@ int Msd309Machine::run() {
     f.flush();if(!f)throw std::runtime_error("cannot write complete execution summary file");
   }
   if (!options_.exportGopFrame.empty()) exportGopFrames();
+  if (!options_.gopFrameHistory.empty()) {
+    publishPreview();
+    std::ofstream idx(options_.gopFrameHistory / "index.json");
+    idx << "{\n  \"note\": \"diagnostic GOP preview timeline; format 6 assumed ARGB1555; not panel output\",\n  \"frames\": [\n    " << historyIndex_ << "\n  ]\n}\n";
+  }
   if (!options_.dumpRanges.empty()) dumpGuestRanges();
   std::cout << s << "\nUART: " << riu_.uart << '\n';
   return 2; // Research execution is incomplete even when a diagnostic
@@ -1815,7 +1833,7 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
   return layers;
 }
 void Msd309Machine::publishPreview() const {
-  if (!options_.previewStore) return;
+  if (!options_.previewStore && options_.gopFrameHistory.empty()) return;
   if (!options_.offscreenInspector.empty()) {
     // DIAGNOSTIC offscreen inspector: read-only copy of a guest surface using the stated geometry; never a GOP window, never panel output.
     auto s = options_.offscreenInspector.front();
@@ -1839,9 +1857,22 @@ void Msd309Machine::publishPreview() const {
   }
   auto layers = collectGopLayers();
   auto frame = composeGopPreview(layers);
+  if(options_.exploratoryGeHeight5Full)frame.label+=" | HYPOTHESIS: register 6F=height-5 copies full height";
   if(riu_.geBlendCopies)frame.label+=" | EXPLORATORY GE blend-copy model in use (not Titania4 behavior)";
   if(riu_.geI2Glyphs)frame.label+=" | EXPLORATORY GE I2-glyph model in use (not Titania4 behavior)";
   if(riu_.geUniformStretches)frame.label+=" | EXPLORATORY GE uniform-stretch model in use (alpha semantics are a hypothesis, not Titania4 behavior)";
+  if (!options_.gopFrameHistory.empty() && !frame.empty() && frame.checksum != historyChecksum_ && historyFrames_ < 128) {
+    // Every distinct GOP content state, in guest-time order (diagnostic timeline; the window itself only shows the latest).
+    historyChecksum_ = frame.checksum;
+    auto name = options_.gopFrameHistory / ("gop_" + std::to_string(historyFrames_) + "_d" + std::to_string(dispatches_) + ".bmp");
+    auto bmp = previewFrameToBmp32(frame);
+    std::ofstream f(name, std::ios::binary);
+    f.write(reinterpret_cast<const char*>(bmp.data()), std::streamsize(bmp.size()));
+    historyIndex_ += (historyFrames_ ? ",\n    " : "") + std::string("{\"file\":\"") + name.filename().string() + "\",\"dispatches\":" + std::to_string(dispatches_) +
+                     ",\"checksum\":\"" + hex(frame.checksum) + "\",\"covered_pixels\":" + std::to_string(std::count(frame.covered.begin(), frame.covered.end(), uint8_t(1))) + "}";
+    ++historyFrames_;
+  }
+  if (!options_.previewStore) return;
   options_.previewStore->setGuestStatus("MIPS dispatches " + std::to_string(dispatches_));
   options_.previewStore->publish(std::move(frame));
 }
@@ -2062,10 +2093,26 @@ std::string Msd309Machine::summary() const {
     }
     s<<"\n  }";
   }
+  if(options_.exploratoryAfecIndirect>=0)s<<",\n  \"exploratory_afec_indirect_6a3c_initial\": "<<options_.exploratoryAfecIndirect<<",\n  \"afec_indirect_reads\": "<<riu_.afecIndirectReads()<<",\n  \"afec_indirect_writes\": "<<riu_.afecIndirectWrites()<<",\n  \"afec_indirect_final_value\": "<<riu_.afecIndirectValue();
+  if(!options_.bitHypotheses.empty()){
+    s<<",\n  \"exploratory_mmio_bits\": [";
+    bool firstBits=true;
+    for(const auto& h:riu_.hypothesisBits()){
+      if(!firstBits)s<<',';firstBits=false;
+      s<<"{\"address\":\""<<hex(h.address)<<"\",\"mask\":"<<unsigned(h.mask)<<",\"value\":"<<unsigned(h.value)<<",\"reads\":"<<h.reads<<'}';
+    }
+    s<<']';
+  }
   if(options_.exploratoryAvdNoise>=0)s<<",\n  \"exploratory_avd_noise_constant\": "<<options_.exploratoryAvdNoise<<",\n  \"exploratory_avd_noise_reads\": "<<riu_.avdNoiseReads();
   if(options_.exploratoryAvdHtotal>=0)s<<",\n  \"exploratory_avd_htotal_constant\": "<<options_.exploratoryAvdHtotal<<",\n  \"exploratory_avd_htotal_reads\": "<<riu_.avdHtotalReads();
   if(!riu_.guardedStretchDetail().empty())s<<",\n  \"ge_guarded_stretch_request\": \""<<riu_.guardedStretchDetail()<<"\"";
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(options_.exploratoryGeBlendCopy && !riu_.geBlendCopyLog.empty()){
+    s<<",\n  \"ge_blend_copy_log\": [";
+    for(size_t i=0;i<riu_.geBlendCopyLog.size();++i)s<<(i?",\n    ":"\n    ")<<riu_.geBlendCopyLog[i];
+    s<<"\n  ]";
+  }
+  if(options_.exploratoryGeHeight5Full)s<<",\n  \"exploratory_ge_height5_full_copy\": true";
   if(options_.exploratoryGeBlendCopy)s<<",\n  \"exploratory_ge_blend_copy\": true,\n  \"ge_blend_copies_retired\": "<<riu_.geBlendCopies<<",\n  \"ge_blend_copy_pixels_written\": "<<riu_.geBlendCopyPixels;
   if(options_.exploratoryGeI2Glyph)s<<",\n  \"exploratory_ge_i2_glyph\": true,\n  \"ge_i2_glyphs_retired\": "<<riu_.geI2Glyphs<<",\n  \"ge_i2_glyph_pixels_written\": "<<riu_.geI2GlyphPixels;
   if(options_.diagnosticVifCrLock>=0)s<<",\n  \"diagnostic_vif_cr_lock\": "<<options_.diagnosticVifCrLock;

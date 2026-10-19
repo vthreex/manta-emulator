@@ -74,9 +74,13 @@ struct Options {
   int diagnosticAvd11dbBit7=-1;
   bool diagnosticAvdInvalidPublication=false;
   bool diagnosticRestoreByIdentityBranch=false;   // DIAGNOSTIC: branch whose two arms both rewrite the tested bit to its tested value
+  bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': GE copies cover every destination row (6F = height-5 is an encoding artefact)
   bool exploratoryGeBlendCopy=false;   // EXPLORATORY: ARGB1555->C surface copy, blend coefficient ONE read as replace
   bool exploratoryGeI2Glyph=false;   // EXPLORATORY: anti-aliased I2 glyph blit hypotheses
   int exploratoryGeUniformStretch=-1;   // EXPLORATORY: 0 opaque-source, 1 alpha-bit (uniform-colour stretched BitBlt only)
+  int exploratoryAfecIndirect=-1;   // HYPOTHESIS: content of the indirectly addressed AFEC register 6A3C (bracket it)
+  struct BitHypothesis { uint32_t address; unsigned mask, value; };
+  std::vector<BitHypothesis> bitHypotheses;   // HYPOTHESIS: --exploratory-mmio-bits ADDR:MASK:VALUE (bit-scoped constants)
   int exploratoryAvdNoise=-1;   // HYPOTHESIS: AFEC noise-magnitude byte BF206A04 reads this constant (requires absent-HSYNC); bracket it
   int exploratoryAvdHtotal=-1;   // HYPOTHESIS: published AFEC HTotal reads this constant (requires absent-HSYNC); bracket it
   int diagnosticVifCrLock=-1;   // BRACKETING: VIF CR_LOCK_STATUS bit0 at 0x1F224471 (run 0 and 1)
@@ -108,6 +112,7 @@ struct Options {
   std::filesystem::path dumpPrefix;
   struct OffscreenSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; };
   std::vector<OffscreenSurface> offscreenInspector;   // DIAGNOSTIC read-only viewer of a guest surface that is NOT a GOP window (at most one)
+  std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
   std::vector<uint32_t> watchPcRegs;   // read-only probe: record registers/stack words at these original PCs
   std::filesystem::path trace, replay, summary, coverage, exportGopFrame;
   std::shared_ptr<GopPreviewStore> previewStore;   // DIAGNOSTIC GOP preview hand-off to the native window (filled on the emulator thread)
@@ -199,6 +204,8 @@ public:
   std::vector<uint8_t> watchSet_;   // bitmap over code addresses (empty = off)
   std::vector<GopLayer> collectGopLayers() const;
   void publishPreview() const;
+  mutable uint64_t historyChecksum_ = 0, historyFrames_ = 0;
+  mutable std::string historyIndex_;
   const std::string &uart() const { return riu_.uart; }
 };
 } // namespace manta

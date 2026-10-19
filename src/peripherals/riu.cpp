@@ -444,6 +444,10 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   if(exploratoryAvdHtotal_>=0)
     for(unsigned i=0;i<n;++i)if(a+i==0x1f206b8d || a+i==0x1f206b90)v|=255u<<(8*i);
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04)v|=255u<<(8*(0x1f206a04-a));
+  for(const auto& h:hypothesisBits_)
+    if(a<=h.address && uint64_t(a)+n>h.address)v|=uint32_t(h.mask)<<(8*(h.address-a));
+  if(exploratoryAfecIndirect_>=0 && afecIndirectActive())
+    for(unsigned i=0;i<n;++i)if(a+i==0x1f206b39 || a+i==0x1f206b3c)v|=255u<<(8*i);
   // Live VIF carrier-recovery lock status; only bit 0 is defined, and only by the explicit bracketing diagnostic.
   if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471)
     v|=1u<<(8*(0x1f224471-a));
@@ -503,6 +507,15 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
     v |= byte << (i * 8);
   }
+  if(exploratoryAfecIndirect_>=0 && afecIndirectActive())
+    for(unsigned i=0;i<n;++i){
+      if(a+i==0x1f206b39)v=(v&~(255u<<(8*i)))|(uint32_t(afecIndirectValue_>>8)<<(8*i));
+      if(a+i==0x1f206b3c)v=(v&~(255u<<(8*i)))|(uint32_t(afecIndirectValue_&255)<<(8*i));
+    }
+  for(const auto& h:hypothesisBits_)
+    if(a<=h.address && uint64_t(a)+n>h.address){
+      auto shift=8*(h.address-a);v=(v&~(uint32_t(h.mask)<<shift))|(uint32_t(h.value)<<shift);
+    }
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04){
     auto shift=8*(0x1f206a04-a);v=(v&~(255u<<shift))|(uint32_t(exploratoryAvdNoise_)<<shift);
   }
@@ -680,6 +693,17 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     event("exploratory_vif_chip_revision",a,n,unsigned(exploratoryVifRevision_),
       "EXPLICIT unverified silicon-revision input; Titania4 header REG_CHIP_REVISION1ECF maps byte3D9D; actual Manta stepping unknown; independent of fetch byte3C05, no completion generated");
   }
+  if(exploratoryAfecIndirect_>=0 && afecIndirectActive() && ((a<=0x1f206b39 && uint64_t(a)+n>0x1f206b39) || (a<=0x1f206b3c && uint64_t(a)+n>0x1f206b3c))){
+    ++afecIndirectReads_;
+    event("exploratory_afec_indirect_read",a,n,afecIndirectValue_,
+      "HYPOTHESIS: indirect AFEC register 6A3C (address latched in 11A1:11A0 with bit7 set) returns this 16-bit content; content/semantics unknown, bracketed");
+  }
+  for(auto& h:hypothesisBits_)
+    if(a<=h.address && uint64_t(a)+n>h.address){
+      ++h.reads;
+      char label[160];snprintf(label,sizeof label,"HYPOTHESIS, not a measurement: only bits %02X of this byte read as %02X (bit-scoped constant); other bits keep their provenance; real value unknown, bracket it",h.mask,h.value);
+      event("exploratory_hypothesis_bits",h.address,1,h.value,label);
+    }
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04){
     ++avdNoiseReads_;
     event("exploratory_avd_noise_constant",a,n,unsigned(exploratoryAvdNoise_),
@@ -895,6 +919,9 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
+  for(const auto& h:hypothesisBits_)
+    if(a<=h.address && uint64_t(a)+n>h.address)
+      throw std::runtime_error("hardware-owned status byte under a bit hypothesis; guest writes cannot manufacture it");
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04)
     throw std::runtime_error("AFEC noise magnitude is hardware-owned; guest writes cannot manufacture it");
   if(exploratoryAvdHtotal_>=0 && ((a<=0x1f206b8d && uint64_t(a)+n>0x1f206b8d) || (a<=0x1f206b90 && uint64_t(a)+n>0x1f206b90)))
@@ -925,6 +952,14 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     throw std::runtime_error("Write overlaps hypothetical immutable fetch revision byte; register writability remains unsupported");
   if(a<=0x1f003d9d && uint64_t(a)+n>0x1f003d9d && exploratoryVifRevision_>=0)
     throw std::runtime_error("Write overlaps hypothetical immutable VIF chip revision; register write semantics unsupported");
+  if(exploratoryAfecIndirect_>=0 && n==1 && (a==0x1f206b39 || a==0x1f206b3c) && afecIndirectActive()){
+    // data pair while the indirect window is open: updates the indirectly addressed register only
+    afecIndirectValue_=a==0x1f206b39?uint16_t((afecIndirectValue_&0x00ff)|((v&255)<<8)):uint16_t((afecIndirectValue_&0xff00)|(v&255));
+    ++afecIndirectWrites_;
+    event("exploratory_afec_indirect_write",a,n,v,
+      "HYPOTHESIS: byte written to the indirectly addressed AFEC register 6A3C; the plain 119D/119E storage is not modified");
+    return;
+  }
   if(pqSram_.advance(tick))event("pq_sram_commit",0x1f205f04,2,uint32_t(pqSram_.commits),"original five-byte coefficient payload stored in SRAM; deterministic provisional transfer latency elapsed");
   if(a<=0x1f001cdd && uint64_t(a)+n>0x1f001cdd && pmBoot_.cause())
     throw std::runtime_error("PM PowerOnMode writer unsupported under external AC-on boundary; mode not silently changed or acknowledged");
@@ -1229,7 +1264,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(candidateGeBitBlt && exploratoryGeI2Glyph && a==0x1f205180 && v==0x0040 && knownBits(a,2)==0xffff){
       try{
         glyph=GeI2Glyph::decode(0x0040,[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead);
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead,exploratoryGeHeight5Full);
       }catch(const std::exception&){glyph.reset();}   // not this request class: the ordinary guarded path decides
     }
     if(glyph){
@@ -1244,12 +1279,41 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }else if(candidateGeBitBlt && exploratoryGeBlendCopy && a==0x1f205180 && v==0x0040 && knownBits(a,2)==0xffff && [&]{
         try{
           copyPlan=GeBlendCopy::decode(0x0040,[&](unsigned index){auto address=0x1f205000+4*index;
-            return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead);
+            return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead,exploratoryGeHeight5Full);
           return true;
-        }catch(const std::exception&){return false;}
+        }catch(const std::exception& error){copyRefusal_=error.what();return false;}
       }()){
       raster=[this,g=copyPlan]{
+        // Animation/presentation trace: what this guest copy changes, measured against the destination before the write.
+        uint64_t changed=0,nonBlack=0;
+        std::string fb1,fb2;
+        if(g.left<=g.right){
+          try{
+            uint32_t width=(g.right-g.left+1)*2;
+            for(uint32_t y=0;y<=g.bottom-g.top;++y){
+              auto old=dramRead(g.destination+(g.top+y)*g.destinationPitch+g.left*2,width);
+              const auto& row=g.sourceRows[y];
+              for(uint32_t x=0;x<width;x+=2){
+                uint16_t o=uint16_t(old[x]|(old[x+1]<<8)),w=uint16_t(row[x]|(row[x+1]<<8));
+                changed+=o!=w;nonBlack+=(w&0x7fff)!=0;
+              }
+            }
+          }catch(const std::exception&){changed=nonBlack=UINT64_MAX;}
+        }
         g.execute(dramWritable,dramWrite);
+        try{
+          auto surface=[&](uint32_t base,uint32_t pitch){
+            std::vector<uint8_t> all;all.reserve(size_t(pitch)*248);
+            for(uint32_t y=0;y<248;++y){auto row=dramRead(base+y*pitch,pitch);all.insert(all.end(),row.begin(),row.end());}
+            return sha256(all);
+          };
+          fb1=surface(g.source-g.srcY*g.sourcePitch,g.sourcePitch);
+          fb2=surface(g.destination,g.destinationPitch);
+        }catch(const std::exception&){fb1=fb2="unavailable";}
+        if(geBlendCopyLog.size()<256)
+          geBlendCopyLog.push_back("{\"index\":"+std::to_string(geBlendCopies+1)+",\"source\":"+std::to_string(g.source)+",\"destination\":"+std::to_string(g.destination)+
+            ",\"src_xy\":["+std::to_string(g.srcX)+","+std::to_string(g.srcY)+"],\"dest_rect\":["+std::to_string(g.left)+","+std::to_string(g.top)+","+std::to_string(g.right)+","+std::to_string(g.bottom)+
+            "],\"changed_words\":"+std::to_string(changed)+",\"non_black_words\":"+std::to_string(nonBlack)+",\"fb1_sha256\":\""+fb1+"\",\"fb2_sha256\":\""+fb2+"\"}");
         ++geBlendCopies;
         auto count=g.left>g.right?0u:(g.right-g.left+1)*(g.bottom-g.top+1);
         geBlendCopyPixels+=count;
@@ -1310,7 +1374,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
           return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
       }catch(const std::exception& error){
         // Observation only: the exact exception text is a tested contract; the register file travels in the summary.
-        guardedStretchDetail_=std::string("plain-BitBlt decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+"; GE registers (index=value):";
+        guardedStretchDetail_=std::string("plain-BitBlt decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+(copyRefusal_.empty()?"":"; exploratory blend-copy refused: "+copyRefusal_)+"; GE registers (index=value):";
         char buffer[40];
         for(unsigned index=0;index<0x80;++index){
           auto address=0x1f205000+4*index;auto value=get(address,2),known=knownBits(address,2);

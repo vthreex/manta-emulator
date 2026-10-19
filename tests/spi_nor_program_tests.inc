@@ -306,7 +306,13 @@ void geBlendCopyTests(){
   require(dst[0]==0xd8 && dst[1]==0xc6 && dst[2720*2+10]==0x34 && dst[2720*2+11]==0x12 && dst[2]==0 && dst[3]==0x80,"source words are copied unchanged to the same column of the matching destination row");
   src[2720*4+20]=0x77;                        // source row 4 (hidden by the quirk) differs from destination
   rejects([&]{GeBlendCopy::decode(0x40,get,read);});
+  {
+    auto full=GeBlendCopy::decode(0x40,get,read,true);   // hypothesis B3': every destination row is copied
+    full.execute(writable,write);
+    require(dst[2720*4+20]==0x77 && full.sourceRows.size()==8,"the full-height hypothesis copies the five rows the strict rule refuses");
+  }
   src[2720*4+20]=0;
+  dst[2720*4+20]=0;
   regs[0x11]={0xff01,0xffff};rejects([&]{GeBlendCopy::decode(0x40,get,read);});   // coefficient CONST, not ONE
   regs[0x11]={0xff00,0xffff};
   regs[0x00]={0x45,0xffff};rejects([&]{GeBlendCopy::decode(0x40,get,read);});     // key enabled
@@ -315,6 +321,16 @@ void geBlendCopyTests(){
   regs[0x6e]={0x550,0xffff};
   regs[0x20]={0xe380,0xffff};regs[0x21]={0x00e8,0xffff};regs[0x30]={0xaa0,0xffff};   // source inside the destination surface: overlapping
   rejects([&]{GeBlendCopy::decode(0x40,get,read);});
+  {
+    // a surface that ends exactly where the destination begins is adjacent, not overlapping (the original's full 248-row presentation copy)
+    std::map<unsigned,std::pair<uint16_t,uint16_t>> r2=regs;
+    r2[0x20]={0xd880,0xffff};r2[0x21]={0x00dd,0xffff};r2[0x69]={0,0xffff};r2[0x6b]={247,0xffff};r2[0x6f]={243,0xffff};r2[0x57]={0,0xffff};
+    r2[0x26]={0x2380,0xffff};r2[0x27]={0x00e8,0xffff};
+    auto g2=[&](unsigned i){return r2[i];};
+    auto readAny=[&](uint32_t,size_t size){return std::vector<uint8_t>(size,0);};
+    auto adjacent=GeBlendCopy::decode(0x40,g2,readAny,true);
+    require(adjacent.top==0 && adjacent.bottom==247 && adjacent.rows==248,"adjacent source and destination surfaces are accepted (full 248-row copy)");
+  }
 }
 void avdNoiseConstantTests(){
   using namespace manta;
@@ -327,6 +343,52 @@ void avdNoiseConstantTests(){
   bool rejected=false;
   try{r.write(0x1f206a04,1,0,0x80503000,0xff,2);}catch(const std::exception&){rejected=true;}
   require(rejected,"a guest write cannot manufacture the noise magnitude");
+}
+void afecIndirectTests(){
+  using namespace manta;
+  Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};
+  off.write(0x1f206b41,1,0x6a,0,0xff,1);off.write(0x1f206b40,1,0xbc,0,0xff,2);
+  require(!off.afecIndirectActive() && off.knownBits(0x1f206b39,1)==0,"without the hypothesis the data pair is never defined by the address latch");
+  Riu r;r.symbolicInit=true;r.event=[](auto,auto,auto,auto,auto){};r.configureExploratoryAfecIndirect(0x1234);
+  require(!r.afecIndirectActive() && r.knownBits(0x1f206b39,1)==0 && r.knownBits(0x1f206b3c,1)==0,"nothing is defined before the address pair is programmed");
+  r.write(0x1f206b41,1,0x6a,0,0xff,1);r.write(0x1f206b40,1,0x3c,0,0xff,2);
+  require(!r.afecIndirectActive() && r.knownBits(0x1f206b39,1)==0,"address 6A3C without bit 7 does not open the window");
+  r.write(0x1f206b40,1,0xbc,0,0xff,3);
+  require(r.afecIndirectActive() && r.knownBits(0x1f206b39,1)==255 && r.knownBits(0x1f206b3c,1)==255 && r.knownBits(0x1f206b3a,1)==0 && r.knownBits(0x1f206b38,1)==0,"with 6A3C + bit 7 exactly the two data bytes are defined");
+  auto hi=r.read(0x1f206b39,1,0x80503d40,0xff,4);r.stopReason.clear();auto lo=r.read(0x1f206b3c,1,0x80503d44,0xff,5);r.stopReason.clear();
+  require(hi==0x12 && lo==0x34 && r.afecIndirectReads()==2,"high byte at BF206B39, low byte at BF206B3C");
+  r.write(0x1f206b39,1,0x56,0,0xff,6);r.write(0x1f206b3c,1,0xe0,0,0xff,7);
+  require(r.afecIndirectValue()==0x56e0 && r.afecIndirectWrites()==2,"writes while the window is open update the indirect register");
+  r.write(0x1f206b40,1,0x3c,0,0xff,8);   // window closed (restore sequence)
+  require(!r.afecIndirectActive() && r.knownBits(0x1f206b39,1)==0 && r.knownBits(0x1f206b3c,1)==0,"closing the window leaves the plain bytes untouched and undefined");
+  r.write(0x1f206b40,1,0xbc,0,0xff,9);
+  auto again=r.read(0x1f206b39,1,0x80503d40,0xff,10);r.stopReason.clear();
+  require(again==0x56,"re-opening the window shows the content written earlier");
+  r.write(0x1f206b41,1,0x6b,0,0xff,11);
+  require(!r.afecIndirectActive(),"another address does not match");
+}
+void hypothesisBitsTests(){
+  using namespace manta;
+  Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};
+  require(off.knownBits(0x1f206f5d,1)==0,"status byte undefined without a hypothesis");
+  Riu r;r.symbolicInit=true;r.event=[](auto,auto,auto,auto,auto){};
+  r.addHypothesisBits(0x1f206f5d,0x52,0x10);
+  require(r.knownBits(0x1f206f5d,1)==0x52 && r.knownBits(0x1f206f5c,1)==0 && r.knownBits(0x1f206f5e,1)==0,"only the named bits of exactly that byte become known");
+  require(r.knownBits(0x1f206f5c,2)==0x5200 && r.knownBits(0x1f206f5c,4)==0x5200u,"halfword/word reads expose the bits at the right byte lane");
+  auto v=r.read(0x1f206f5d,1,0x80528024,0x52,1);r.stopReason.clear();
+  require((v&0x52)==0x10 && r.hypothesisBits()[0].reads==1,"bits read as the stated value and the read is counted");
+  bool rejected=false;
+  try{r.write(0x1f206f5d,1,0,0x80528000,0xff,2);}catch(const std::exception&){rejected=true;}
+  require(rejected,"guest writes cannot manufacture a hardware-owned status byte");
+  rejected=false;
+  try{r.addHypothesisBits(0x1f206f5d,0x01,0x01);}catch(const std::exception&){rejected=true;}
+  require(rejected,"duplicate hypotheses are refused");
+  rejected=false;
+  try{r.addHypothesisBits(0x1f206f5e,0x01,0x02);}catch(const std::exception&){rejected=true;}
+  require(rejected,"a value outside its mask is refused");
+  rejected=false;
+  try{r.addHypothesisBits(0x1e000000,0x01,0x01);}catch(const std::exception&){rejected=true;}
+  require(rejected,"addresses outside the RIU window are refused");
 }
 void avdHtotalConstantTests(){
   using namespace manta;

@@ -79,6 +79,20 @@ inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t
   f.checksum = hash;
   return f;
 }
+// Top-down 32-bit BGRA BMP of a composed preview frame (uncovered pixels are fully transparent black). Host-side export only.
+inline std::vector<uint8_t> previewFrameToBmp32(const GopPreviewFrame& f) {
+  const uint32_t imageBytes = f.width * f.height * 4, header = 54;
+  std::vector<uint8_t> out(header + imageBytes, 0);
+  auto put16 = [&](size_t at, uint32_t v) { out[at] = uint8_t(v); out[at + 1] = uint8_t(v >> 8); };
+  auto put32 = [&](size_t at, uint32_t v) { put16(at, v & 0xffff); put16(at + 2, v >> 16); };
+  out[0] = 'B'; out[1] = 'M'; put32(2, header + imageBytes); put32(10, header); put32(14, 40);
+  put32(18, f.width); put32(22, uint32_t(-int32_t(f.height))); put16(26, 1); put16(28, 32); put32(34, imageBytes);
+  for (size_t i = 0; i < f.bgra.size(); ++i) {
+    uint32_t v = f.covered[i] ? f.bgra[i] : 0;
+    out[header + i * 4] = uint8_t(v); out[header + i * 4 + 1] = uint8_t(v >> 8); out[header + i * 4 + 2] = uint8_t(v >> 16); out[header + i * 4 + 3] = uint8_t(v >> 24);
+  }
+  return out;
+}
 // Thread-safe hand-off from the emulator thread (owner of guest RAM) to the native window.
 class GopPreviewStore {
 public:

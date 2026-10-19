@@ -2864,6 +2864,8 @@ int main() {
     geI2GlyphTests();
     geBlendCopyTests();
     avdNoiseConstantTests();
+    afecIndirectTests();
+    hypothesisBitsTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

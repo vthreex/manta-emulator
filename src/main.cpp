@@ -126,6 +126,18 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--diagnostic-htotal-branch-join")o.diagnosticHtotalBranchJoin=true;
       else if(a=="--candidate-spi-nor-write")o.candidateSpiNorWrite=true;
       else if(a=="--exploratory-usb-no-device")o.exploratoryUsbNoDevice=true;
+      else if(a=="--exploratory-mmio-bits"){
+        auto spec=value(i);   // HEXADDR:HEXMASK:HEXVALUE
+        unsigned long addr=0,mask=0,val=0;char c1=0,c2=0;
+        if(std::sscanf(spec.c_str(),"%lx%c%lx%c%lx",&addr,&c1,&mask,&c2,&val)!=5 || c1!=':' || c2!=':' || mask>255 || val>255 || (val&~mask) || addr<0x1f200000ul || addr>=0x1f400000ul)
+          throw std::runtime_error("--exploratory-mmio-bits needs 1F2xxxxx:MASK:VALUE (hex, value within mask)");
+        o.bitHypotheses.push_back({uint32_t(addr),unsigned(mask),unsigned(val)});
+      }
+      else if(a=="--exploratory-afec-indirect-6a3c"){
+        auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
+        if(used!=token.size() || n>0xffff || token[0]=='-')throw std::runtime_error("AFEC indirect 6A3C content must be 0..0xFFFF");
+        o.exploratoryAfecIndirect=int(n);
+      }
       else if(a=="--exploratory-avd-noise-constant"){
         auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
         if(used!=token.size() || n>0xff || token[0]=='-')throw std::runtime_error("AVD noise constant must be 0..0xFF");
@@ -138,6 +150,7 @@ static int appMain(const std::vector<std::string> &args) {
       }
       else if(a=="--exploratory-ge-i2-glyph")o.exploratoryGeI2Glyph=true;
       else if(a=="--exploratory-ge-blend-copy")o.exploratoryGeBlendCopy=true;
+      else if(a=="--exploratory-ge-height5-full-copy")o.exploratoryGeHeight5Full=true;
       else if(a=="--exploratory-ge-uniform-stretch"){
         auto token=value(i);
         if(token=="opaque-source")o.exploratoryGeUniformStretch=0;
@@ -266,6 +279,8 @@ static int appMain(const std::vector<std::string> &args) {
       }
       else if (a == "--preview-capture-offscreen")
         previewOptions.captureOffscreenPath = value(i);
+      else if (a == "--gop-frame-history")
+        o.gopFrameHistory = utf8Path(value(i));
       else if (a == "--preview-capture")
         previewOptions.capturePath = value(i);
       else if (a == "--preview-close-after-ms")
@@ -316,8 +331,11 @@ static int appMain(const std::vector<std::string> &args) {
                 "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
                 "--exploratory-avd-no-sync-events: HYPOTHESIS: with no sync input the AVD event latch 11FC bits 0 and 2 stay clear (other bits invalid); acks are clear-only; requires absent-HSYNC and shared AVD run\n"
                 "--diagnostic-avd-invalid-publication: DIAGNOSTIC: AVD stores of invalid/partially known data into 11C0..11DF are kept with their exact known mask (no information created); requires the shared AVD run\n"
+                "--exploratory-mmio-bits HEXADDR:MASK:VALUE: HYPOTHESIS (bracket it), not a measurement: only the MASK bits of that hardware-owned status byte read as VALUE; other bits keep their provenance; guest writes rejected; requires guarded exploration (repeatable)\n"
+                "--exploratory-afec-indirect-6a3c N: HYPOTHESIS (bracket it), not a measurement: the 16-bit content of the AFEC register indirectly addressed through 11A1:11A0 = 6A3C (+bit7) and read/written via 119D/119E starts as N 0..0xFFFF; requires guarded exploration\n"
                 "--exploratory-avd-noise-constant N: HYPOTHESIS (bracket it), not a measurement: AFEC noise-magnitude byte (BF206A04) reads constant N 0..0xFF; requires the absent-HSYNC hypothesis and guarded exploration\n"
                 "--exploratory-avd-htotal-constant N: HYPOTHESIS (bracket it), not a TV measurement: published AFEC HTotal (BF206B8D/BF206B90) reads constant N 0..0xFFFF; requires the absent-HSYNC hypothesis and guarded exploration\n"
+                "--exploratory-ge-height5-full-copy: HYPOTHESIS, NOT TITANIA4-VERIFIED: GE copies/glyph blits cover every destination row although the original programs register 6F = height-5 (805241C4); relaxes the hidden-rows acceptance rule of the exploratory blend-copy and I2 glyph models\n"
                 "--exploratory-ge-blend-copy: EXPLORATORY, NOT TITANIA4-VERIFIED: execute the original ZUI offscreen-to-GOP ARGB1555->C copy (0040, control 0005, blend coefficient ONE read as replace); requires --candidate-ge-bitblt\n"
                 "--exploratory-ge-i2-glyph: EXPLORATORY, NOT TITANIA4-VERIFIED: execute the original ZUI anti-aliased I2 glyph blit (0040, control 0045, formats 0C01) under hypotheses H1..H5 (see video/ge_i2_glyph.hpp); requires --candidate-ge-bitblt\n"
                 "--exploratory-ge-uniform-stretch opaque-source|alpha-bit: EXPLORATORY, NOT TITANIA4-VERIFIED: execute a stretched GE BitBlt only when its whole sampled source is one colour (sampling/filter cannot matter) under the named alpha hypothesis; dither assumed no-op; requires --candidate-ge-bitblt\n"
@@ -388,6 +406,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--watch-pc-regs HEX,HEX: READ-ONLY probe; records registers and 8 stack words at the first 6 and last 18 executions of each original PC (summary watched_pc_hits)\n"
                "--dump-guest-range HEXADDR+HEXLEN --dump-prefix PREFIX: READ-ONLY; after the run write that guest physical range to PREFIX_<addr>.bin (repeatable)\n"
                "--offscreen-inspector HEXADDR:WIDTHxHEIGHT:PITCH (+ --preview-capture-offscreen FILE.bmp): DIAGNOSTIC read-only second view of a guest surface that is not a GOP window; press O in the window to toggle; never panel output\n"
+               "--gop-frame-history DIR: DIAGNOSTIC: write a BMP of the GOP preview into DIR (plus index.json) each time its content changes (max 128); directory must exist\n"
                "--preview-capture FILE.bmp / --preview-close-after-ms N: windowed mode only; save the window client area after the guest run stopped, then close (automation)\n"
                "--export-gop-frame FILE.json: after the run, decode the guest memory of every enabled+latched GOP window (format 6 assumed ARGB1555) to FILE_bankB_winW.bmp plus metadata; debug export only, no composition, never an authentic-frame claim\n"
                "--summary FILE --coverage FILE --max-instructions N\n"
@@ -435,7 +454,7 @@ static int appMain(const std::vector<std::string> &args) {
     }
     // Debug exports must never truncate the selected stock image, including
     // an alias reached through a Windows hard link or symbolic link.
-    for(const auto& output:{o.trace,o.summary,o.exportGopFrame,o.coverage,o.tspFirmwareDump,o.pm51History,nvram}){
+    for(const auto& output:{o.trace,o.summary,o.exportGopFrame,o.gopFrameHistory,o.coverage,o.tspFirmwareDump,o.pm51History,nvram}){
       if(output.empty())continue;
       std::error_code ec;
       bool alias=std::filesystem::equivalent(firmware,output,ec);
