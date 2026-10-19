@@ -1,4 +1,5 @@
 #include "peripherals/riu.hpp"
+#include "video/ge_stretch_request.hpp"
 #include <array>
 #include <stdexcept>
 #include "storage/sha256.hpp"
@@ -436,6 +437,8 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
       v&=~(255u<<(8*i));v|=uint32_t(vifZeroInput_.sample(a+i).known)<<(8*i);
     }
   }
+  if(exploratoryAvdHtotal_>=0)
+    for(unsigned i=0;i<n;++i)if(a+i==0x1f206b8d || a+i==0x1f206b90)v|=255u<<(8*i);
   // Live VIF carrier-recovery lock status; only bit 0 is defined, and only by the explicit bracketing diagnostic.
   if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471)
     v|=1u<<(8*(0x1f224471-a));
@@ -495,6 +498,11 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
     v |= byte << (i * 8);
   }
+  if(exploratoryAvdHtotal_>=0)
+    for(unsigned i=0;i<n;++i){
+      if(a+i==0x1f206b8d)v=(v&~(255u<<(8*i)))|(uint32_t(exploratoryAvdHtotal_&255)<<(8*i));
+      if(a+i==0x1f206b90)v=(v&~(255u<<(8*i)))|(uint32_t((exploratoryAvdHtotal_>>8)&255)<<(8*i));
+    }
   if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471){
     auto shift=8*(0x1f224471-a);v=(v&~(1u<<shift))|(uint32_t(diagnosticVifCrLock_)<<shift);
   }
@@ -663,6 +671,11 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     ++vifRevisionReads_;
     event("exploratory_vif_chip_revision",a,n,unsigned(exploratoryVifRevision_),
       "EXPLICIT unverified silicon-revision input; Titania4 header REG_CHIP_REVISION1ECF maps byte3D9D; actual Manta stepping unknown; independent of fetch byte3C05, no completion generated");
+  }
+  if(exploratoryAvdHtotal_>=0 && ((a<=0x1f206b8d && uint64_t(a)+n>0x1f206b8d) || (a<=0x1f206b90 && uint64_t(a)+n>0x1f206b90))){
+    ++avdHtotalReads_;
+    event("exploratory_avd_htotal_constant",a,n,unsigned(exploratoryAvdHtotal_),
+      "HYPOTHESIS, not a TV measurement: with the absent-HSYNC hypothesis the published AFEC HTotal (11C7/11C8) reads this constant; real value with no sync is unknown, bracket it");
   }
   if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471){
     ++vifCrLockReads_;
@@ -869,6 +882,8 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
+  if(exploratoryAvdHtotal_>=0 && ((a<=0x1f206b8d && uint64_t(a)+n>0x1f206b8d) || (a<=0x1f206b90 && uint64_t(a)+n>0x1f206b90)))
+    throw std::runtime_error("published HTotal is hardware/AVD-owned; guest writes cannot manufacture it");
   if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471)
     throw std::runtime_error("VIF carrier-recovery lock status is hardware-owned; guest writes cannot manufacture it");
   for(auto observed:{0x1f224644u,0x1f224650u,0x1f224651u,0x1f22465du})
@@ -1196,6 +1211,28 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     std::function<void()> raster;
     if(candidateGeBitBlt && a==0x1f205180 && (v&0x70)==0x40){
       if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
+      if(v==0x8040 || v==0xc040){
+        // Guarded: report what the original library programmed, without executing or guessing any pixel.
+        std::string detail;
+        try{
+          detail=GeStretchRequest::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
+            return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};}).describe();
+        }catch(const std::exception& error){
+          detail=std::string("stretch decode refused: ")+error.what()+"; GE registers (index=value, known mask if partial):";
+          char buffer[48];
+          for(unsigned index=0;index<0x80;++index){
+            auto address=0x1f205000+4*index;auto value=get(address,2),known=knownBits(address,2);
+            if(!known)continue;
+            if(known==0xffff)snprintf(buffer,sizeof buffer," %02X=%04X",index,value&0xffff);
+            else snprintf(buffer,sizeof buffer," %02X=%04X/k%04X",index,value&0xffff,known&0xffff);
+            detail+=buffer;
+          }
+        }
+        // The exact boundary text is a tested contract; the decode travels in a trace event instead.
+        guardedStretchDetail_=detail;
+        event("ge_stretch_request_guarded",a,n,v,"GUARDED, not executed: "+detail);
+        throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");
+      }
       auto plan=GeBitBlt::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
         return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
       raster=[this,plan]{

@@ -61,7 +61,7 @@ side effects were executed (kept distinct; not joined). Next stop: see below.
 ## Next dependency: `80501744`
 
 The application's second visit to the AVD monitor `805016C8` compares two history halfwords
-(`806E83CC`..) that were stored from the unknown HTotal sample. The first join degraded the
+(`806D83CC`..) that were stored from the unknown HTotal sample. The first join degraded the
 stability counter to unknown, so the join of `80501BFC` cannot be re-applied soundly (it
 refuses when its counter cells are already unknown). The remaining honest options are a
 bracketed HTotal input hypothesis or a symbolic counter; neither is a TV measurement.

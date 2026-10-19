@@ -72,6 +72,7 @@ struct Options {
   int diagnosticAvd11dbBit7=-1;
   bool diagnosticAvdInvalidPublication=false;
   bool diagnosticRestoreByIdentityBranch=false;   // DIAGNOSTIC: branch whose two arms both rewrite the tested bit to its tested value
+  int exploratoryAvdHtotal=-1;   // HYPOTHESIS: published AFEC HTotal reads this constant (requires absent-HSYNC); bracket it
   int diagnosticVifCrLock=-1;   // BRACKETING: VIF CR_LOCK_STATUS bit0 at 0x1F224471 (run 0 and 1)
   int diagnosticUsbUnpoweredDplus=-1;   // BRACKETING: line-state D+ of a guest-powered-down USB PHY (run 0 and 1)
   bool exploratoryUsbNoDevice=false;   // HYPOTHESIS: powered USB PHY, no device attached (SE0 line state)
@@ -97,7 +98,7 @@ struct Options {
   uint64_t orBudget=10000000;
   uint64_t orDivider=1;
   uint32_t breakpoint = 0, pauseMmio = 0;
-  std::filesystem::path trace, replay, summary, coverage;
+  std::filesystem::path trace, replay, summary, coverage, exportGopFrame;
   std::filesystem::path tspFirmwareDump;
   std::filesystem::path pm51History;
 };
@@ -179,6 +180,7 @@ public:
   Msd309Machine(Flash flash, Options options);
   int run();
   std::string summary() const;
+  void exportGopFrames() const;
   const std::string &uart() const { return riu_.uart; }
 };
 } // namespace manta

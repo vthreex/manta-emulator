@@ -14,6 +14,7 @@
 #include "board/mmio_read_mask.hpp"
 #include "board/opaque_read_policy.hpp"
 #include "video/gop.hpp"
+#include "video/gop_export.hpp"
 #include <array>
 #include <algorithm>
 #include <filesystem>
@@ -1234,6 +1235,10 @@ void geStretchRequestTests(){
   regs[0x6f].first=43;rejects([&]{Req::decode(0x8040,get);});regs=saved;
   regs[0x6a].first=530;rejects([&]{Req::decode(0x8040,get);});regs=saved;
   regs[0].first=0;rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  regs[0x59]={0x40,0xffff};require(Req::decode(0x8040,get).srcWidth==7,"GE-init default reg59=0x40 still decodes");
+  regs[0x59]={0x41,0xffff};rejects([&]{Req::decode(0x8040,get);});
+  regs[0x59]={0x80,0xffff};rejects([&]{Req::decode(0x8040,get);});regs=saved;
+  require(Req::decode(0x8040,get).describe().find("cmd=8040")!=std::string::npos && Req::decode(0x8040,get).describe().find("unresolved:")!=std::string::npos,"describe lists the decoded request and its unresolved semantics");
   require(Req::expectedRatio(7,7)==0x1000,"unit scale is exactly 1.0 in 4.12 fixed point");
   require(Req::expectedRatio(1,32)==128 && Req::expectedRatio(32,1)==0xffffffffu && Req::expectedRatio(31,1)==31u*4096,"scale ratio boundaries match the original 32x limit");
 }
@@ -2832,6 +2837,8 @@ int main() {
     spiNorProgramTests();
     usbNoDeviceTests();
     vifCrLockBracketTests();
+    avdHtotalConstantTests();
+    gopExportTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

@@ -124,6 +124,11 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--diagnostic-htotal-branch-join")o.diagnosticHtotalBranchJoin=true;
       else if(a=="--candidate-spi-nor-write")o.candidateSpiNorWrite=true;
       else if(a=="--exploratory-usb-no-device")o.exploratoryUsbNoDevice=true;
+      else if(a=="--exploratory-avd-htotal-constant"){
+        auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
+        if(used!=token.size() || n>0xffff || token[0]=='-')throw std::runtime_error("AVD HTotal constant must be 0..0xFFFF");
+        o.exploratoryAvdHtotal=int(n);
+      }
       else if(a=="--diagnostic-vif-cr-lock"){
         auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
         if(used!=token.size() || n>1)throw std::runtime_error("VIF carrier-lock bracketing value must be 0 or 1");
@@ -219,6 +224,8 @@ static int appMain(const std::vector<std::string> &args) {
         if (bank > 255) throw std::runtime_error("Exploratory SC bank out of range");
         o.exploratoryScBank = int(bank);
       }
+      else if (a == "--export-gop-frame")
+        o.exportGopFrame = utf8Path(value(i));
       else if (a == "--summary")
         o.summary = utf8Path(value(i));
       else if(a=="--tsp-firmware-dump") o.tspFirmwareDump=utf8Path(value(i));
@@ -263,6 +270,7 @@ static int appMain(const std::vector<std::string> &args) {
                 "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
                 "--exploratory-avd-no-sync-events: HYPOTHESIS: with no sync input the AVD event latch 11FC bits 0 and 2 stay clear (other bits invalid); acks are clear-only; requires absent-HSYNC and shared AVD run\n"
                 "--diagnostic-avd-invalid-publication: DIAGNOSTIC: AVD stores of invalid/partially known data into 11C0..11DF are kept with their exact known mask (no information created); requires the shared AVD run\n"
+                "--exploratory-avd-htotal-constant N: HYPOTHESIS (bracket it), not a TV measurement: published AFEC HTotal (BF206B8D/BF206B90) reads constant N 0..0xFFFF; requires the absent-HSYNC hypothesis and guarded exploration\n"
                 "--diagnostic-vif-cr-lock N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines only 0x1F224471 bit0 (VIF carrier-recovery lock status); requires guarded exploration\n"
                 "--diagnostic-avd-11db-bit7 N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines AFEC 11DB bit 7 whose producer is unknown\n"
                 "--candidate-spi-nor-write: opt-in guest SPI NOR WRSR/page-program/erase (06/01/02/20/52/D8) into a copy-on-write overlay; stock image never written; requires --candidate-spi\n"
@@ -326,6 +334,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-ge-reset: HYPOTHETICAL disabled engine/virtual queue, initially empty 16-entry stages with provisional clocks/latency\n"
                "--exploratory-semaphore-idle: HYPOTHETICAL initially unowned resources; no PM51/AEON ownership asserted\n"
                "--exploratory-gamma-enable 0|1: HYPOTHETICAL initial bank-10 gamma enable bit\n"
+               "--export-gop-frame FILE.json: after the run, decode the guest memory of every enabled+latched GOP window (format 6 assumed ARGB1555) to FILE_bankB_winW.bmp plus metadata; debug export only, no composition, never an authentic-frame claim\n"
                "--summary FILE --coverage FILE --max-instructions N\n"
                "--tsp-firmware-dump FILE: bounded private dump of original guest TSP_SetBase input; requires --candidate-tsp\n"
                "--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS\n"
@@ -356,7 +365,7 @@ static int appMain(const std::vector<std::string> &args) {
     }
     // Debug exports must never truncate the selected stock image, including
     // an alias reached through a Windows hard link or symbolic link.
-    for(const auto& output:{o.trace,o.summary,o.coverage,o.tspFirmwareDump,o.pm51History,nvram}){
+    for(const auto& output:{o.trace,o.summary,o.exportGopFrame,o.coverage,o.tspFirmwareDump,o.pm51History,nvram}){
       if(output.empty())continue;
       std::error_code ec;
       bool alias=std::filesystem::equivalent(firmware,output,ec);

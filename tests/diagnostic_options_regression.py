@@ -24,6 +24,7 @@ for name, extra, text in (
     ('invalid-publication-needs-avd-run', ['--diagnostic-avd-invalid-publication'], 'requires the guarded shared AVD run'),
     ('11db-bracket-needs-avd-run', ['--diagnostic-avd-11db-bit7', '1'], 'requires the guarded shared AVD run'),
     ('vif-lock-bracket-needs-guarded-exploration', ['--diagnostic-vif-cr-lock', '1'], 'requires guarded exploration'),
+    ('htotal-constant-needs-absent-hsync', ['--exploratory-avd-htotal-constant', '0'], 'requires the absent-HSYNC hypothesis'),
     ('nor-write-needs-candidate-spi', ['--candidate-spi-nor-write'], 'requires the candidate SPI model'),
     ('restore-branch-needs-nor-write', ['--diagnostic-restore-by-identity-branch'], 'requires guarded exploration and the SPI NOR write model'),
 ):
@@ -33,6 +34,9 @@ for name, extra, text in (
 r = run(['--diagnostic-avd-11db-bit7', '2'])
 assert r.returncode == 1 and 'must be 0 or 1' in r.stderr, r.stderr
 checks['11db-bracket-rejects-non-bit'] = True
+r = run(['--exploratory-avd-htotal-constant', '65536'])
+assert r.returncode == 1 and 'must be 0..0xFFFF' in r.stderr, r.stderr
+checks['htotal-constant-rejects-out-of-range'] = True
 r = run(['--diagnostic-vif-cr-lock', '2'])
 assert r.returncode == 1 and 'must be 0 or 1' in r.stderr, r.stderr
 checks['vif-lock-bracket-rejects-non-bit'] = True
@@ -43,7 +47,9 @@ for flag, label in (('--diagnostic-htotal-branch-join', 'DIAGNOSTIC ONLY, not ha
                     ('--exploratory-avd-no-sync-events', 'HYPOTHESIS'),
                     ('--diagnostic-avd-invalid-publication', 'DIAGNOSTIC'),
                     ('--diagnostic-avd-11db-bit7', 'BRACKETING DIAGNOSTIC'),
+                    ('--exploratory-avd-htotal-constant', 'not a TV measurement'),
                     ('--diagnostic-vif-cr-lock', 'BRACKETING DIAGNOSTIC'),
+                    ('--export-gop-frame', 'never an authentic-frame claim'),
                     ('--candidate-spi-nor-write', 'copy-on-write overlay'),
                     ('--diagnostic-restore-by-identity-branch', 'DIAGNOSTIC ONLY')):
     assert flag in help_text and label in help_text, flag

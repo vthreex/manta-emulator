@@ -114,6 +114,42 @@ void spiNorProgramTests(){
   require(f3.read(0x13456)==0x00 && f3.read(0x13457)==uint8_t(makeStock()[0x13457]&0x12) && f3.read(0x13458)==uint8_t(makeStock()[0x13458]&0x34),
     "ISP page program lands at the address registers' location");
 }
+void gopExportTests(){
+  using namespace manta;
+  // 3x2 window inside a 10-byte pitch: opaque black, transparent white, pure red/green/blue (5-bit), padding must be ignored.
+  std::vector<uint8_t> mem(20,0xee);
+  auto put=[&](unsigned row,unsigned col,uint16_t v){mem[row*10+col*2]=uint8_t(v);mem[row*10+col*2+1]=uint8_t(v>>8);};
+  put(0,0,0x8000);put(0,1,0x7fff);put(0,2,0xfc00);put(1,0,0x83e0);put(1,1,0x801f);put(1,2,0x0000);
+  auto bmp=argb1555WindowToBmp32(mem,10,3,2);
+  require(bmp.size()==54+3*2*4 && bmp[0]=='B' && bmp[1]=='M',"BMP header and size");
+  require(bmp[18]==3 && bmp[22]==0xfe && bmp[23]==0xff && bmp[24]==0xff && bmp[25]==0xff,"width 3, negative height (top-down) -2");
+  auto px=[&](unsigned i){return std::array<uint8_t,4>{bmp[54+i*4],bmp[55+i*4],bmp[56+i*4],bmp[57+i*4]};};
+  require((px(0)==std::array<uint8_t,4>{0,0,0,255}),"8000 = opaque black");
+  require((px(1)==std::array<uint8_t,4>{255,255,255,0}),"7FFF = transparent white");
+  require((px(2)==std::array<uint8_t,4>{0,0,255,255}),"FC00 = opaque red in BGRA byte order");
+  require((px(3)==std::array<uint8_t,4>{0,255,0,255}),"83E0 = opaque green");
+  require((px(4)==std::array<uint8_t,4>{255,0,0,255}),"801F = opaque blue");
+  bool rejected=false;
+  try{argb1555WindowToBmp32(mem,10,3,3);}catch(const std::exception&){rejected=true;}
+  require(rejected,"geometry beyond the observed memory is refused");
+  rejected=false;
+  try{argb1555WindowToBmp32(mem,4,3,1);}catch(const std::exception&){rejected=true;}
+  require(rejected,"pitch smaller than a row is refused");
+}
+void avdHtotalConstantTests(){
+  using namespace manta;
+  Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};
+  require(off.knownBits(0x1f206b8d,1)==0 && off.knownBits(0x1f206b90,1)==0,"published HTotal stays invalid without the hypothesis");
+  Riu r;r.symbolicInit=true;r.event=[](auto,auto,auto,auto,auto){};r.configureExploratoryAvdHtotal(0x1234);
+  require(r.knownBits(0x1f206b8d,1)==255 && r.knownBits(0x1f206b90,1)==255,"both published HTotal bytes become known");
+  require(r.knownBits(0x1f206b8c,1)==0 && r.knownBits(0x1f206b8e,1)==0 && r.knownBits(0x1f206b91,1)==0 && r.knownBits(0x1f206b94,1)==0,"neighbouring AFEC bytes (including the co-channel word) stay invalid");
+  auto lo=r.read(0x1f206b8d,1,0x805030fc,0xff,1);r.stopReason.clear();
+  auto hi=r.read(0x1f206b90,1,0x805030f8,0xff,2);r.stopReason.clear();
+  require(lo==0x34 && hi==0x12 && r.avdHtotalReads()==2,"low byte at BF206B8D, high byte at BF206B90, reads counted");
+  bool rejected=false;
+  try{r.write(0x1f206b90,1,0,0x80503000,0xff,3);}catch(const std::exception&){rejected=true;}
+  require(rejected,"a guest write cannot manufacture the published HTotal");
+}
 void vifCrLockBracketTests(){
   using namespace manta;
   Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};

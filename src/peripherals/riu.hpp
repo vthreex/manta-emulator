@@ -113,6 +113,9 @@ class Riu {
   bool exploratoryUsbNoDevice_=false;
   int diagnosticUsbUnpoweredDplus_=-1;
   int diagnosticVifCrLock_=-1;
+  std::string guardedStretchDetail_;
+  int exploratoryAvdHtotal_=-1;
+  uint64_t avdHtotalReads_=0;
   uint64_t vifCrLockReads_=0;
   bool exploratoryAvdNoSyncEvents_=false;
   int diagnosticAvd11dbBit7_=-1;
@@ -490,6 +493,10 @@ public:
   }
   // BRACKETING: VIF carrier-recovery lock status (0x1F224471 bit 0, reference CR_LOCK_STATUS). Bit 0 only; run 0 and 1.
   void configureDiagnosticVifCrLock(unsigned bit) { diagnosticVifCrLock_ = int(bit & 1); }
+  // HYPOTHESIS: with no HSYNC the published AFEC HTotal bytes (11C7 -> BF206B8D low, 11C8 -> BF206B90 high) read a constant.
+  void configureExploratoryAvdHtotal(unsigned value) { exploratoryAvdHtotal_ = int(value & 0xffff); }
+  uint64_t avdHtotalReads() const { return avdHtotalReads_; }
+  const std::string& guardedStretchDetail() const { return guardedStretchDetail_; }
   uint64_t vifCrLockReads() const { return vifCrLockReads_; }
   void configureDiagnosticUsbUnpoweredDplus(unsigned dplus) { diagnosticUsbUnpoweredDplus_ = int(dplus & 1); }
   // DIAGNOSTIC: a stored register bit whose value is, by construction, the original unknown bit again.

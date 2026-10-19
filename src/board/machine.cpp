@@ -3,6 +3,7 @@
 #include "board/htotal_join.hpp"
 #include "storage/sha256.hpp"
 #include "video/gop.hpp"
+#include "video/gop_export.hpp"
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -122,6 +123,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   }
   if(o.diagnosticRestoreByIdentityBranch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.candidateSpiNorWrite))
     throw std::runtime_error("restore-by-identity branch diagnostic requires guarded exploration and the SPI NOR write model");
+  if(o.exploratoryAvdHtotal>=0){
+    if(!o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("AVD HTotal constant hypothesis requires the absent-HSYNC hypothesis and guarded exploration");
+    riu_.configureExploratoryAvdHtotal(unsigned(o.exploratoryAvdHtotal));
+  }
   if(o.diagnosticVifCrLock>=0){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("VIF carrier-lock bracketing requires guarded exploration");
     riu_.configureDiagnosticVifCrLock(unsigned(o.diagnosticVifCrLock));
@@ -1743,9 +1749,59 @@ int Msd309Machine::run() {
     f << s << '\n';
     f.flush();if(!f)throw std::runtime_error("cannot write complete execution summary file");
   }
+  if (!options_.exportGopFrame.empty()) exportGopFrames();
   std::cout << s << "\nUART: " << riu_.uart << '\n';
   return 2; // Research execution is incomplete even when a diagnostic
             // checkpoint is reached.
+}
+// Debug export of the memory behind every ENABLED + LATCHED GOP window (never forced on, never composed).
+void Msd309Machine::exportGopFrames() const {
+  std::ostringstream j;
+  j << "{\n  \"category\": \"host-side decode of guest framebuffer bytes; not a claim of television output\","
+       "\n  \"authentic_frame\": false,\n  \"panel_composition_modeled\": false,\n  \"format6_is_argb1555_ASSUMED\": true,"
+       "\n  \"stop_pc\": \"" << hex(blockingPc_) << "\",\n  \"windows\": [";
+  bool first = true;
+  for (auto bank : {1u, 4u})
+    for (unsigned window = 0; window < (bank == 1 ? 4u : 2u); ++window) {
+      auto d = readGopWindow(riu_, bank, window, true);   // active latch AND enable bit required
+      if (!d) continue;
+      if (!first) j << ',';
+      first = false;
+      j << "\n    {\"bank\":" << bank << ",\"window\":" << window << ",\"x\":" << d->x << ",\"y\":" << d->y
+        << ",\"width\":" << d->width << ",\"height\":" << d->height << ",\"pitch\":" << d->pitch
+        << ",\"format\":" << unsigned(d->format) << ",\"miu_relative_address\":\"" << hex(d->miuRelativeAddress) << '"';
+      auto physical = gopPhysicalAddress(riu_, bank, window, d->miuRelativeAddress);
+      uint64_t size = uint64_t(d->pitch) * d->height;
+      if (!physical || !size || size > 16 * 1024 * 1024 || uint64_t(*physical) + size > dramBacking_.size()) {
+        j << ",\"exported\":false,\"reason\":\"physical address or size not resolvable\"}";
+        continue;
+      }
+      auto bytes = std::span<const uint8_t>(dramBacking_).subspan(*physical, size);
+      uint64_t invalid = 0, nonzero = 0;
+      for (size_t i = 0; i < bytes.size(); ++i) {
+        nonzero += bytes[i] != 0;
+        auto address = *physical + uint32_t(i);
+        invalid += preservedBits_.memoryUnknown(address) || unknownObservations_.bytes().contains(address);
+      }
+      j << ",\"physical_address\":\"" << hex(*physical) << "\",\"source_sha256\":\"" << sha256(bytes)
+        << "\",\"nonzero_bytes\":" << nonzero << ",\"invalid_bytes\":" << invalid;
+      if (d->format != 6 || d->bpp != 16) { j << ",\"exported\":false,\"reason\":\"only format 6 (assumed ARGB1555) is decoded\"}"; continue; }
+      if (invalid) { j << ",\"exported\":false,\"reason\":\"window memory contains unknown bytes\"}"; continue; }
+      auto image = argb1555WindowToBmp32(bytes, d->pitch, d->width, d->height);
+      auto name = options_.exportGopFrame;
+      name.replace_extension();
+      name += "_bank" + std::to_string(bank) + "_win" + std::to_string(window) + ".bmp";
+      std::ofstream f(name, std::ios::binary);
+      f.write(reinterpret_cast<const char*>(image.data()), std::streamsize(image.size()));
+      f.flush();
+      if (!f) throw std::runtime_error("cannot write GOP frame export");
+      j << ",\"exported\":true,\"bmp\":\"" << name.filename().string() << "\",\"bmp_sha256\":\"" << sha256(image) << "\"}";
+    }
+  j << "\n  ]\n}\n";
+  std::ofstream meta(options_.exportGopFrame);
+  meta << j.str();
+  meta.flush();
+  if (!meta) throw std::runtime_error("cannot write GOP frame export metadata");
 }
 std::string Msd309Machine::summary() const {
   std::ostringstream s;
@@ -1876,6 +1932,8 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
   if(options_.exploratoryAvdNoSyncEvents)s<<",\n  \"exploratory_avd_no_sync_events\": true,\n  \"avd_event_acks\": "<<riu_.avdMcuBus().eventAcks;
   if(options_.diagnosticAvd11dbBit7>=0)s<<",\n  \"diagnostic_avd_11db_bit7\": "<<options_.diagnosticAvd11dbBit7;
+  if(options_.exploratoryAvdHtotal>=0)s<<",\n  \"exploratory_avd_htotal_constant\": "<<options_.exploratoryAvdHtotal<<",\n  \"exploratory_avd_htotal_reads\": "<<riu_.avdHtotalReads();
+  if(!riu_.guardedStretchDetail().empty())s<<",\n  \"ge_guarded_stretch_request\": \""<<riu_.guardedStretchDetail()<<"\"";
   if(options_.diagnosticVifCrLock>=0)s<<",\n  \"diagnostic_vif_cr_lock\": "<<options_.diagnosticVifCrLock;
   if(options_.exploratoryUsbNoDevice)s<<",\n  \"exploratory_usb_no_device\": true";
   if(options_.diagnosticHtotalBranchJoin)s<<",\n  \"diagnostic_htotal_branch_join\": true,\n  \"diagnostic_htotal_branch_joins\": "<<htotalJoins_;

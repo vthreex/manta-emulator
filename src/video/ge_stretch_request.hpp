@@ -42,6 +42,18 @@ struct GeStretchRequest {
     if(destinationFormat==0x0c)r.push_back("format-C alpha-bit quantization and whether source alpha or register 11 supplies it");
     if(sourceFormat==0x09)r.push_back("source ARGB1555 alpha expansion when bit 15 is clear");
     return r;}
+  // Human-readable decode for the stop reason; read-only, no raster effect.
+  std::string describe()const{
+    auto hx=[](uint64_t v){char b[24];snprintf(b,sizeof b,"0x%llX",(unsigned long long)v);return std::string(b);};
+    std::string t="decoded request (decode-only, not executed): cmd="+std::string(nearest?"C040":"8040")+" ctl="+hx(control)+" mode="+hx(mode)
+      +" fmt src="+hx(sourceFormat)+" dst="+hx(destinationFormat)+" src="+hx(source)+"/pitch "+std::to_string(sourcePitch)
+      +" dst="+hx(destination)+"/pitch "+std::to_string(destinationPitch)
+      +" destRect=("+std::to_string(destLeft)+","+std::to_string(destTop)+")-("+std::to_string(destRight)+","+std::to_string(destBottom)+")"
+      +" srcRect=("+std::to_string(srcX)+","+std::to_string(srcY)+") "+std::to_string(srcWidth)+"x"+std::to_string(srcHeight)
+      +" ratio="+hx(ratioX)+"/"+hx(ratioY)+" dither="+(dither()?"1":"0")+" blend="+(blend()?"1":"0")+" key="+(sourceKey()?"1":"0")
+      +" alpha11..13="+hx(alpha11)+","+hx(alpha12)+","+hx(alpha13)+"; unresolved:";
+    for(auto& u:unresolved())t+=" ["+u+"]";
+    return t;}
   static GeStretchRequest decode(uint16_t command,const Register& reg){
     if(command!=0x8040 && command!=0xc040)throw std::runtime_error("not a stretched GE BitBlt command");
     auto field=[&](unsigned index,uint16_t mask=0xffff){auto [value,known]=reg(index);
@@ -57,7 +69,8 @@ struct GeStretchRequest {
     if(!(p.mode&0x10))throw std::runtime_error("GE stretch command without stretch-enable mode bit");
     // Register 59 is zero in every corroborated plain and stretched request;
     // its non-zero meaning (orientation/mirror) is not modeled here.
-    if(field(0x59)!=0)throw std::runtime_error("GE stretch orientation register non-zero; unsupported");
+    // Bits 1:0 are the orientation field (unmodeled); 0x40 is the GE-init default (805267AC) present in connected runs.
+    if((field(0x59)&~0x40u)!=0)throw std::runtime_error("GE stretch orientation register non-zero; unsupported");
     auto format=field(0x34,0x1f1f);p.sourceFormat=format&0x1f;p.destinationFormat=format>>8;
     p.source=field(0x20)|(field(0x21)<<16);p.destination=field(0x26)|(field(0x27)<<16);
     p.sourcePitch=field(0x30);p.destinationPitch=field(0x33);

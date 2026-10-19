@@ -1,0 +1,269 @@
+{
+ "commit_base": "e30deb2",
+ "binary": "manta.exe built after e30deb2 (+ --export-gop-frame)",
+ "options": "q0 diagnostic flags + --diagnostic-vif-cr-lock 0",
+ "category": "connected diagnostic raster under opt-in hypotheses; NOT authentic television output",
+ "ge_register_writes_by_original_gfx_library_between_ticks_855872101_and_855883993": [
+  {
+   "tick": 855872101,
+   "pc": "0x80526598",
+   "address": "0x1f205004",
+   "value": "0x1",
+   "ra": "0x8052318c"
+  },
+  {
+   "tick": 855872163,
+   "pc": "0x80526598",
+   "address": "0x1f2051a0",
+   "value": "0x0",
+   "ra": "0x8052319c"
+  },
+  {
+   "tick": 855872225,
+   "pc": "0x80526598",
+   "address": "0x1f2051a4",
+   "value": "0x0",
+   "ra": "0x805231ac"
+  },
+  {
+   "tick": 855872291,
+   "pc": "0x80526598",
+   "address": "0x1f2051a8",
+   "value": "0x54f",
+   "ra": "0x805231cc"
+  },
+  {
+   "tick": 855872357,
+   "pc": "0x80526598",
+   "address": "0x1f2051ac",
+   "value": "0xf7",
+   "ra": "0x805231ec"
+  },
+  {
+   "tick": 855872420,
+   "pc": "0x80526598",
+   "address": "0x1f2051c0",
+   "value": "0x0",
+   "ra": "0x80523200"
+  },
+  {
+   "tick": 855872482,
+   "pc": "0x80526598",
+   "address": "0x1f2051c4",
+   "value": "0xff00",
+   "ra": "0x80523210"
+  },
+  {
+   "tick": 855872555,
+   "pc": "0x80526598",
+   "address": "0x1f205180",
+   "value": "0x30",
+   "ra": "0x805232f4"
+  },
+  {
+   "tick": 855879134,
+   "pc": "0x80526598",
+   "address": "0x1f2050d0",
+   "value": "0xc09",
+   "ra": "0x805251cc"
+  },
+  {
+   "tick": 855879219,
+   "pc": "0x80526598",
+   "address": "0x1f205098",
+   "value": "0x2380",
+   "ra": "0x80525204"
+  },
+  {
+   "tick": 855879281,
+   "pc": "0x80526598",
+   "address": "0x1f20509c",
+   "value": "0xe8",
+   "ra": "0x80525214"
+  },
+  {
+   "tick": 855879343,
+   "pc": "0x80526598",
+   "address": "0x1f2050cc",
+   "value": "0xaa0",
+   "ra": "0x80525224"
+  },
+  {
+   "tick": 855879455,
+   "pc": "0x80526598",
+   "address": "0x1f205004",
+   "value": "0x1",
+   "ra": "0x80526a10"
+  },
+  {
+   "tick": 855882584,
+   "pc": "0x80526598",
+   "address": "0x1f205154",
+   "value": "0x0",
+   "ra": "0x80522cb4"
+  },
+  {
+   "tick": 855882646,
+   "pc": "0x80526598",
+   "address": "0x1f20515c",
+   "value": "0x0",
+   "ra": "0x80522cc4"
+  },
+  {
+   "tick": 855882708,
+   "pc": "0x80526598",
+   "address": "0x1f205158",
+   "value": "0x550",
+   "ra": "0x80522cd4"
+  },
+  {
+   "tick": 855882770,
+   "pc": "0x80526598",
+   "address": "0x1f205160",
+   "value": "0xf8",
+   "ra": "0x80522ce4"
+  },
+  {
+   "tick": 855883141,
+   "pc": "0x80526598",
+   "address": "0x1f205164",
+   "value": "0x40",
+   "ra": "0x80526b88"
+  },
+  {
+   "tick": 855883247,
+   "pc": "0x80526598",
+   "address": "0x1f205004",
+   "value": "0x1",
+   "ra": "0x8052318c"
+  },
+  {
+   "tick": 855883309,
+   "pc": "0x80526598",
+   "address": "0x1f2051a0",
+   "value": "0x0",
+   "ra": "0x8052319c"
+  },
+  {
+   "tick": 855883371,
+   "pc": "0x80526598",
+   "address": "0x1f2051a4",
+   "value": "0x0",
+   "ra": "0x805231ac"
+  },
+  {
+   "tick": 855883437,
+   "pc": "0x80526598",
+   "address": "0x1f2051a8",
+   "value": "0x54f",
+   "ra": "0x805231cc"
+  },
+  {
+   "tick": 855883503,
+   "pc": "0x80526598",
+   "address": "0x1f2051ac",
+   "value": "0xf7",
+   "ra": "0x805231ec"
+  },
+  {
+   "tick": 855883566,
+   "pc": "0x80526598",
+   "address": "0x1f2051c0",
+   "value": "0x0",
+   "ra": "0x80523200"
+  },
+  {
+   "tick": 855883628,
+   "pc": "0x80526598",
+   "address": "0x1f2051c4",
+   "value": "0xff00",
+   "ra": "0x80523210"
+  },
+  {
+   "tick": 855883701,
+   "pc": "0x80526598",
+   "address": "0x1f205180",
+   "value": "0x30",
+   "ra": "0x805232f4"
+  },
+  {
+   "tick": 855883993,
+   "pc": "0x80526598",
+   "address": "0x1f2050c8",
+   "value": "0x1",
+   "ra": "0x80526600"
+  }
+ ],
+ "fill_1": {
+  "rect": "(0,0)-(0x54F,0xF7)",
+  "color": "0xFF000000",
+  "dest_reg_d0": "0x0C09",
+  "pitch": 2720,
+  "dest": "0x00DDD880 (programmed before tick 855872101; see ge-destination docs)",
+  "bytes": 674560
+ },
+ "fill_2": {
+  "rect": "(0,0)-(0x54F,0xF7)",
+  "color": "0xFF000000",
+  "dest_reg_d0": "0x0C09",
+  "pitch": 2720,
+  "dest": "0x00E82380",
+  "bytes": 674560
+ },
+ "caller_chain_static_with_runtime_coverage": [
+  "8047602C UI wrapper @804762DC",
+  "80480CA8 @80480CE0",
+  "804C3684 OSD select @804C37F0",
+  "804AFDFC window creation @804AFEAC",
+  "8049DFC4 ZUI surface/graphics init @8049E184 (fill 1) and @8049E244 (fill 2)",
+  "803EAC58 rect-fill helper @803EACE8",
+  "805202C8 GFX draw @8052034C",
+  "80522F20 GE fill @805232F4 (ra at the command write)"
+ ],
+ "gop_export": {
+  "category": "host-side decode of guest framebuffer bytes; not a claim of television output",
+  "authentic_frame": false,
+  "panel_composition_modeled": false,
+  "format6_is_argb1555_ASSUMED": true,
+  "stop_pc": "0x80501744",
+  "windows": [
+   {
+    "bank": 4,
+    "window": 1,
+    "x": 0,
+    "y": 520,
+    "width": 1360,
+    "height": 248,
+    "pitch": 2720,
+    "format": 6,
+    "miu_relative_address": "0xe82380",
+    "physical_address": "0xe82380",
+    "source_sha256": "bfa2ec185488ac76d56d64b08be20b224da9825a6749d3f5950d189c3c25a393",
+    "nonzero_bytes": 337280,
+    "invalid_bytes": 0,
+    "exported": true,
+    "bmp": "gop0_bank4_win1.bmp",
+    "bmp_sha256": "0ec016b0d3056dffea21bd12a5775d69528be64a7653a8365b2a7472fc64ea4e"
+   }
+  ]
+ },
+ "stop_pc_run_e0": "0x80501744",
+ "stop_pc_run_t0": "0x80501744",
+ "ge_rectangles_retired": 2,
+ "ge_raster_pixels_written": 674560,
+ "summary_sha_matches_export": true,
+ "final_validation": {
+  "binary": "manta_y.exe (= committed source)",
+  "native_checks": 1852,
+  "python_suites": "18/18 pass",
+  "strict_replay": "6,592,741 events, all summary fields identical to a6db0cf/ceb9475 result, stop 80501BFC",
+  "clean_path_window_smoke": "exit 0",
+  "diagnostic_runs": "q0 flags + --diagnostic-vif-cr-lock 0 + --exploratory-avd-htotal-constant 0/0xFFFF/0x360 identical (856,560,643 dispatches)"
+ },
+ "guarded_stretch_request_at_stop": "stretch decode refused: GE stretch ratio disagrees with original scale arithmetic; GE registers (index=value, known mask if partial): 00=0007 01=0011 03=0440 07=8584/kF8F9 10=0000 11=FF01 12=0100 13=00FF 14=0000 15=0000 16=0000 17=0000 18=0000 19=0000 1A=0000 1B=0000 1C=0000 1D=0000 1F=0000 20=6C80 21=03D4 26=D880 27=00DD 2F=00FF 30=0008 32=0001 33=0AA0 34=0C09 35=0000 36=0000 37=0000 38=0000 39=0000 3A=0000 3B=0000 3C=0000 3D=0000 3E=0000 3F=0000 40=0000 41=0000 42=0000 43=0000 44=0000 45=0000 46=0000 47=0000 48=0000 49=0000 4A=0000 4B=0000 4C=0000 4D=0000 4E=0000 4F=0000 50=0000 51=0000 52=0000 53=0000 54=0000 55=0000 56=054F 57=00B4 58=00F7 59=0040 5C=0000 5D=0000 5E=1807 5F=1C79 60=8040 61=0000 62=0100 63=0000 64=000C 65=08F0 66=0000 67=0000 68=0000 69=00B4 6A=054F 6B=00F7 6C=0000 6D=0000 6E=0004 6F=0021 70=0000 71=FF00 72=0000 73=0000 74=0000 75=0000 76=0000 77=0000 78=0000 79=0000 7A=0000 7B=0000 7C=0000 7D=0000 7E=0000 7F=0000",
+ "stop": {
+  "pc": "0x80526598",
+  "reason": "GE BitBlt stretch/filter/mode unsupported",
+  "dispatches": 856560643
+ }
+}
