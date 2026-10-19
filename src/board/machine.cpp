@@ -146,6 +146,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     watchSet_.assign((0x400000+7)/8,0);
     for(auto pc:o.watchPcRegs){auto i=(pc>>2)&0x3fffff;watchSet_[i>>3]|=uint8_t(1u<<(i&7));}
   }
+  if(o.exploratoryGeCopySnapshot){
+    if(!o.exploratoryGeBlendCopy)throw std::runtime_error("copy-snapshot hypothesis requires an exploratory blend-copy model");
+    riu_.exploratoryGeCopySnapshot=true;
+  }
   if(o.exploratoryGeHeight5Full){
     if(!o.exploratoryGeBlendCopy && !o.exploratoryGeI2Glyph)throw std::runtime_error("height-5 full-copy hypothesis requires an exploratory blend-copy or I2 glyph model");
     riu_.exploratoryGeHeight5Full=true;
@@ -2195,6 +2199,7 @@ std::string Msd309Machine::summary() const {
     for(size_t i=0;i<riu_.geBlendCopyLog.size();++i)s<<(i?",\n    ":"\n    ")<<riu_.geBlendCopyLog[i];
     s<<"\n  ]";
   }
+  if(options_.exploratoryGeCopySnapshot)s<<",\n  \"exploratory_ge_copy_snapshot\": true";
   if(options_.exploratoryGeHeight5Full)s<<",\n  \"exploratory_ge_height5_full_copy\": true";
   if(options_.exploratoryGeBlendCopy)s<<",\n  \"exploratory_ge_blend_copy\": true,\n  \"ge_blend_copies_retired\": "<<riu_.geBlendCopies<<",\n  \"ge_blend_copy_pixels_written\": "<<riu_.geBlendCopyPixels;
   if(options_.exploratoryGeI2Glyph)s<<",\n  \"exploratory_ge_i2_glyph\": true,\n  \"ge_i2_glyphs_retired\": "<<riu_.geI2Glyphs<<",\n  \"ge_i2_glyph_pixels_written\": "<<riu_.geI2GlyphPixels;

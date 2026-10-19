@@ -75,6 +75,7 @@ struct Options {
   int diagnosticAvd11dbBit7=-1;
   bool diagnosticAvdInvalidPublication=false;
   bool diagnosticRestoreByIdentityBranch=false;   // DIAGNOSTIC: branch whose two arms both rewrite the tested bit to its tested value
+  bool exploratoryGeCopySnapshot=false;   // HYPOTHESIS B4: overlapping GE blend copies are read-before-write snapshots
   bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': GE copies cover every destination row (6F = height-5 is an encoding artefact)
   unsigned exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: GE reg00 bits (other than bit 0) assumed not to affect a solid fill
   bool exploratoryGeGradientFill=false;   // EXPLORATORY: GE command 0x2030 gradient rectangle fill into format C

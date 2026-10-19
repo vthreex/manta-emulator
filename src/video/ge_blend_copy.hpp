@@ -29,7 +29,10 @@ struct GeBlendCopy {
   }
   // fullHeight = HYPOTHESIS B3': the hardware copies every destination row; register 6F = height-5 is only an encoding artefact
   // (a real TV shows the full banner). false keeps the strict B3 acceptance rule.
-  static GeBlendCopy decode(uint16_t command, const Reg& reg, const Read& read, bool fullHeight = false) {
+  // allowSourceSnapshot = HYPOTHESIS B4: when the source range overlaps the destination, the copy behaves as if every source row were read before any destination write
+  // (this decoder always reads all source rows first). The original ZUI's page-flip copy of the 1360x768 surface programs a 769-row clip (bottom 0x300 inclusive), so its last
+  // source row aliases the first destination row. Real hardware may stream rows in order; unverified.
+  static GeBlendCopy decode(uint16_t command, const Reg& reg, const Read& read, bool fullHeight = false, bool allowSourceSnapshot = false) {
     if (command != 0x0040) throw std::runtime_error("GE blend copy: not the plain command");
     if (field(reg, 0) != 0x0005) throw std::runtime_error("GE blend copy: control is not enable+blend");
     auto mode = reg(1);
@@ -61,7 +64,7 @@ struct GeBlendCopy {
     if (sEnd > 0x08000000 || dEnd > 0x08000000) throw std::runtime_error("GE blend copy range overflows MIU0");
     uint64_t ss = g.source, de = g.destination + uint64_t(g.bottom + 1) * g.destinationPitch;
     uint64_t ds = g.destination + uint64_t(g.top) * g.destinationPitch, se = sEnd;
-    if (ss < de && ds < se) throw std::runtime_error("GE blend copy overlapping ranges unsupported");
+    if (ss < de && ds < se && !allowSourceSnapshot) throw std::runtime_error("GE blend copy overlapping ranges unsupported");
     uint32_t w = g.right - g.left + 1;
     for (uint32_t y = g.top; y <= g.bottom; ++y) {
         uint32_t row = y - g.destTop;

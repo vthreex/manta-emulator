@@ -182,6 +182,28 @@ void gopPreviewTests(){
     store.setFinished();require(store.finished(),"finish flag");
   }
 }
+void geCopySnapshotTests(){
+  using namespace manta;
+  // The original page-flip copy of the 1360x768 surface (0xDDD880 -> 0xFDB880) programs a 769-row clip, so its last source row aliases destination row 0.
+  static const std::pair<unsigned,uint16_t> list[]={{0x00,5},{0x01,0x01},{0x34,0x0c09},{0x20,0xd880},{0x21,0x00dd},{0x26,0xb880},{0x27,0x00fd},{0x30,0xaa0},{0x33,0xaa0},
+    {0x11,0xff00},{0x13,0x00ff},{0x55,0},{0x56,0x54f},{0x57,0},{0x58,0x300},{0x59,0x40},{0x64,0x1000},{0x65,0x1000},{0x68,0},{0x69,0},{0x6a,0x54f},{0x6b,0x300},{0x6c,0},{0x6d,0},{0x6e,0x550},{0x6f,0x2fc}};
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  for(auto [i,v]:list)regs[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+  auto get=[&](unsigned i){return regs[i];};
+  const uint32_t base=0x00ddd880;const size_t pitch=2720;
+  std::vector<uint8_t> mem(0x1fe000+769*pitch,0);
+  for(size_t i=0;i<mem.size();i+=2){mem[i]=uint8_t(i>>1);mem[i+1]=uint8_t(0x80|((i>>9)&0x7f));}
+  auto read=[&](uint32_t a,size_t n){if(a<base||a+n>base+mem.size())throw std::runtime_error("read outside fixture");return std::vector<uint8_t>(mem.begin()+(a-base),mem.begin()+(a-base)+n);};
+  auto writable=[&](uint32_t a,size_t n){return a>=base&&a+n<=base+mem.size();};
+  auto write=[&](uint32_t a,std::span<const uint8_t> b){std::copy(b.begin(),b.end(),mem.begin()+(a-base));};
+  rejects([&]{GeBlendCopy::decode(0x40,get,read,true,false);});                       // strict reading: overlapping ranges refused
+  auto plan=GeBlendCopy::decode(0x40,get,read,true,true);
+  require(plan.rows==769 && plan.bottom==0x300 && plan.sourceRows.size()==769,"769-row clip decodes under the snapshot hypothesis");
+  auto oldRow0=std::vector<uint8_t>(mem.begin()+0x1fe000,mem.begin()+0x1fe000+1360*2);
+  plan.execute(writable,write);
+  require(std::equal(oldRow0.begin(),oldRow0.end(),mem.begin()+0x1fe000+768*pitch),"the aliased 769th source row carries the destination row-0 bytes read BEFORE the copy (snapshot semantics)");
+  require(std::equal(mem.begin(),mem.begin()+1360*2,mem.begin()+0x1fe000),"destination row 0 receives source row 0");
+}
 void geUniformStretchTests(){
   using namespace manta;
   static const std::pair<unsigned,uint16_t> connected[]={{0x00,7},{0x01,0x11},{0x34,0x0c09},{0x20,0x6c80},{0x21,0x03d4},{0x26,0xd880},{0x27,0x00dd},{0x30,8},{0x33,0x0aa0},

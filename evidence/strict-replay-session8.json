@@ -1,0 +1,14 @@
+{
+  "binary": "manta_k3.exe built from the tree at e47386e plus the keyed-stretch edit (all session-8 options are opt-in)",
+  "trace": "ge-blit-cold.jsonl (1,793,739,708 bytes, 6,592,741 events counted with wc -l)",
+  "command": "work/ge-blit-cold-command.json with --record-trace removed, --replay-trace added, coverage/history redirected away from the reference files",
+  "reference_summary_fields": 289,
+  "different_values": [],
+  "fields_only_in_reference": [],
+  "fields_only_in_new": ["spi_nor_programs", "spi_nor_erases", "spi_nor_programmed_bytes", "spi_nor_ignored_writes", "spi_nor_zero_to_one_requests", "flash_overlay_sectors", "flash_overlay_sha256", "flash_stock_sha256", "pm_ir_fifo_received"],
+  "instruction_dispatches": 854795171,
+  "stop_pc": "0x80501bfc",
+  "coverage_identical": true,
+  "pm51_history_identical": true,
+  "pm_power_boot_regression": "PASS on manta_ab, manta_au and manta_k3 in this session (the failure recorded for the cc225d7 binary did not reproduce)"
+}

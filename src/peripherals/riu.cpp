@@ -1298,7 +1298,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }else if(candidateGeBitBlt && exploratoryGeBlendCopy && a==0x1f205180 && v==0x0040 && knownBits(a,2)==0xffff && [&]{
         try{
           copyPlan=GeBlendCopy::decode(0x0040,[&](unsigned index){auto address=0x1f205000+4*index;
-            return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead,exploratoryGeHeight5Full);
+            return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead,exploratoryGeHeight5Full,exploratoryGeCopySnapshot);
           return true;
         }catch(const std::exception& error){copyRefusal_=error.what();return false;}
       }()){

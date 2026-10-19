@@ -355,6 +355,7 @@ public:
   bool exploratoryGeI8Fill=false;   // EXPLORATORY: indexed (format 4) rectangle fill, index = low byte of colour
   uint64_t geI8Fills=0,geI8FillPixels=0;
   std::string copyRefusal_;
+  bool exploratoryGeCopySnapshot=false;   // HYPOTHESIS B4: overlapping blend copies read all source rows before writing
   bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': copies read/write every destination row despite register 6F = height-5
   uint64_t geBlendCopies=0,geBlendCopyPixels=0;
   std::vector<std::string> geBlendCopyLog;   // one JSON object per retired exploratory copy (bounded)
