@@ -279,6 +279,15 @@ static int appMain(const std::vector<std::string> &args) {
       }
       else if (a == "--preview-capture-offscreen")
         previewOptions.captureOffscreenPath = value(i);
+      else if (a == "--gop-frame-history-at"){
+        auto list=value(i);size_t pos=0;
+        while(pos<list.size()){
+          auto comma=list.find(',',pos);if(comma==std::string::npos)comma=list.size();
+          auto token=list.substr(pos,comma-pos);size_t used=0;auto pc=std::stoul(token,&used,16);
+          if(used!=token.size() || pc<0x80000000ul || pc>=0x81000000ul || (pc&3))throw std::runtime_error("--gop-frame-history-at needs aligned KSEG0 hex addresses");
+          o.historyPcs.push_back(uint32_t(pc));pos=comma+1;
+        }
+      }
       else if (a == "--gop-frame-history")
         o.gopFrameHistory = utf8Path(value(i));
       else if (a == "--preview-capture")
@@ -406,6 +415,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--watch-pc-regs HEX,HEX: READ-ONLY probe; records registers and 8 stack words at the first 6 and last 18 executions of each original PC (summary watched_pc_hits)\n"
                "--dump-guest-range HEXADDR+HEXLEN --dump-prefix PREFIX: READ-ONLY; after the run write that guest physical range to PREFIX_<addr>.bin (repeatable)\n"
                "--offscreen-inspector HEXADDR:WIDTHxHEIGHT:PITCH (+ --preview-capture-offscreen FILE.bmp): DIAGNOSTIC read-only second view of a guest surface that is not a GOP window; press O in the window to toggle; never panel output\n"
+               "--gop-frame-history-at HEX,HEX: also sample the GOP history whenever one of these original PCs executes (with --gop-frame-history)\n"
                "--gop-frame-history DIR: DIAGNOSTIC: write a BMP of the GOP preview into DIR (plus index.json) each time its content changes (max 128); directory must exist\n"
                "--preview-capture FILE.bmp / --preview-close-after-ms N: windowed mode only; save the window client area after the guest run stopped, then close (automation)\n"
                "--export-gop-frame FILE.json: after the run, decode the guest memory of every enabled+latched GOP window (format 6 assumed ARGB1555) to FILE_bankB_winW.bmp plus metadata; debug export only, no composition, never an authentic-frame claim\n"

@@ -331,6 +331,7 @@ public:
   bool candidateGeRectFill=false;
   bool candidateGeBitBlt=false;
   uint64_t geBitBlts=0,geBitBltPixels=0;
+  std::string geRegisterFile() const;   // read-only dump of every known GE register (index=value)
   uint64_t geRectangles=0,geRasterPixels=0;
   // EXPLORATORY (-1 off, 0 opaque-source, 1 alpha-bit): uniform-colour stretched BitBlt under a stated alpha hypothesis.
   int exploratoryGeUniformStretch=-1;

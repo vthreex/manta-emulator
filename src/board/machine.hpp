@@ -113,6 +113,7 @@ struct Options {
   struct OffscreenSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; };
   std::vector<OffscreenSurface> offscreenInspector;   // DIAGNOSTIC read-only viewer of a guest surface that is NOT a GOP window (at most one)
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
+  std::vector<uint32_t> historyPcs;   // DIAGNOSTIC: also sample the GOP history when one of these original PCs executes
   std::vector<uint32_t> watchPcRegs;   // read-only probe: record registers/stack words at these original PCs
   std::filesystem::path trace, replay, summary, coverage, exportGopFrame;
   std::shared_ptr<GopPreviewStore> previewStore;   // DIAGNOSTIC GOP preview hand-off to the native window (filled on the emulator thread)

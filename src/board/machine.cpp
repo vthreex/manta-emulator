@@ -518,6 +518,8 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
+  if(!m.options_.historyPcs.empty() && a>=0x80000000u && a<0x81000000u)
+    for(auto pc:m.options_.historyPcs)if(pc==a){m.publishPreview();break;}
   if(!m.watchSet_.empty() && a>=0x80000000u && a<0x81000000u && ((a>>2)&0x3fffff)<m.watchSet_.size()*8 && (m.watchSet_[((a>>2)&0x3fffff)>>3]>>(((a>>2)&0x3fffff)&7)&1)){
     // Observation only: no guest state is touched.
     auto& entry=m.watchHits_[uint32_t(a)];
@@ -528,7 +530,8 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
     if(entry.second.size()>=24)entry.second.erase(entry.second.begin()+6);
     entry.second.push_back(hit);
   }
-  if((m.options_.previewStore || !m.options_.gopFrameHistory.empty()) && (m.dispatches_ & 0xfffff)==0)m.publishPreview();
+  if(m.options_.previewStore && (m.dispatches_ & 0xfffff)==0)m.publishPreview();
+  else if(!m.options_.gopFrameHistory.empty() && (m.dispatches_ & 0x3fff)==0)m.publishPreview();   // finer sampling for the history timeline
   if(m.options_.zuiFlowProbes && ZuiFlow::watches(uint32_t(a))){
     std::vector<uint8_t> initAndDispatch(0x1cc),queueCode(0x140);
     m.cpu_.read(0x004e0d48,initAndDispatch.data(),initAndDispatch.size());

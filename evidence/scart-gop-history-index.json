@@ -1,0 +1,15 @@
+{
+  "note": "diagnostic GOP preview timeline; format 6 assumed ARGB1555; not panel output",
+  "frames": [
+    {"file":"gop_0_d856129536.bmp","dispatches":856129536,"checksum":"0x969558de804c4383","covered_pixels":337280},
+    {"file":"gop_1_d866856099.bmp","dispatches":866856099,"checksum":"0xde62f4d1e04d7783","covered_pixels":337280},
+    {"file":"gop_2_d867258890.bmp","dispatches":867258890,"checksum":"0x2e182b87b48f783","covered_pixels":337280},
+    {"file":"gop_3_d867657125.bmp","dispatches":867657125,"checksum":"0xb076a7534bf68eca","covered_pixels":337280},
+    {"file":"gop_4_d868055519.bmp","dispatches":868055519,"checksum":"0xd1aac92353d11f38","covered_pixels":337280},
+    {"file":"gop_5_d868453793.bmp","dispatches":868453793,"checksum":"0x85e83b17e220c45e","covered_pixels":337280},
+    {"file":"gop_6_d868852139.bmp","dispatches":868852139,"checksum":"0x54d9a0d2700f9c21","covered_pixels":337280},
+    {"file":"gop_7_d869250396.bmp","dispatches":869250396,"checksum":"0x46e1d7da58835421","covered_pixels":337280},
+    {"file":"gop_8_d869648631.bmp","dispatches":869648631,"checksum":"0x45b9fa012d495421","covered_pixels":337280},
+    {"file":"gop_9_d870046867.bmp","dispatches":870046867,"checksum":"0xfb2f709029e554a1","covered_pixels":337280}
+  ]
+}

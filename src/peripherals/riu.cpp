@@ -409,6 +409,18 @@ uint32_t Riu::storageKey(uint32_t a) const {
   }
   return a;
 }
+std::string Riu::geRegisterFile() const {
+  std::string out;
+  char buffer[40];
+  for(unsigned index=0;index<0x80;++index){
+    auto address=0x1f205000+4*index;auto value=get(address,2),known=knownBits(address,2);
+    if(!known)continue;
+    if(known==0xffff)snprintf(buffer,sizeof buffer," %02X=%04X",index,value&0xffff);
+    else snprintf(buffer,sizeof buffer," %02X=%04X/k%04X",index,value&0xffff,known&0xffff);
+    out+=buffer;
+  }
+  return out;
+}
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   if(candidatePmIrFifo_ && n==1 && a==0x1f007b51)return pmIrFifo_.key().has_value()?255:0;
   if(candidateAudioIdma && (a>=0x1f225a00 && a<0x1f225d00)){
@@ -1394,8 +1406,14 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       };
     }else if(candidateGeRectFill && a==0x1f205180){
       if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
-      auto plan=GeRectFill::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-        return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
+      GeRectFill plan;
+      try{
+        plan=GeRectFill::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
+      }catch(const std::exception& error){
+        guardedStretchDetail_=std::string("rect-fill decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+"; GE registers (index=value):"+geRegisterFile();
+        throw;
+      }
       raster=[this,plan]{
         plan.execute(dramWritable,dramWrite);
         ++geRectangles;
