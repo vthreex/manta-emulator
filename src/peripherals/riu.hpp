@@ -115,6 +115,8 @@ class Riu {
   int diagnosticVifCrLock_=-1;
   std::string guardedStretchDetail_;
   int exploratoryAvdHtotal_=-1;
+  int exploratoryAvdNoise_=-1;
+  uint64_t avdNoiseReads_=0;
   uint64_t avdHtotalReads_=0;
   uint64_t vifCrLockReads_=0;
   bool exploratoryAvdNoSyncEvents_=false;
@@ -328,6 +330,12 @@ public:
   // EXPLORATORY (-1 off, 0 opaque-source, 1 alpha-bit): uniform-colour stretched BitBlt under a stated alpha hypothesis.
   int exploratoryGeUniformStretch=-1;
   uint64_t geUniformStretches=0,geUniformStretchPixels=0;
+  // EXPLORATORY: anti-aliased I2 glyph blit under the hypotheses H1..H5 documented in video/ge_i2_glyph.hpp.
+  bool exploratoryGeI2Glyph=false;
+  // EXPLORATORY: offscreen-to-GOP surface copy with blend coefficient ONE (see video/ge_blend_copy.hpp).
+  bool exploratoryGeBlendCopy=false;
+  uint64_t geBlendCopies=0,geBlendCopyPixels=0;
+  uint64_t geI2Glyphs=0,geI2GlyphPixels=0;
   void configureExploratoryGeReset() {
     ge_.exploratoryReset();
     // Only original engine enable and virtual-queue selector bits. All other
@@ -498,6 +506,9 @@ public:
   void configureDiagnosticVifCrLock(unsigned bit) { diagnosticVifCrLock_ = int(bit & 1); }
   // HYPOTHESIS: with no HSYNC the published AFEC HTotal bytes (11C7 -> BF206B8D low, 11C8 -> BF206B90 high) read a constant.
   void configureExploratoryAvdHtotal(unsigned value) { exploratoryAvdHtotal_ = int(value & 0xffff); }
+  // HYPOTHESIS: the AFEC noise-magnitude byte (HAL_AVD_AFEC_GetNoiseMag, BF206A04) reads a constant; bracket it.
+  void configureExploratoryAvdNoise(unsigned value) { exploratoryAvdNoise_ = int(value & 0xff); }
+  uint64_t avdNoiseReads() const { return avdNoiseReads_; }
   uint64_t avdHtotalReads() const { return avdHtotalReads_; }
   const std::string& guardedStretchDetail() const { return guardedStretchDetail_; }
   uint64_t vifCrLockReads() const { return vifCrLockReads_; }

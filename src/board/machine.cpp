@@ -123,6 +123,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   }
   if(o.diagnosticRestoreByIdentityBranch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.candidateSpiNorWrite))
     throw std::runtime_error("restore-by-identity branch diagnostic requires guarded exploration and the SPI NOR write model");
+  if(o.exploratoryAvdNoise>=0){
+    if(!o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("AVD noise constant hypothesis requires the absent-HSYNC hypothesis and guarded exploration");
+    riu_.configureExploratoryAvdNoise(unsigned(o.exploratoryAvdNoise));
+  }
   if(o.exploratoryAvdHtotal>=0){
     if(!o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
       throw std::runtime_error("AVD HTotal constant hypothesis requires the absent-HSYNC hypothesis and guarded exploration");
@@ -131,6 +136,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(!o.watchPcRegs.empty()){
     watchSet_.assign((0x400000+7)/8,0);
     for(auto pc:o.watchPcRegs){auto i=(pc>>2)&0x3fffff;watchSet_[i>>3]|=uint8_t(1u<<(i&7));}
+  }
+  if(o.exploratoryGeBlendCopy){
+    if(!o.candidateGeBitBlt)throw std::runtime_error("blend-copy hypothesis requires the candidate GE BitBlt model");
+    riu_.exploratoryGeBlendCopy=true;
+  }
+  if(o.exploratoryGeI2Glyph){
+    if(!o.candidateGeBitBlt)throw std::runtime_error("I2 glyph hypothesis requires the candidate GE BitBlt model");
+    riu_.exploratoryGeI2Glyph=true;
   }
   if(o.exploratoryGeUniformStretch>=0){
     if(!o.candidateGeBitBlt)throw std::runtime_error("uniform-stretch hypothesis requires the candidate GE BitBlt model");
@@ -1803,8 +1816,31 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
 }
 void Msd309Machine::publishPreview() const {
   if (!options_.previewStore) return;
+  if (!options_.offscreenInspector.empty()) {
+    // DIAGNOSTIC offscreen inspector: read-only copy of a guest surface using the stated geometry; never a GOP window, never panel output.
+    auto s = options_.offscreenInspector.front();
+    GopLayer l;
+    l.bank = 99; l.window = 0; l.x = 0; l.y = 0; l.width = s.width; l.height = s.height; l.pitch = s.pitch; l.format = 6;
+    uint64_t size = uint64_t(s.pitch) * s.height;
+    if (size && size <= 16 * 1024 * 1024 && uint64_t(s.address) + size <= dramBacking_.size()) {
+      l.physical = s.address;
+      l.memory.assign(dramBacking_.begin() + s.address, dramBacking_.begin() + s.address + size);
+      for (uint64_t i = 0; i < size; ++i) {
+        auto address = s.address + uint32_t(i);
+        l.invalidBytes += preservedBits_.memoryUnknown(address) || unknownObservations_.bytes().contains(address);
+      }
+    } else l.skipReason = "surface address or size not resolvable";
+    std::vector<GopLayer> layers;
+    layers.push_back(std::move(l));
+    auto off = composeGopPreview(layers);
+    off.label = "OFFSCREEN SURFACE INSPECTOR (diagnostic, read-only) - guest surface " + hex(s.address) + "; NOT a GOP window, NOT panel output; ARGB1555 assumed";
+    if (riu_.geUniformStretches || riu_.geI2Glyphs || riu_.geBlendCopies) off.label += " | EXPLORATORY GE models in use";
+    options_.previewStore->publishOffscreen(std::move(off));
+  }
   auto layers = collectGopLayers();
   auto frame = composeGopPreview(layers);
+  if(riu_.geBlendCopies)frame.label+=" | EXPLORATORY GE blend-copy model in use (not Titania4 behavior)";
+  if(riu_.geI2Glyphs)frame.label+=" | EXPLORATORY GE I2-glyph model in use (not Titania4 behavior)";
   if(riu_.geUniformStretches)frame.label+=" | EXPLORATORY GE uniform-stretch model in use (alpha semantics are a hypothesis, not Titania4 behavior)";
   options_.previewStore->setGuestStatus("MIPS dispatches " + std::to_string(dispatches_));
   options_.previewStore->publish(std::move(frame));
@@ -2026,9 +2062,12 @@ std::string Msd309Machine::summary() const {
     }
     s<<"\n  }";
   }
+  if(options_.exploratoryAvdNoise>=0)s<<",\n  \"exploratory_avd_noise_constant\": "<<options_.exploratoryAvdNoise<<",\n  \"exploratory_avd_noise_reads\": "<<riu_.avdNoiseReads();
   if(options_.exploratoryAvdHtotal>=0)s<<",\n  \"exploratory_avd_htotal_constant\": "<<options_.exploratoryAvdHtotal<<",\n  \"exploratory_avd_htotal_reads\": "<<riu_.avdHtotalReads();
   if(!riu_.guardedStretchDetail().empty())s<<",\n  \"ge_guarded_stretch_request\": \""<<riu_.guardedStretchDetail()<<"\"";
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(options_.exploratoryGeBlendCopy)s<<",\n  \"exploratory_ge_blend_copy\": true,\n  \"ge_blend_copies_retired\": "<<riu_.geBlendCopies<<",\n  \"ge_blend_copy_pixels_written\": "<<riu_.geBlendCopyPixels;
+  if(options_.exploratoryGeI2Glyph)s<<",\n  \"exploratory_ge_i2_glyph\": true,\n  \"ge_i2_glyphs_retired\": "<<riu_.geI2Glyphs<<",\n  \"ge_i2_glyph_pixels_written\": "<<riu_.geI2GlyphPixels;
   if(options_.diagnosticVifCrLock>=0)s<<",\n  \"diagnostic_vif_cr_lock\": "<<options_.diagnosticVifCrLock;
   if(options_.exploratoryUsbNoDevice)s<<",\n  \"exploratory_usb_no_device\": true";
   if(options_.diagnosticHtotalBranchJoin)s<<",\n  \"diagnostic_htotal_branch_join\": true,\n  \"diagnostic_htotal_branch_joins\": "<<htotalJoins_;

@@ -221,6 +221,113 @@ void geUniformStretchTests(){
   regs[0x34]={0x0c08,0xffff};
   rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read);});
 }
+void geI2GlyphTests(){
+  using namespace manta;
+  // SELF-CONSISTENCY tests of the EXPLORATORY hypotheses H1..H5 (not hardware evidence): the register block is the one the original
+  // ZUI programmed for its first text glyph; expected words are derived by hand from H4 (rounding to nearest, truncation to 5 bits).
+  static const std::pair<unsigned,uint16_t> glyphRegs[]={{0x00,0x45},{0x01,0x01},{0x34,0x0c01},{0x20,0x6700},{0x21,0x00cb},{0x26,0xd880},{0x27,0x00dd},{0x30,8},{0x33,0x0aa0},
+    {0x35,0x0101},{0x36,0xff01},{0x37,0xffff},{0x38,0xaaff},{0x39,0xffff},{0x3a,0xccff},{0x3b,0xffff},{0x3c,0xffff},{0x14,0x0101},{0x15,0x0101},{0x16,0},{0x17,0},
+    {0x11,0xff02},{0x13,0x00ff},{0x55,0x57},{0x56,0x113},{0x57,0xb4},{0x58,0xef},{0x59,0x40},{0x64,0x1000},{0x65,0x1000},{0x68,0x5a},{0x69,0xbe},{0x6a,0x66},{0x6b,0xe5},
+    {0x6c,0},{0x6d,0},{0x6e,13},{0x6f,35}};
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  for(auto [i,v]:glyphRegs)regs[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+  auto get=[&](unsigned i){return regs[i];};
+  std::vector<uint8_t> sourceMemory(8*40,0);   // pitch 8, 40 rows
+  sourceMemory[0]=0x1b;                        // row 0: indices 0,1,2,3
+  sourceMemory[1]=0xe4;                        // row 0: indices 3,2,1,0
+  sourceMemory[8*10+3]=0x40;                   // row 10, pixel 12: index 1 (last column of a 13-wide glyph)
+  auto read=[&](uint32_t address,size_t size){
+    uint32_t base=0x00cb6700;
+    if(address<base || address+size>base+sourceMemory.size())throw std::runtime_error("read outside the fixture");
+    return std::vector<uint8_t>(sourceMemory.begin()+(address-base),sourceMemory.begin()+(address-base)+size);};
+  auto glyph=GeI2Glyph::decode(0x40,get,read);
+  require(glyph.width==13 && glyph.rows==40 && glyph.programmedSourceRows==35 && glyph.palette[0]==0xff010101u && glyph.palette[1]==0xaaffffffu && glyph.palette[2]==0xccffffffu && glyph.palette[3]==0xffffffffu,"decode: 13x40 destination, programmed height 35, palette words low-half-first");
+  require(glyph.keyHigh==0x01010101u && glyph.keyLow==0 && glyph.keyed(0xff010101u) && !glyph.keyed(0xaaffffffu) && !glyph.keyed(0xff020101u),"key range is compared on RGB only; entry 0 is keyed, white entries are not");
+  require(glyph.index(0,0)==0 && glyph.index(1,0)==1 && glyph.index(2,0)==2 && glyph.index(3,0)==3 && glyph.index(4,0)==3 && glyph.index(7,0)==0 && glyph.index(12,10)==1,"2-bit pixels are unpacked most-significant pair first");
+  std::vector<uint8_t> memory(2720*248,0);
+  for(size_t i=0;i<memory.size();i+=2){memory[i]=0xd8;memory[i+1]=0xc6;}   // destination bar colour 0xC6D8
+  uint32_t destBase=0x00ddd880;
+  auto dread=[&](uint32_t address,size_t size){return std::vector<uint8_t>(memory.begin()+(address-destBase),memory.begin()+(address-destBase)+size);};
+  auto writable=[&](uint32_t address,size_t size){return address>=destBase && address+size<=destBase+memory.size();};
+  auto write=[&](uint32_t address,std::span<const uint8_t> bytes){std::copy(bytes.begin(),bytes.end(),memory.begin()+(address-destBase));};
+  glyph.execute(dread,writable,write);
+  auto word=[&](unsigned x,unsigned y){size_t o=size_t(y)*2720+size_t(x)*2;return uint16_t(memory[o]|(memory[o+1]<<8));};
+  require(word(0x5a,0xbe)==0xc6d8,"index 0 (keyed) leaves the destination untouched");
+  require(word(0x5b,0xbe)==0xef9d && word(0x5c,0xbe)==0xf7de && word(0x5d,0xbe)==0xffff && word(0x5e,0xbe)==0xffff && word(0x5f,0xbe)==0xf7de && word(0x60,0xbe)==0xef9d && word(0x61,0xbe)==0xc6d8,"indices 1,2,3 blend white with alpha AA/CC/FF (hypothesis H4) over 0xC6D8");
+  require(word(0x66,200)==0xef9d && word(0x67,200)==0xc6d8,"column 12 of row 10 is written, the column after the glyph is not");
+  uint64_t changed=0;for(size_t i=0;i<memory.size();i+=2)changed+=(memory[i]|(memory[i+1]<<8))!=0xc6d8;
+  require(changed==7,"exactly the 7 non-keyed glyph pixels changed (6 in row 0, 1 in row 10)");
+  // clipping: right clip inside the glyph
+  regs[0x56]={0x5d,0xffff};
+  auto clipped=GeI2Glyph::decode(0x40,get,read);
+  require(clipped.left==0x5a && clipped.right==0x5d,"destination clip is honoured");
+  regs[0x56]={0x113,0xffff};
+  // rows hidden by the height-5 quirk must be blank
+  sourceMemory[8*37+1]=0x40;
+  rejects([&]{GeI2Glyph::decode(0x40,get,read);});
+  sourceMemory[8*37+1]=0;
+  regs[0x6f]={34,0xffff};rejects([&]{GeI2Glyph::decode(0x40,get,read);});
+  regs[0x6f]={35,0xffff};
+  regs[0x00]={0x41,0xffff};rejects([&]{GeI2Glyph::decode(0x40,get,read);});   // no blend
+  regs[0x00]={0x45,0xffff};
+  regs[0x34]={0x0c02,0xffff};rejects([&]{GeI2Glyph::decode(0x40,get,read);});   // another source format
+  regs[0x34]={0x0c01,0xffff};
+  regs[0x38].second=0xfffe;rejects([&]{GeI2Glyph::decode(0x40,get,read);});   // unknown palette bit
+  regs[0x38].second=0xffff;
+  regs[0x01]={0x11,0x372};rejects([&]{GeI2Glyph::decode(0x40,get,read);});   // stretch mode
+  regs[0x01]={0x01,0x372};
+  require(GeI2Glyph::decode(0x40,get,read).width==13,"the restored registers decode again");
+}
+void geBlendCopyTests(){
+  using namespace manta;
+  // SELF-CONSISTENCY tests of the EXPLORATORY blend-copy hypotheses B1..B3; the registers are the ones the original ZUI programmed for its first surface copy.
+  static const std::pair<unsigned,uint16_t> regsList[]={{0x00,5},{0x01,0x01},{0x34,0x0c09},{0x20,0xd880},{0x21,0x00dd},{0x26,0x2380},{0x27,0x00e8},{0x30,0xaa0},{0x33,0xaa0},
+    {0x11,0xff00},{0x13,0x00ff},{0x55,0},{0x56,0x54f},{0x57,0},{0x58,0xf7},{0x59,0x40},{0x64,0x1000},{0x65,0x1000},{0x68,0},{0x69,0xf0},{0x6a,0x54f},{0x6b,0xf7},{0x6c,0},{0x6d,0},{0x6e,0x550},{0x6f,3}};
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  for(auto [i,v]:regsList)regs[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+  auto get=[&](unsigned i){return regs[i];};
+  const uint32_t srcBase=0x00ddd880,dstBase=0x00e82380+240*2720;
+  std::vector<uint8_t> src(8*2720,0),dst(8*2720,0);
+  for(size_t i=0;i<src.size();i+=2){src[i]=0x00;src[i+1]=0x80;dst[i]=0x00;dst[i+1]=0x80;}   // both black 0x8000
+  auto read=[&](uint32_t address,size_t size){
+    if(address>=srcBase && address+size<=srcBase+src.size())return std::vector<uint8_t>(src.begin()+(address-srcBase),src.begin()+(address-srcBase)+size);
+    if(address>=dstBase && address+size<=dstBase+dst.size())return std::vector<uint8_t>(dst.begin()+(address-dstBase),dst.begin()+(address-dstBase)+size);
+    throw std::runtime_error("read outside the fixtures");};
+  auto writable=[&](uint32_t address,size_t size){return address>=dstBase && address+size<=dstBase+dst.size();};
+  auto write=[&](uint32_t address,std::span<const uint8_t> bytes){std::copy(bytes.begin(),bytes.end(),dst.begin()+(address-dstBase));};
+  auto plan=GeBlendCopy::decode(0x40,get,read);
+  require(plan.left==0 && plan.right==1359 && plan.top==240 && plan.bottom==247 && plan.programmedRows==3 && plan.rows==8,"decode: 1360x8 destination at y=240, programmed height 3 (= 8 - 5)");
+  plan.execute(writable,write);
+  bool allBlack=true;for(size_t i=0;i<dst.size();i+=2)allBlack&=dst[i]==0 && dst[i+1]==0x80;
+  require(allBlack,"copying black onto black leaves every word 0x8000 (identical under both height readings)");
+  src[0]=0xd8;src[1]=0xc6;                    // source row 0 pixel 0 differs -> copied to destination row 240 pixel 0
+  src[2720*2+10]=0x34;src[2720*2+11]=0x12;    // source row 2 pixel 5
+  plan=GeBlendCopy::decode(0x40,get,read);plan.execute(writable,write);
+  require(dst[0]==0xd8 && dst[1]==0xc6 && dst[2720*2+10]==0x34 && dst[2720*2+11]==0x12 && dst[2]==0 && dst[3]==0x80,"source words are copied unchanged to the same column of the matching destination row");
+  src[2720*4+20]=0x77;                        // source row 4 (hidden by the quirk) differs from destination
+  rejects([&]{GeBlendCopy::decode(0x40,get,read);});
+  src[2720*4+20]=0;
+  regs[0x11]={0xff01,0xffff};rejects([&]{GeBlendCopy::decode(0x40,get,read);});   // coefficient CONST, not ONE
+  regs[0x11]={0xff00,0xffff};
+  regs[0x00]={0x45,0xffff};rejects([&]{GeBlendCopy::decode(0x40,get,read);});     // key enabled
+  regs[0x00]={5,0xffff};
+  regs[0x6e]={0x54f,0xffff};rejects([&]{GeBlendCopy::decode(0x40,get,read);});    // width mismatch
+  regs[0x6e]={0x550,0xffff};
+  regs[0x20]={0xe380,0xffff};regs[0x21]={0x00e8,0xffff};regs[0x30]={0xaa0,0xffff};   // source inside the destination surface: overlapping
+  rejects([&]{GeBlendCopy::decode(0x40,get,read);});
+}
+void avdNoiseConstantTests(){
+  using namespace manta;
+  Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};
+  require(off.knownBits(0x1f206a04,1)==0,"AFEC noise magnitude stays invalid without the hypothesis");
+  Riu r;r.symbolicInit=true;r.event=[](auto,auto,auto,auto,auto){};r.configureExploratoryAvdNoise(0x2a);
+  require(r.knownBits(0x1f206a04,1)==255 && r.knownBits(0x1f206a05,1)==0 && r.knownBits(0x1f206a03,1)==0 && r.knownBits(0x1f206a08,1)==0,"only the noise byte becomes known");
+  auto v=r.read(0x1f206a04,1,0x80503138,0xff,1);r.stopReason.clear();
+  require(v==0x2a && r.avdNoiseReads()==1,"constant returned and counted");
+  bool rejected=false;
+  try{r.write(0x1f206a04,1,0,0x80503000,0xff,2);}catch(const std::exception&){rejected=true;}
+  require(rejected,"a guest write cannot manufacture the noise magnitude");
+}
 void avdHtotalConstantTests(){
   using namespace manta;
   Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};

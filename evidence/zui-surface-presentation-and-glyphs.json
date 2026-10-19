@@ -1,0 +1,69 @@
+{
+ "commit_base": "35594e1",
+ "category": "diagnostic connected run under THREE exploratory GE models; offscreen inspector view is not GOP/panel output",
+ "surfaces": {
+  "FB1_back_offscreen": "0x00DDD880",
+  "FB2_front_gwin5": "0x00E82380",
+  "zui_record_806D4F9C_hex": "0b02ff0001ff0005030008025005f8003c526d804c526d800100000000005005",
+  "flags_word": "0x00FF020B (bit3 double-buffer)"
+ },
+ "presentation": {
+  "flip": "8049DD70 via 804A2FF4 (not yet executed)",
+  "dirty_rect_copy": "803EE398 from 804EE53C (animation steps, 5 executed)",
+  "region_paint_pass_8049DBC4_presents": false
+ },
+ "glyph": {
+  "source": "0x00CB6700",
+  "pitch": 8,
+  "bpp": 2,
+  "order": "MSB-first",
+  "first_320_bytes_sha256": "08df8d10d844e978c45c671bd325d398c000332e75d5cef8099e500619a4a901",
+  "glyphs_retired": 5,
+  "pixels": 3080
+ },
+ "run": {
+  "dispatches": 858186605,
+  "stop": "unmodeled MMIO read",
+  "stop_pc": "0x80503d18",
+  "stop_address": "0x1f206b40",
+  "uniform_stretch_pixels": 92480,
+  "blend_copies": 5,
+  "blend_copy_pixels": 160480,
+  "noise_bracket_0_vs_255_dispatches": [
+   858186605,
+   858186719
+  ]
+ },
+ "gop_window": [
+  {
+   "bank": 4,
+   "window": 1,
+   "x": 0,
+   "y": 520,
+   "width": 1360,
+   "height": 248,
+   "pitch": 2720,
+   "format": 6,
+   "physical_address": "0xe82380",
+   "source_sha256": "bfa2ec185488ac76d56d64b08be20b224da9825a6749d3f5950d189c3c25a393",
+   "nonzero_bytes": 337280,
+   "invalid_bytes": 0,
+   "exported": true,
+   "bmp": "gopn2_bank4_win1.bmp",
+   "bmp_sha256": "0ec016b0d3056dffea21bd12a5775d69528be64a7653a8365b2a7472fc64ea4e"
+  }
+ ],
+ "gop_window_unchanged_black": true,
+ "images": [
+  "zui-offscreen-inspector-scart.png (offscreen inspector, exploratory)",
+  "zui-gop-preview-after-exploratory-paint.png (GOP preview, black plane)"
+ ],
+ "user_observation": "the user recognized the bar from the physical TV (informal, not a pixel comparison)",
+ "validation": {
+  "native_checks": 1905,
+  "python_suites": "19/19",
+  "strict_replay": "identical",
+  "rerun_deterministic_including_both_captures": true,
+  "binary": "manta_aj.exe"
+ }
+}

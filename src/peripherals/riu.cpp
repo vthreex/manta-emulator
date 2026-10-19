@@ -1,6 +1,9 @@
 #include "peripherals/riu.hpp"
 #include "video/ge_stretch_request.hpp"
 #include "video/ge_uniform_stretch.hpp"
+#include "video/ge_i2_glyph.hpp"
+#include "video/ge_blend_copy.hpp"
+#include <optional>
 #include <array>
 #include <stdexcept>
 #include "storage/sha256.hpp"
@@ -440,6 +443,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   }
   if(exploratoryAvdHtotal_>=0)
     for(unsigned i=0;i<n;++i)if(a+i==0x1f206b8d || a+i==0x1f206b90)v|=255u<<(8*i);
+  if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04)v|=255u<<(8*(0x1f206a04-a));
   // Live VIF carrier-recovery lock status; only bit 0 is defined, and only by the explicit bracketing diagnostic.
   if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471)
     v|=1u<<(8*(0x1f224471-a));
@@ -498,6 +502,9 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     }
     if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
     v |= byte << (i * 8);
+  }
+  if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04){
+    auto shift=8*(0x1f206a04-a);v=(v&~(255u<<shift))|(uint32_t(exploratoryAvdNoise_)<<shift);
   }
   if(exploratoryAvdHtotal_>=0)
     for(unsigned i=0;i<n;++i){
@@ -672,6 +679,11 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     ++vifRevisionReads_;
     event("exploratory_vif_chip_revision",a,n,unsigned(exploratoryVifRevision_),
       "EXPLICIT unverified silicon-revision input; Titania4 header REG_CHIP_REVISION1ECF maps byte3D9D; actual Manta stepping unknown; independent of fetch byte3C05, no completion generated");
+  }
+  if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04){
+    ++avdNoiseReads_;
+    event("exploratory_avd_noise_constant",a,n,unsigned(exploratoryAvdNoise_),
+      "HYPOTHESIS, not a measurement: the AFEC noise-magnitude byte (HAL_AVD_AFEC_GetNoiseMag) reads this constant; real value with no input is unknown, bracket it");
   }
   if(exploratoryAvdHtotal_>=0 && ((a<=0x1f206b8d && uint64_t(a)+n>0x1f206b8d) || (a<=0x1f206b90 && uint64_t(a)+n>0x1f206b90))){
     ++avdHtotalReads_;
@@ -883,6 +895,8 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
   if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
+  if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04)
+    throw std::runtime_error("AFEC noise magnitude is hardware-owned; guest writes cannot manufacture it");
   if(exploratoryAvdHtotal_>=0 && ((a<=0x1f206b8d && uint64_t(a)+n>0x1f206b8d) || (a<=0x1f206b90 && uint64_t(a)+n>0x1f206b90)))
     throw std::runtime_error("published HTotal is hardware/AVD-owned; guest writes cannot manufacture it");
   if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471)
@@ -1210,7 +1224,39 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(a==0x1f205004 && (knownBits(a,2)&2) && (v&2))
       throw std::runtime_error("GE virtual command memory transport unsupported; no fabricated VCmd completion");
     std::function<void()> raster;
-    if(candidateGeBitBlt && exploratoryGeUniformStretch>=0 && a==0x1f205180 && (v==0x8040 || v==0xc040)){
+    std::optional<GeI2Glyph> glyph;
+    GeBlendCopy copyPlan;
+    if(candidateGeBitBlt && exploratoryGeI2Glyph && a==0x1f205180 && v==0x0040 && knownBits(a,2)==0xffff){
+      try{
+        glyph=GeI2Glyph::decode(0x0040,[&](unsigned index){auto address=0x1f205000+4*index;
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead);
+      }catch(const std::exception&){glyph.reset();}   // not this request class: the ordinary guarded path decides
+    }
+    if(glyph){
+      raster=[this,g=*glyph]{
+        g.execute(dramRead,dramWritable,dramWrite);
+        ++geI2Glyphs;
+        auto count=g.left>g.right?0u:(g.right-g.left+1)*(g.bottom-g.top+1);
+        geI2GlyphPixels+=count;
+        event("exploratory_ge_i2_glyph_retired",g.destination,g.destinationPitch,count,
+          "EXPLORATORY, NOT TITANIA4-VERIFIED: I2 glyph, hypotheses H1..H5 (ARGB8888 palette low-half-first, MSB-first 2-bit packing, RGB key range, source-over alpha with rounding to nearest, height-5 rows blank)");
+      };
+    }else if(candidateGeBitBlt && exploratoryGeBlendCopy && a==0x1f205180 && v==0x0040 && knownBits(a,2)==0xffff && [&]{
+        try{
+          copyPlan=GeBlendCopy::decode(0x0040,[&](unsigned index){auto address=0x1f205000+4*index;
+            return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead);
+          return true;
+        }catch(const std::exception&){return false;}
+      }()){
+      raster=[this,g=copyPlan]{
+        g.execute(dramWritable,dramWrite);
+        ++geBlendCopies;
+        auto count=g.left>g.right?0u:(g.right-g.left+1)*(g.bottom-g.top+1);
+        geBlendCopyPixels+=count;
+        event("exploratory_ge_blend_copy_retired",g.destination,g.destinationPitch,count,
+          "EXPLORATORY, NOT TITANIA4-VERIFIED: ARGB1555->C copy with blend coefficient ONE read as replace (reg 11 low byte 0 = ONE, Marlon numbering); word unchanged; hidden height-5 rows verified to leave the destination unchanged");
+      };
+    }else if(candidateGeBitBlt && exploratoryGeUniformStretch>=0 && a==0x1f205180 && (v==0x8040 || v==0xc040)){
       if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
       auto registers=[&](unsigned index){auto address=0x1f205000+4*index;
         return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};};

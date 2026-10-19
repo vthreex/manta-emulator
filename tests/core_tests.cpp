@@ -17,6 +17,8 @@
 #include "video/gop_export.hpp"
 #include "video/gop_preview.hpp"
 #include "video/ge_uniform_stretch.hpp"
+#include "video/ge_i2_glyph.hpp"
+#include "video/ge_blend_copy.hpp"
 #include <array>
 #include <algorithm>
 #include <filesystem>
@@ -2859,6 +2861,9 @@ int main() {
     gopExportTests();
     gopPreviewTests();
     geUniformStretchTests();
+    geI2GlyphTests();
+    geBlendCopyTests();
+    avdNoiseConstantTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

@@ -126,11 +126,18 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--diagnostic-htotal-branch-join")o.diagnosticHtotalBranchJoin=true;
       else if(a=="--candidate-spi-nor-write")o.candidateSpiNorWrite=true;
       else if(a=="--exploratory-usb-no-device")o.exploratoryUsbNoDevice=true;
+      else if(a=="--exploratory-avd-noise-constant"){
+        auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
+        if(used!=token.size() || n>0xff || token[0]=='-')throw std::runtime_error("AVD noise constant must be 0..0xFF");
+        o.exploratoryAvdNoise=int(n);
+      }
       else if(a=="--exploratory-avd-htotal-constant"){
         auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
         if(used!=token.size() || n>0xffff || token[0]=='-')throw std::runtime_error("AVD HTotal constant must be 0..0xFFFF");
         o.exploratoryAvdHtotal=int(n);
       }
+      else if(a=="--exploratory-ge-i2-glyph")o.exploratoryGeI2Glyph=true;
+      else if(a=="--exploratory-ge-blend-copy")o.exploratoryGeBlendCopy=true;
       else if(a=="--exploratory-ge-uniform-stretch"){
         auto token=value(i);
         if(token=="opaque-source")o.exploratoryGeUniformStretch=0;
@@ -250,6 +257,15 @@ static int appMain(const std::vector<std::string> &args) {
       }
       else if (a == "--dump-prefix")
         o.dumpPrefix = utf8Path(value(i));
+      else if (a == "--offscreen-inspector"){
+        auto spec=value(i);   // ADDR:WIDTHxHEIGHT:PITCH (hex address, decimal geometry)
+        unsigned w=0,h=0,p=0;char* end=nullptr;
+        auto address=std::strtoul(spec.c_str(),&end,16);
+        if(!end || *end!=':' || std::sscanf(end,":%ux%u:%u",&w,&h,&p)!=3 || !w || !h || p<w*2)throw std::runtime_error("--offscreen-inspector needs HEXADDR:WIDTHxHEIGHT:PITCH");
+        o.offscreenInspector.push_back({uint32_t(address),w,h,p});
+      }
+      else if (a == "--preview-capture-offscreen")
+        previewOptions.captureOffscreenPath = value(i);
       else if (a == "--preview-capture")
         previewOptions.capturePath = value(i);
       else if (a == "--preview-close-after-ms")
@@ -300,7 +316,10 @@ static int appMain(const std::vector<std::string> &args) {
                 "--candidate-ge: stateful GE parameter queues; reset occupancy remains unknown\n"
                 "--exploratory-avd-no-sync-events: HYPOTHESIS: with no sync input the AVD event latch 11FC bits 0 and 2 stay clear (other bits invalid); acks are clear-only; requires absent-HSYNC and shared AVD run\n"
                 "--diagnostic-avd-invalid-publication: DIAGNOSTIC: AVD stores of invalid/partially known data into 11C0..11DF are kept with their exact known mask (no information created); requires the shared AVD run\n"
+                "--exploratory-avd-noise-constant N: HYPOTHESIS (bracket it), not a measurement: AFEC noise-magnitude byte (BF206A04) reads constant N 0..0xFF; requires the absent-HSYNC hypothesis and guarded exploration\n"
                 "--exploratory-avd-htotal-constant N: HYPOTHESIS (bracket it), not a TV measurement: published AFEC HTotal (BF206B8D/BF206B90) reads constant N 0..0xFFFF; requires the absent-HSYNC hypothesis and guarded exploration\n"
+                "--exploratory-ge-blend-copy: EXPLORATORY, NOT TITANIA4-VERIFIED: execute the original ZUI offscreen-to-GOP ARGB1555->C copy (0040, control 0005, blend coefficient ONE read as replace); requires --candidate-ge-bitblt\n"
+                "--exploratory-ge-i2-glyph: EXPLORATORY, NOT TITANIA4-VERIFIED: execute the original ZUI anti-aliased I2 glyph blit (0040, control 0045, formats 0C01) under hypotheses H1..H5 (see video/ge_i2_glyph.hpp); requires --candidate-ge-bitblt\n"
                 "--exploratory-ge-uniform-stretch opaque-source|alpha-bit: EXPLORATORY, NOT TITANIA4-VERIFIED: execute a stretched GE BitBlt only when its whole sampled source is one colour (sampling/filter cannot matter) under the named alpha hypothesis; dither assumed no-op; requires --candidate-ge-bitblt\n"
                 "--diagnostic-vif-cr-lock N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines only 0x1F224471 bit0 (VIF carrier-recovery lock status); requires guarded exploration\n"
                 "--diagnostic-avd-11db-bit7 N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines AFEC 11DB bit 7 whose producer is unknown\n"
@@ -368,6 +387,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--window-preview-selftest FILE.bmp: presenter test with a labelled SYNTHETIC buffer (not guest output); saves the window content and exits\n"
                "--watch-pc-regs HEX,HEX: READ-ONLY probe; records registers and 8 stack words at the first 6 and last 18 executions of each original PC (summary watched_pc_hits)\n"
                "--dump-guest-range HEXADDR+HEXLEN --dump-prefix PREFIX: READ-ONLY; after the run write that guest physical range to PREFIX_<addr>.bin (repeatable)\n"
+               "--offscreen-inspector HEXADDR:WIDTHxHEIGHT:PITCH (+ --preview-capture-offscreen FILE.bmp): DIAGNOSTIC read-only second view of a guest surface that is not a GOP window; press O in the window to toggle; never panel output\n"
                "--preview-capture FILE.bmp / --preview-close-after-ms N: windowed mode only; save the window client area after the guest run stopped, then close (automation)\n"
                "--export-gop-frame FILE.json: after the run, decode the guest memory of every enabled+latched GOP window (format 6 assumed ARGB1555) to FILE_bankB_winW.bmp plus metadata; debug export only, no composition, never an authentic-frame claim\n"
                "--summary FILE --coverage FILE --max-instructions N\n"

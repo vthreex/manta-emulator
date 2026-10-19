@@ -18,6 +18,8 @@ struct WindowState {
   bool smoke = false;
   DWORD finishedAt = 0;
   bool captured = false;
+  bool showOffscreen = false;   // toggled with O
+  std::shared_ptr<const GopPreviewFrame> offscreen;
 };
 constexpr UINT_PTR kTimer = 1;
 constexpr int kBar = 64;   // host status bar height (window chrome, not guest content)
@@ -46,22 +48,23 @@ void captureClient(HWND w, const std::string &path, WindowState &st) {
 }
 
 void drawContent(HDC dc, RECT r, WindowState &st) {
+  auto shown = st.showOffscreen && st.offscreen ? st.offscreen : st.frame;
   HBRUSH bar = CreateSolidBrush(RGB(32, 32, 48));
   RECT barRect{0, 0, r.right, kBar}; FillRect(dc, &barRect, bar); DeleteObject(bar);
   SetBkMode(dc, TRANSPARENT); SetTextColor(dc, RGB(255, 210, 90));
-  std::string line1 = st.frame && !st.frame->empty() ? st.frame->label : "DIAGNOSTIC GOP PREVIEW - no enabled, latched GOP window has been programmed by the guest yet";
+  std::string line1 = shown && !shown->empty() ? shown->label : "DIAGNOSTIC GOP PREVIEW - no enabled, latched GOP window has been programmed by the guest yet";
   TextOutA(dc, 8, 6, line1.c_str(), int(line1.size()));
   SetTextColor(dc, RGB(200, 200, 215));
-  std::string line2 = st.frame ? st.frame->description : std::string();
+  std::string line2 = shown ? shown->description : std::string();
   line2 += st.store ? "  [" + st.store->status() + (st.store->finished() ? "; guest run stopped" : "; running") + "]" : "";
   TextOutA(dc, 8, 24, line2.c_str(), int(line2.size()));
   char sum[96] = "";
-  if (st.frame && !st.frame->empty()) snprintf(sum, sizeof sum, "frame checksum %016llx (host bar above is window chrome, not guest content)", (unsigned long long)st.frame->checksum);
+  if (shown && !shown->empty()) snprintf(sum, sizeof sum, "frame checksum %016llx (host bar above is window chrome, not guest content)%s", (unsigned long long)shown->checksum, st.offscreen ? "  [O toggles GOP / offscreen]" : "");
   TextOutA(dc, 8, 42, sum, int(strlen(sum)));
   RECT area{0, kBar, r.right, r.bottom};
   HBRUSH back = CreateSolidBrush(RGB(20, 20, 20)); FillRect(dc, &area, back); DeleteObject(back);
-  if (st.frame && !st.frame->empty()) {
-    const auto &f = *st.frame;
+  if (shown && !shown->empty()) {
+    const auto &f = *shown;
     // Pixels the guest did not provide are shown as a neutral checker so they cannot be mistaken for guest black.
     std::vector<uint32_t> out(f.bgra.size());
     for (uint32_t y = 0; y < f.height; ++y)
@@ -100,12 +103,16 @@ LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM a, LPARAM b) {
         st->frame = latest; st->shownSequence = latest->sequence;
         InvalidateRect(w, nullptr, FALSE);
       }
+      if (auto off = st->store->latestOffscreen(); off && (!st->offscreen || off->sequence != st->offscreen->sequence)) {
+        st->offscreen = off; InvalidateRect(w, nullptr, FALSE);
+      }
       if (st->store->finished()) {
         if (!st->finishedAt) { st->finishedAt = GetTickCount(); InvalidateRect(w, nullptr, FALSE); }
         else if (GetTickCount() - st->finishedAt > 700 && !st->captured) {
           st->captured = true;
           UpdateWindow(w);
-          if (!st->options.capturePath.empty()) captureClient(w, st->options.capturePath, *st);
+          if (!st->options.capturePath.empty()) { st->showOffscreen = false; captureClient(w, st->options.capturePath, *st); }
+          if (!st->options.captureOffscreenPath.empty() && st->offscreen) { st->showOffscreen = true; captureClient(w, st->options.captureOffscreenPath, *st); st->showOffscreen = false; }
         }
         if (st->options.closeAfterFinishMs && st->finishedAt && GetTickCount() - st->finishedAt > st->options.closeAfterFinishMs + 800 &&
             (st->captured || st->options.capturePath.empty()))
@@ -115,6 +122,7 @@ LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM a, LPARAM b) {
     return 0;
   }
   if (msg == WM_PAINT) { paint(w, *st); return 0; }
+  if (msg == WM_KEYDOWN && (a == 'O' || a == 'o')) { if (st->offscreen) st->showOffscreen = !st->showOffscreen; InvalidateRect(w, nullptr, FALSE); return 0; }
   if (msg == WM_ERASEBKGND) return 1;
   if (msg == WM_DESTROY) { PostQuitMessage(0); return 0; }
   return DefWindowProcW(w, msg, a, b);

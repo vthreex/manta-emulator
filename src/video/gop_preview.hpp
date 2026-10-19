@@ -87,6 +87,12 @@ public:
     frame.sequence = ++sequence_;
     frame_ = std::make_shared<const GopPreviewFrame>(std::move(frame));
   }
+  void publishOffscreen(GopPreviewFrame frame) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    frame.sequence = ++offscreenSequence_;
+    offscreen_ = std::make_shared<const GopPreviewFrame>(std::move(frame));
+  }
+  std::shared_ptr<const GopPreviewFrame> latestOffscreen() const { std::lock_guard<std::mutex> lock(mutex_); return offscreen_; }
   void setFinished() { finished_ = true; }
   bool finished() const { return finished_; }
   void setGuestStatus(std::string text) { std::lock_guard<std::mutex> lock(mutex_); status_ = std::move(text); }
@@ -94,7 +100,8 @@ public:
   std::string status() const { std::lock_guard<std::mutex> lock(mutex_); return status_; }
 private:
   mutable std::mutex mutex_;
-  std::shared_ptr<const GopPreviewFrame> frame_;
+  std::shared_ptr<const GopPreviewFrame> frame_, offscreen_;
+  uint64_t offscreenSequence_ = 0;
   std::string status_;
   uint64_t sequence_ = 0;
   std::atomic<bool> finished_{false};
