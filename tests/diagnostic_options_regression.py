@@ -33,6 +33,8 @@ for name, extra, text in (
     ('mmio-bits-need-guarded-exploration', ['--exploratory-mmio-bits', '1f206f5d:52:10'], 'requires guarded exploration'),
     ('height5-needs-a-model', ['--exploratory-ge-height5-full-copy'], 'requires an exploratory blend-copy or I2 glyph model'),
     ('i8-fill-needs-rect-model', ['--exploratory-ge-i8-fill'], 'requires the candidate GE rectangle model'),
+    ('rpt-latch-needs-pm-ir-fifo', ['--exploratory-pm-ir-rpt-latch'], 'requires the PM IR FIFO'),
+    ('ir-script-rejects-garbage', ['--ir-script', 'abc'], ''),
     ('nor-write-needs-candidate-spi', ['--candidate-spi-nor-write'], 'requires the candidate SPI model'),
     ('restore-branch-needs-nor-write', ['--diagnostic-restore-by-identity-branch'], 'requires guarded exploration and the SPI NOR write model'),
 ):
@@ -66,6 +68,8 @@ for flag, label in (('--diagnostic-htotal-branch-join', 'DIAGNOSTIC ONLY, not ha
                     ('--exploratory-ge-blend-copy', 'NOT TITANIA4-VERIFIED'),
                     ('--diagnostic-vif-cr-lock', 'BRACKETING DIAGNOSTIC'),
                     ('--export-gop-frame', 'never an authentic-frame claim'),
+                    ('--exploratory-pm-ir-rpt-latch', 'HYPOTHESIS'),
+                    ('--ir-script', 'raw=0xNN'),
                     ('--candidate-spi-nor-write', 'copy-on-write overlay'),
                     ('--diagnostic-restore-by-identity-branch', 'DIAGNOSTIC ONLY')):
     assert flag in help_text and label in help_text, flag

@@ -1,0 +1,3 @@
+# FUNCTION  RAWBYTE  evidence
+# Raw bytes are the decoded command bytes the emulated PM IR FIFO hands to the original firmware (logical IR_KEY 3DA9).
+# A function without an entry cannot be delivered (no invented codes). Fill in only evidence-backed values; see docs/ir-input-path.md.

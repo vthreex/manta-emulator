@@ -390,6 +390,65 @@ void hypothesisBitsTests(){
   try{r.addHypothesisBits(0x1e000000,0x01,0x01);}catch(const std::exception&){rejected=true;}
   require(rejected,"addresses outside the RIU window are refused");
 }
+void hypothesisScBankTests(){
+  using namespace manta;
+  Riu r;r.symbolicInit=true;r.event=[](auto,auto,auto,auto,auto){};
+  r.addHypothesisBits(0x1f205e79,0x0b,0x00,1);
+  r.write(0x1f205e00,1,2,0,0xff,0);
+  require(r.knownBits(0x1f205e79,1)==0,"bank-scoped hypothesis is inactive while another scaler bank is selected");
+  r.write(0x1f205e00,1,3,0,0xff,1);
+  require(r.knownBits(0x1f205e79,1)==0,"another scaler bank is untouched");
+  r.write(0x1f205e79,1,0x5a,0,0xff,2);   // guest writes to bank 3 offset 0x79 stay ordinary storage
+  r.write(0x1f205e00,1,1,0,0xff,3);
+  require(r.knownBits(0x1f205e79,1)==0x0b,"bank 1 exposes exactly the named bits");
+  auto v=r.read(0x1f205e79,1,0x805fbba4,0x0b,4);r.stopReason.clear();
+  require((v&0x0b)==0,"bits read as the stated value");
+  bool rejected=false;
+  try{r.write(0x1f205e79,1,0,0,0xff,5);}catch(const std::exception&){rejected=true;}
+  require(rejected,"guest writes to the hypothesised bank-1 byte are rejected");
+  r.write(0x1f205e00,1,3,0,0xff,6);
+  r.write(0x1f205e79,1,0x33,0,0xff,7);
+  {auto b3=r.read(0x1f205e79,1,0x805f887c,0xff,8);r.stopReason.clear();require(r.knownBits(0x1f205e79,1)==255 && (b3&255)==0x33,"bank 3 storage is independent");}
+  rejected=false;
+  try{Riu q;q.addHypothesisBits(0x1f203e79,0x01,0x00,1);}catch(const std::exception&){rejected=true;}
+  require(rejected,"a bank scope outside the scaler aperture is refused");
+}
+void virtualRemoteTests(){
+  using namespace manta;
+  {
+    PmIrFifo f;f.coldEmptyHypothesis();
+    require(!f.repeat().has_value(),"without the hypothesis the repeat bit stays unknown");
+    f.enableRptLatchHypothesis();
+    require(!f.repeat().has_value(),"RPT latch is unknown until an entry was popped");
+    f.receive(0x42,false);f.receive(0x43,true);
+    require(f.size()==2 && !f.repeat().has_value(),"queued entries do not define the latch");
+    f.pop();require(f.repeat().has_value() && !*f.repeat() && f.key().value()==0x43,"popping a first press latches repeat=0 and exposes the next entry");
+    f.pop();require(f.repeat().has_value() && *f.repeat() && f.empty().value(),"popping a repeat frame latches repeat=1");
+    bool full=true;PmIrFifo g;g.coldEmptyHypothesis();for(int i=0;i<8;++i)full&=g.receive(uint8_t(i),false);
+    require(full && !g.receive(9,false),"the FIFO holds eight entries and refuses the ninth");
+  }
+  {
+    auto m=IrKeyMap::parse("# comment\nMENU 0x1c measured: example\nOK 5\n");
+    require(m.raw.at("MENU")==0x1c && m.raw.at("OK")==5 && m.evidence.at("MENU")=="measured: example" && !m.raw.count("UP"),"key map parsing; unmapped functions stay unmapped");
+    bool rejected=false;
+    try{IrKeyMap::parse("MENU 0x100\n");}catch(const std::exception&){rejected=true;}
+    require(rejected,"raw bytes above 255 are refused");
+    rejected=false;try{IrKeyMap::parse("MENU 1\nMENU 2\n");}catch(const std::exception&){rejected=true;}
+    require(rejected,"duplicate functions are refused");
+  }
+  {
+    auto script=parseIrScript("100:MENU, 200:raw=0x13;300:OK");
+    require(script.size()==3 && script[0].dispatch==100 && script[1].function=="raw=0x13" && script[2].function=="OK","IR script parsing");
+    bool rejected=false;try{parseIrScript("200:MENU,100:OK");}catch(const std::exception&){rejected=true;}
+    require(rejected,"out-of-order scripts are refused");
+  }
+  {
+    RemoteQueue q;require(!q.pending(),"queue starts empty");
+    std::thread producer([&]{for(int i=0;i<500;++i)q.push(i%2?"UP":"DOWN");});
+    producer.join();
+    auto out=q.drain();require(out.size()==500 && !q.pending() && out.front()=="DOWN" && out[1]=="UP","events arrive complete and in order from another thread");
+  }
+}
 void geI8FillTests(){
   using namespace manta;
   // The register block is the original ZUI's first indexed-surface clear. Expected bytes are derived by hand: the only hypothesis is that the index is the low byte of 70/71.

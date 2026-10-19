@@ -20,6 +20,7 @@
 #include "video/ge_i2_glyph.hpp"
 #include "video/ge_blend_copy.hpp"
 #include <array>
+#include <thread>
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
@@ -2867,6 +2868,8 @@ int main() {
     afecIndirectTests();
     hypothesisBitsTests();
     geI8FillTests();
+    virtualRemoteTests();
+    hypothesisScBankTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

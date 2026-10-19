@@ -457,7 +457,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     for(unsigned i=0;i<n;++i)if(a+i==0x1f206b8d || a+i==0x1f206b90)v|=255u<<(8*i);
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04)v|=255u<<(8*(0x1f206a04-a));
   for(const auto& h:hypothesisBits_)
-    if(a<=h.address && uint64_t(a)+n>h.address)v|=uint32_t(h.mask)<<(8*(h.address-a));
+    if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h))v|=uint32_t(h.mask)<<(8*(h.address-a));
   if(exploratoryAfecIndirect_>=0 && afecIndirectActive())
     for(unsigned i=0;i<n;++i)if(a+i==0x1f206b39 || a+i==0x1f206b3c)v|=255u<<(8*i);
   // Live VIF carrier-recovery lock status; only bit 0 is defined, and only by the explicit bracketing diagnostic.
@@ -525,7 +525,7 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
       if(a+i==0x1f206b3c)v=(v&~(255u<<(8*i)))|(uint32_t(afecIndirectValue_&255)<<(8*i));
     }
   for(const auto& h:hypothesisBits_)
-    if(a<=h.address && uint64_t(a)+n>h.address){
+    if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h)){
       auto shift=8*(h.address-a);v=(v&~(uint32_t(h.mask)<<shift))|(uint32_t(h.value)<<shift);
     }
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04){
@@ -712,7 +712,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
       "HYPOTHESIS: indirect AFEC register 6A3C (address latched in 11A1:11A0 with bit7 set) returns this 16-bit content; content/semantics unknown, bracketed");
   }
   for(auto& h:hypothesisBits_)
-    if(a<=h.address && uint64_t(a)+n>h.address){
+    if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h)){
       ++h.reads;
       char label[160];snprintf(label,sizeof label,"HYPOTHESIS, not a measurement: only bits %02X of this byte read as %02X (bit-scoped constant); other bits keep their provenance; real value unknown, bracket it",h.mask,h.value);
       event("exploratory_hypothesis_bits",h.address,1,h.value,label);
@@ -933,7 +933,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
   for(const auto& h:hypothesisBits_)
-    if(a<=h.address && uint64_t(a)+n>h.address)
+    if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h))
       throw std::runtime_error("hardware-owned status byte under a bit hypothesis; guest writes cannot manufacture it");
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04)
     throw std::runtime_error("AFEC noise magnitude is hardware-owned; guest writes cannot manufacture it");

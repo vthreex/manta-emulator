@@ -1,0 +1,13 @@
+{
+  "base_git": "d61b539",
+  "scope": "virtual remote infrastructure (thread-safe queue, keymap, scripted delivery, PM IR FIFO RPT-latch hypothesis, bank-scoped MMIO bit hypotheses); no raw-byte-to-function mapping claimed",
+  "native_checks": 1956,
+  "suites_run_against_new_binary": {
+    "firmware": "PASS", "display": "PASS", "clock_profile": "PASS", "zui_flow": "PASS", "vif_agc": "PASS",
+    "ge_clear": "PASS", "ge_bitblt_option": "PASS", "ge_fill_option": "PASS", "diagnostic_options": "PASS (extended)",
+    "immutable_input": "PASS", "window_preview": "PASS"
+  },
+  "not_rerun": "probe-only suites (avd_*, vd_firmware, copro, pm51, audio dsp) exercise separate probe binaries untouched by this change; pm_application_replay and the 6,592,741-event strict replay were not re-run for this commit; pm_power_boot_regression has a known pre-existing failure",
+  "clean_path_startup": "NATIVE_WINDOW_CREATED, rc=0",
+  "connected_run_s7": {"instruction_dispatches": 1002388028, "stop_pc": "0x80526598", "reason": "GE fill with transforms/flags (reg 07=8584) refused", "ge_i8_fills_retired": 108, "scaler_sync_accessor_805F2EA0_hits": 8}
+}

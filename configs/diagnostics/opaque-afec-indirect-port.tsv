@@ -78,3 +78,6 @@
 
 # Added for the status getter 8052801C (BF206F5D, bits consumed later by ext): INVALID observation for the bits no hypothesis defines.
 0x80528024	0x1f206f5d	1	0x8052801c	0x14	a86d9cfc931b4fcde1d7bfcba0b668938b81b00f7fcd0032749d57dc6238108b
+
+# Added for the scaler IP sync-status getter 805FBB6C (SC bank 1/3 byte 0x79 = BF205E79; bits consumed later by andi in 805F2EA0): INVALID observation for the bits no hypothesis defines.
+0x805fbba4	0x1f205e79	1	0x805fbb6c	0x5c	34f62eda7f2b0650a686be270fab5addce1b4b67e216e2d6fb0267132d3672c5

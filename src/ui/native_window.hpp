@@ -2,8 +2,10 @@
 #include "video/gop_preview.hpp"
 #include <memory>
 #include <string>
+#include <vector>
 namespace manta {
 struct PreviewWindowOptions {
+  std::vector<unsigned> injectSelftestKeys;   // test only: virtual-key codes posted to the window after creation
   std::string captureOffscreenPath;   // saves the offscreen inspector view (requires --offscreen-inspector)
   std::string capturePath;       // when set: save the window's client area (BMP) once the guest run has finished
   unsigned closeAfterFinishMs = 0; // when non-zero: close this long after the guest run finished (automation)

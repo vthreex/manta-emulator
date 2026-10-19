@@ -1,5 +1,6 @@
 #pragma once
 #include "video/gop_preview.hpp"
+#include "input/remote_queue.hpp"
 #include <memory>
 #include "cpu/engine.hpp"
 #include "peripherals/riu.hpp"
@@ -80,7 +81,7 @@ struct Options {
   bool exploratoryGeI2Glyph=false;   // EXPLORATORY: anti-aliased I2 glyph blit hypotheses
   int exploratoryGeUniformStretch=-1;   // EXPLORATORY: 0 opaque-source, 1 alpha-bit (uniform-colour stretched BitBlt only)
   int exploratoryAfecIndirect=-1;   // HYPOTHESIS: content of the indirectly addressed AFEC register 6A3C (bracket it)
-  struct BitHypothesis { uint32_t address; unsigned mask, value; };
+  struct BitHypothesis { uint32_t address; unsigned mask, value; int scBank = -1; };
   std::vector<BitHypothesis> bitHypotheses;   // HYPOTHESIS: --exploratory-mmio-bits ADDR:MASK:VALUE (bit-scoped constants)
   int exploratoryAvdNoise=-1;   // HYPOTHESIS: AFEC noise-magnitude byte BF206A04 reads this constant (requires absent-HSYNC); bracket it
   int exploratoryAvdHtotal=-1;   // HYPOTHESIS: published AFEC HTotal reads this constant (requires absent-HSYNC); bracket it
@@ -116,6 +117,11 @@ struct Options {
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
   uint64_t gopTimelineFrom=0;   // DIAGNOSTIC: first tick of the GOP write/latch timeline printed in the summary
   std::vector<uint32_t> historyPcs;   // DIAGNOSTIC: also sample the GOP history when one of these original PCs executes
+  // Virtual remote: host functions are mapped to raw IR bytes by an explicit table and delivered to the emulated PM IR FIFO.
+  std::shared_ptr<RemoteQueue> remoteQueue;      // live host key presses (function names), drained on the emulator thread
+  IrKeyMap irKeyMap;                            // function -> raw IR byte (evidence-labelled)
+  std::vector<ScriptedKey> irScript;            // deterministic replay: inject at/after a dispatch count
+  bool exploratoryPmIrRptLatch=false;           // HYPOTHESIS: RPT latches the popped entry's repeat flag
   std::vector<uint32_t> watchPcRegs;   // read-only probe: record registers/stack words at these original PCs
   std::filesystem::path trace, replay, summary, coverage, exportGopFrame;
   std::shared_ptr<GopPreviewStore> previewStore;   // DIAGNOSTIC GOP preview hand-off to the native window (filled on the emulator thread)
@@ -207,6 +213,11 @@ public:
   std::vector<uint8_t> watchSet_;   // bitmap over code addresses (empty = off)
   std::vector<GopLayer> collectGopLayers() const;
   void publishPreview() const;
+  struct IrLogEntry { uint64_t dispatch; std::string function; int raw; bool accepted; std::string note; };
+  std::vector<IrLogEntry> irLog_;
+  std::deque<std::pair<std::string,uint64_t>> irWaiting_;   // accepted host events not yet deliverable (receiver not enabled yet)
+  void serviceVirtualRemote();
+  void deliverIrFunction(const std::string& function, uint64_t requestedAt);
   mutable uint64_t historyChecksum_ = 0, historyFrames_ = 0;
   mutable std::string historyIndex_;
   const std::string &uart() const { return riu_.uart; }

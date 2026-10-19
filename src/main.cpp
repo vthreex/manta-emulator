@@ -128,10 +128,12 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-usb-no-device")o.exploratoryUsbNoDevice=true;
       else if(a=="--exploratory-mmio-bits"){
         auto spec=value(i);   // HEXADDR:HEXMASK:HEXVALUE
-        unsigned long addr=0,mask=0,val=0;char c1=0,c2=0;
+        unsigned long addr=0,mask=0,val=0;char c1=0,c2=0;int scBank=-1;
+        auto at=spec.find('@');
+        if(at!=std::string::npos){scBank=int(std::stoul(spec.substr(at+1),nullptr,0));spec=spec.substr(0,at);}
         if(std::sscanf(spec.c_str(),"%lx%c%lx%c%lx",&addr,&c1,&mask,&c2,&val)!=5 || c1!=':' || c2!=':' || mask>255 || val>255 || (val&~mask) || addr<0x1f200000ul || addr>=0x1f400000ul)
-          throw std::runtime_error("--exploratory-mmio-bits needs 1F2xxxxx:MASK:VALUE (hex, value within mask)");
-        o.bitHypotheses.push_back({uint32_t(addr),unsigned(mask),unsigned(val)});
+          throw std::runtime_error("--exploratory-mmio-bits needs 1F2xxxxx:MASK:VALUE[@SCBANK] (hex, value within mask)");
+        o.bitHypotheses.push_back({uint32_t(addr),unsigned(mask),unsigned(val),scBank});
       }
       else if(a=="--exploratory-afec-indirect-6a3c"){
         auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);
@@ -289,6 +291,19 @@ static int appMain(const std::vector<std::string> &args) {
           o.historyPcs.push_back(uint32_t(pc));pos=comma+1;
         }
       }
+      else if (a == "--ir-keymap"){
+        std::ifstream f(utf8Path(value(i)));
+        if(!f)throw std::runtime_error("cannot read --ir-keymap file");
+        std::stringstream ss;ss<<f.rdbuf();
+        auto map=manta::IrKeyMap::parse(ss.str());
+        for(auto& [k,v]:map.raw)o.irKeyMap.raw[k]=v;
+        for(auto& [k,v]:map.evidence)o.irKeyMap.evidence[k]=v;
+      }
+      else if (a == "--ir-script"){
+        auto items=manta::parseIrScript(value(i));
+        o.irScript.insert(o.irScript.end(),items.begin(),items.end());
+      }
+      else if (a == "--exploratory-pm-ir-rpt-latch")o.exploratoryPmIrRptLatch=true;
       else if (a == "--gop-timeline-from")
         o.gopTimelineFrom = std::stoull(value(i));
       else if (a == "--gop-frame-history")
@@ -420,6 +435,9 @@ static int appMain(const std::vector<std::string> &args) {
                "--dump-guest-range HEXADDR+HEXLEN --dump-prefix PREFIX: READ-ONLY; after the run write that guest physical range to PREFIX_<addr>.bin (repeatable)\n"
                "--offscreen-inspector HEXADDR:WIDTHxHEIGHT:PITCH (+ --preview-capture-offscreen FILE.bmp): DIAGNOSTIC read-only second view of a guest surface that is not a GOP window; press O in the window to toggle; never panel output\n"
                "--gop-frame-history-at HEX,HEX: also sample the GOP history whenever one of these original PCs executes (with --gop-frame-history)\n"
+               "--ir-keymap FILE: function/raw-byte table (FUNCTION RAW [evidence]); only mapped functions can be delivered as emulated PM IR frames\n"
+               "--ir-script DISPATCH:FUNCTION,...: deterministic scripted remote presses (FUNCTION or raw=0xNN), delivered to the emulated PM IR FIFO at/after that dispatch\n"
+               "--exploratory-pm-ir-rpt-latch: HYPOTHESIS: IR RPT (3DAD bit0) latches the repeat flag of the entry just popped; requires --candidate-pm-ir-fifo\n"
                "--gop-frame-history DIR: DIAGNOSTIC: write a BMP of the GOP preview into DIR (plus index.json) each time its content changes (max 128); directory must exist\n"
                "--preview-capture FILE.bmp / --preview-close-after-ms N: windowed mode only; save the window client area after the guest run stopped, then close (automation)\n"
                "--export-gop-frame FILE.json: after the run, decode the guest memory of every enabled+latched GOP window (format 6 assumed ARGB1555) to FILE_bankB_winW.bmp plus metadata; debug export only, no composition, never an authentic-frame claim\n"
@@ -451,6 +469,7 @@ static int appMain(const std::vector<std::string> &args) {
       f.description = "selftest 64x32";
       store->publish(std::move(f)); store->setFinished();
       manta::PreviewWindowOptions opt; opt.capturePath = previewSelftest; opt.closeAfterFinishMs = 100;
+      opt.injectSelftestKeys = {77, 83, 27, 13, 38, 40, 37, 39, 80, 73, 79, 88};   // M S Esc Enter Up Down Left Right P I O X(unmapped)
       manta::nativeWindow("", false, store, opt);
       return 0;
     }
@@ -480,7 +499,7 @@ static int appMain(const std::vector<std::string> &args) {
       flash.loadOverlay(nvram);
     // SPI programming is not connected yet. No pretend guest settings are
     // saved.
-    if (!headless) o.previewStore = std::make_shared<manta::GopPreviewStore>();
+    if (!headless) { o.previewStore = std::make_shared<manta::GopPreviewStore>(); o.remoteQueue = o.previewStore->remote; }
     auto previewStore = o.previewStore;
     manta::Msd309Machine machine(std::move(flash), o);
     if (headless) return machine.run();

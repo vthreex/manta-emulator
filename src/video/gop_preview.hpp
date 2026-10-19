@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include "input/remote_queue.hpp"
 #include <atomic>
 #include <cstdint>
 #include <memory>
@@ -96,6 +97,7 @@ inline std::vector<uint8_t> previewFrameToBmp32(const GopPreviewFrame& f) {
 // Thread-safe hand-off from the emulator thread (owner of guest RAM) to the native window.
 class GopPreviewStore {
 public:
+  std::shared_ptr<RemoteQueue> remote = std::make_shared<RemoteQueue>();   // host key presses (function names) for the emulator thread
   void publish(GopPreviewFrame frame) {
     std::lock_guard<std::mutex> lock(mutex_);
     frame.sequence = ++sequence_;

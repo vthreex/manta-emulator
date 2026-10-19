@@ -130,7 +130,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   }
   for(const auto& h:o.bitHypotheses){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("bit hypotheses: requires guarded exploration");
-    riu_.addHypothesisBits(h.address,h.mask,h.value);
+    riu_.addHypothesisBits(h.address,h.mask,h.value,h.scBank);
   }
   if(o.exploratoryAvdNoise>=0){
     if(!o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
@@ -226,6 +226,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryPmIrResetEmpty && (!o.candidatePmIrFifo || !o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("PM IR cold-empty hypothesis requires candidate FIFO and guarded exploration; reset occupancy unverified");
   if(o.candidatePmIrFifo)riu_.configurePmIrFifo(o.exploratoryPmIrResetEmpty);
+  if(o.exploratoryPmIrRptLatch)riu_.configurePmIrRptLatch();
   riu_.configureOrTraceBudget(o.orFirstVisits,o.orBudget,o.orDivider);
   if(o.exploratorySarFullscale){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("SAR input/reference fixture requires explicitly guarded exploration");
@@ -522,6 +523,7 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
+  if((!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty()) && (m.dispatches_ & 0x3fff)==0)m.serviceVirtualRemote();
   if(!m.options_.historyPcs.empty() && a>=0x80000000u && a<0x81000000u)
     for(auto pc:m.options_.historyPcs)if(pc==a){m.publishPreview();break;}
   if(!m.watchSet_.empty() && a>=0x80000000u && a<0x81000000u && ((a>>2)&0x3fffff)<m.watchSet_.size()*8 && (m.watchSet_[((a>>2)&0x3fffff)>>3]>>(((a>>2)&0x3fffff)&7)&1)){
@@ -1839,6 +1841,38 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
     }
   return layers;
 }
+// Virtual remote delivery (emulator thread only). A host function becomes a decoded IR frame in the emulated PM IR FIFO; the original
+// firmware then polls the FIFO itself. Events the receiver cannot take yet (firmware has not enabled it) wait, they are never dropped silently.
+void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requestedAt) {
+  int raw = -1;
+  bool rawLiteral = function.rfind("raw=", 0) == 0;
+  if (rawLiteral) raw = int(std::stoul(function.substr(4), nullptr, 0) & 255);
+  else if (auto it = options_.irKeyMap.raw.find(function); it != options_.irKeyMap.raw.end()) raw = it->second;
+  if (raw < 0) {
+    irLog_.push_back({dispatches_, function, -1, false, "no raw IR byte is mapped for this function (no evidence-backed code yet)"});
+    return;
+  }
+  try {
+    bool ok = riu_.receivePmIrDecoded(uint8_t(raw), false);
+    irLog_.push_back({dispatches_, function, raw, ok, ok ? "queued in the PM IR FIFO (requested at dispatch " + std::to_string(requestedAt) + ")" : "FIFO full"});
+    event("virtual_remote_key", 0x1f007b51, 1, uint32_t(raw), "host function " + function + " delivered as a decoded IR frame; original firmware polls the FIFO");
+  } catch (const std::exception& error) {
+    if (irWaiting_.size() < 32) irWaiting_.push_back({function, requestedAt});
+    irLog_.push_back({dispatches_, function, raw, false, std::string("deferred: ") + error.what()});
+  }
+}
+void Msd309Machine::serviceVirtualRemote() {
+  auto waiting = std::move(irWaiting_);
+  irWaiting_.clear();
+  for (auto& [function, at] : waiting) deliverIrFunction(function, at);
+  while (!options_.irScript.empty() && options_.irScript.front().dispatch <= dispatches_) {
+    auto item = options_.irScript.front();
+    options_.irScript.erase(options_.irScript.begin());
+    deliverIrFunction(item.function, item.dispatch);
+  }
+  if (options_.remoteQueue && options_.remoteQueue->pending())
+    for (auto& function : options_.remoteQueue->drain()) deliverIrFunction(function, dispatches_);
+}
 void Msd309Machine::publishPreview() const {
   if (!options_.previewStore && options_.gopFrameHistory.empty()) return;
   if (!options_.offscreenInspector.empty()) {
@@ -2123,6 +2157,16 @@ std::string Msd309Machine::summary() const {
       s<<"\n    {\"tick\":"<<e.tick<<",\"k\":\""<<e.kind<<"\"";
       if(e.kind=='W')s<<",\"pc\":\""<<hex(e.pc)<<"\",\"bank\":"<<e.bank<<",\"off\":\""<<hex(e.offset)<<"\",\"val\":\""<<hex(e.value)<<"\",\"n\":"<<e.n;
       s<<'}';
+    }
+    s<<"\n  ]";
+  }
+  if(options_.exploratoryPmIrRptLatch)s<<",\n  \"exploratory_pm_ir_rpt_latch\": true";
+  if(options_.candidatePmIrFifo)s<<",\n  \"pm_ir_fifo_pops\": "<<riu_.pmIrFifo().pops()<<",\n  \"pm_ir_fifo_received\": "<<riu_.pmIrFifo().received();
+  if(!irLog_.empty()){
+    s<<",\n  \"virtual_remote_log\": [";
+    for(size_t i=0;i<irLog_.size();++i){
+      const auto& e=irLog_[i];
+      s<<(i?",":"")<<"\n    {\"dispatch\":"<<e.dispatch<<",\"function\":\""<<e.function<<"\",\"raw\":"<<e.raw<<",\"accepted\":"<<(e.accepted?"true":"false")<<",\"note\":\""<<e.note<<"\"}";
     }
     s<<"\n  ]";
   }

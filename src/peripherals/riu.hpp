@@ -116,7 +116,7 @@ class Riu {
   std::string guardedStretchDetail_;
   int exploratoryAvdHtotal_=-1;
   int exploratoryAvdNoise_=-1;
-  struct HypothesisBits { uint32_t address; uint8_t mask, value; uint64_t reads; };
+  struct HypothesisBits { uint32_t address; uint8_t mask, value; uint64_t reads; int scBank; };
   std::vector<HypothesisBits> hypothesisBits_;   // EXPLORATORY: bit-scoped constants for hardware-owned status bytes
   int exploratoryAfecIndirect_=-1;   // -1 off, else initial 16-bit content of the indirectly addressed register 6A3C
   uint16_t afecIndirectValue_=0;
@@ -272,6 +272,7 @@ public:
   void configureExploratoryIrDmaReset(){exploratoryIrDmaReset_=true;}
   void configureExploratoryIrCapturePresent(){exploratoryIrCapturePresent_=true;}
   void configurePmIrFifo(bool coldEmpty=false){candidatePmIrFifo_=true;if(coldEmpty)pmIrFifo_.coldEmptyHypothesis();}
+  void configurePmIrRptLatch(){if(!candidatePmIrFifo_)throw std::runtime_error("PM IR RPT latch hypothesis requires the PM IR FIFO");pmIrFifo_.enableRptLatchHypothesis();}
   const PmIrFifo& pmIrFifo()const{return pmIrFifo_;}
   uint64_t pmIrStatusReads()const{return pmIrStatusReads_;}
   bool receivePmIrDecoded(uint8_t key,bool repeat){
@@ -537,10 +538,17 @@ public:
   uint64_t afecIndirectWrites() const { return afecIndirectWrites_; }
   uint16_t afecIndirectValue() const { return afecIndirectValue_; }
   // HYPOTHESIS: only the bits in `mask` of the byte at `address` read as `value`; every other bit keeps its provenance. Guest writes are rejected.
-  void addHypothesisBits(uint32_t address, unsigned mask, unsigned value) {
+  // scBank >= 0 scopes an address inside the banked scaler aperture (BF205E04..) to that bank selector value (BF205E00).
+  bool hypothesisApplies(const HypothesisBits& h) const {
+    if (h.scBank < 0) return true;
+    auto it = bytes_.find(0x1f205e00);
+    return it != bytes_.end() && it->second.known == 255 && it->second.value == unsigned(h.scBank);
+  }
+  void addHypothesisBits(uint32_t address, unsigned mask, unsigned value, int scBank = -1) {
     if (address < 0x1f200000u || address >= 0x1f400000u || !(mask & 255) || (value & ~mask & 255)) throw std::runtime_error("invalid bit hypothesis");
     for (auto& h : hypothesisBits_) if (h.address == address) throw std::runtime_error("duplicate bit hypothesis");
-    hypothesisBits_.push_back({address, uint8_t(mask), uint8_t(value), 0});
+    if (scBank >= 0 && (address < 0x1f205e04u || address >= 0x1f206000u)) throw std::runtime_error("scaler bank scope needs an address inside BF205E04..");
+    hypothesisBits_.push_back({address, uint8_t(mask), uint8_t(value), 0, scBank});
   }
   const std::vector<HypothesisBits>& hypothesisBits() const { return hypothesisBits_; }
   uint64_t avdNoiseReads() const { return avdNoiseReads_; }

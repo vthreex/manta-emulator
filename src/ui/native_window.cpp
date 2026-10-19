@@ -22,7 +22,7 @@ struct WindowState {
   std::shared_ptr<const GopPreviewFrame> offscreen;
 };
 constexpr UINT_PTR kTimer = 1;
-constexpr int kBar = 64;   // host status bar height (window chrome, not guest content)
+constexpr int kBar = 80;   // host status bar height (window chrome, not guest content)
 
 // Renders exactly the window content (same drawContent as WM_PAINT) into an off-screen DIB and saves it as a
 // top-down 32-bit BMP: repeatable evidence of what the window shows, independent of occlusion or minimization.
@@ -61,6 +61,9 @@ void drawContent(HDC dc, RECT r, WindowState &st) {
   char sum[96] = "";
   if (shown && !shown->empty()) snprintf(sum, sizeof sum, "frame checksum %016llx (host bar above is window chrome, not guest content)%s", (unsigned long long)shown->checksum, st.offscreen ? "  [O toggles GOP / offscreen]" : "");
   TextOutA(dc, 8, 42, sum, int(strlen(sum)));
+  SetTextColor(dc, RGB(140, 200, 140));
+  const char *help = "Remote (original firmware input path): M menu  S source  Esc exit  Enter OK  arrows  P power  I info  |  O toggles offscreen inspector";
+  TextOutA(dc, 8, 60, help, int(strlen(help)));
   RECT area{0, kBar, r.right, r.bottom};
   HBRUSH back = CreateSolidBrush(RGB(20, 20, 20)); FillRect(dc, &area, back); DeleteObject(back);
   if (shown && !shown->empty()) {
@@ -122,6 +125,16 @@ LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM a, LPARAM b) {
     return 0;
   }
   if (msg == WM_PAINT) { paint(w, *st); return 0; }
+  if (msg == WM_KEYDOWN && st->store && !(b & (1 << 30))) {   // ignore Windows auto-repeat: one press = one emulated IR frame
+    const char *function = nullptr;
+    switch (a) {
+      case 'M': function = "MENU"; break;   case 'S': function = "SOURCE"; break;  case VK_ESCAPE: function = "EXIT"; break;
+      case VK_RETURN: function = "OK"; break;  case VK_UP: function = "UP"; break;  case VK_DOWN: function = "DOWN"; break;
+      case VK_LEFT: function = "LEFT"; break;  case VK_RIGHT: function = "RIGHT"; break;  case 'P': function = "POWER"; break;  case 'I': function = "INFO"; break;
+      default: break;
+    }
+    if (function) { st->store->remote->push(function); return 0; }
+  }
   if (msg == WM_KEYDOWN && (a == 'O' || a == 'o')) { if (st->offscreen) st->showOffscreen = !st->showOffscreen; InvalidateRect(w, nullptr, FALSE); return 0; }
   if (msg == WM_ERASEBKGND) return 1;
   if (msg == WM_DESTROY) { PostQuitMessage(0); return 0; }
@@ -156,6 +169,7 @@ void nativeWindow(const std::string &, bool smoke, std::shared_ptr<GopPreviewSto
   if (!w)
     throw std::runtime_error("CreateWindowW failed: " + std::to_string(GetLastError()));
   ShowWindow(w, SW_SHOW);
+  for (auto key : options.injectSelftestKeys) PostMessageW(w, WM_KEYDOWN, key, 0);
   std::cout << (state.store ? "NATIVE_WINDOW_CREATED; diagnostic GOP preview (guest pixels only once a GOP window is enabled)\n"
                             : "NATIVE_WINDOW_CREATED; guest display not initialized\n");
   if (!SetTimer(w, kTimer, smoke ? 400 : 100, nullptr)) {
@@ -169,6 +183,11 @@ void nativeWindow(const std::string &, bool smoke, std::shared_ptr<GopPreviewSto
     DispatchMessageW(&msg);
   }
   if (result == -1) throw std::runtime_error("GetMessageW failed: " + std::to_string(GetLastError()));
+  if (!options.injectSelftestKeys.empty() && state.store) {
+    std::cout << "REMOTE_QUEUED:";
+    for (auto &f : state.store->remote->drain()) std::cout << ' ' << f;
+    std::cout << '\n';
+  }
 }
 } // namespace manta
 #else
