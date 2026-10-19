@@ -506,6 +506,15 @@ static int appMain(const std::vector<std::string> &args) {
     // SPI programming is not connected yet. No pretend guest settings are
     // saved.
     if (!headless) { o.previewStore = std::make_shared<manta::GopPreviewStore>(); o.remoteQueue = o.previewStore->remote; }
+    if (!headless && o.irKeyMap.raw.empty())   // default evidence-backed keymap, when present next to the working directory
+      for (const char* candidate : {"configs/input/ir-keymap.tsv", "outputs/manta-emulator/configs/input/ir-keymap.tsv"}) {
+        std::ifstream f(candidate);
+        if (!f) continue;
+        std::stringstream ss; ss << f.rdbuf();
+        auto map = manta::IrKeyMap::parse(ss.str());
+        o.irKeyMap = map;
+        break;
+      }
     auto previewStore = o.previewStore;
     manta::Msd309Machine machine(std::move(flash), o);
     if (headless) return machine.run();

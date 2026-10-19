@@ -26,7 +26,7 @@ Which app code is MENU/SOURCE/EXIT/OK/arrows is still unknown; the keymap file s
 - Identify app codes of MENU/SOURCE/EXIT/OK/arrows by experiment (scripted raw injection + watch of `8046AA70`) and record each with evidence.
 
 ## App code semantics recovered so far (session 8) — static evidence only
-- `0x8046DA24..0x8046DB2C` accumulates `value*10 + (key-0x10)` into `806C9046` (max 4 digits): **app codes 0x10..0x19 are the digit keys 0..9** (raw 0x45 = 0, raw 0x01..0x09 = 1..9). Verified meaning (original control flow).
+- `0x8046DA24..0x8046DB2C` accumulates `value*10 + (key-0x10)` into `806B904A` (max 4 digits): **app codes 0x10..0x19 are the digit keys 0..9** (raw 0x45 = 0, raw 0x01..0x09 = 1..9). Verified meaning (original control flow).
 - Pressing digit 1 (raw 0x01) makes the original ZUI call `804C3684(0x11, ...)` (OSD 0x11) and draw a 1320x120 window holding bitmap 142 (antenna icon, 65x58 ARGB1555): the channel-number entry banner. Verified as an original response; the OSD id 0x11 is the digit-entry banner, not MENU.
 - `803FFE40` posts every forwarded key (class 1) after remapping through the pair table at `0x806708FC` (identity except 0x2F->0x33, 0x30->0x34, 0x31->0x35, 0x36->0x71, 0x34->0x61, 0x52->0x60, 0x7F->0x72, 0x27->0x73, 0x81->0x74, 0x80->0x75).
 - `0x80495E04` is the application key switch (app codes 0..0x81) that forwards keys by UI mode (`803FF5B8`); `0x8046FB3C` is a second 72-way switch (app-5): its group `0x8046FEB0` contains app 0x36 (raw 0x46), 0x0B, 0x0C, 0x0E, 0x0F, 0x1C, 0x1D, 0x27, 0x2F, 0x30, 0x32, 0x3A, 0x3B, probably the keys that act in standby; semantic names are NOT yet established.

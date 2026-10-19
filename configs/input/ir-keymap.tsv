@@ -1,3 +1,14 @@
 # FUNCTION  RAWBYTE  evidence
 # Raw bytes are the decoded command bytes the emulated PM IR FIFO hands to the original firmware (logical IR_KEY 3DA9).
 # A function without an entry cannot be delivered (no invented codes). Fill in only evidence-backed values; see docs/ir-input-path.md.
+# Digits: raw 0x01..0x09 -> app codes 0x11..0x19, raw 0x45 -> app 0x10 (docs/ir-raw-to-app-key-table.tsv); the original handler 8046DA24..8046DB2C computes value*10+(app-0x10).
+DIGIT_1	0x01	app 0x11 = digit 1 (8046DA24 numeric entry; run s15: raw 1 -> app 0x11 -> OSD 17 digit banner)
+DIGIT_2	0x02	app 0x12 = digit 2 (static: table 0x8061773C + 8046DA24)
+DIGIT_3	0x03	app 0x13 = digit 3 (static + run s15)
+DIGIT_4	0x04	app 0x14 = digit 4 (static + run s15)
+DIGIT_5	0x05	app 0x15 = digit 5 (static + run s15)
+DIGIT_6	0x06	app 0x16 = digit 6 (static + run s15)
+DIGIT_7	0x07	app 0x17 = digit 7 (static + run s15)
+DIGIT_8	0x08	app 0x18 = digit 8 (static + run s15)
+DIGIT_9	0x09	app 0x19 = digit 9 (static + run s15)
+DIGIT_0	0x45	app 0x10 = digit 0 (static: table 0x8061773C, raw 0x45; not yet exercised in a connected run)

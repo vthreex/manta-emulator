@@ -133,6 +133,9 @@ LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM a, LPARAM b) {
       case VK_LEFT: function = "LEFT"; break;  case VK_RIGHT: function = "RIGHT"; break;  case 'P': function = "POWER"; break;  case 'I': function = "INFO"; break;
       default: break;
     }
+    static char digitName[] = "DIGIT_0";   // digits are VERIFIED functions (original control flow, see docs/ir-input-path.md)
+    if (!function && a >= '0' && a <= '9') { digitName[6] = char(a); function = digitName; }
+    if (!function && a >= VK_NUMPAD0 && a <= VK_NUMPAD9) { digitName[6] = char('0' + (a - VK_NUMPAD0)); function = digitName; }
     if (function) { st->store->remote->push(function); return 0; }
   }
   if (msg == WM_KEYDOWN && (a == 'O' || a == 'o')) { if (st->offscreen) st->showOffscreen = !st->showOffscreen; InvalidateRect(w, nullptr, FALSE); return 0; }

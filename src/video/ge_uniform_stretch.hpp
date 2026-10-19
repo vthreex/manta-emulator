@@ -26,10 +26,15 @@ struct GeUniformStretch {
   // EXPLORATORY non-uniform sampling (nearestNonUniform): position = d*ratio + signed phase (4.12; the original's phase is the half-pixel centring term (src-dst)/(2*dst)), clamped at 0, then ROUNDED to the nearest source pixel; no filter taps,
   // opaque-source alpha, dither/blend assumed to leave the 5-bit word unchanged. Every one of these is an ASSUMPTION; hardware sampling position and filtering are unestablished.
   bool sampled = false; std::vector<uint16_t> samples;   // clipped rectangle, row-major
+  // EXPLORATORY source key (hypothesis K1): a sampled pixel is transparent (not written) when each of its R, G, B channels, expanded to 8 bits by bit replication, lies inside
+  // [low, high] of the key registers (16/17 = low, 14/15 = high, per channel, alpha ignored). Evidence: the original programs 00F800F8..00FF00FF for the magenta key of bitmap 0, i.e.
+  // the 5-bit value 31 expanded with zero fill and with one fill. Whether the hardware compares before or after filtering is unknown (here: the nearest sample).
+  std::vector<uint8_t> keep;
   using Read = std::function<std::vector<uint8_t>(uint32_t, size_t)>;
   static GeUniformStretch decode(const GeStretchRequest& r, Alpha model, const Read& read, bool nearestNonUniform = false) {
     if (r.sourceFormat != 9 || r.destinationFormat != 0x0c) throw std::runtime_error("GE uniform stretch: only ARGB1555 -> format C");
-    if (r.sourceKey()) throw std::runtime_error("GE uniform stretch: source key unsupported");
+    if (r.sourceKey() && !(nearestNonUniform && model == Alpha::OpaqueSource)) throw std::runtime_error("GE uniform stretch: source key unsupported");
+    if (r.sourceKey() && r.keyModeBit) throw std::runtime_error("GE source key: register 1C bit 0 set; semantics unknown");
     if (r.source >= 0x08000000 || r.destination >= 0x08000000) throw std::runtime_error("GE uniform stretch requires MIU0 byte addressing");
     if (!r.destinationPitch || r.destinationPitch % 2 || !r.sourcePitch || r.sourcePitch % 2) throw std::runtime_error("GE uniform stretch: pitch invalid");
     // Every source row the scale arithmetic or the programmed rectangle can touch must hold the same word.
@@ -49,6 +54,7 @@ struct GeUniformStretch {
         ++count;
       }
     }
+    if (r.sourceKey()) uniform = false;   // keyed sources always use the per-pixel path
     if (!uniform && !(nearestNonUniform && model == Alpha::OpaqueSource))
       throw std::runtime_error("GE uniform stretch: source is not a single colour; sampling/filter semantics unestablished");
     GeUniformStretch p;
@@ -76,6 +82,16 @@ struct GeUniformStretch {
           if (sy >= r.srcHeight + (r.heightReducedBy5 ? 5 : 0)) sy = r.srcHeight + (r.heightReducedBy5 ? 5 : 0) - 1;
           if (sx >= r.srcWidth || sy >= rows) throw std::runtime_error("GE nearest stretch: sample outside the source rectangle");
           uint16_t w = grid[sy * r.srcWidth + sx];
+          bool visible = true;
+          if (r.sourceKey()) {
+            auto ex = [](uint32_t v) { return (v << 3) | (v >> 2); };
+            uint32_t c[3] = {ex((w >> 10) & 31), ex((w >> 5) & 31), ex(w & 31)};
+            uint32_t lo[3] = {(r.keyLow >> 16) & 255, (r.keyLow >> 8) & 255, r.keyLow & 255}, hi[3] = {(r.keyHigh >> 16) & 255, (r.keyHigh >> 8) & 255, r.keyHigh & 255};
+            bool inside = true;
+            for (int k = 0; k < 3; ++k) inside = inside && c[k] >= lo[k] && c[k] <= hi[k];
+            visible = !inside;
+          }
+          p.keep.push_back(visible ? 1 : 0);
           p.samples.push_back(uint16_t(0x8000 | (w & 0x7fff)));
         }
     }
@@ -91,8 +107,13 @@ struct GeUniformStretch {
     if (sampled) {
       std::vector<uint8_t> line(width);
       for (uint32_t y = 0; y < height; ++y) {
-        for (uint32_t x = 0; x < width / 2; ++x) { auto s = samples[y * (width / 2) + x]; line[2 * x] = uint8_t(s); line[2 * x + 1] = uint8_t(s >> 8); }
-        write(start + y * pitch, line);
+        uint32_t x = 0, w2 = width / 2;
+        while (x < w2) {
+          while (x < w2 && !keep[y * w2 + x]) ++x;      // keyed pixels leave the destination untouched
+          uint32_t run = x;
+          while (x < w2 && keep[y * w2 + x]) { auto s = samples[y * w2 + x]; line[2 * (x - run)] = uint8_t(s); line[2 * (x - run) + 1] = uint8_t(s >> 8); ++x; }
+          if (x > run) write(start + y * pitch + run * 2, std::span<const uint8_t>(line.data(), 2 * (x - run)));
+        }
       }
       return;
     }

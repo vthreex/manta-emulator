@@ -1,0 +1,25 @@
+{
+ "runs": {
+  "bit12=0": {
+   "instruction_dispatches": 1305989717,
+   "stop_pc": "0x805fb000",
+   "stop_address": "0x1f204c14",
+   "stop_reason": "unmodeled MMIO read",
+   "poll_reads_805FAFD8": 1,
+   "success_branch_805FB018": 0,
+   "gradient_fills": 196,
+   "i8_fills": 108
+  },
+  "bit12=1": {
+   "instruction_dispatches": 1600000000,
+   "stop_pc": "0x8053a204",
+   "stop_address": "0x0",
+   "stop_reason": "instruction budget exhausted",
+   "poll_reads_805FAFD8": 33,
+   "success_branch_805FB018": 33,
+   "gradient_fills": 384,
+   "i8_fills": 108
+  }
+ },
+ "note": "same flags and binary except --exploratory-mmio-bits 1f204a3d:10:V; neither value is a confirmed hardware state"
+}

@@ -56,7 +56,8 @@ struct GeStretchRequest {
       +" destRect=("+std::to_string(destLeft)+","+std::to_string(destTop)+")-("+std::to_string(destRight)+","+std::to_string(destBottom)+")"
       +" srcRect=("+std::to_string(srcX)+","+std::to_string(srcY)+") "+std::to_string(srcWidth)+"x"+std::to_string(srcHeight)
       +" ratio="+hx(ratioX)+"/"+hx(ratioY)+(heightReducedBy5?" (vertical scale computed from "+std::to_string(scaleSourceHeight)+" rows, 6F programmed "+std::to_string(srcHeight)+")":std::string())+" dither="+(dither()?"1":"0")+" blend="+(blend()?"1":"0")+" key="+(sourceKey()?"1":"0")
-      +" alpha11..13="+hx(alpha11)+","+hx(alpha12)+","+hx(alpha13)+"; unresolved:";
+      +" alpha11..13="+hx(alpha11)+","+hx(alpha12)+","+hx(alpha13)
+      +(sourceKey()?" key regs 16/17(low)="+hx(keyLow)+" 14/15(high)="+hx(keyHigh)+" mode1C.0="+std::string(keyModeBit?"1":"0"):std::string())+"; unresolved:";
     for(auto& u:unresolved())t+=" ["+u+"]";
     return t;}
   static GeStretchRequest decode(uint16_t command,const Register& reg){

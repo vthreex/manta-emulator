@@ -246,6 +246,17 @@ void geNearestStretchTests(){
   auto px=[&](unsigned x,unsigned y){return unsigned(memory[y*600+2*x])|unsigned(memory[y*600+2*x+1])<<8;};
   // dest(10,10): x pos = 10*0x8AA-938 -> round 5; y pos = 10*0x947-860 -> round 6 -> word 0x0605; dest(0,0) clamps to source(0,0); dest(119,99) -> (64,57)
   require(px(0,0)==0x8000 && px(10,10)==0x8605 && px(119,99)==0xb940,"nearest sampling follows floor(d*ratio/4096) and forces the alpha bit");
+  // Source key hypothesis K1: per-channel [low,high] on bit-replicated RGB; the original programs 00F800F8..00FF00FF for the magenta key of bitmap 0.
+  regs[0x00]={0x47,0xffff};regs[0x14]={0x00ff,0xffff};regs[0x15]={0x00ff,0xffff};regs[0x16]={0x00f8,0xffff};regs[0x17]={0x00f8,0xffff};regs[0x1c]={0,0xffff};
+  src[6*130+2*5]=0x1f;src[6*130+2*5+1]=0x7c;      // source(5,6) is magenta 0x7C1F
+  auto keyedRequest=GeStretchRequest::decode(0x8040,get);
+  rejects([&]{GeUniformStretch::decode(keyedRequest,GeUniformStretch::Alpha::OpaqueSource,read);});   // strict: source key refused
+  auto keyed=GeUniformStretch::decode(keyedRequest,GeUniformStretch::Alpha::OpaqueSource,read,true);
+  std::fill(memory.begin(),memory.end(),0xee);keyed.execute(writable,write);
+  require(px(10,10)==0xeeee,"the magenta (keyed) sample leaves the destination pixel untouched");
+  require(px(30,10)!=0xeeee && px(0,0)!=0xeeee && px(10,40)!=0xeeee,"samples that are not magenta are written");
+  regs[0x1c]={1,0xffff};rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read,true);});   // key mode bit unknown
+  regs[0x1c]={0,0xffff};regs[0x00]={7,0xffff};
   regs[0x5e]={0x1001,0xffff};rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read,true);});   // non-zero phase stays guarded
 }
 void geI2GlyphTests(){

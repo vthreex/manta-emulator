@@ -1,0 +1,788 @@
+{
+ "injected_dispatch": 1300000000,
+ "state": "connected NO SIGNAL / OSD 2 state (top state 0x14, ActiveOsd 2), no key forwarded to the ZUI",
+ "rows": [
+  {
+   "raw": "0x0a",
+   "app_code_table": "0x8",
+   "app_code_observed": "0x8",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x805cbc08",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x0c",
+   "app_code_table": "-126",
+   "app_code_observed": "0x82",
+   "osd_show_first_ids": [
+    14
+   ],
+   "osd_show_delay_dispatches": 7178,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80490908",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x0d",
+   "app_code_table": "0xd",
+   "app_code_observed": "0xd",
+   "osd_show_first_ids": [
+    3
+   ],
+   "osd_show_delay_dispatches": 7168,
+   "zui_key_posts": 0,
+   "stop_pc": "0x8046a524",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x0e",
+   "app_code_table": "0xb",
+   "app_code_observed": "0xb",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x8049091c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x0f",
+   "app_code_table": "0x1a",
+   "app_code_observed": "0x1a",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1305607576,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x10",
+   "app_code_table": "0xc",
+   "app_code_observed": "0xc",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a8538",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x11",
+   "app_code_table": "0xf",
+   "app_code_observed": "0xf",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a8528",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x12",
+   "app_code_table": "0x31",
+   "app_code_observed": "0x31",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7235,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357700,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x13",
+   "app_code_table": "0x27",
+   "app_code_observed": "0x27",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x14",
+   "app_code_table": "-128",
+   "app_code_observed": "0x80",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x16",
+   "app_code_table": "0x1b",
+   "app_code_observed": "0x1b",
+   "osd_show_first_ids": [
+    3
+   ],
+   "osd_show_delay_dispatches": 7150,
+   "zui_key_posts": 0,
+   "stop_pc": "0x8046a524",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x17",
+   "app_code_table": "0x25",
+   "app_code_observed": "0x25",
+   "osd_show_first_ids": [
+    14
+   ],
+   "osd_show_delay_dispatches": 7164,
+   "zui_key_posts": 0,
+   "stop_pc": "0x8054e3c8",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x18",
+   "app_code_table": "0x1",
+   "app_code_observed": "0x1",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7174,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357715,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x19",
+   "app_code_table": "0x1e",
+   "app_code_observed": "0x1e",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7174,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357733,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x1a",
+   "app_code_table": "0x4",
+   "app_code_observed": "0x4",
+   "osd_show_first_ids": [
+    14
+   ],
+   "osd_show_delay_dispatches": 7164,
+   "zui_key_posts": 0,
+   "stop_pc": "0x8054e3c8",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x1b",
+   "app_code_table": "0x7f",
+   "app_code_observed": "0x7f",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x1d",
+   "app_code_table": "0x37",
+   "app_code_observed": "0x37",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a850c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x20",
+   "app_code_table": "0x9",
+   "app_code_observed": "0x9",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x21",
+   "app_code_table": "0xe",
+   "app_code_observed": "0xe",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x22",
+   "app_code_table": "0x3a",
+   "app_code_observed": "0x3a",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x42",
+   "app_code_table": "0x21",
+   "app_code_observed": "0x21",
+   "osd_show_first_ids": [
+    14
+   ],
+   "osd_show_delay_dispatches": 7164,
+   "zui_key_posts": 0,
+   "stop_pc": "0x805e3508",
+   "stop_reason": "unmodeled MMIO read",
+   "dispatches": 1303436452,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x43",
+   "app_code_table": "0x23",
+   "app_code_observed": "0x23",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x44",
+   "app_code_table": "-127",
+   "app_code_observed": "0x81",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80490900",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x46",
+   "app_code_table": "0x36",
+   "app_code_observed": "0x36",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x47",
+   "app_code_table": "0x34",
+   "app_code_observed": "0x34",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x4a",
+   "app_code_table": "0x26",
+   "app_code_observed": "0x26",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7167,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357709,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x4b",
+   "app_code_table": "0x5d",
+   "app_code_observed": "0x5d",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80504374",
+   "stop_reason": "unmodeled MMIO read",
+   "dispatches": 1307434961,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x4e",
+   "app_code_table": "0x62",
+   "app_code_observed": "0x62",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x805392f8",
+   "stop_reason": "unknown preserved register bit affects guest decision/address/device",
+   "dispatches": 1308850255,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x4f",
+   "app_code_table": "0x28",
+   "app_code_observed": "0x28",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x51",
+   "app_code_table": "0x6a",
+   "app_code_observed": "0x6a",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x53",
+   "app_code_table": "0x1c",
+   "app_code_observed": "0x1c",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a8528",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x54",
+   "app_code_table": "0x30",
+   "app_code_observed": "0x30",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7167,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357709,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x57",
+   "app_code_table": "0x2f",
+   "app_code_observed": "0x2f",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7174,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357712,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x58",
+   "app_code_table": "0x6b",
+   "app_code_observed": "0x6b",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x59",
+   "app_code_table": "0x69",
+   "app_code_observed": "0x69",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x5a",
+   "app_code_table": "0x54",
+   "app_code_observed": "0x54",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x5b",
+   "app_code_table": "0x1d",
+   "app_code_observed": "0x1d",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7499,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357718,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x5c",
+   "app_code_table": "0x58",
+   "app_code_observed": "0x58",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x5f",
+   "app_code_table": "0x39",
+   "app_code_observed": "0x39",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80490908",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x71",
+   "app_code_table": "0x1d",
+   "app_code_observed": "0x1d",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7499,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357718,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0x72",
+   "app_code_table": "0x1c",
+   "app_code_observed": "0x1c",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a8528",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xbd",
+   "app_code_table": "0x55",
+   "app_code_observed": "0x55",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xbe",
+   "app_code_table": "0x24",
+   "app_code_observed": "0x24",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xc1",
+   "app_code_table": "0x52",
+   "app_code_observed": "0x52",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xc3",
+   "app_code_table": "0x32",
+   "app_code_observed": "0x32",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xcc",
+   "app_code_table": "0x66",
+   "app_code_observed": "0x66",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xcd",
+   "app_code_table": "0x68",
+   "app_code_observed": "0x68",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xce",
+   "app_code_table": "0x67",
+   "app_code_observed": "0x67",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xd2",
+   "app_code_table": "0x53",
+   "app_code_observed": "0x53",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xd4",
+   "app_code_table": "0x70",
+   "app_code_observed": "0x70",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xef",
+   "app_code_table": "0x5f",
+   "app_code_observed": "0x5f",
+   "osd_show_first_ids": [
+    3
+   ],
+   "osd_show_delay_dispatches": 3565079,
+   "zui_key_posts": 0,
+   "stop_pc": "0x805fff7c",
+   "stop_reason": "unmodeled MMIO read",
+   "dispatches": 1307535263,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf0",
+   "app_code_table": "0x33",
+   "app_code_observed": "0x33",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf2",
+   "app_code_table": "0x3b",
+   "app_code_observed": "0x3b",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf3",
+   "app_code_table": "0x63",
+   "app_code_observed": "0x63",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x805392f8",
+   "stop_reason": "unknown preserved register bit affects guest decision/address/device",
+   "dispatches": 1308850261,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf4",
+   "app_code_table": "0x1f",
+   "app_code_observed": "0x1f",
+   "osd_show_first_ids": [
+    15
+   ],
+   "osd_show_delay_dispatches": 7499,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1303357718,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf5",
+   "app_code_table": "0x60",
+   "app_code_observed": "0x60",
+   "osd_show_first_ids": [
+    3
+   ],
+   "osd_show_delay_dispatches": 3327342,
+   "zui_key_posts": 0,
+   "stop_pc": "0x805fff7c",
+   "stop_reason": "unmodeled MMIO read",
+   "dispatches": 1306627677,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf6",
+   "app_code_table": "0x5e",
+   "app_code_observed": "0x5e",
+   "osd_show_first_ids": [
+    3
+   ],
+   "osd_show_delay_dispatches": 7162,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80472f54",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf7",
+   "app_code_table": "0x61",
+   "app_code_observed": "0x61",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804f9050",
+   "stop_reason": "unmodeled MMIO read",
+   "dispatches": 1302601730,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf8",
+   "app_code_table": "0x65",
+   "app_code_observed": "0x65",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a858c",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xf9",
+   "app_code_table": "0x5c",
+   "app_code_observed": "0x5c",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804f9050",
+   "stop_reason": "unmodeled MMIO read",
+   "dispatches": 1302780005,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xfb",
+   "app_code_table": "-2",
+   "app_code_observed": "0xfe",
+   "osd_show_first_ids": [],
+   "osd_show_delay_dispatches": null,
+   "zui_key_posts": 0,
+   "stop_pc": "0x804a8528",
+   "stop_reason": "instruction budget exhausted",
+   "dispatches": 1335000000,
+   "classification": "unidentified"
+  },
+  {
+   "raw": "0xfc",
+   "app_code_table": "0x29",
+   "app_code_observed": "0x29",
+   "osd_show_first_ids": [
+    1
+   ],
+   "osd_show_delay_dispatches": 15411,
+   "zui_key_posts": 0,
+   "stop_pc": "0x80526598",
+   "stop_reason": "GE BitBlt stretch/filter/mode unsupported",
+   "dispatches": 1304038999,
+   "classification": "unidentified"
+  }
+ ]
+}

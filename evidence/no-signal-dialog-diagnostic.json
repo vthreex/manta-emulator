@@ -5,7 +5,7 @@
   "instruction_dispatches": 1305936592,
   "stop": {"pc": "0x805fafd8", "address": "0x1f204a3c", "reason": "unmodeled MMIO read", "context": "poll loop (retry count 0x20 with sleep 805CBBD8) testing bit 12 of the halfword at BF204A3C, then BF204C14 & 0xC0 inside the scaler programming path 805FA8xx..805FB0xx"},
   "ge": {"i8_fills_retired": 108, "gradient_fills_retired": 196, "models_in_use": ["--exploratory-ge-i8-fill", "--exploratory-ge-fill-ignore-reg00 6", "--exploratory-ge-gradient-fill (7.12 steps, truncation to ARGB1555, origin = rectangle origin: ASSUMED)", "uniform stretch, I2 glyph, blend copy, height5-full-copy, AFEC indirect/noise (earlier hypotheses)"]},
-  "text": {"string_id": "0x1A7", "english": "NO SIGNAL", "source": "work/extracted-verified/stream-31bf58.bin table 0", "selector": "ZUI text callback 804D95A0 reads 806C92C0"},
+  "text": {"string_id": "0x1A7", "english": "NO SIGNAL", "source": "work/extracted-verified/stream-31bf58.bin table 0", "selector": "ZUI text callback 804D95A0 reads 806B92C0"},
   "image": "no-signal-dialog-diagnostic-window.png (native window capture; chrome text labels it DIAGNOSTIC / EXPLORATORY)",
   "gop_windows": "no-signal-dialog-gop-windows.json",
   "authentic_television_pixels": false,
