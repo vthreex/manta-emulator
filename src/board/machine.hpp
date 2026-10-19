@@ -77,6 +77,7 @@ struct Options {
   bool diagnosticRestoreByIdentityBranch=false;   // DIAGNOSTIC: branch whose two arms both rewrite the tested bit to its tested value
   bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': GE copies cover every destination row (6F = height-5 is an encoding artefact)
   unsigned exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: GE reg00 bits (other than bit 0) assumed not to affect a solid fill
+  bool exploratoryGeGradientFill=false;   // EXPLORATORY: GE command 0x2030 gradient rectangle fill into format C
   bool exploratoryGeI8Fill=false;   // EXPLORATORY: format-4 rectangle fill, index = low byte of the colour registers
   bool exploratoryGeBlendCopy=false;   // EXPLORATORY: ARGB1555->C surface copy, blend coefficient ONE read as replace
   bool exploratoryGeI2Glyph=false;   // EXPLORATORY: anti-aliased I2 glyph blit hypotheses

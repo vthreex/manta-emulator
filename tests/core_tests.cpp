@@ -2868,6 +2868,7 @@ int main() {
     afecIndirectTests();
     hypothesisBitsTests();
     geI8FillTests();
+    geGradientTests();
     virtualRemoteTests();
     hypothesisScBankTests();
     sharedMiuTests();

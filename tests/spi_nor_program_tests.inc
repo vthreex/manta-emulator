@@ -449,6 +449,33 @@ void virtualRemoteTests(){
     auto out=q.drain();require(out.size()==500 && !q.pending() && out.front()=="DOWN" && out[1]=="UP","events arrive complete and in order from another thread");
   }
 }
+void geGradientTests(){
+  using namespace manta;
+  // Register block of the original ZUI gradient request (decode is exploratory; the step format comes from the original delta routine 8052158C).
+  static const std::pair<unsigned,uint16_t> list[]={{0x00,7},{0x01,1},{0x34,0x0c01},{0x26,0xd880},{0x27,0x00dd},{0x33,0x400},{0x55,0},{0x56,0x7f},{0x57,0},{0x58,1},{0x59,0x40},
+    {0x68,0},{0x69,0},{0x6a,0x7f},{0x6b,1},{0x70,0xfcfc},{0x71,0xfffc},{0x74,0xfaab},{0x75,0xf},{0x78,0xfaab},{0x79,0xf},{0x7c,0xfaab},{0x7d,0xf},
+    {0x72,0},{0x73,0},{0x76,0},{0x77,0},{0x7a,0},{0x7b,0},{0x7e,0},{0x7f,0}};
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  for(auto [i,v]:list)regs[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+  auto get=[&](unsigned i){return regs[i];};
+  rejects([&]{GeRectFill::decode(0x2030,get,false,6,false);});            // strict: the extra command bit is refused
+  rejects([&]{GeRectFill::decode(0x2030,get,false,0,true);});             // reg00 flags still need their own hypothesis
+  auto g=GeRectFill::decode(0x2030,get,false,6,true);
+  require(g.gradient && g.dx[0]==-0x555 && g.dx[1]==-0x555 && g.dx[2]==-0x555 && g.dy[0]==0,"20-bit signed 7.12 steps decode (FAAB/000F = -0x555)");
+  std::vector<uint8_t> memory(0x400*2,0);const uint32_t base=0x00ddd880;
+  auto writable=[&](uint32_t a,size_t n){return a>=base && a+n<=base+memory.size();};
+  auto write=[&](uint32_t a,std::span<const uint8_t> b){std::copy(b.begin(),b.end(),memory.begin()+(a-base));};
+  g.execute(writable,write);
+  auto px=[&](unsigned x,unsigned y){return unsigned(memory[y*0x400+2*x])|unsigned(memory[y*0x400+2*x+1])<<8;};
+  // x=96: 0xFC000 - 96*0x555 = 0xDC020 -> channel 0xDC -> 5 bits 27 (truncating assumption); alpha FF -> bit 15
+  require(px(0,0)==0xffff && px(96,0)==0xef7b && px(96,1)==0xef7b && px(0x80,0)==0,"gradient pixels follow start + step * distance from the rectangle origin (assumptions labelled)");
+  regs[0x7f]={1,0xffff};rejects([&]{GeRectFill::decode(0x2030,get,false,6,true);});
+  // Format-C solid fill under the same hypothesis: FDFDFD with alpha FF -> 5-bit truncation -> 0xFFFF; strict decode still refuses it.
+  regs[0x7f]={0,0xffff};regs[0x70]={0xfdfd,0xffff};regs[0x71]={0xfffd,0xffff};
+  rejects([&]{GeRectFill::decode(0x30,get,false,6,false);});
+  { auto q=GeRectFill::decode(0x30,get,false,6,true);std::fill(memory.begin(),memory.end(),0);q.execute(writable,write);
+    require(!q.gradient && q.quantized && px(0,0)==0xffff && px(5,1)==0xffff,"format-C solid fill of FFFDFDFD quantizes by truncation under the hypothesis"); }
+}
 void geI8FillTests(){
   using namespace manta;
   // The register block is the original ZUI's first indexed-surface clear. Expected bytes are derived by hand: the only hypothesis is that the index is the low byte of 70/71.

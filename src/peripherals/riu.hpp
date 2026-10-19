@@ -348,6 +348,8 @@ public:
   // EXPLORATORY: offscreen-to-GOP surface copy with blend coefficient ONE (see video/ge_blend_copy.hpp).
   bool exploratoryGeBlendCopy=false;
   uint16_t exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: reg00 bits assumed not to affect a solid fill
+  bool exploratoryGeGradientFill=false;   // EXPLORATORY: command 0x2030 gradient rectangle fill
+  uint64_t geGradientFills=0;
   bool exploratoryGeI8Fill=false;   // EXPLORATORY: indexed (format 4) rectangle fill, index = low byte of colour
   uint64_t geI8Fills=0,geI8FillPixels=0;
   std::string copyRefusal_;

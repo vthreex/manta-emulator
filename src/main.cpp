@@ -153,6 +153,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-ge-i2-glyph")o.exploratoryGeI2Glyph=true;
       else if(a=="--exploratory-ge-blend-copy")o.exploratoryGeBlendCopy=true;
       else if(a=="--exploratory-ge-i8-fill")o.exploratoryGeI8Fill=true;
+      else if(a=="--exploratory-ge-gradient-fill")o.exploratoryGeGradientFill=true;
       else if(a=="--exploratory-ge-fill-ignore-reg00"){auto v=std::stoul(value(i),nullptr,0);if(v==0||v>6||(v&1))throw std::runtime_error("--exploratory-ge-fill-ignore-reg00 takes a mask within bits 1..2 of GE register 00");o.exploratoryGeFillIgnoredReg00=unsigned(v);}
       else if(a=="--exploratory-ge-height5-full-copy")o.exploratoryGeHeight5Full=true;
       else if(a=="--exploratory-ge-uniform-stretch"){
@@ -365,6 +366,7 @@ static int appMain(const std::vector<std::string> &args) {
                 "--exploratory-avd-htotal-constant N: HYPOTHESIS (bracket it), not a TV measurement: published AFEC HTotal (BF206B8D/BF206B90) reads constant N 0..0xFFFF; requires the absent-HSYNC hypothesis and guarded exploration\n"
                 "--exploratory-ge-height5-full-copy: HYPOTHESIS, NOT TITANIA4-VERIFIED: GE copies/glyph blits cover every destination row although the original programs register 6F = height-5 (805241C4); relaxes the hidden-rows acceptance rule of the exploratory blend-copy and I2 glyph models\n"
                 "--exploratory-ge-i8-fill: EXPLORATORY, NOT TITANIA4-VERIFIED: execute a plain GE fill whose destination format is 4 (8 bits per pixel per the original format table), writing the low byte of colour registers 70/71 as the index; requires --candidate-ge-rect-fill\n"
+                "--exploratory-ge-gradient-fill: EXPLORATORY, NOT TITANIA4-VERIFIED: execute GE command 2030 (solid fill plus per-channel 7.12 steps in registers 72..7D, as computed by the original routine 8052158C) into the format-C destination; accumulation origin, truncation and ARGB1555 quantization are assumed; requires --candidate-ge-rect-fill\n"
                 "--exploratory-ge-fill-ignore-reg00 MASK: EXPLORATORY, NOT TITANIA4-VERIFIED: treat GE register 00 bits 1..2 (set by the original code via 80520A30/80525B78, meaning unknown) as having no effect on a solid rectangle fill; requires --candidate-ge-rect-fill\n"
                 "--exploratory-ge-blend-copy: EXPLORATORY, NOT TITANIA4-VERIFIED: execute the original ZUI offscreen-to-GOP ARGB1555->C copy (0040, control 0005, blend coefficient ONE read as replace); requires --candidate-ge-bitblt\n"
                 "--exploratory-ge-i2-glyph: EXPLORATORY, NOT TITANIA4-VERIFIED: execute the original ZUI anti-aliased I2 glyph blit (0040, control 0045, formats 0C01) under hypotheses H1..H5 (see video/ge_i2_glyph.hpp); requires --candidate-ge-bitblt\n"

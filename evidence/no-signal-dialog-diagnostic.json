@@ -1,0 +1,14 @@
+{
+  "base_git": "9f2bfce",
+  "result": "the original firmware's ZUI draws a NO SIGNAL dialog into GOP bank 4 / window 1 (1360x768 @ 0xFDB880) under labelled exploratory GE models; every pixel is guest-drawn, none comes from the host",
+  "run": "s12 (manta_g4.exe, s10 flags + --exploratory-ge-gradient-fill)",
+  "instruction_dispatches": 1305936592,
+  "stop": {"pc": "0x805fafd8", "address": "0x1f204a3c", "reason": "unmodeled MMIO read", "context": "poll loop (retry count 0x20 with sleep 805CBBD8) testing bit 12 of the halfword at BF204A3C, then BF204C14 & 0xC0 inside the scaler programming path 805FA8xx..805FB0xx"},
+  "ge": {"i8_fills_retired": 108, "gradient_fills_retired": 196, "models_in_use": ["--exploratory-ge-i8-fill", "--exploratory-ge-fill-ignore-reg00 6", "--exploratory-ge-gradient-fill (7.12 steps, truncation to ARGB1555, origin = rectangle origin: ASSUMED)", "uniform stretch, I2 glyph, blend copy, height5-full-copy, AFEC indirect/noise (earlier hypotheses)"]},
+  "text": {"string_id": "0x1A7", "english": "NO SIGNAL", "source": "work/extracted-verified/stream-31bf58.bin table 0", "selector": "ZUI text callback 804D95A0 reads 806C92C0"},
+  "image": "no-signal-dialog-diagnostic-window.png (native window capture; chrome text labels it DIAGNOSTIC / EXPLORATORY)",
+  "gop_windows": "no-signal-dialog-gop-windows.json",
+  "authentic_television_pixels": false,
+  "not_established": ["colour accuracy (format-C quantization, gradient rounding)", "dialog timing/timeout", "which source-detect outcome the real TV had", "scaler status at BF204A3C"],
+  "native_checks": 1967
+}

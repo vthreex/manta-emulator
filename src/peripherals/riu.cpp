@@ -1416,13 +1416,19 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeRectFill plan;
       try{
         plan=GeRectFill::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeI8Fill,exploratoryGeFillIgnoredReg00);
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeI8Fill,exploratoryGeFillIgnoredReg00,exploratoryGeGradientFill);
       }catch(const std::exception& error){
         guardedStretchDetail_=std::string("rect-fill decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+"; GE registers (index=value):"+geRegisterFile()+geReg0History();
         throw;
       }
       raster=[this,plan]{
         plan.execute(dramWritable,dramWrite);
+        if(plan.gradient){
+          ++geGradientFills;
+          event("exploratory_ge_gradient_fill_retired",plan.destination,plan.pitch,plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1),
+            "EXPLORATORY, NOT TITANIA4-VERIFIED: 7.12 per-channel steps from the original delta routine; accumulation origin, truncation and ARGB1555 quantization assumed");
+          return;
+        }
         if(plan.indexed){
           ++geI8Fills;
           auto cnt=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);

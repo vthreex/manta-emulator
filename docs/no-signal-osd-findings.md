@@ -33,3 +33,12 @@ is cleared. **Open:** the writer of the NO SIGNAL values, the window/resource th
 ## Not yet established
 - Guest timer/timeout that dismisses it, the colour/background, whether analog AV (SCART) uses the same status word.
 - The 0x52 vs 0x00 source-detect brackets still give distinct outcomes; no source-detect result has been chosen.
+
+## Dynamic result (s12, 1,305,936,592 dispatches)
+With the exploratory GE models (I8 fill, reg00 bits 1..2 ignored for fills, gradient/format-C quantization; see `evidence/ge-reg00-flags-and-gradient-stop.json`) the
+connected boot reaches the original ZUI drawing a **NO SIGNAL** dialog (rounded light frame, blue-grey gradient body, white text of string `0x1A7`) into GOP bank 4 /
+window 1 at `0xFDB880`. `evidence/no-signal-dialog-diagnostic-window.png`, `evidence/no-signal-dialog-diagnostic.json`.
+- Guest-drawn: gradient and solid rectangles through GE (196 gradient fills), glyphs through the I2 model; no host text.
+- Colours are NOT verified: format-C channel quantization (truncate to 5 bits) and gradient accumulation are assumptions (`--exploratory-ge-gradient-fill`).
+- Gradient evidence: the original routine `8052158C` computes `(|c1-c0|<<12)/(length-1)` per channel (7.12 fixed point, negative as `0x100000-v`); regs 74/75 R, 78/79 G, 7C/7D B (x steps), 72/73, 76/77, 7A/7B (y steps).
+- The run then stops on a scaler-side status poll at `BF204A3C` bit 12 (`805FAFD8`), with the retry loop `0x20` x sleep (`805CBBD8`); the timeout that dismisses the dialog is not reached.

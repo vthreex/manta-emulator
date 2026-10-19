@@ -154,6 +154,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if(!o.candidateGeRectFill)throw std::runtime_error("I8 fill hypothesis requires the candidate GE rectangle model");
     riu_.exploratoryGeI8Fill=true;
   }
+  if(o.exploratoryGeGradientFill){
+    if(!o.candidateGeRectFill)throw std::runtime_error("GE gradient hypothesis requires the candidate GE rectangle model");
+    riu_.exploratoryGeGradientFill=true;
+  }
   if(o.exploratoryGeFillIgnoredReg00){
     if(!o.candidateGeRectFill)throw std::runtime_error("GE reg00 fill hypothesis requires the candidate GE rectangle model");
     riu_.exploratoryGeFillIgnoredReg00=uint16_t(o.exploratoryGeFillIgnoredReg00);
@@ -2178,6 +2182,7 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryAvdHtotal>=0)s<<",\n  \"exploratory_avd_htotal_constant\": "<<options_.exploratoryAvdHtotal<<",\n  \"exploratory_avd_htotal_reads\": "<<riu_.avdHtotalReads();
   if(!riu_.guardedStretchDetail().empty())s<<",\n  \"ge_guarded_stretch_request\": \""<<riu_.guardedStretchDetail()<<"\"";
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(options_.exploratoryGeGradientFill)s<<",\n  \"exploratory_ge_gradient_fill\": true,\n  \"ge_gradient_fills_retired\": "<<riu_.geGradientFills;
   if(options_.exploratoryGeFillIgnoredReg00)s<<",\n  \"exploratory_ge_fill_ignored_reg00_bits\": "<<options_.exploratoryGeFillIgnoredReg00;
   if(options_.exploratoryGeI8Fill)s<<",\n  \"exploratory_ge_i8_fill\": true,\n  \"ge_i8_fills_retired\": "<<riu_.geI8Fills<<",\n  \"ge_i8_fill_pixels_written\": "<<riu_.geI8FillPixels;
   if(options_.exploratoryGeBlendCopy && !riu_.geBlendCopyLog.empty()){
