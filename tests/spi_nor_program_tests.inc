@@ -221,6 +221,33 @@ void geUniformStretchTests(){
   regs[0x34]={0x0c08,0xffff};
   rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read);});
 }
+void geNearestStretchTests(){
+  using namespace manta;
+  // The request the original ZUI issued after raw IR byte 0x01: bitmap 142 (65x58 ARGB1555) stretched to 120x100 (ratio 8AA/947, 6F = 53 = 58-5).
+  static const std::pair<unsigned,uint16_t> list[]={{0x00,7},{0x01,0x11},{0x34,0x0c09},{0x20,0x4628},{0x21,0x03d4},{0x26,0xd880},{0x27,0x00dd},{0x30,0x82},{0x33,0x258},
+    {0x55,0},{0x56,0x77},{0x57,0},{0x58,0x63},{0x59,0x40},{0x5e,0x1c56},{0x5f,0x1ca4},{0x64,0x8aa},{0x65,0x947},{0x68,0},{0x69,0},{0x6a,119},{0x6b,99},
+    {0x6c,0},{0x6d,0},{0x6e,65},{0x6f,53},{0x11,0xff01},{0x12,0x0100},{0x13,0x00ff}};
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  for(auto [i,v]:list)regs[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+  auto get=[&](unsigned i){return regs[i];};
+  std::vector<uint8_t> src(130*58);
+  for(unsigned y=0;y<58;++y)for(unsigned x=0;x<65;++x){uint16_t w=uint16_t(((y<<8)|x)&0x7fff);src[y*130+2*x]=uint8_t(w);src[y*130+2*x+1]=uint8_t(w>>8);}
+  auto read=[&](uint32_t a,size_t n){uint32_t base=0x03d44628;if(a<base||a+n>base+src.size())throw std::runtime_error("read outside fixture");
+    return std::vector<uint8_t>(src.begin()+(a-base),src.begin()+(a-base)+n);};
+  auto request=GeStretchRequest::decode(0x8040,get);
+  rejects([&]{GeUniformStretch::decode(request,GeUniformStretch::Alpha::OpaqueSource,read);});            // strict: not a single colour
+  rejects([&]{GeUniformStretch::decode(request,GeUniformStretch::Alpha::AlphaBit,read,true);});            // the hypothesis needs opaque-source
+  auto plan=GeUniformStretch::decode(request,GeUniformStretch::Alpha::OpaqueSource,read,true);
+  require(plan.sampled && plan.left==0 && plan.right==119 && plan.top==0 && plan.bottom==99 && plan.samples.size()==120*100,"nearest model samples every pixel of the 120x100 rectangle");
+  std::vector<uint8_t> memory(600*100,0xee);const uint32_t base=0x00ddd880;
+  auto writable=[&](uint32_t a,size_t n){return a>=base&&a+n<=base+memory.size();};
+  auto write=[&](uint32_t a,std::span<const uint8_t> b){std::copy(b.begin(),b.end(),memory.begin()+(a-base));};
+  plan.execute(writable,write);
+  auto px=[&](unsigned x,unsigned y){return unsigned(memory[y*600+2*x])|unsigned(memory[y*600+2*x+1])<<8;};
+  // dest(10,10): x pos = 10*0x8AA-938 -> round 5; y pos = 10*0x947-860 -> round 6 -> word 0x0605; dest(0,0) clamps to source(0,0); dest(119,99) -> (64,57)
+  require(px(0,0)==0x8000 && px(10,10)==0x8605 && px(119,99)==0xb940,"nearest sampling follows floor(d*ratio/4096) and forces the alpha bit");
+  regs[0x5e]={0x1001,0xffff};rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read,true);});   // non-zero phase stays guarded
+}
 void geI2GlyphTests(){
   using namespace manta;
   // SELF-CONSISTENCY tests of the EXPLORATORY hypotheses H1..H5 (not hardware evidence): the register block is the one the original

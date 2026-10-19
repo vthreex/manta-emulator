@@ -1348,7 +1348,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       catch(const std::exception&){throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");}
       GeUniformStretch plan;
       try{
-        plan=GeUniformStretch::decode(request,exploratoryGeUniformStretch==0?GeUniformStretch::Alpha::OpaqueSource:GeUniformStretch::Alpha::AlphaBit,dramRead);
+        plan=GeUniformStretch::decode(request,exploratoryGeUniformStretch==0?GeUniformStretch::Alpha::OpaqueSource:GeUniformStretch::Alpha::AlphaBit,dramRead,exploratoryGeNearestStretch);
       }catch(const std::exception& error){
         guardedStretchDetail_=request.describe()+"; exploratory uniform model refused: "+error.what();
         event("ge_stretch_request_guarded",a,n,v,"GUARDED, not executed: "+guardedStretchDetail_);
@@ -1356,7 +1356,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       }
       raster=[this,plan]{
         plan.execute(dramWritable,dramWrite);
-        ++geUniformStretches;
+        ++geUniformStretches;if(plan.sampled)++geNearestStretches;
         auto count=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);
         geUniformStretchPixels+=count;
         event("exploratory_ge_uniform_stretch_retired",plan.destination,plan.pitch,count,

@@ -81,6 +81,7 @@ struct Options {
   bool exploratoryGeI8Fill=false;   // EXPLORATORY: format-4 rectangle fill, index = low byte of the colour registers
   bool exploratoryGeBlendCopy=false;   // EXPLORATORY: ARGB1555->C surface copy, blend coefficient ONE read as replace
   bool exploratoryGeI2Glyph=false;   // EXPLORATORY: anti-aliased I2 glyph blit hypotheses
+  bool exploratoryGeNearestStretch=false;   // EXPLORATORY: also execute NON-uniform ARGB1555->C stretches with nearest sampling (needs opaque-source)
   int exploratoryGeUniformStretch=-1;   // EXPLORATORY: 0 opaque-source, 1 alpha-bit (uniform-colour stretched BitBlt only)
   int exploratoryAfecIndirect=-1;   // HYPOTHESIS: content of the indirectly addressed AFEC register 6A3C (bracket it)
   struct BitHypothesis { uint32_t address; unsigned mask, value; int scBank = -1; };

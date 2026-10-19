@@ -2862,6 +2862,7 @@ int main() {
     gopExportTests();
     gopPreviewTests();
     geUniformStretchTests();
+    geNearestStretchTests();
     geI2GlyphTests();
     geBlendCopyTests();
     avdNoiseConstantTests();

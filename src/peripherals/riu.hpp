@@ -342,6 +342,8 @@ public:
   uint64_t geRectangles=0,geRasterPixels=0;
   // EXPLORATORY (-1 off, 0 opaque-source, 1 alpha-bit): uniform-colour stretched BitBlt under a stated alpha hypothesis.
   int exploratoryGeUniformStretch=-1;
+  bool exploratoryGeNearestStretch=false;   // EXPLORATORY: non-uniform stretched sources sampled nearest-neighbour
+  uint64_t geNearestStretches=0;
   uint64_t geUniformStretches=0,geUniformStretchPixels=0;
   // EXPLORATORY: anti-aliased I2 glyph blit under the hypotheses H1..H5 documented in video/ge_i2_glyph.hpp.
   bool exploratoryGeI2Glyph=false;
