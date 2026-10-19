@@ -12,9 +12,11 @@ namespace manta {
 // Blending, keying, gradients, format C/9 and MIU1 remain unsupported.
 struct GeRectFill {
   uint32_t destination=0,pitch=0,left=0,top=0,right=0,bottom=0,color=0;
-  unsigned bpp=0;bool empty=false;bool argb1555=false;
+  unsigned bpp=0;bool empty=false;bool argb1555=false;bool indexed=false;
   using Register=std::function<std::pair<uint16_t,uint16_t>(unsigned)>; // value, known
-  static GeRectFill decode(uint16_t command,const Register& reg){
+  // i8Hypothesis: EXPLORATORY. Destination format 4 is 8 bits per pixel according to the original format table (80525E28: fmt 4 -> 1 byte/pixel;
+  // 6..14 -> 2, 15 -> 4), but how a fill colour maps to an index is NOT established; the hypothesis writes the low byte of registers 70/71.
+  static GeRectFill decode(uint16_t command,const Register& reg,bool i8Hypothesis=false){
     if(command!=0x30)throw std::runtime_error("GE raster primitive/mode unsupported");
     auto field=[&](unsigned index,uint16_t mask=0xffff){auto [value,known]=reg(index);
       if((known&mask)!=mask)throw std::runtime_error("GE rectangle field contains unknown bits");
@@ -32,6 +34,7 @@ struct GeRectFill {
       // 8000/FFFF/0000/7FFF for every monotonic alpha rule and any RGB order, assuming A:1 R:5 G:5 B:5 with A in bit 15.
       p.bpp=2;p.argb1555=true;
     }
+    else if(format==4 && i8Hypothesis){p.bpp=1;p.indexed=true;}
     else throw std::runtime_error("GE rectangle destination format unsupported; no format-C alpha assumption");
     p.destination=field(0x26)|(field(0x27)<<16);
     if(p.destination>=0x08000000)throw std::runtime_error("GE rectangle requires mapped MIU0 byte addressing");
@@ -66,7 +69,7 @@ struct GeRectFill {
       throw std::runtime_error("GE rectangle destination backing unavailable; no completion");
     // Validate the complete range before the first write. Padding and rows
     // outside the clipped rectangle are never overwritten.
-    uint32_t pixel=bpp==4?color:argb1555?(((color>>24)==255?0x8000u:0u)|(((color&255)==255)?0x7fffu:0u))
+    uint32_t pixel=indexed?(color&0xff):bpp==4?color:argb1555?(((color>>24)==255?0x8000u:0u)|(((color&255)==255)?0x7fffu:0u))
                                        :((color>>8)&0xf800)|((color>>5)&0x7e0)|((color>>3)&0x1f);
     std::vector<uint8_t> row(width);
     for(size_t i=0;i<row.size();++i)row[i]=uint8_t(pixel>>(8*(i%bpp)));

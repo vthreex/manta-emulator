@@ -32,6 +32,7 @@ for name, extra, text in (
     ('afec-indirect-needs-guarded-exploration', ['--exploratory-afec-indirect-6a3c', '0'], 'requires guarded exploration'),
     ('mmio-bits-need-guarded-exploration', ['--exploratory-mmio-bits', '1f206f5d:52:10'], 'requires guarded exploration'),
     ('height5-needs-a-model', ['--exploratory-ge-height5-full-copy'], 'requires an exploratory blend-copy or I2 glyph model'),
+    ('i8-fill-needs-rect-model', ['--exploratory-ge-i8-fill'], 'requires the candidate GE rectangle model'),
     ('nor-write-needs-candidate-spi', ['--candidate-spi-nor-write'], 'requires the candidate SPI model'),
     ('restore-branch-needs-nor-write', ['--diagnostic-restore-by-identity-branch'], 'requires guarded exploration and the SPI NOR write model'),
 ):
@@ -59,6 +60,7 @@ for flag, label in (('--diagnostic-htotal-branch-join', 'DIAGNOSTIC ONLY, not ha
                     ('--exploratory-afec-indirect-6a3c', 'not a measurement'),
                     ('--exploratory-mmio-bits', 'not a measurement'),
                     ('--exploratory-ge-height5-full-copy', 'NOT TITANIA4-VERIFIED'),
+                    ('--exploratory-ge-i8-fill', 'NOT TITANIA4-VERIFIED'),
                     ('--exploratory-ge-uniform-stretch', 'NOT TITANIA4-VERIFIED'),
                     ('--exploratory-ge-i2-glyph', 'NOT TITANIA4-VERIFIED'),
                     ('--exploratory-ge-blend-copy', 'NOT TITANIA4-VERIFIED'),

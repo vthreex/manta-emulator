@@ -43,12 +43,12 @@ FB 2 `0x00E82380`, x 0..1359, rows `top..247`, `top` = 240, 232, 224, 217, 209, 
 rows), steps 25-32 add 10,880 / 10,977 / 11,251 / 10,123 / 11,759 / 11,918 / 11,918 / 10,551 changed words; cumulative non-black words 92,480 = the whole bar (1360 x 68).
 After step 32 FB 2 equals FB 1 (SHA-256 `85638ddd...59056` for both).
 
-## What is visible in the GOP preview
+## What is visible in the GOP preview (CORRECTED in the next session)
 
-Frames recorded by `--gop-frame-history` (bounded timeline, index in the evidence folder): 10 distinct enabled-window states from the black plane to the bar rising from the bottom edge of the
-window up to step ~31 (`evidence/scart-gop-history-mid.png`, `-final.png`). The last copy (step 32) and the page flip `8049DD70` (+ full repaint `804A2FF4`) run when the ZUI has already disabled
-GWIN 5, so the **complete** bar is never visible through an enabled+latched window in this run; the history never contains a frame after it. Whether the real TV keeps the banner on screen
-longer is not decided here (the diagnostic timing/virtual-clock assumptions are unverified).
+Frames recorded by `--gop-frame-history`: 10 distinct enabled-window states from the black plane to the **complete** SCART bar. The last recorded frame (`gop_9`, 870,046,867
+dispatches, `evidence/scart-gop-history-final.png`) is pixel-identical to the final FB 1 / FB 2 content (SHA-256 `85638ddd...59056`): bar and "SCART" text complete at (0,520). An earlier
+version of this note said the complete bar was never visible through an enabled window; that was wrong (the final image had not been inspected). The window stays enabled with the
+complete bar until the ZUI closes the OSD at 915.7M dispatches; see `gwin5-handoff-page-flip-and-i8.md`.
 
 ## Next request: an I8 surface
 

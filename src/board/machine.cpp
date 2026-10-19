@@ -150,6 +150,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if(!o.exploratoryGeBlendCopy && !o.exploratoryGeI2Glyph)throw std::runtime_error("height-5 full-copy hypothesis requires an exploratory blend-copy or I2 glyph model");
     riu_.exploratoryGeHeight5Full=true;
   }
+  if(o.exploratoryGeI8Fill){
+    if(!o.candidateGeRectFill)throw std::runtime_error("I8 fill hypothesis requires the candidate GE rectangle model");
+    riu_.exploratoryGeI8Fill=true;
+  }
   if(o.exploratoryGeBlendCopy){
     if(!o.candidateGeBitBlt)throw std::runtime_error("blend-copy hypothesis requires the candidate GE BitBlt model");
     riu_.exploratoryGeBlendCopy=true;
@@ -2106,10 +2110,27 @@ std::string Msd309Machine::summary() const {
     }
     s<<']';
   }
+  if(!riu_.gopLog.empty() && !options_.gopFrameHistory.empty()){
+    // bank 0/3/4 writes and every latch from --gop-timeline-from (at most 900 entries)
+    s<<",\n  \"gop_timeline_tail\": [";
+    size_t first=0,printed=0;bool firstEntry=true;
+    for(size_t i=first;i<riu_.gopLog.size();++i){
+      const auto& e=riu_.gopLog[i];
+      if(e.tick<options_.gopTimelineFrom || printed>=900)continue;
+      ++printed;
+      if(e.kind=='W' && e.bank!=4)continue;
+      if(!firstEntry)s<<',';firstEntry=false;
+      s<<"\n    {\"tick\":"<<e.tick<<",\"k\":\""<<e.kind<<"\"";
+      if(e.kind=='W')s<<",\"pc\":\""<<hex(e.pc)<<"\",\"bank\":"<<e.bank<<",\"off\":\""<<hex(e.offset)<<"\",\"val\":\""<<hex(e.value)<<"\",\"n\":"<<e.n;
+      s<<'}';
+    }
+    s<<"\n  ]";
+  }
   if(options_.exploratoryAvdNoise>=0)s<<",\n  \"exploratory_avd_noise_constant\": "<<options_.exploratoryAvdNoise<<",\n  \"exploratory_avd_noise_reads\": "<<riu_.avdNoiseReads();
   if(options_.exploratoryAvdHtotal>=0)s<<",\n  \"exploratory_avd_htotal_constant\": "<<options_.exploratoryAvdHtotal<<",\n  \"exploratory_avd_htotal_reads\": "<<riu_.avdHtotalReads();
   if(!riu_.guardedStretchDetail().empty())s<<",\n  \"ge_guarded_stretch_request\": \""<<riu_.guardedStretchDetail()<<"\"";
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(options_.exploratoryGeI8Fill)s<<",\n  \"exploratory_ge_i8_fill\": true,\n  \"ge_i8_fills_retired\": "<<riu_.geI8Fills<<",\n  \"ge_i8_fill_pixels_written\": "<<riu_.geI8FillPixels;
   if(options_.exploratoryGeBlendCopy && !riu_.geBlendCopyLog.empty()){
     s<<",\n  \"ge_blend_copy_log\": [";
     for(size_t i=0;i<riu_.geBlendCopyLog.size();++i)s<<(i?",\n    ":"\n    ")<<riu_.geBlendCopyLog[i];

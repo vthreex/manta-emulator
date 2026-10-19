@@ -594,6 +594,7 @@ void Riu::publishGopAck(){
   high.value=uint8_t((high.value&~mask)|(uint8_t(gopUpdate_.busy()>>8)&mask));high.known|=mask;
 }
 void Riu::latchGopRegisters(uint64_t tick,const char* cause){
+  if(gopLog.size()<12000)gopLog.push_back({tick,0,'L',0,0,0,0});
   gopActive_.clear();
   for(const auto& [key,value]:bytes_)if(key>=0x80000000u && key<0x80004000u)gopActive_[key]=value;
   event("exploratory_gop_register_latch",0x1f203ffc,2,gopUpdate_.busy(),
@@ -1409,13 +1410,21 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeRectFill plan;
       try{
         plan=GeRectFill::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeI8Fill);
       }catch(const std::exception& error){
         guardedStretchDetail_=std::string("rect-fill decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+"; GE registers (index=value):"+geRegisterFile();
         throw;
       }
       raster=[this,plan]{
         plan.execute(dramWritable,dramWrite);
+        if(plan.indexed){
+          ++geI8Fills;
+          auto cnt=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);
+          geI8FillPixels+=cnt;
+          event("exploratory_ge_i8_fill_retired",plan.destination,plan.pitch,cnt,
+            "EXPLORATORY, NOT TITANIA4-VERIFIED: destination format 4 is 1 byte/pixel (original format table 80525E28); the index is assumed to be the low byte of colour registers 70/71; palette not applied");
+          return;
+        }
         ++geRectangles;
         auto count=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);
         geRasterPixels+=count;
@@ -1473,6 +1482,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       publishGopAck();
     }
   }
+  if(a>=0x1f203e00 && a<0x1f203ffc && gopBankKnown() && gopLog.size()<12000)
+    gopLog.push_back({tick,pc,'W',unsigned(gopBank()),unsigned(a-0x1f203e00),v,n});
   event("write", a, n, v, "recorded register storage; not a complete device");
   if(closingComb) {
     ++combRestoreCount_;

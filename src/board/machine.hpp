@@ -75,6 +75,7 @@ struct Options {
   bool diagnosticAvdInvalidPublication=false;
   bool diagnosticRestoreByIdentityBranch=false;   // DIAGNOSTIC: branch whose two arms both rewrite the tested bit to its tested value
   bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': GE copies cover every destination row (6F = height-5 is an encoding artefact)
+  bool exploratoryGeI8Fill=false;   // EXPLORATORY: format-4 rectangle fill, index = low byte of the colour registers
   bool exploratoryGeBlendCopy=false;   // EXPLORATORY: ARGB1555->C surface copy, blend coefficient ONE read as replace
   bool exploratoryGeI2Glyph=false;   // EXPLORATORY: anti-aliased I2 glyph blit hypotheses
   int exploratoryGeUniformStretch=-1;   // EXPLORATORY: 0 opaque-source, 1 alpha-bit (uniform-colour stretched BitBlt only)
@@ -113,6 +114,7 @@ struct Options {
   struct OffscreenSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; };
   std::vector<OffscreenSurface> offscreenInspector;   // DIAGNOSTIC read-only viewer of a guest surface that is NOT a GOP window (at most one)
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
+  uint64_t gopTimelineFrom=0;   // DIAGNOSTIC: first tick of the GOP write/latch timeline printed in the summary
   std::vector<uint32_t> historyPcs;   // DIAGNOSTIC: also sample the GOP history when one of these original PCs executes
   std::vector<uint32_t> watchPcRegs;   // read-only probe: record registers/stack words at these original PCs
   std::filesystem::path trace, replay, summary, coverage, exportGopFrame;

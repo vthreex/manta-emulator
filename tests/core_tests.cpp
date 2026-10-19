@@ -2866,6 +2866,7 @@ int main() {
     avdNoiseConstantTests();
     afecIndirectTests();
     hypothesisBitsTests();
+    geI8FillTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

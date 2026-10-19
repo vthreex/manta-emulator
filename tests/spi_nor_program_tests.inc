@@ -390,6 +390,48 @@ void hypothesisBitsTests(){
   try{r.addHypothesisBits(0x1e000000,0x01,0x01);}catch(const std::exception&){rejected=true;}
   require(rejected,"addresses outside the RIU window are refused");
 }
+void geI8FillTests(){
+  using namespace manta;
+  // The register block is the original ZUI's first indexed-surface clear. Expected bytes are derived by hand: the only hypothesis is that the index is the low byte of 70/71.
+  static const std::pair<unsigned,uint16_t> regsList[]={{0x00,1},{0x01,0x01},{0x34,0x0401},{0x26,0xd880},{0x27,0x00dd},{0x33,0x400},{0x55,0},{0x56,0x77f},{0x57,0},{0x58,0x437},{0x59,0x40},
+    {0x68,0},{0x69,0},{0x6a,0x3ff},{0x6b,0x291},{0x70,0xffff},{0x71,0}};
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  for(auto [i,v]:regsList)regs[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+  auto get=[&](unsigned i){return regs[i];};
+  rejects([&]{GeRectFill::decode(0x30,get);});                       // strict: format 4 stays unsupported
+  auto fill=GeRectFill::decode(0x30,get,true);
+  require(fill.indexed && fill.bpp==1 && fill.left==0 && fill.right==0x3ff && fill.top==0 && fill.bottom==0x291 && fill.destination==0x00ddd880 && fill.pitch==0x400,"hypothesis decode: 1024 x 658, 1 byte per pixel, pitch 1024");
+  std::vector<uint8_t> memory(1024*660,0x11);
+  const uint32_t base=0x00ddd880;
+  auto writable=[&](uint32_t a,size_t n){return a>=base && a+n<=base+memory.size();};
+  auto write=[&](uint32_t a,std::span<const uint8_t> b){std::copy(b.begin(),b.end(),memory.begin()+(a-base));};
+  fill.execute(writable,write);
+  uint64_t ff=0,other=0;for(auto b:memory){ff+=b==0xff;other+=b==0x11;}
+  require(ff==1024ull*658 && other==1024ull*2 && memory[1024*658]==0x11 && memory[1024*658-1]==0xff && memory[0]==0xff,"exactly 1024 x 658 bytes become 0xFF; the two rows after the rectangle stay untouched");
+  regs[0x70]={0x1234,0xffff};
+  std::fill(memory.begin(),memory.end(),0x11);
+  GeRectFill::decode(0x30,get,true).execute(writable,write);
+  require(memory[5]==0x34 && memory[1024*657+1023]==0x34,"the index is the low byte of the colour registers (hypothesis)");
+  regs[0x70]={0xffff,0xffff};
+  regs[0x56]={0x1ff,0xffff};regs[0x57]={0x10,0xffff};regs[0x58]={0x1f,0xffff};
+  std::fill(memory.begin(),memory.end(),0x11);
+  auto clipped=GeRectFill::decode(0x30,get,true);clipped.execute(writable,write);
+  require(clipped.right==0x1ff && clipped.top==0x10 && clipped.bottom==0x1f && memory[1024*0x10+0x1ff]==0xff && memory[1024*0x10+0x200]==0x11 && memory[1024*0x0f+5]==0x11 && memory[1024*0x20+5]==0x11,"clip rectangle limits the filled bytes; pitch padding and neighbouring rows are untouched");
+  regs[0x57]={0x40,0xffff};
+  require(GeRectFill::decode(0x30,get,true).empty,"an empty clip intersection writes nothing");
+  regs[0x56]={0x77f,0xffff};regs[0x57]={0,0xffff};regs[0x58]={0x437,0xffff};
+  regs[0x33]={0,0xffff};rejects([&]{GeRectFill::decode(0x30,get,true);});
+  regs[0x33]={0x400,0xffff};
+  regs[0x26]={0xfff0,0xffff};regs[0x27]={0x07ff,0xffff};rejects([&]{GeRectFill::decode(0x30,get,true);});   // beyond MIU0
+  regs[0x26]={0xd880,0xffff};regs[0x27]={0x00dd,0xffff};
+  regs[0x70].second=0xfffe;rejects([&]{GeRectFill::decode(0x30,get,true);});                                  // unknown colour bit
+  regs[0x70].second=0xffff;
+  regs[0x00]={0x0005,0xffff};rejects([&]{GeRectFill::decode(0x30,get,true);});                                // blend enabled
+  regs[0x00]={1,0xffff};
+  regs[0x34]={0x0501,0xffff};rejects([&]{GeRectFill::decode(0x30,get,true);});                                // another destination format
+  regs[0x34]={0x0401,0xffff};
+  require(GeRectFill::decode(0x30,get,true).indexed,"restored registers decode again");
+}
 void avdHtotalConstantTests(){
   using namespace manta;
   Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};
