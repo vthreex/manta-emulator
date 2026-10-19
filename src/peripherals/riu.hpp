@@ -325,6 +325,9 @@ public:
   bool candidateGeBitBlt=false;
   uint64_t geBitBlts=0,geBitBltPixels=0;
   uint64_t geRectangles=0,geRasterPixels=0;
+  // EXPLORATORY (-1 off, 0 opaque-source, 1 alpha-bit): uniform-colour stretched BitBlt under a stated alpha hypothesis.
+  int exploratoryGeUniformStretch=-1;
+  uint64_t geUniformStretches=0,geUniformStretchPixels=0;
   void configureExploratoryGeReset() {
     ge_.exploratoryReset();
     // Only original engine enable and virtual-queue selector bits. All other

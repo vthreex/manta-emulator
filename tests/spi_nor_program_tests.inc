@@ -182,6 +182,45 @@ void gopPreviewTests(){
     store.setFinished();require(store.finished(),"finish flag");
   }
 }
+void geUniformStretchTests(){
+  using namespace manta;
+  static const std::pair<unsigned,uint16_t> connected[]={{0x00,7},{0x01,0x11},{0x34,0x0c09},{0x20,0x6c80},{0x21,0x03d4},{0x26,0xd880},{0x27,0x00dd},{0x30,8},{0x33,0x0aa0},
+    {0x55,0},{0x56,0x54f},{0x57,0xb4},{0x58,0xf7},{0x59,0x40},{0x5e,0x1807},{0x5f,0x1c79},{0x64,0x0c},{0x65,0x08f0},{0x68,0},{0x69,0xb4},{0x6a,0x54f},{0x6b,0xf7},
+    {0x6c,0},{0x6d,0},{0x6e,4},{0x6f,0x21},{0x11,0xff01},{0x12,0x0100},{0x13,0x00ff}};
+  std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
+  for(auto [i,v]:connected)regs[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+  auto get=[&](unsigned i){return regs[i];};
+  std::vector<uint8_t> sourceMemory(38*8);   // the 4x38 bitmap at 0x03D46C80 (rows of 8 bytes)
+  for(size_t i=0;i<sourceMemory.size();i+=2){sourceMemory[i]=0xd8;sourceMemory[i+1]=0x46;}
+  auto read=[&](uint32_t address,size_t size){
+    uint32_t base=0x03d46c80;
+    if(address<base || address+size>base+sourceMemory.size())throw std::runtime_error("read outside the fixture");
+    return std::vector<uint8_t>(sourceMemory.begin()+(address-base),sourceMemory.begin()+(address-base)+size);};
+  auto request=GeStretchRequest::decode(0x8040,get);
+  auto plan=GeUniformStretch::decode(request,GeUniformStretch::Alpha::OpaqueSource,read);
+  require(!plan.empty && plan.left==0 && plan.right==1359 && plan.top==180 && plan.bottom==247 && plan.pixel==0xc6d8 && plan.sourceWords==4*38,"opaque-source plan: whole 1360x68 destination, alpha bit forced on, all 4x38 source words inspected");
+  std::vector<uint8_t> memory(2720*248+16,0xee);   // destination area; pitch padding must stay untouched
+  uint32_t destBase=0x00ddd880;
+  auto writable=[&](uint32_t address,size_t size){return address>=destBase && address+size<=destBase+memory.size();};
+  auto write=[&](uint32_t address,std::span<const uint8_t> bytes){std::copy(bytes.begin(),bytes.end(),memory.begin()+(address-destBase));};
+  plan.execute(writable,write);
+  size_t first=180*2720,last=247*2720+1359*2;
+  require(memory[first]==0xd8 && memory[first+1]==0xc6 && memory[last]==0xd8 && memory[last+1]==0xc6,"exact destination bytes d8 c6 at the first and last pixel");
+  require(memory[first-1]==0xee && memory[179*2720]==0xee && memory[248*2720]==0xee && memory[248*2720+5]==0xee,"pixels above and below the destination rectangle stay untouched");
+  uint64_t changed=0;for(auto b:memory)changed+=b!=0xee;
+  require(changed==1360ull*68*2,"exactly 1360x68 pixels (2 bytes each) written");
+  auto alpha=GeUniformStretch::decode(request,GeUniformStretch::Alpha::AlphaBit,read);
+  require(alpha.empty,"alpha-bit hypothesis with a clear alpha bit writes nothing");
+  regs[0x56]={0x100,0xffff};regs[0x57]={0xc0,0xffff};
+  auto clipped=GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read);
+  require(clipped.left==0 && clipped.right==0x100 && clipped.top==0xc0 && clipped.bottom==247,"destination is clipped by the programmed clip rectangle");
+  regs[0x56]={0x54f,0xffff};regs[0x57]={0xb4,0xffff};
+  sourceMemory[37*8+6]=0xd9;   // one different word in the 38th row: beyond the programmed 33 rows but inside the scale height
+  rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read);});
+  sourceMemory[37*8+6]=0xd8;
+  regs[0x34]={0x0c08,0xffff};
+  rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read);});
+}
 void avdHtotalConstantTests(){
   using namespace manta;
   Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};

@@ -16,6 +16,7 @@
 #include "video/gop.hpp"
 #include "video/gop_export.hpp"
 #include "video/gop_preview.hpp"
+#include "video/ge_uniform_stretch.hpp"
 #include <array>
 #include <algorithm>
 #include <filesystem>
@@ -2857,6 +2858,7 @@ int main() {
     avdHtotalConstantTests();
     gopExportTests();
     gopPreviewTests();
+    geUniformStretchTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

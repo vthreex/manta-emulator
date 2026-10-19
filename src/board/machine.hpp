@@ -74,6 +74,7 @@ struct Options {
   int diagnosticAvd11dbBit7=-1;
   bool diagnosticAvdInvalidPublication=false;
   bool diagnosticRestoreByIdentityBranch=false;   // DIAGNOSTIC: branch whose two arms both rewrite the tested bit to its tested value
+  int exploratoryGeUniformStretch=-1;   // EXPLORATORY: 0 opaque-source, 1 alpha-bit (uniform-colour stretched BitBlt only)
   int exploratoryAvdHtotal=-1;   // HYPOTHESIS: published AFEC HTotal reads this constant (requires absent-HSYNC); bracket it
   int diagnosticVifCrLock=-1;   // BRACKETING: VIF CR_LOCK_STATUS bit0 at 0x1F224471 (run 0 and 1)
   int diagnosticUsbUnpoweredDplus=-1;   // BRACKETING: line-state D+ of a guest-powered-down USB PHY (run 0 and 1)
@@ -100,6 +101,9 @@ struct Options {
   uint64_t orBudget=10000000;
   uint64_t orDivider=1;
   uint32_t breakpoint = 0, pauseMmio = 0;
+  std::vector<std::pair<uint32_t,uint32_t>> dumpRanges;   // read-only: guest physical (address,length) written to FILE_<addr>.bin after the run
+  std::filesystem::path dumpPrefix;
+  std::vector<uint32_t> watchPcRegs;   // read-only probe: record registers/stack words at these original PCs
   std::filesystem::path trace, replay, summary, coverage, exportGopFrame;
   std::shared_ptr<GopPreviewStore> previewStore;   // DIAGNOSTIC GOP preview hand-off to the native window (filled on the emulator thread)
   std::filesystem::path tspFirmwareDump;
@@ -184,6 +188,10 @@ public:
   int run();
   std::string summary() const;
   void exportGopFrames() const;
+  void dumpGuestRanges() const;
+  struct WatchHit { uint64_t dispatch; uint32_t reg[32]; uint32_t stack[8]; };
+  std::map<uint32_t, std::pair<uint64_t, std::vector<WatchHit>>> watchHits_; // pc -> (count, first 6 + last 18 hits)
+  std::vector<uint8_t> watchSet_;   // bitmap over code addresses (empty = off)
   std::vector<GopLayer> collectGopLayers() const;
   void publishPreview() const;
   const std::string &uart() const { return riu_.uart; }

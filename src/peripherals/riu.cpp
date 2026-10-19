@@ -1,5 +1,6 @@
 #include "peripherals/riu.hpp"
 #include "video/ge_stretch_request.hpp"
+#include "video/ge_uniform_stretch.hpp"
 #include <array>
 #include <stdexcept>
 #include "storage/sha256.hpp"
@@ -1209,7 +1210,31 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(a==0x1f205004 && (knownBits(a,2)&2) && (v&2))
       throw std::runtime_error("GE virtual command memory transport unsupported; no fabricated VCmd completion");
     std::function<void()> raster;
-    if(candidateGeBitBlt && a==0x1f205180 && (v&0x70)==0x40){
+    if(candidateGeBitBlt && exploratoryGeUniformStretch>=0 && a==0x1f205180 && (v==0x8040 || v==0xc040)){
+      if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
+      auto registers=[&](unsigned index){auto address=0x1f205000+4*index;
+        return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};};
+      GeStretchRequest request;
+      try{request=GeStretchRequest::decode(uint16_t(v),registers);}
+      catch(const std::exception&){throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");}
+      GeUniformStretch plan;
+      try{
+        plan=GeUniformStretch::decode(request,exploratoryGeUniformStretch==0?GeUniformStretch::Alpha::OpaqueSource:GeUniformStretch::Alpha::AlphaBit,dramRead);
+      }catch(const std::exception& error){
+        guardedStretchDetail_=request.describe()+"; exploratory uniform model refused: "+error.what();
+        event("ge_stretch_request_guarded",a,n,v,"GUARDED, not executed: "+guardedStretchDetail_);
+        throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");
+      }
+      raster=[this,plan]{
+        plan.execute(dramWritable,dramWrite);
+        ++geUniformStretches;
+        auto count=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);
+        geUniformStretchPixels+=count;
+        event("exploratory_ge_uniform_stretch_retired",plan.destination,plan.pitch,count,
+          "EXPLORATORY, NOT TITANIA4-VERIFIED: single-colour source (sampling/filter cannot matter); alpha hypothesis "+
+          std::string(exploratoryGeUniformStretch==0?"opaque-source (alpha bit ignored, constant alpha FF)":"alpha-bit (clear = transparent)")+"; dither assumed no-op; pixel "+std::to_string(plan.pixel));
+      };
+    }else if(candidateGeBitBlt && a==0x1f205180 && (v&0x70)==0x40){
       if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
       if(v==0x8040 || v==0xc040){
         // Guarded: report what the original library programmed, without executing or guessing any pixel.
@@ -1233,8 +1258,23 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         event("ge_stretch_request_guarded",a,n,v,"GUARDED, not executed: "+detail);
         throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");
       }
-      auto plan=GeBitBlt::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-        return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
+      GeBitBlt plan;
+      try{
+        plan=GeBitBlt::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
+      }catch(const std::exception& error){
+        // Observation only: the exact exception text is a tested contract; the register file travels in the summary.
+        guardedStretchDetail_=std::string("plain-BitBlt decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+"; GE registers (index=value):";
+        char buffer[40];
+        for(unsigned index=0;index<0x80;++index){
+          auto address=0x1f205000+4*index;auto value=get(address,2),known=knownBits(address,2);
+          if(!known)continue;
+          if(known==0xffff)snprintf(buffer,sizeof buffer," %02X=%04X",index,value&0xffff);
+          else snprintf(buffer,sizeof buffer," %02X=%04X/k%04X",index,value&0xffff,known&0xffff);
+          guardedStretchDetail_+=buffer;
+        }
+        throw;
+      }
       raster=[this,plan]{
         plan.execute(dramRead,dramWritable,dramWrite);++geBitBlts;
         auto count=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);

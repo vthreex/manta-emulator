@@ -1,0 +1,259 @@
+{
+ "commit_base": "3c27049",
+ "category": "diagnostic connected run; dynamic call trace + guest bytes; exploratory model labelled",
+ "bitmap_id": 146,
+ "window_id": "0x25",
+ "paint_callback": "8049D8D8 (component type 4, index 0x43, descriptor 80686AF0)",
+ "source_address": "0x03D46C80",
+ "source_dims": "4x38 ARGB1555 (format 9), pitch 8",
+ "source_all_words_equal": true,
+ "source_word": "0x46D8",
+ "source_sha256": "2a278406b0caaaeb9c9bbd29bc5c679ecf496e69dd98865dd6fb445c4a9eebe7",
+ "call_trace": [
+  {
+   "dispatch": 855844000,
+   "pc": "0x804afdfc",
+   "a0": "0x804c37f0",
+   "a1": "0x806f5bfc",
+   "a2": "0xe",
+   "a3": "0x0",
+   "s0": "0x806d0000",
+   "ra": "0x804c37f8"
+  },
+  {
+   "dispatch": 855858675,
+   "pc": "0x8049dfc4",
+   "a0": "0x8072d968",
+   "a1": "0x806914a0",
+   "a2": "0x806d75ac",
+   "a3": "0x806d5258",
+   "s0": "0x806d0000",
+   "ra": "0x804afeb4"
+  },
+  {
+   "dispatch": 856552664,
+   "pc": "0x8049dbc4",
+   "a0": "0x806d4fa0",
+   "a1": "0x806c0000",
+   "a2": "0xe",
+   "a3": "0x0",
+   "s0": "0x806e0000",
+   "ra": "0x804f067c"
+  },
+  {
+   "dispatch": 856552692,
+   "pc": "0x8049e820",
+   "a0": "0x0",
+   "a1": "0x8072d8a0",
+   "a2": "0x1",
+   "a3": "0x0",
+   "s0": "0x806e0000",
+   "ra": "0x8049dc34"
+  },
+  {
+   "dispatch": 856552730,
+   "pc": "0x8049e7bc",
+   "a0": "0x8072d8a0",
+   "a1": "0x8068e110",
+   "a2": "0x0",
+   "a3": "0x0",
+   "s0": "0x0",
+   "ra": "0x8049e934"
+  },
+  {
+   "dispatch": 856552992,
+   "pc": "0x8049c9ac",
+   "a0": "0x1",
+   "a1": "0x8072d870",
+   "a2": "0x806d51f8",
+   "a3": "0x8",
+   "s0": "0x1",
+   "ra": "0x804ae860"
+  },
+  {
+   "dispatch": 856553010,
+   "pc": "0x8049e820",
+   "a0": "0x1",
+   "a1": "0x8072d8a0",
+   "a2": "0x1",
+   "a3": "0x8",
+   "s0": "0xffff",
+   "ra": "0x8049caa0"
+  },
+  {
+   "dispatch": 856553048,
+   "pc": "0x8049e7bc",
+   "a0": "0x8072d8a0",
+   "a1": "0x8072d898",
+   "a2": "0x0",
+   "a3": "0x8",
+   "s0": "0x1",
+   "ra": "0x8049e934"
+  },
+  {
+   "dispatch": 856554129,
+   "pc": "0x8049c9ac",
+   "a0": "0x24",
+   "a1": "0x8072d870",
+   "a2": "0x8072d8a0",
+   "a3": "0x24",
+   "s0": "0x8072d870",
+   "ra": "0x804c3198"
+  },
+  {
+   "dispatch": 856554147,
+   "pc": "0x8049e820",
+   "a0": "0x24",
+   "a1": "0x8072d8a0",
+   "a2": "0x1",
+   "a3": "0x24",
+   "s0": "0xffff",
+   "ra": "0x8049caa0"
+  },
+  {
+   "dispatch": 856554185,
+   "pc": "0x8049e7bc",
+   "a0": "0x8072d8a0",
+   "a1": "0x8072d898",
+   "a2": "0x0",
+   "a3": "0x24",
+   "s0": "0x24",
+   "ra": "0x8049e934"
+  },
+  {
+   "dispatch": 856554411,
+   "pc": "0x8049c9ac",
+   "a0": "0x25",
+   "a1": "0x8072d870",
+   "a2": "0x8072d8a0",
+   "a3": "0x25",
+   "s0": "0x8072d870",
+   "ra": "0x804c3198"
+  },
+  {
+   "dispatch": 856554429,
+   "pc": "0x8049e820",
+   "a0": "0x25",
+   "a1": "0x8072d8a0",
+   "a2": "0x1",
+   "a3": "0x25",
+   "s0": "0xffff",
+   "ra": "0x8049caa0"
+  },
+  {
+   "dispatch": 856554467,
+   "pc": "0x8049e7bc",
+   "a0": "0x8072d8a0",
+   "a1": "0x8072d898",
+   "a2": "0x806a3314",
+   "a3": "0x25",
+   "s0": "0x25",
+   "ra": "0x8049e934"
+  },
+  {
+   "dispatch": 856554484,
+   "pc": "0x8049d8d8",
+   "a0": "0x4",
+   "a1": "0x43",
+   "a2": "0x8072d8a0",
+   "a3": "0x8072d898",
+   "s0": "0x806a3316",
+   "ra": "0x8049e7f8"
+  },
+  {
+   "dispatch": 856554502,
+   "pc": "0x8049cd90",
+   "a0": "0x4",
+   "a1": "0x80686af0",
+   "a2": "0x8072d8a0",
+   "a3": "0x8072d898",
+   "s0": "0x806a3316",
+   "ra": "0x8049d9c8"
+  },
+  {
+   "dispatch": 856556811,
+   "pc": "0x8049d3e0",
+   "a0": "0x8049d3e0",
+   "a1": "0x2",
+   "a2": "0x1",
+   "a3": "0x2",
+   "s0": "0x0",
+   "ra": "0x8049ce64"
+  },
+  {
+   "dispatch": 856557929,
+   "pc": "0x803ea1a4",
+   "a0": "0x92",
+   "a1": "0x0",
+   "a2": "0xb4",
+   "a3": "0x0",
+   "s0": "0x0",
+   "ra": "0x8049d7ec"
+  },
+  {
+   "dispatch": 856557969,
+   "pc": "0x8051ff80",
+   "a0": "0x92",
+   "a1": "0x8072d738",
+   "a2": "0xb4",
+   "a3": "0x0",
+   "s0": "0x8072d765",
+   "ra": "0x803ea21c"
+  },
+  {
+   "dispatch": 856557981,
+   "pc": "0x803ee5c0",
+   "a0": "0x92",
+   "a1": "0x8072d6f4",
+   "a2": "0xb4",
+   "a3": "0x0",
+   "s0": "0x8072d738",
+   "ra": "0x8051ffb0"
+  },
+  {
+   "dispatch": 856558023,
+   "pc": "0x805254ec",
+   "a0": "0x806feb60",
+   "a1": "0x9",
+   "a2": "0x4",
+   "a3": "0x26",
+   "s0": "0x8072d738",
+   "ra": "0x8051fff8"
+  },
+  {
+   "dispatch": 856558669,
+   "pc": "0x80523bfc",
+   "a0": "0x806feb60",
+   "a1": "0x8072d6e0",
+   "a2": "0x8072d6e8",
+   "a3": "0x200",
+   "s0": "0x200",
+   "ra": "0x8052005c"
+  },
+  {
+   "dispatch": 856560135,
+   "pc": "0x805241c4",
+   "a0": "0x8072d6e0",
+   "a1": "0x1",
+   "a2": "0xbf20501c",
+   "a3": "0x1e",
+   "s0": "0x806feb60",
+   "ra": "0x805241c0"
+  }
+ ],
+ "exploratory_run": {
+  "option": "--exploratory-ge-uniform-stretch opaque-source",
+  "stretches_retired": 1,
+  "pixels": 92480,
+  "dispatches": 856573362,
+  "next_stop": "GE BitBlt requires enabled plain copy; transforms/blending/keying unsupported",
+  "next_request": "plain-BitBlt decode refused (cmd 64): GE BitBlt requires enabled plain copy; transforms/blending/keying unsupported; GE registers (index=value): 00=0045 01=0001 03=0440 07=8584/kF8F9 10=0000 11=FF02 12=0000 13=00FF 14=0101 15=0101 16=0000 17=0000 18=0000 19=0000 1A=0000 1B=0000 1C=0000 1D=0000 1F=0000 20=6700 21=00CB 26=D880 27=00DD 2F=00FF 30=0008 32=0001 33=0AA0 34=0C01 35=0101 36=FF01 37=FFFF 38=AAFF 39=FFFF 3A=CCFF 3B=FFFF 3C=FFFF 3D=0000 3E=0000 3F=0000 40=0000 41=0000 42=0000 43=0000 44=0000 45=0000 46=0000 47=0000 48=0000 49=0000 4A=0000 4B=0000 4C=0000 4D=0000 4E=0000 4F=0000 50=0000 51=0000 52=0000 53=0000 54=0000 55=0057 56=0113 57=00B4 58=00EF 59=0040 5C=0000 5D=0000 5E=0000 5F=0000 60=0040 61=0000 62=0100 63=0000 64=1000 65=1000 66=0000 67=0000 68=005A 69=00BE 6A=0066 6B=00E5 6C=0000 6D=0000 6E=000D 6F=0023 70=0000 71=FF00 72=0000 73=0000 74=0000 75=0000 76=0000 77=0000 78=0000 79=0000 7A=0000 7B=0000 7C=0000 7D=0000 7E=0000 7F=0000",
+  "deterministic_across_two_runs_including_window_capture": true
+ },
+ "validation": {
+  "native_checks": 1878,
+  "python_suites": "19/19",
+  "strict_replay": "identical",
+  "binary": "manta_ag.exe"
+ }
+}

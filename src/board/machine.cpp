@@ -128,6 +128,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
       throw std::runtime_error("AVD HTotal constant hypothesis requires the absent-HSYNC hypothesis and guarded exploration");
     riu_.configureExploratoryAvdHtotal(unsigned(o.exploratoryAvdHtotal));
   }
+  if(!o.watchPcRegs.empty()){
+    watchSet_.assign((0x400000+7)/8,0);
+    for(auto pc:o.watchPcRegs){auto i=(pc>>2)&0x3fffff;watchSet_[i>>3]|=uint8_t(1u<<(i&7));}
+  }
+  if(o.exploratoryGeUniformStretch>=0){
+    if(!o.candidateGeBitBlt)throw std::runtime_error("uniform-stretch hypothesis requires the candidate GE BitBlt model");
+    riu_.exploratoryGeUniformStretch=o.exploratoryGeUniformStretch;
+  }
   if(o.diagnosticVifCrLock>=0){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("VIF carrier-lock bracketing requires guarded exploration");
     riu_.configureDiagnosticVifCrLock(unsigned(o.diagnosticVifCrLock));
@@ -484,6 +492,16 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
+  if(!m.watchSet_.empty() && a>=0x80000000u && a<0x81000000u && ((a>>2)&0x3fffff)<m.watchSet_.size()*8 && (m.watchSet_[((a>>2)&0x3fffff)>>3]>>(((a>>2)&0x3fffff)&7)&1)){
+    // Observation only: no guest state is touched.
+    auto& entry=m.watchHits_[uint32_t(a)];
+    ++entry.first;
+    Msd309Machine::WatchHit hit{};hit.dispatch=m.dispatches_;
+    for(unsigned i=0;i<32;++i)hit.reg[i]=m.cpu_.reg(UC_MIPS_REG_0+int(i));
+    m.cpu_.read(hit.reg[29]&0x1fffffff,hit.stack,sizeof hit.stack);
+    if(entry.second.size()>=24)entry.second.erase(entry.second.begin()+6);
+    entry.second.push_back(hit);
+  }
   if(m.options_.previewStore && (m.dispatches_ & 0x1fffff)==0)m.publishPreview();
   if(m.options_.zuiFlowProbes && ZuiFlow::watches(uint32_t(a))){
     std::vector<uint8_t> initAndDispatch(0x1cc),queueCode(0x140);
@@ -1752,6 +1770,7 @@ int Msd309Machine::run() {
     f.flush();if(!f)throw std::runtime_error("cannot write complete execution summary file");
   }
   if (!options_.exportGopFrame.empty()) exportGopFrames();
+  if (!options_.dumpRanges.empty()) dumpGuestRanges();
   std::cout << s << "\nUART: " << riu_.uart << '\n';
   return 2; // Research execution is incomplete even when a diagnostic
             // checkpoint is reached.
@@ -1786,6 +1805,7 @@ void Msd309Machine::publishPreview() const {
   if (!options_.previewStore) return;
   auto layers = collectGopLayers();
   auto frame = composeGopPreview(layers);
+  if(riu_.geUniformStretches)frame.label+=" | EXPLORATORY GE uniform-stretch model in use (alpha semantics are a hypothesis, not Titania4 behavior)";
   options_.previewStore->setGuestStatus("MIPS dispatches " + std::to_string(dispatches_));
   options_.previewStore->publish(std::move(frame));
 }
@@ -1848,6 +1868,17 @@ void Msd309Machine::exportGopFrames() const {
   meta << j.str();
   meta.flush();
   if (!meta) throw std::runtime_error("cannot write GOP frame export metadata");
+}
+void Msd309Machine::dumpGuestRanges() const {
+  for (auto [address, length] : options_.dumpRanges) {
+    if (!length || uint64_t(address) + length > dramBacking_.size()) throw std::runtime_error("guest range dump outside mapped DRAM");
+    auto name = options_.dumpPrefix;
+    name += "_" + hex(address) + ".bin";
+    std::ofstream f(name, std::ios::binary);
+    f.write(reinterpret_cast<const char*>(dramBacking_.data() + address), std::streamsize(length));
+    f.flush();
+    if (!f) throw std::runtime_error("cannot write guest range dump");
+  }
 }
 std::string Msd309Machine::summary() const {
   std::ostringstream s;
@@ -1978,8 +2009,26 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
   if(options_.exploratoryAvdNoSyncEvents)s<<",\n  \"exploratory_avd_no_sync_events\": true,\n  \"avd_event_acks\": "<<riu_.avdMcuBus().eventAcks;
   if(options_.diagnosticAvd11dbBit7>=0)s<<",\n  \"diagnostic_avd_11db_bit7\": "<<options_.diagnosticAvd11dbBit7;
+  if(!watchHits_.empty()){
+    s<<",\n  \"watched_pc_hits\": {";bool firstPc=true;
+    for(auto& [pc,entry]:watchHits_){
+      if(!firstPc)s<<',';firstPc=false;
+      s<<"\n    \""<<hex(pc)<<"\": {\"count\": "<<entry.first<<", \"hits\": [";
+      bool firstHit=true;
+      for(auto& hit:entry.second){
+        if(!firstHit)s<<',';firstHit=false;
+        s<<"{\"dispatch\":"<<hit.dispatch<<",\"a0\":\""<<hex(hit.reg[4])<<"\",\"a1\":\""<<hex(hit.reg[5])<<"\",\"a2\":\""<<hex(hit.reg[6])<<"\",\"a3\":\""<<hex(hit.reg[7])
+         <<"\",\"s0\":\""<<hex(hit.reg[16])<<"\",\"s1\":\""<<hex(hit.reg[17])<<"\",\"s2\":\""<<hex(hit.reg[18])<<"\",\"ra\":\""<<hex(hit.reg[31])<<"\",\"sp\":\""<<hex(hit.reg[29])<<"\",\"stack\":[";
+        for(unsigned i=0;i<8;++i)s<<(i?",":"")<<'"'<<hex(hit.stack[i])<<'"';
+        s<<"]}";
+      }
+      s<<"]}";
+    }
+    s<<"\n  }";
+  }
   if(options_.exploratoryAvdHtotal>=0)s<<",\n  \"exploratory_avd_htotal_constant\": "<<options_.exploratoryAvdHtotal<<",\n  \"exploratory_avd_htotal_reads\": "<<riu_.avdHtotalReads();
   if(!riu_.guardedStretchDetail().empty())s<<",\n  \"ge_guarded_stretch_request\": \""<<riu_.guardedStretchDetail()<<"\"";
+  if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
   if(options_.diagnosticVifCrLock>=0)s<<",\n  \"diagnostic_vif_cr_lock\": "<<options_.diagnosticVifCrLock;
   if(options_.exploratoryUsbNoDevice)s<<",\n  \"exploratory_usb_no_device\": true";
   if(options_.diagnosticHtotalBranchJoin)s<<",\n  \"diagnostic_htotal_branch_join\": true,\n  \"diagnostic_htotal_branch_joins\": "<<htotalJoins_;

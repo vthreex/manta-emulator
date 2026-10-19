@@ -25,6 +25,7 @@ for name, extra, text in (
     ('11db-bracket-needs-avd-run', ['--diagnostic-avd-11db-bit7', '1'], 'requires the guarded shared AVD run'),
     ('vif-lock-bracket-needs-guarded-exploration', ['--diagnostic-vif-cr-lock', '1'], 'requires guarded exploration'),
     ('htotal-constant-needs-absent-hsync', ['--exploratory-avd-htotal-constant', '0'], 'requires the absent-HSYNC hypothesis'),
+    ('uniform-stretch-needs-ge-bitblt', ['--exploratory-ge-uniform-stretch', 'opaque-source'], 'requires the candidate GE BitBlt model'),
     ('nor-write-needs-candidate-spi', ['--candidate-spi-nor-write'], 'requires the candidate SPI model'),
     ('restore-branch-needs-nor-write', ['--diagnostic-restore-by-identity-branch'], 'requires guarded exploration and the SPI NOR write model'),
 ):
@@ -48,6 +49,7 @@ for flag, label in (('--diagnostic-htotal-branch-join', 'DIAGNOSTIC ONLY, not ha
                     ('--diagnostic-avd-invalid-publication', 'DIAGNOSTIC'),
                     ('--diagnostic-avd-11db-bit7', 'BRACKETING DIAGNOSTIC'),
                     ('--exploratory-avd-htotal-constant', 'not a TV measurement'),
+                    ('--exploratory-ge-uniform-stretch', 'NOT TITANIA4-VERIFIED'),
                     ('--diagnostic-vif-cr-lock', 'BRACKETING DIAGNOSTIC'),
                     ('--export-gop-frame', 'never an authentic-frame claim'),
                     ('--candidate-spi-nor-write', 'copy-on-write overlay'),
