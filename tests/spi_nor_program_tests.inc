@@ -481,6 +481,12 @@ void geI8FillTests(){
   regs[0x56]={0x77f,0xffff};regs[0x57]={0,0xffff};regs[0x58]={0x437,0xffff};
   regs[0x33]={0,0xffff};rejects([&]{GeRectFill::decode(0x30,get,true);});
   regs[0x33]={0x400,0xffff};
+  regs[0x00]={7,0xffff};
+  rejects([&]{GeRectFill::decode(0x30,get,true);});            // strict: reg00 bits 1..2 refuse the fill
+  rejects([&]{GeRectFill::decode(0x30,get,true,2);});         // the hypothesis covers only the named bits
+  require(GeRectFill::decode(0x30,get,true,6).indexed,"reg00 ignore hypothesis accepts bits 1..2 only when named");
+  rejects([&]{GeRectFill::decode(0x2030,get,true,6);});        // extra command bits stay unsupported
+  regs[0x00]={1,0xffff};
   regs[0x26]={0xfff0,0xffff};regs[0x27]={0x07ff,0xffff};rejects([&]{GeRectFill::decode(0x30,get,true);});   // beyond MIU0
   regs[0x26]={0xd880,0xffff};regs[0x27]={0x00dd,0xffff};
   regs[0x70].second=0xfffe;rejects([&]{GeRectFill::decode(0x30,get,true);});                                  // unknown colour bit

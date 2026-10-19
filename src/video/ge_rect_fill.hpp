@@ -16,7 +16,9 @@ struct GeRectFill {
   using Register=std::function<std::pair<uint16_t,uint16_t>(unsigned)>; // value, known
   // i8Hypothesis: EXPLORATORY. Destination format 4 is 8 bits per pixel according to the original format table (80525E28: fmt 4 -> 1 byte/pixel;
   // 6..14 -> 2, 15 -> 4), but how a fill colour maps to an index is NOT established; the hypothesis writes the low byte of registers 70/71.
-  static GeRectFill decode(uint16_t command,const Register& reg,bool i8Hypothesis=false){
+  // ignoredReg00: EXPLORATORY. Bits of GE register 00 (bit 0 = enable) that the hypothesis treats as having no effect on a solid fill; the original
+    // ZUI sets bit 1 (via 80520A30) and bit 2 (via 80525B78) before drawing, but their hardware meaning is not established.
+    static GeRectFill decode(uint16_t command,const Register& reg,bool i8Hypothesis=false,uint16_t ignoredReg00=0){
     if(command!=0x30)throw std::runtime_error("GE raster primitive/mode unsupported");
     auto field=[&](unsigned index,uint16_t mask=0xffff){auto [value,known]=reg(index);
       if((known&mask)!=mask)throw std::runtime_error("GE rectangle field contains unknown bits");
@@ -24,7 +26,7 @@ struct GeRectFill {
     // Register 59: bits 1:0 are the orientation field and must be clear. Bit 6 is the value the original GE init
     // (805267AC) writes as the reset state; the reference fill driver never consults register 59, so bit 6 alone is
     // accepted for fills only (its hardware meaning is unverified). Any other bit still rejects.
-    if(field(0)!=1 || field(1,0x372)!=0 || (field(0x59)&~0x40u)!=0)
+    if((field(0)&~ignoredReg00)!=1 || field(1,0x372)!=0 || (field(0x59)&~0x40u)!=0)
       throw std::runtime_error("GE rectangle requires enabled plain fill; transforms/blending/keying unsupported");
     auto format=field(0x34,0x1f00)>>8;GeRectFill p;
     if(format==0xf)p.bpp=4;else if(format==8)p.bpp=2;

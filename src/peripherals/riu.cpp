@@ -409,6 +409,11 @@ uint32_t Riu::storageKey(uint32_t a) const {
   }
   return a;
 }
+std::string Riu::geReg0History() const {
+  std::string out="; last GE reg00 writes (pc=value):";char buffer[40];
+  for(auto [p,v]:geReg0Writes){std::snprintf(buffer,sizeof buffer," %08X=%04X",p,v);out+=buffer;}
+  return out;
+}
 std::string Riu::geRegisterFile() const {
   std::string out;
   char buffer[40];
@@ -1269,6 +1274,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   if(candidateGe && GeQueue::aperture(a)) {
     if(n!=2 || (a&3))throw std::runtime_error("GE controller requires corroborated halfword register lanes");
     if(a==0x1f20501c)throw std::runtime_error("GE queue status is hardware-owned, not a writable latch");
+    if(a==0x1f205000){geReg0Writes.push_back({pc,uint16_t(v)});if(geReg0Writes.size()>12)geReg0Writes.pop_front();}
     if(a==0x1f205004 && (knownBits(a,2)&2) && (v&2))
       throw std::runtime_error("GE virtual command memory transport unsupported; no fabricated VCmd completion");
     std::function<void()> raster;
@@ -1410,9 +1416,9 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeRectFill plan;
       try{
         plan=GeRectFill::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeI8Fill);
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeI8Fill,exploratoryGeFillIgnoredReg00);
       }catch(const std::exception& error){
-        guardedStretchDetail_=std::string("rect-fill decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+"; GE registers (index=value):"+geRegisterFile();
+        guardedStretchDetail_=std::string("rect-fill decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+"; GE registers (index=value):"+geRegisterFile()+geReg0History();
         throw;
       }
       raster=[this,plan]{

@@ -332,10 +332,13 @@ public:
   bool candidateGeRectFill=false;
   bool candidateGeBitBlt=false;
   uint64_t geBitBlts=0,geBitBltPixels=0;
-  std::string geRegisterFile() const;   // read-only dump of every known GE register (index=value)
+  std::string geRegisterFile() const;
+  std::string geReg0History() const;   // read-only dump of every known GE register (index=value)
   // Read-only GOP timeline (bounded): guest writes into the GOP aperture and active-latch events, anchored to the original PC.
   struct GopLogEntry { uint64_t tick; uint32_t pc; char kind; unsigned bank, offset, value, n; };
   std::vector<GopLogEntry> gopLog;
+  // Last writes to GE register 00 (PC, value), kept only to explain refusals of fill/BitBlt requests.
+  std::deque<std::pair<uint32_t,uint16_t>> geReg0Writes;
   uint64_t geRectangles=0,geRasterPixels=0;
   // EXPLORATORY (-1 off, 0 opaque-source, 1 alpha-bit): uniform-colour stretched BitBlt under a stated alpha hypothesis.
   int exploratoryGeUniformStretch=-1;
@@ -344,6 +347,7 @@ public:
   bool exploratoryGeI2Glyph=false;
   // EXPLORATORY: offscreen-to-GOP surface copy with blend coefficient ONE (see video/ge_blend_copy.hpp).
   bool exploratoryGeBlendCopy=false;
+  uint16_t exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: reg00 bits assumed not to affect a solid fill
   bool exploratoryGeI8Fill=false;   // EXPLORATORY: indexed (format 4) rectangle fill, index = low byte of colour
   uint64_t geI8Fills=0,geI8FillPixels=0;
   std::string copyRefusal_;

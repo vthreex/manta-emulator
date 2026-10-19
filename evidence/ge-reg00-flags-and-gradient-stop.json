@@ -1,0 +1,13 @@
+{
+  "base_git": "f218787",
+  "result": "connected diagnostic run advances past the reg00=0007 solid fill under an opt-in hypothesis; next stop is a GE command with extra bit 13",
+  "hypothesis": "--exploratory-ge-fill-ignore-reg00 6: GE register 00 bits 1 and 2 (set by the original code through 80520A30 -> 80522734 and 80525B78 -> 80525B80) do not affect a solid opaque fill; NOT TITANIA4-VERIFIED",
+  "strict_behaviour": "unchanged: the fill is refused with 'GE rectangle requires enabled plain fill'",
+  "reg00_write_history_before_stop": "eleven writes of 0001 then 0003 (from 805227C0 via 80522734 arg 1) then 0007 (from 80525C1C via 80525B80)",
+  "setter_callers": {"80522734": ["8049CE48 (after 80520A30(1) in the ZUI draw setup)", "8049CFFC", "80520B8C", "8049D61C"], "80525B80": ["80520120", "805204AC"]},
+  "run_s9": {"instruction_dispatches": 1002388028},
+  "run_s10": {"instruction_dispatches": 1002393313, "i8_fills_retired": 108, "stop_pc": "0x80526598", "stop_address": "0x1f205180", "command": "0x2030", "reason": "GE raster primitive/mode unsupported",
+    "registers": "00=0007 32=0001 33=0AA0 34=0C01 55..58=02A8,03D3,0180,01E3 60=2030 62=0100 68..6B=02A8,0189,067B,01DA 70=FCFC 71=FFFC 74/78/7C=FAAB 75/79/7D=000F",
+    "reading": "command 0x30 plus bit 13 with per-channel registers 74..7D that look like colour increments; interpretation as a gradient rectangle fill is a hypothesis, no pixels were produced"},
+  "native_checks": 1960
+}
