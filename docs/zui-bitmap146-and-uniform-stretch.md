@@ -54,6 +54,11 @@ Plain command `0x0040`, control `0045` (enable + blend + **source key**), format
 This is consistent with an I2 text glyph; it needs the indexed-format conversion, the key and blend semantics, and the unequal-extent rule: all unestablished. The summary
 field `ge_guarded_stretch_request` carries the whole register file.
 
+Reading the block `35..3C` as four 32-bit words (low half first, ARGB8888) gives `FF010101`, `AAFFFFFF`, `CCFFFFFF`, `FFFFFFFF`, with key registers `14/15 = 0101/0101`
+and colour `71 = FF00`: index 0 equals the key colour (transparent background) and indices 1..3 are white with alpha `AA`, `CC`, `FF`, i.e. an anti-aliased white
+text glyph. This is an **inference from register values only** (word order, the I2 index mapping and the key/blend order are unverified); no model is implemented for it.
+The glyph targets the same offscreen surface `0x00DDD880` as the bar, so neither draw is visible in the GOP preview until the original copies that surface to the GOP window.
+
 ## Sources inspected for GE semantics (none is Titania4)
 
 `work/reference-marlon-libapiGFX.a` (later Marlon SoC; DWARF enums for formats/blend/alpha, disassembly of `MDrv_GE_*`), `reference-apiGFX.h` (API names only), SigmaStar GFX
