@@ -1,4 +1,6 @@
 #pragma once
+#include "video/gop_preview.hpp"
+#include <memory>
 #include "cpu/engine.hpp"
 #include "peripherals/riu.hpp"
 #include "storage/flash.hpp"
@@ -99,6 +101,7 @@ struct Options {
   uint64_t orDivider=1;
   uint32_t breakpoint = 0, pauseMmio = 0;
   std::filesystem::path trace, replay, summary, coverage, exportGopFrame;
+  std::shared_ptr<GopPreviewStore> previewStore;   // DIAGNOSTIC GOP preview hand-off to the native window (filled on the emulator thread)
   std::filesystem::path tspFirmwareDump;
   std::filesystem::path pm51History;
 };
@@ -181,6 +184,8 @@ public:
   int run();
   std::string summary() const;
   void exportGopFrames() const;
+  std::vector<GopLayer> collectGopLayers() const;
+  void publishPreview() const;
   const std::string &uart() const { return riu_.uart; }
 };
 } // namespace manta

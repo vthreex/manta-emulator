@@ -21,6 +21,10 @@ struct GeStretchRequest {
   uint32_t destLeft=0,destTop=0,destRight=0,destBottom=0,srcX=0,srcY=0,srcWidth=0,srcHeight=0;
   uint32_t clipLeft=0,clipRight=0,clipTop=0,clipBottom=0;
   uint32_t keyLow=0,keyHigh=0;bool keyModeBit=false;
+  // Original library 805241C4..805241DC: when the software-context flag (ctx+0x518) is set and the source height is
+  // at least 6, register 6F receives height-5 while the ratio/phase were computed from the full height. True when the
+  // decoded request shows exactly that signature (scale arithmetic matches srcHeight+5).
+  bool heightReducedBy5=false;uint32_t scaleSourceHeight=0;
   bool dither()const{return control&0x02;}
   bool blend()const{return control&0x04;}
   bool sourceKey()const{return control&0x40;}
@@ -38,6 +42,7 @@ struct GeStretchRequest {
     if(!nearest)r.push_back("non-nearest filter taps and edge handling");
     if(dither())r.push_back("dither pattern, coordinate dependence and enable semantics for this format pair");
     if(blend())r.push_back("blend equation, alpha rounding and ordering against stretch");
+    if(heightReducedBy5)r.push_back("hardware meaning of the original's 5-row source-height reduction (programmed 6F = scale height - 5)");
     if(sourceKey())r.push_back("key comparator applied before or after stretch filtering, and key range inclusivity");
     if(destinationFormat==0x0c)r.push_back("format-C alpha-bit quantization and whether source alpha or register 11 supplies it");
     if(sourceFormat==0x09)r.push_back("source ARGB1555 alpha expansion when bit 15 is clear");
@@ -50,7 +55,7 @@ struct GeStretchRequest {
       +" dst="+hx(destination)+"/pitch "+std::to_string(destinationPitch)
       +" destRect=("+std::to_string(destLeft)+","+std::to_string(destTop)+")-("+std::to_string(destRight)+","+std::to_string(destBottom)+")"
       +" srcRect=("+std::to_string(srcX)+","+std::to_string(srcY)+") "+std::to_string(srcWidth)+"x"+std::to_string(srcHeight)
-      +" ratio="+hx(ratioX)+"/"+hx(ratioY)+" dither="+(dither()?"1":"0")+" blend="+(blend()?"1":"0")+" key="+(sourceKey()?"1":"0")
+      +" ratio="+hx(ratioX)+"/"+hx(ratioY)+(heightReducedBy5?" (vertical scale computed from "+std::to_string(scaleSourceHeight)+" rows, 6F programmed "+std::to_string(srcHeight)+")":std::string())+" dither="+(dither()?"1":"0")+" blend="+(blend()?"1":"0")+" key="+(sourceKey()?"1":"0")
       +" alpha11..13="+hx(alpha11)+","+hx(alpha12)+","+hx(alpha13)+"; unresolved:";
     for(auto& u:unresolved())t+=" ["+u+"]";
     return t;}
@@ -87,14 +92,17 @@ struct GeStretchRequest {
     p.phaseX=sx&0x800?sx-0x1000:sx;p.phaseY=sy&0x800?sy-0x1000:sy;
     // Cross-check against the original arithmetic. Disagreement would mean
     // the registers were not produced by the corroborated scale routine.
-    if(p.ratioX!=(expectedRatio(p.srcWidth,dw)&0x1ffff) || p.ratioY!=(expectedRatio(p.srcHeight,dh)&0x1ffff))
+    p.scaleSourceHeight=p.srcHeight;
+    if(p.ratioY!=(expectedRatio(p.srcHeight,dh)&0x1ffff) && p.ratioY==(expectedRatio(p.srcHeight+5,dh)&0x1ffff)){
+      p.scaleSourceHeight=p.srcHeight+5;p.heightReducedBy5=true;}
+    if(p.ratioX!=(expectedRatio(p.srcWidth,dw)&0x1ffff) || p.ratioY!=(expectedRatio(p.scaleSourceHeight,dh)&0x1ffff))
       throw std::runtime_error("GE stretch ratio disagrees with original scale arithmetic");
     // 5E/5F bit 15 carries the ratio extension, so only bits 0..12 are phase.
     if((px&0x1fff)!=expectedPhase(p.srcWidth,dw))
       throw std::runtime_error("GE stretch horizontal phase disagrees with original arithmetic");
     // With the software-context flag and source height below six, the
     // original routine substitutes vertical phase 1000 instead.
-    if((py&0x1fff)!=expectedPhase(p.srcHeight,dh) && !(p.srcHeight<6 && (py&0x1fff)==0x1000))
+    if((py&0x1fff)!=expectedPhase(p.scaleSourceHeight,dh) && !(p.srcHeight<6 && (py&0x1fff)==0x1000))
       throw std::runtime_error("GE stretch vertical phase disagrees with original arithmetic");
     p.alpha11=uint16_t(field(0x11));p.alpha12=uint16_t(field(0x12));p.alpha13=uint16_t(field(0x13));
     if(p.sourceKey()){

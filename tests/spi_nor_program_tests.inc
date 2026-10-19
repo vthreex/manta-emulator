@@ -136,6 +136,52 @@ void gopExportTests(){
   try{argb1555WindowToBmp32(mem,4,3,1);}catch(const std::exception&){rejected=true;}
   require(rejected,"pitch smaller than a row is refused");
 }
+void gopPreviewTests(){
+  using namespace manta;
+  auto layer=[](unsigned bank,unsigned win,uint32_t x,uint32_t y,uint32_t w,uint32_t h,uint32_t pitch,unsigned fmt){
+    GopLayer l;l.bank=bank;l.window=win;l.x=x;l.y=y;l.width=w;l.height=h;l.pitch=pitch;l.format=fmt;l.memory.assign(size_t(pitch)*h,0);return l;};
+  auto put=[](GopLayer& l,unsigned px,unsigned py,uint16_t v){size_t o=size_t(py)*l.pitch+px*2;l.memory[o]=uint8_t(v);l.memory[o+1]=uint8_t(v>>8);};
+  require(argb1555ToBgra(0x8000)==0xff000000u && argb1555ToBgra(0x7fff)==0x00ffffffu && argb1555ToBgra(0xfc00)==0xffff0000u && argb1555ToBgra(0x83e0)==0xff00ff00u && argb1555ToBgra(0x801f)==0xff0000ffu,"ARGB1555 -> BGRA words");
+  {
+    auto a=layer(4,1,10,5,3,2,10,6);   // padding bytes after each row must be ignored
+    put(a,0,0,0x8000);put(a,1,0,0xfc00);put(a,2,1,0x801f);put(a,0,1,0x7fff);
+    for(size_t r=0;r<2;++r)for(size_t c=6;c<10;++c)a.memory[r*10+c]=0xee;
+    std::vector<GopLayer> v{a};auto f=composeGopPreview(v);
+    require(f.width==13 && f.height==7 && f.label.find("DIAGNOSTIC GOP PREVIEW")!=std::string::npos,"canvas is the bounding box of composed windows and is labelled diagnostic");
+    auto at=[&](unsigned x,unsigned y){return f.bgra[size_t(y)*f.width+x];};
+    require(at(10,5)==0xff000000u && at(11,5)==0xffff0000u && at(12,6)==0xff0000ffu,"guest pixels land at the window coordinates");
+    require(!f.covered[size_t(6)*f.width+10] && at(10,6)==0 && !f.covered[0],"alpha-clear guest pixels and uncovered canvas stay uncovered; host invents nothing");
+    auto f2=composeGopPreview(v);require(f2.checksum==f.checksum,"checksum is deterministic");
+    v[0].memory[0]=0x00;v[0].memory[1]=0x80;put(v[0],1,0,0x8001);auto f3=composeGopPreview(v);
+    require(f3.checksum!=f.checksum,"checksum follows guest memory changes");
+  }
+  {
+    auto lo=layer(1,0,0,0,4,4,8,6),hi=layer(4,1,2,2,4,4,8,6);
+    for(unsigned y=0;y<4;++y)for(unsigned x=0;x<4;++x){put(lo,x,y,0xfc00);put(hi,x,y,0x801f);}
+    put(hi,0,0,0x0000);   // transparent pixel of the upper window must not erase the lower one
+    std::vector<GopLayer> v{hi,lo};auto f=composeGopPreview(v);
+    require(f.width==6 && f.height==6 && f.bgra[2*6+2]==0xffff0000u && f.bgra[2*6+3]==0xff0000ffu && f.bgra[5*6+5]==0xff0000ffu,"windows compose in (bank,window) order; transparent upper pixel keeps the lower one (priority is an assumption)");
+  }
+  {
+    auto a=layer(4,1,1900,1070,40,40,80,6);for(unsigned y=0;y<40;++y)for(unsigned x=0;x<40;++x)put(a,x,y,0x8000);
+    std::vector<GopLayer> v{a};auto f=composeGopPreview(v);
+    require(f.width==1920 && f.height==1080 && f.covered[size_t(1079)*1920+1919] && f.description.find("composed")!=std::string::npos,"windows are clipped to the panel canvas");
+  }
+  {
+    std::vector<GopLayer> v{layer(4,0,0,0,4,4,8,5),layer(4,1,0,0,4,4,8,6),layer(1,0,0,0,4,4,6,6),layer(1,1,5000,0,4,4,8,6)};
+    v[1].invalidBytes=3;
+    auto f=composeGopPreview(v);
+    require(f.empty() && f.description.find("format not decoded")!=std::string::npos && f.description.find("unknown bytes")!=std::string::npos &&
+            f.description.find("geometry exceeds")!=std::string::npos && f.description.find("outside the panel")!=std::string::npos,"unsupported formats, unknown bytes, bad geometry and off-panel windows are skipped with reasons");
+  }
+  {
+    GopPreviewStore store;require(!store.latest() && !store.finished(),"store starts empty");
+    GopPreviewFrame a;a.width=1;a.height=1;a.bgra={0xff000000u};a.covered={1};store.publish(a);
+    auto first=store.latest();a.bgra[0]=0xffffffffu;store.publish(a);
+    require(first->bgra[0]==0xff000000u && store.latest()->sequence==2 && first->sequence==1,"published frames are immutable snapshots with increasing sequence");
+    store.setFinished();require(store.finished(),"finish flag");
+  }
+}
 void avdHtotalConstantTests(){
   using namespace manta;
   Riu off;off.symbolicInit=true;off.event=[](auto,auto,auto,auto,auto){};

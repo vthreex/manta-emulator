@@ -1,0 +1,102 @@
+#pragma once
+#include <algorithm>
+#include <atomic>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+#include <span>
+#include <string>
+#include <vector>
+namespace manta {
+// DIAGNOSTIC GOP PREVIEW. Composes the guest memory of ENABLED + ACTIVE-LATCHED GOP windows into one BGRA canvas.
+// It draws nothing of its own: every opaque canvas pixel is a guest framebuffer pixel. It is NOT panel scan-out:
+// mixer/output routing, window priority, scaler, constant/per-pixel alpha, gamma and panel timing are not modeled.
+// Hardware format 6 is decoded as ARGB1555 by INFERENCE (the original GE clears the surface with destination
+// format C = ARGB1555_DST); no independent Titania4 GOP format table exists in the repository.
+struct GopLayer {
+  unsigned bank = 0, window = 0;
+  uint32_t x = 0, y = 0, width = 0, height = 0, pitch = 0;
+  unsigned format = 0;
+  uint32_t physical = 0;
+  std::vector<uint8_t> memory;   // private copy of pitch*height guest bytes (captured by the emulator thread)
+  uint64_t invalidBytes = 0;     // bytes whose guest value is unknown
+  std::string skipReason;        // non-empty: not composed
+};
+struct GopPreviewFrame {
+  uint32_t width = 0, height = 0;
+  std::vector<uint32_t> bgra;    // 0xAARRGGBB; alpha 0 = guest pixel with ARGB1555 alpha bit clear / no layer
+  std::vector<uint8_t> covered;  // 1 where a guest pixel was composed
+  std::string label;             // always names the mode
+  std::string description;       // layer geometry/format/checksum summary
+  uint64_t checksum = 0;         // FNV-1a over the BGRA words (deterministic)
+  uint64_t sequence = 0;
+  bool empty() const { return !width || !height; }
+};
+inline uint32_t argb1555ToBgra(uint16_t p) {
+  auto expand = [](uint32_t v) { return (v << 3) | (v >> 2); };
+  return (p & 0x8000 ? 0xff000000u : 0u) | (expand((p >> 10) & 31) << 16) | (expand((p >> 5) & 31) << 8) | expand(p & 31);
+}
+// Layers are composed in (bank, window) ascending order: hardware priority is NOT established.
+// Opaque pixels (alpha bit set) replace what is below; clear-alpha pixels leave it unchanged.
+inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t maxWidth = 1920, uint32_t maxHeight = 1080) {
+  GopPreviewFrame f;
+  f.label = "DIAGNOSTIC GOP PREVIEW - guest framebuffer pixels of enabled GOP windows; not verified panel scan-out";
+  std::stable_sort(layers.begin(), layers.end(), [](const GopLayer& a, const GopLayer& b) {
+    return a.bank != b.bank ? a.bank < b.bank : a.window < b.window; });
+  uint32_t w = 0, h = 0;
+  for (auto& l : layers) {
+    if (l.skipReason.empty()) {
+      if (l.format != 6) l.skipReason = "format not decoded (only 6, inferred ARGB1555)";
+      else if (l.invalidBytes) l.skipReason = "window memory contains unknown bytes";
+      else if (!l.width || !l.height || uint64_t(l.pitch) < uint64_t(l.width) * 2 || uint64_t(l.pitch) * l.height > l.memory.size())
+        l.skipReason = "geometry exceeds captured memory";
+      else if (l.x >= maxWidth || l.y >= maxHeight) l.skipReason = "outside the panel canvas";
+    }
+    if (l.skipReason.empty()) {
+      w = std::max(w, std::min(l.x + l.width, maxWidth));
+      h = std::max(h, std::min(l.y + l.height, maxHeight));
+    }
+  }
+  f.width = w; f.height = h;
+  f.bgra.assign(size_t(w) * h, 0u);
+  f.covered.assign(size_t(w) * h, 0);
+  for (auto& l : layers) {
+    f.description += "bank" + std::to_string(l.bank) + "/win" + std::to_string(l.window) + " " + std::to_string(l.width) + "x" +
+                     std::to_string(l.height) + "@(" + std::to_string(l.x) + "," + std::to_string(l.y) + ") fmt" + std::to_string(l.format) +
+                     (l.skipReason.empty() ? " composed; " : " SKIPPED: " + l.skipReason + "; ");
+    if (!l.skipReason.empty()) continue;
+    for (uint32_t yy = 0; yy < l.height && l.y + yy < h; ++yy)
+      for (uint32_t xx = 0; xx < l.width && l.x + xx < w; ++xx) {
+        size_t src = size_t(yy) * l.pitch + size_t(xx) * 2;
+        uint16_t p = uint16_t(l.memory[src] | (l.memory[src + 1] << 8));
+        if (!(p & 0x8000)) continue;
+        size_t dst = size_t(l.y + yy) * w + l.x + xx;
+        f.bgra[dst] = argb1555ToBgra(p); f.covered[dst] = 1;
+      }
+  }
+  uint64_t hash = 1469598103934665603ull;
+  for (auto v : f.bgra) { hash ^= v; hash *= 1099511628211ull; }
+  f.checksum = hash;
+  return f;
+}
+// Thread-safe hand-off from the emulator thread (owner of guest RAM) to the native window.
+class GopPreviewStore {
+public:
+  void publish(GopPreviewFrame frame) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    frame.sequence = ++sequence_;
+    frame_ = std::make_shared<const GopPreviewFrame>(std::move(frame));
+  }
+  void setFinished() { finished_ = true; }
+  bool finished() const { return finished_; }
+  void setGuestStatus(std::string text) { std::lock_guard<std::mutex> lock(mutex_); status_ = std::move(text); }
+  std::shared_ptr<const GopPreviewFrame> latest() const { std::lock_guard<std::mutex> lock(mutex_); return frame_; }
+  std::string status() const { std::lock_guard<std::mutex> lock(mutex_); return status_; }
+private:
+  mutable std::mutex mutex_;
+  std::shared_ptr<const GopPreviewFrame> frame_;
+  std::string status_;
+  uint64_t sequence_ = 0;
+  std::atomic<bool> finished_{false};
+};
+}

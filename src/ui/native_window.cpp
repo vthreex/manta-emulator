@@ -1,21 +1,125 @@
 #include "ui/native_window.hpp"
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <vector>
 #include <iostream>
 #include <stdexcept>
 #ifdef _WIN32
 #include <windows.h>
 #include <commdlg.h>
 namespace manta {
-static LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM a, LPARAM b) {
+namespace {
+struct WindowState {
+  std::shared_ptr<GopPreviewStore> store;
+  PreviewWindowOptions options;
+  std::shared_ptr<const GopPreviewFrame> frame;   // immutable copy owned by this thread
+  uint64_t shownSequence = 0;
+  bool smoke = false;
+  DWORD finishedAt = 0;
+  bool captured = false;
+};
+constexpr UINT_PTR kTimer = 1;
+constexpr int kBar = 64;   // host status bar height (window chrome, not guest content)
+
+// Renders exactly the window content (same drawContent as WM_PAINT) into an off-screen DIB and saves it as a
+// top-down 32-bit BMP: repeatable evidence of what the window shows, independent of occlusion or minimization.
+void drawContent(HDC dc, RECT r, WindowState &st);
+void captureClient(HWND w, const std::string &path, WindowState &st) {
+  RECT r; GetClientRect(w, &r);
+  if (r.right - r.left < 64 || r.bottom - r.top < 128) r = RECT{0, 0, 1424, 861};
+  int cw = r.right - r.left, ch = r.bottom - r.top;
+  HDC dc = GetDC(w), mem = CreateCompatibleDC(dc);
+  BITMAPINFO bi{}; bi.bmiHeader = {sizeof(BITMAPINFOHEADER), cw, -ch, 1, 32, BI_RGB, 0, 0, 0, 0, 0};
+  void *bits = nullptr;
+  HBITMAP dib = CreateDIBSection(dc, &bi, DIB_RGB_COLORS, &bits, nullptr, 0);
+  auto old = SelectObject(mem, dib);
+  drawContent(mem, RECT{0, 0, cw, ch}, st);
+  GdiFlush();
+  std::ofstream f(path, std::ios::binary);
+  BITMAPFILEHEADER fh{}; fh.bfType = 0x4d42; fh.bfOffBits = sizeof fh + sizeof(BITMAPINFOHEADER);
+  fh.bfSize = fh.bfOffBits + cw * ch * 4;
+  f.write(reinterpret_cast<const char *>(&fh), sizeof fh);
+  f.write(reinterpret_cast<const char *>(&bi.bmiHeader), sizeof(BITMAPINFOHEADER));
+  f.write(static_cast<const char *>(bits), std::streamsize(cw) * ch * 4);
+  SelectObject(mem, old); DeleteObject(dib); DeleteDC(mem); ReleaseDC(w, dc);
+}
+
+void drawContent(HDC dc, RECT r, WindowState &st) {
+  HBRUSH bar = CreateSolidBrush(RGB(32, 32, 48));
+  RECT barRect{0, 0, r.right, kBar}; FillRect(dc, &barRect, bar); DeleteObject(bar);
+  SetBkMode(dc, TRANSPARENT); SetTextColor(dc, RGB(255, 210, 90));
+  std::string line1 = st.frame && !st.frame->empty() ? st.frame->label : "DIAGNOSTIC GOP PREVIEW - no enabled, latched GOP window has been programmed by the guest yet";
+  TextOutA(dc, 8, 6, line1.c_str(), int(line1.size()));
+  SetTextColor(dc, RGB(200, 200, 215));
+  std::string line2 = st.frame ? st.frame->description : std::string();
+  line2 += st.store ? "  [" + st.store->status() + (st.store->finished() ? "; guest run stopped" : "; running") + "]" : "";
+  TextOutA(dc, 8, 24, line2.c_str(), int(line2.size()));
+  char sum[96] = "";
+  if (st.frame && !st.frame->empty()) snprintf(sum, sizeof sum, "frame checksum %016llx (host bar above is window chrome, not guest content)", (unsigned long long)st.frame->checksum);
+  TextOutA(dc, 8, 42, sum, int(strlen(sum)));
+  RECT area{0, kBar, r.right, r.bottom};
+  HBRUSH back = CreateSolidBrush(RGB(20, 20, 20)); FillRect(dc, &area, back); DeleteObject(back);
+  if (st.frame && !st.frame->empty()) {
+    const auto &f = *st.frame;
+    // Pixels the guest did not provide are shown as a neutral checker so they cannot be mistaken for guest black.
+    std::vector<uint32_t> out(f.bgra.size());
+    for (uint32_t y = 0; y < f.height; ++y)
+      for (uint32_t x = 0; x < f.width; ++x) {
+        size_t i = size_t(y) * f.width + x;
+        out[i] = f.covered[i] ? (f.bgra[i] & 0x00ffffffu) : ((((x >> 4) ^ (y >> 4)) & 1) ? 0x00505050u : 0x00383838u);
+      }
+    BITMAPINFO bi{}; bi.bmiHeader = {sizeof(BITMAPINFOHEADER), LONG(f.width), -LONG(f.height), 1, 32, BI_RGB, 0, 0, 0, 0, 0};
+    int aw = r.right, ah = r.bottom - kBar;
+    double scale = std::min(double(aw) / f.width, double(ah) / f.height);
+    if (scale > 1.0) scale = std::max(1.0, double(int(scale)));
+    int dw = int(f.width * scale), dh = int(f.height * scale);
+    SetStretchBltMode(dc, COLORONCOLOR);
+    StretchDIBits(dc, (aw - dw) / 2, kBar + (ah - dh) / 2, dw, dh, 0, 0, f.width, f.height, out.data(), &bi, DIB_RGB_COLORS, SRCCOPY);
+  }
+}
+void paint(HWND w, WindowState &st) {
+  PAINTSTRUCT ps; HDC dc = BeginPaint(w, &ps);
+  RECT r; GetClientRect(w, &r);
+  drawContent(dc, r, st);
+  EndPaint(w, &ps);
+}
+
+LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM a, LPARAM b) {
+  auto *st = reinterpret_cast<WindowState *>(GetWindowLongPtrW(w, GWLP_USERDATA));
+  if (msg == WM_NCCREATE) {
+    SetWindowLongPtrW(w, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<CREATESTRUCTW *>(b)->lpCreateParams));
+    return DefWindowProcW(w, msg, a, b);
+  }
+  if (!st) return DefWindowProcW(w, msg, a, b);
   if (msg == WM_TIMER) {
-    DestroyWindow(w);
+    if (st->smoke) { DestroyWindow(w); return 0; }
+    if (st->store) {
+      auto latest = st->store->latest();
+      if (latest && latest->sequence != st->shownSequence) {
+        st->frame = latest; st->shownSequence = latest->sequence;
+        InvalidateRect(w, nullptr, FALSE);
+      }
+      if (st->store->finished()) {
+        if (!st->finishedAt) { st->finishedAt = GetTickCount(); InvalidateRect(w, nullptr, FALSE); }
+        else if (GetTickCount() - st->finishedAt > 700 && !st->captured) {
+          st->captured = true;
+          UpdateWindow(w);
+          if (!st->options.capturePath.empty()) captureClient(w, st->options.capturePath, *st);
+        }
+        if (st->options.closeAfterFinishMs && st->finishedAt && GetTickCount() - st->finishedAt > st->options.closeAfterFinishMs + 800 &&
+            (st->captured || st->options.capturePath.empty()))
+          DestroyWindow(w);
+      }
+    }
     return 0;
   }
-  if (msg == WM_DESTROY) {
-    PostQuitMessage(0);
-    return 0;
-  }
+  if (msg == WM_PAINT) { paint(w, *st); return 0; }
+  if (msg == WM_ERASEBKGND) return 1;
+  if (msg == WM_DESTROY) { PostQuitMessage(0); return 0; }
   return DefWindowProcW(w, msg, a, b);
 }
+} // namespace
 std::wstring pickFirmware() {
   wchar_t path[32768]{};
   OPENFILENAMEW o{};
@@ -26,7 +130,9 @@ std::wstring pickFirmware() {
   o.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
   return GetOpenFileNameW(&o) ? path : L"";
 }
-void nativeWindow(const std::string &, bool smoke) {
+void nativeWindow(const std::string &, bool smoke, std::shared_ptr<GopPreviewStore> store, const PreviewWindowOptions &options) {
+  WindowState state;
+  state.store = std::move(store); state.options = options; state.smoke = smoke;
   auto instance = GetModuleHandleW(nullptr);
   WNDCLASSW c{};
   c.lpfnWndProc = proc;
@@ -36,16 +142,17 @@ void nativeWindow(const std::string &, bool smoke) {
   if (!RegisterClassW(&c) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
     throw std::runtime_error("RegisterClassW failed: " + std::to_string(GetLastError()));
   auto w = CreateWindowW(c.lpszClassName,
-                         L"Manta LCD4214 — guest display",
-                         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 760, nullptr,
-                         nullptr, instance, nullptr);
+                         L"Manta LCD4214 — guest display (diagnostic GOP preview)",
+                         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1440, 900, nullptr,
+                         nullptr, instance, &state);
   if (!w)
     throw std::runtime_error("CreateWindowW failed: " + std::to_string(GetLastError()));
   ShowWindow(w, SW_SHOW);
-  std::cout << "NATIVE_WINDOW_CREATED; guest display not initialized\n";
-  if (smoke && !SetTimer(w, 1, 400, nullptr)) {
+  std::cout << (state.store ? "NATIVE_WINDOW_CREATED; diagnostic GOP preview (guest pixels only once a GOP window is enabled)\n"
+                            : "NATIVE_WINDOW_CREATED; guest display not initialized\n");
+  if (!SetTimer(w, kTimer, smoke ? 400 : 100, nullptr)) {
     auto error = GetLastError(); DestroyWindow(w);
-    throw std::runtime_error("Window smoke timer failed: " + std::to_string(error));
+    throw std::runtime_error("Window timer failed: " + std::to_string(error));
   }
   MSG msg;
   int result;
@@ -59,7 +166,7 @@ void nativeWindow(const std::string &, bool smoke) {
 #else
 namespace manta {
 std::wstring pickFirmware() { return L""; }
-void nativeWindow(const std::string &, bool) {
+void nativeWindow(const std::string &, bool, std::shared_ptr<GopPreviewStore>, const PreviewWindowOptions &) {
   throw std::runtime_error(
       "Native display backend currently Windows only; use --headless on Linux");
 }

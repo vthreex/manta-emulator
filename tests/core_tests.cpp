@@ -15,6 +15,7 @@
 #include "board/opaque_read_policy.hpp"
 #include "video/gop.hpp"
 #include "video/gop_export.hpp"
+#include "video/gop_preview.hpp"
 #include <array>
 #include <algorithm>
 #include <filesystem>
@@ -1239,6 +1240,22 @@ void geStretchRequestTests(){
   regs[0x59]={0x41,0xffff};rejects([&]{Req::decode(0x8040,get);});
   regs[0x59]={0x80,0xffff};rejects([&]{Req::decode(0x8040,get);});regs=saved;
   require(Req::decode(0x8040,get).describe().find("cmd=8040")!=std::string::npos && Req::decode(0x8040,get).describe().find("unresolved:")!=std::string::npos,"describe lists the decoded request and its unresolved semantics");
+  {
+    // Connected request captured from the diagnostic run (4x33 strip -> 1360x68, programmed height = scale height 38 - 5).
+    static const std::pair<unsigned,uint16_t> connected[]={{0x00,7},{0x01,0x11},{0x34,0x0c09},{0x20,0x6c80},{0x21,0x03d4},{0x26,0xd880},{0x27,0x00dd},{0x30,8},{0x33,0x0aa0},
+      {0x55,0},{0x56,0x54f},{0x57,0xb4},{0x58,0xf7},{0x59,0x40},{0x5e,0x1807},{0x5f,0x1c79},{0x64,0x0c},{0x65,0x08f0},{0x68,0},{0x69,0xb4},{0x6a,0x54f},{0x6b,0xf7},
+      {0x6c,0},{0x6d,0},{0x6e,4},{0x6f,0x21},{0x11,0xff01},{0x12,0x0100},{0x13,0x00ff}};
+    std::map<unsigned,std::pair<uint16_t,uint16_t>> c;
+    for(auto [i,v]:connected)c[i]={v,i==1?uint16_t(0x372):uint16_t(0xffff)};
+    auto cget=[&](unsigned i){return c[i];};
+    auto q=Req::decode(0x8040,cget);
+    require(q.srcWidth==4 && q.srcHeight==33 && q.destRight-q.destLeft+1==1360 && q.destBottom-q.destTop+1==68 && q.sourceFormat==9 && q.destinationFormat==0xc && !q.sourceKey() && q.dither() && q.blend(),"connected 4x33 -> 1360x68 request decodes");
+    require(q.heightReducedBy5 && q.scaleSourceHeight==38 && q.ratioY==0x8f0 && q.ratioX==0xc,"its vertical scale arithmetic uses 38 rows: the original programs 6F = height - 5");
+    require(q.unresolved().size()>=7,"the 5-row reduction is listed as an unresolved hardware meaning");
+    c[0x6f].first=34;rejects([&]{Req::decode(0x8040,cget);});   // neither 34 nor 39 matches the ratio
+    c[0x6f].first=0x21;c[0x65].first=0x8f1;rejects([&]{Req::decode(0x8040,cget);});
+    auto r2=Req::decode(0x8040,get);require(!r2.heightReducedBy5 && r2.scaleSourceHeight==42,"the recorded bitmap-196 request has no reduction");
+  }
   require(Req::expectedRatio(7,7)==0x1000,"unit scale is exactly 1.0 in 4.12 fixed point");
   require(Req::expectedRatio(1,32)==128 && Req::expectedRatio(32,1)==0xffffffffu && Req::expectedRatio(31,1)==31u*4096,"scale ratio boundaries match the original 32x limit");
 }
@@ -2839,6 +2856,7 @@ int main() {
     vifCrLockBracketTests();
     avdHtotalConstantTests();
     gopExportTests();
+    gopPreviewTests();
     sharedMiuTests();
     displayHardwareTests();
     gopGuestBankTests();

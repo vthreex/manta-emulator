@@ -484,6 +484,7 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   ++m.dispatches_;
+  if(m.options_.previewStore && (m.dispatches_ & 0x1fffff)==0)m.publishPreview();
   if(m.options_.zuiFlowProbes && ZuiFlow::watches(uint32_t(a))){
     std::vector<uint8_t> initAndDispatch(0x1cc),queueCode(0x140);
     m.cpu_.read(0x004e0d48,initAndDispatch.data(),initAndDispatch.size());
@@ -1743,6 +1744,7 @@ int Msd309Machine::run() {
     f<<riu_.pm51().historyJsonLines();
     f.flush();if(!f)throw std::runtime_error("cannot write complete bounded PM history");
   }
+  publishPreview();
   auto s = summary();
   if (!options_.summary.empty()) {
     std::ofstream f(options_.summary);
@@ -1754,50 +1756,94 @@ int Msd309Machine::run() {
   return 2; // Research execution is incomplete even when a diagnostic
             // checkpoint is reached.
 }
-// Debug export of the memory behind every ENABLED + LATCHED GOP window (never forced on, never composed).
+// Private copies of the memory behind every ENABLED + ACTIVE-LATCHED GOP window (never forces anything on).
+std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
+  std::vector<GopLayer> layers;
+  for (auto bank : {1u, 4u})
+    for (unsigned window = 0; window < (bank == 1 ? 4u : 2u); ++window) {
+      auto d = readGopWindow(riu_, bank, window, true);   // active latch AND enable bit required
+      if (!d) continue;
+      GopLayer l;
+      l.bank = bank; l.window = window; l.x = d->x; l.y = d->y; l.width = d->width; l.height = d->height;
+      l.pitch = d->pitch; l.format = d->format;
+      auto physical = gopPhysicalAddress(riu_, bank, window, d->miuRelativeAddress);
+      uint64_t size = uint64_t(d->pitch) * d->height;
+      if (!physical || !size || size > 16 * 1024 * 1024 || uint64_t(*physical) + size > dramBacking_.size()) {
+        l.skipReason = "physical address or size not resolvable";
+      } else {
+        l.physical = *physical;
+        l.memory.assign(dramBacking_.begin() + *physical, dramBacking_.begin() + *physical + size);
+        for (uint64_t i = 0; i < size; ++i) {
+          auto address = *physical + uint32_t(i);
+          l.invalidBytes += preservedBits_.memoryUnknown(address) || unknownObservations_.bytes().contains(address);
+        }
+      }
+      layers.push_back(std::move(l));
+    }
+  return layers;
+}
+void Msd309Machine::publishPreview() const {
+  if (!options_.previewStore) return;
+  auto layers = collectGopLayers();
+  auto frame = composeGopPreview(layers);
+  options_.previewStore->setGuestStatus("MIPS dispatches " + std::to_string(dispatches_));
+  options_.previewStore->publish(std::move(frame));
+}
+// Debug export of every enabled + latched GOP window (never composed with a panel path).
 void Msd309Machine::exportGopFrames() const {
   std::ostringstream j;
   j << "{\n  \"category\": \"host-side decode of guest framebuffer bytes; not a claim of television output\","
        "\n  \"authentic_frame\": false,\n  \"panel_composition_modeled\": false,\n  \"format6_is_argb1555_ASSUMED\": true,"
        "\n  \"stop_pc\": \"" << hex(blockingPc_) << "\",\n  \"windows\": [";
   bool first = true;
-  for (auto bank : {1u, 4u})
-    for (unsigned window = 0; window < (bank == 1 ? 4u : 2u); ++window) {
-      auto d = readGopWindow(riu_, bank, window, true);   // active latch AND enable bit required
-      if (!d) continue;
-      if (!first) j << ',';
-      first = false;
-      j << "\n    {\"bank\":" << bank << ",\"window\":" << window << ",\"x\":" << d->x << ",\"y\":" << d->y
-        << ",\"width\":" << d->width << ",\"height\":" << d->height << ",\"pitch\":" << d->pitch
-        << ",\"format\":" << unsigned(d->format) << ",\"miu_relative_address\":\"" << hex(d->miuRelativeAddress) << '"';
-      auto physical = gopPhysicalAddress(riu_, bank, window, d->miuRelativeAddress);
-      uint64_t size = uint64_t(d->pitch) * d->height;
-      if (!physical || !size || size > 16 * 1024 * 1024 || uint64_t(*physical) + size > dramBacking_.size()) {
-        j << ",\"exported\":false,\"reason\":\"physical address or size not resolvable\"}";
-        continue;
-      }
-      auto bytes = std::span<const uint8_t>(dramBacking_).subspan(*physical, size);
-      uint64_t invalid = 0, nonzero = 0;
-      for (size_t i = 0; i < bytes.size(); ++i) {
-        nonzero += bytes[i] != 0;
-        auto address = *physical + uint32_t(i);
-        invalid += preservedBits_.memoryUnknown(address) || unknownObservations_.bytes().contains(address);
-      }
-      j << ",\"physical_address\":\"" << hex(*physical) << "\",\"source_sha256\":\"" << sha256(bytes)
-        << "\",\"nonzero_bytes\":" << nonzero << ",\"invalid_bytes\":" << invalid;
-      if (d->format != 6 || d->bpp != 16) { j << ",\"exported\":false,\"reason\":\"only format 6 (assumed ARGB1555) is decoded\"}"; continue; }
-      if (invalid) { j << ",\"exported\":false,\"reason\":\"window memory contains unknown bytes\"}"; continue; }
-      auto image = argb1555WindowToBmp32(bytes, d->pitch, d->width, d->height);
-      auto name = options_.exportGopFrame;
-      name.replace_extension();
-      name += "_bank" + std::to_string(bank) + "_win" + std::to_string(window) + ".bmp";
-      std::ofstream f(name, std::ios::binary);
-      f.write(reinterpret_cast<const char*>(image.data()), std::streamsize(image.size()));
-      f.flush();
-      if (!f) throw std::runtime_error("cannot write GOP frame export");
-      j << ",\"exported\":true,\"bmp\":\"" << name.filename().string() << "\",\"bmp_sha256\":\"" << sha256(image) << "\"}";
+  for (auto& l : collectGopLayers()) {
+    if (!first) j << ',';
+    first = false;
+    j << "\n    {\"bank\":" << l.bank << ",\"window\":" << l.window << ",\"x\":" << l.x << ",\"y\":" << l.y
+      << ",\"width\":" << l.width << ",\"height\":" << l.height << ",\"pitch\":" << l.pitch << ",\"format\":" << l.format;
+    if (!l.skipReason.empty()) { j << ",\"exported\":false,\"reason\":\"" << l.skipReason << "\"}"; continue; }
+    uint64_t nonzero = 0;
+    for (auto b : l.memory) nonzero += b != 0;
+    j << ",\"physical_address\":\"" << hex(l.physical) << "\",\"source_sha256\":\"" << sha256(l.memory)
+      << "\",\"nonzero_bytes\":" << nonzero << ",\"invalid_bytes\":" << l.invalidBytes;
+    if (l.format != 6) { j << ",\"exported\":false,\"reason\":\"only format 6 (assumed ARGB1555) is decoded\"}"; continue; }
+    if (l.invalidBytes) { j << ",\"exported\":false,\"reason\":\"window memory contains unknown bytes\"}"; continue; }
+    auto image = argb1555WindowToBmp32(l.memory, l.pitch, l.width, l.height);
+    auto name = options_.exportGopFrame;
+    name.replace_extension();
+    name += "_bank" + std::to_string(l.bank) + "_win" + std::to_string(l.window) + ".bmp";
+    std::ofstream f(name, std::ios::binary);
+    f.write(reinterpret_cast<const char*>(image.data()), std::streamsize(image.size()));
+    f.flush();
+    if (!f) throw std::runtime_error("cannot write GOP frame export");
+    j << ",\"exported\":true,\"bmp\":\"" << name.filename().string() << "\",\"bmp_sha256\":\"" << sha256(image) << "\"}";
+  }
+  j << "\n  ],\n  \"gop_register_banks_note\": \"guest-programmed GOP register bytes; offset=value, '/kMM' = partially known mask; shadow = written, active = latched\",\n  \"gop_register_banks\": {";
+  bool firstBank = true;
+  for (unsigned bank = 0; bank < 16; ++bank) {
+    std::ostringstream shadow, active;
+    bool any = false, anyActive = false;
+    auto hex2 = [](unsigned v) { char t[8]; snprintf(t, sizeof t, "%02X", v & 255); return std::string(t); };
+    for (unsigned offset = 0; offset < 0x1fc; ++offset) {
+      auto b = riu_.gopByte(bank, offset);
+      if (!b.known) continue;
+      char t[16]; snprintf(t, sizeof t, "%03X=", offset);
+      shadow << (any ? " " : "") << t << hex2(b.value & b.known) << (b.known == 255 ? "" : "/k" + hex2(b.known));
+      any = true;
     }
-  j << "\n  ]\n}\n";
+    for (unsigned offset = 0; offset < 0x1fc; ++offset) {
+      auto b = riu_.gopActiveByte(bank, offset);
+      if (!b.known) continue;
+      char t[16]; snprintf(t, sizeof t, "%03X=", offset);
+      active << (anyActive ? " " : "") << t << hex2(b.value & b.known) << (b.known == 255 ? "" : "/k" + hex2(b.known));
+      anyActive = true;
+    }
+    if (!any && !anyActive) continue;
+    if (!firstBank) j << ',';
+    firstBank = false;
+    j << "\n    \"" << bank << "\": {\"shadow\": \"" << shadow.str() << "\", \"active\": \"" << active.str() << "\"}";
+  }
+  j << "\n  }\n}\n";
   std::ofstream meta(options_.exportGopFrame);
   meta << j.str();
   meta.flush();

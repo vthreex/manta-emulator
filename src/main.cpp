@@ -18,6 +18,8 @@ static int appMain(const std::vector<std::string> &args) {
     manta::Options o;
     std::filesystem::path firmware, nvram;
     bool headless = false, windowSmoke = false;
+    manta::PreviewWindowOptions previewOptions;
+    std::string previewSelftest;
     auto value = [&](size_t &i) {
       if (++i >= args.size())
         throw std::runtime_error("Missing argument value");
@@ -224,6 +226,12 @@ static int appMain(const std::vector<std::string> &args) {
         if (bank > 255) throw std::runtime_error("Exploratory SC bank out of range");
         o.exploratoryScBank = int(bank);
       }
+      else if (a == "--window-preview-selftest")
+        previewSelftest = value(i);
+      else if (a == "--preview-capture")
+        previewOptions.capturePath = value(i);
+      else if (a == "--preview-close-after-ms")
+        previewOptions.closeAfterFinishMs = unsigned(std::stoul(value(i)));
       else if (a == "--export-gop-frame")
         o.exportGopFrame = utf8Path(value(i));
       else if (a == "--summary")
@@ -334,6 +342,8 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-ge-reset: HYPOTHETICAL disabled engine/virtual queue, initially empty 16-entry stages with provisional clocks/latency\n"
                "--exploratory-semaphore-idle: HYPOTHETICAL initially unowned resources; no PM51/AEON ownership asserted\n"
                "--exploratory-gamma-enable 0|1: HYPOTHETICAL initial bank-10 gamma enable bit\n"
+               "--window-preview-selftest FILE.bmp: presenter test with a labelled SYNTHETIC buffer (not guest output); saves the window content and exits\n"
+               "--preview-capture FILE.bmp / --preview-close-after-ms N: windowed mode only; save the window client area after the guest run stopped, then close (automation)\n"
                "--export-gop-frame FILE.json: after the run, decode the guest memory of every enabled+latched GOP window (format 6 assumed ARGB1555) to FILE_bankB_winW.bmp plus metadata; debug export only, no composition, never an authentic-frame claim\n"
                "--summary FILE --coverage FILE --max-instructions N\n"
                "--tsp-firmware-dump FILE: bounded private dump of original guest TSP_SetBase input; requires --candidate-tsp\n"
@@ -350,6 +360,21 @@ static int appMain(const std::vector<std::string> &args) {
         return 0;
       } else
         throw std::runtime_error("Unsupported option/feature: " + a);
+    }
+    if (!previewSelftest.empty()) {
+      // Presenter self-test with a SYNTHETIC buffer (labelled as such; never guest output): proves the window draws a published
+      // frame pixel-exactly and shows uncovered pixels as the checker. Used only by tests/window_preview_regression.py.
+      auto store = std::make_shared<manta::GopPreviewStore>();
+      manta::GopPreviewFrame f;
+      f.width = 64; f.height = 32; f.bgra.assign(64 * 32, 0); f.covered.assign(64 * 32, 0);
+      for (unsigned y = 0; y < 16; ++y) for (unsigned x = 0; x < 32; ++x) { f.bgra[y * 64 + x] = 0xffff0000u; f.covered[y * 64 + x] = 1; }
+      for (unsigned y = 16; y < 32; ++y) for (unsigned x = 32; x < 64; ++x) { f.bgra[y * 64 + x] = 0xff0000ffu; f.covered[y * 64 + x] = 1; }
+      f.label = "SELFTEST - synthetic buffer for presenter testing, NOT guest output";
+      f.description = "selftest 64x32";
+      store->publish(std::move(f)); store->setFinished();
+      manta::PreviewWindowOptions opt; opt.capturePath = previewSelftest; opt.closeAfterFinishMs = 100;
+      manta::nativeWindow("", false, store, opt);
+      return 0;
     }
     if (windowSmoke) {
       if (headless) throw std::runtime_error("Window smoke test cannot be headless");
@@ -377,12 +402,19 @@ static int appMain(const std::vector<std::string> &args) {
       flash.loadOverlay(nvram);
     // SPI programming is not connected yet. No pretend guest settings are
     // saved.
+    if (!headless) o.previewStore = std::make_shared<manta::GopPreviewStore>();
+    auto previewStore = o.previewStore;
     manta::Msd309Machine machine(std::move(flash), o);
     if (headless) return machine.run();
     // Create the native display immediately. Guest initialization may run for
     // many seconds; the OS message loop must remain responsive throughout.
-    auto guest = std::async(std::launch::async, [&machine] { return machine.run(); });
-    manta::nativeWindow("", false);
+    auto guest = std::async(std::launch::async, [&machine, previewStore] {
+      int rc;
+      try { rc = machine.run(); } catch (...) { previewStore->setFinished(); throw; }
+      previewStore->setFinished();
+      return rc;
+    });
+    manta::nativeWindow("", false, previewStore, previewOptions);
     return guest.get();
   } catch (const std::exception &e) {
     std::cerr << "ERROR: " << e.what() << '\n';
