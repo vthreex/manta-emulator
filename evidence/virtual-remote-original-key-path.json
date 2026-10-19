@@ -1,0 +1,40 @@
+{
+ "base_git": "d491db4",
+ "result": "injected raw IR bytes were consumed by the ORIGINAL firmware's key reader through the emulated PM IR FIFO; no firmware function was called and no guest register was patched",
+ "run": "s14 = s13 (s12 flags + --exploratory-mmio-bits 1f204a3d:10:10) + --ir-script (71 raw bytes, 5M dispatches apart from dispatch 1.30B) + --exploratory-pm-ir-rpt-latch + --gop-frame-history",
+ "instruction_dispatches": 1307234768,
+ "pm_ir_fifo_received": 2,
+ "pm_ir_fifo_pops": 2,
+ "key_reader_hits": {
+  "8046A754 (lbu app key 806B910C)": [
+   1302065305,
+   1305950109
+  ],
+  "8046AA70": [
+   1302065287,
+   1305950091
+  ]
+ },
+ "injected_before_stop": [
+  {
+   "requested_dispatch": 1300000000,
+   "raw": "0x00",
+   "table_app_code": "0xFFFE"
+  },
+  {
+   "requested_dispatch": 1305000000,
+   "raw": "0x01",
+   "table_app_code": "0x11"
+  }
+ ],
+ "reaction": "after raw 0x01 the original ZUI creates a new 1320x120 GOP window and issues a GE BitBlt 8040: src fmt 9 -> dst fmt C, 65x53 stretched to 120x100 (src 0x03D44628 pitch 130, dst 0x00DDD880 pitch 600, ratio 8AA/947); stretch filter and format-C blend unresolved, so the run stops there (reason: GE BitBlt stretch/filter/mode unsupported)",
+ "key_function_mapping": "NOT established: no raw byte has been proven to be MENU/SOURCE/EXIT/OK/arrows; configs/input/ir-keymap.tsv stays empty",
+ "scaler_poll_hypothesis": "--exploratory-mmio-bits 1f204a3d:10:10 (bit 12 of BF204A3C = 1, ready); the opposite outcome (0) was not run",
+ "s13": {
+  "instruction_dispatches": 1600000000,
+  "stop": "instruction budget exhausted at 0x8053a204",
+  "gradient_fills": 384,
+  "observation": "NO SIGNAL dialog relocates between captures (original firmware behaviour, guest drawn)"
+ },
+ "authentic_television_pixels": false
+}

@@ -15,5 +15,10 @@
 - Deterministic replay: `--ir-script "DISPATCH:FUNCTION,DISPATCH:raw=0xNN"` (dispatch ordered). Raw literals are for experiments only.
 - Windows window: M, S, Esc, Enter, arrows, P, I are host functions; `O` stays the offscreen inspector.
 
+## Result: the original key reader consumes injected frames (evidence/virtual-remote-original-key-path.json)
+In run s14 two scripted raw bytes (0x00 at dispatch 1.300B, 0x01 at 1.305B) were popped from the emulated PM IR FIFO (pops=2) and the original key code at `8046A754`/`8046AA70`
+ran right after each. Raw `0x01` made the ZUI create a new 1320x120 window and request a GE stretch BitBlt (65x53 -> 120x100, ratio 8AA/947) that is not modelled yet, so the run stops there.
+Which app code is MENU/SOURCE/EXIT/OK/arrows is still unknown; the keymap file stays empty.
+
 ## Open
 - Identify app codes of MENU/SOURCE/EXIT/OK/arrows by experiment (scripted raw injection + watch of `8046AA70`) and record each with evidence.
