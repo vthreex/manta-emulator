@@ -618,6 +618,7 @@ RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
   return it==gopActive_.end()?RiuByte{}:it->second;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(a>=0x1f205e04 && a<0x1f206000)seedLazyInit(a,n);
   for(auto& h:hypothesisBits_)if(h.ack && h.pending && a<=h.address && uint64_t(a)+n>h.address){
     auto& byte=bytes_[storageKey(h.address)];byte.value=h.value;byte.known=255;h.pending=false;
   }

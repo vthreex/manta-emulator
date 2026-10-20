@@ -1,4 +1,4 @@
-"""USB source: the original media player screen ("No Device", PHOTO / MUSIC / MOVIE / TEXT), reached with real remote keys only.
+"""DTV source: the original DTV channel banner (channel 1 "TVP1", clock, "No Information", "DTV"), reached with real remote keys only.
 
 Needs work/checkpoints/no-signal-ready-v2.snap; SKIPS when absent. Keys: SOURCE 0x41, UP 0x0B x5 (SCART -> DTV in the original Input Source list), OK 0x0D.
 Opt-in hypotheses (labelled, docs/source-switching.md): provenance extensions (incl. MOVZ/MOVN with an independent condition), GOP 1F203FE0 bit 8,

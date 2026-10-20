@@ -564,7 +564,7 @@ public:
     for (auto& h : hypothesisBits_) if (h.address == address && h.scBank == scBank && (h.mask & mask)) throw std::runtime_error("duplicate bit hypothesis");   // disjoint masks of one byte may be bracketed separately
     if (scBank >= 0 && (address < 0x1f205e04u || address >= 0x1f206000u)) throw std::runtime_error("scaler bank scope needs an address inside BF205E04..");
     hypothesisBits_.push_back({address, uint8_t(mask), uint8_t(value), 0, scBank, rmw, init, ack, false});
-    if (init) {   // EXPLORATORY reset value: the MASK bits start known with VALUE; the guest's own writes replace them as for any register
+    if (init && !(scBank >= 0 && address >= 0x1f205e04u && address < 0x1f206000u)) {   // EXPLORATORY reset value (bank-scoped scaler ones are seeded lazily at their first read): the MASK bits start known with VALUE; the guest's own writes replace them as for any register
       auto& b = bytes_[initKey(address, scBank)];
       b.value = uint8_t((b.value & ~mask) | value);
       b.known |= uint8_t(mask);
@@ -573,13 +573,26 @@ public:
   const std::vector<HypothesisBits>& hypothesisBits() const { return hypothesisBits_; }
   // After a snapshot restore: reset-value (+init) hypotheses seed bytes whose masked bits are still unknown (a restored byte the guest already wrote is left alone).
   // Storage key for seeding a reset-value hypothesis; a scaler-bank-scoped one addresses its own bank without needing the (unknown) current selector.
+  // Lazy seeding of a bank-scoped reset-value hypothesis: the first read of the byte while its bank is selected and the byte is still unknown.
+  void seedLazyInit(uint32_t a, unsigned n) {
+    auto sel = bytes_.find(0x1f205e00);
+    if (sel == bytes_.end() || sel->second.known != 255) return;
+    for (auto& h : hypothesisBits_) {
+      if (!h.init || h.scBank != int(sel->second.value) || h.address < 0x1f205e04u || h.address >= 0x1f206000u) continue;
+      if (!(a <= h.address && uint64_t(a) + n > h.address)) continue;
+      auto& b = bytes_[initKey(h.address, h.scBank)];
+      if ((b.known & h.mask) == h.mask) continue;
+      b.value = uint8_t((b.value & ~h.mask) | h.value);
+      b.known |= h.mask;
+    }
+  }
   uint32_t initKey(uint32_t address, int scBank) const {
     if (scBank >= 0 && address >= 0x1f205e04u && address < 0x1f206000u) return 0x81000000u + (uint32_t(scBank) << 10) + address - 0x1f205e00u;
     return storageKey(address);
   }
   void reapplyInitHypotheses() {
     for (auto& h : hypothesisBits_) {
-      if (!h.init) continue;
+      if (!h.init || (h.scBank >= 0 && h.address >= 0x1f205e04u && h.address < 0x1f206000u)) continue;
       auto& b = bytes_[initKey(h.address, h.scBank)];
       if ((b.known & h.mask) == h.mask) continue;
       b.value = uint8_t((b.value & ~h.mask) | h.value);

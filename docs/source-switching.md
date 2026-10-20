@@ -35,12 +35,14 @@ Initial DTV (id 28) is not reachable from the direct keys.
 | --- | --- | --- | --- |
 | **USB** | 10 | **reaches the original media player**: "No Device", PHOTO / MUSIC / MOVIE / TEXT (OSD `0x1A`); RIGHT/LEFT move the selection (PHOTO -> MUSIC); UP/DOWN/OK/MENU draw nothing with no device | audio `1F225DD8`, `1F225CBC` = 0 (+rmw), `MOVZ` support in the RMW prover (opt-in). EXIT from the player stops in the scaler restore chain: `1F205E78@bank1`, `1F205E10@bank0x1A`, `1F205F80@bank0x19`, then a rewrite of a bracketed byte at `805F887C` |
 | **DTV** | 0 | **works**: the original DTV channel banner (channel 1 "TVP1", clock, "No Information", "DTV") appears at ~250M dispatches | the `805DB6C0..805DB6D8` mailbox handshake (`0x78/0x56` written to `1F206728/29`, polled until a coprocessor changes it) is acknowledged by a new labelled hypothesis kind `+ack` (the next read after a guest write returns the stated value); plus reset values (`+init`) for `1F225DD8/CBC/CB0`, `1F004074/75`, `1F203600/01`, scaler bank 1 `1F205E78/79`. No tuner or signal exists, so "No Information" is expected. `tests/dtv_regression.py` |
-| ATV | 1 | `805014C8`: AFEC `BF206BA8` bit 4 reset value (checkpoint with `+init`), then VIF carrier lock | see above |
+| **ATV** | 1 | **works**: the original TV banner (channel 1, "-----", clock, "No Information", "TV") at ~97M dispatches, then NO SIGNAL at ~158M | needs the checkpoint with the AFEC `BF206BA8` bit-4 reset value seeded (`tools/make_ba8_checkpoint.py`, a ~10 minute cold boot) plus reset values (`+init`, 0, lazily seeded at first read for scaler banks) for scaler-bank bytes `1F205E34/35/30/31 @16`, `1F205E10/11 @26`, `1F205F80/81` and `1F205E4C/4D @25`, `1F205E38/39 @34` and the VIF carrier-lock byte `1F224471`. `tests/atv_regression.py` |
 
 Findings behind this: `80544D74` is a TSP helper (`LBU / ANDI / ORI / MOVZ / SB` on TSP+0x2844 bit 0); with `--exploratory-provenance-extensions` the RMW prover now
 accepts `MOVZ/MOVN` whose condition register is independent (the chosen operand's bit dependencies carry over). The USB player needs no USB device model to show
 "No Device"; real device content (mass storage / FAT) is not modeled. Evidence: `evidence/ui-states-session10/10_usb_player_no_device.png`,
 `11_usb_player_music_selected.png`, `tests/usb_player_regression.py`.
+
+Bank-scoped `+init` hypotheses are seeded lazily at the first read of that byte while its bank is selected (seeding at restore time disturbed an unrelated exploratory display-clock check).
 
 Hypothesis kinds now: `+rmw` (writable status byte, carried-back stores allowed), `+init` (reset value; re-applied after a restore to bytes that are still unknown, bank-scoped ones seed their own bank), `+ack` (peer-acknowledged mailbox). The allowed address range is the whole RIU window `1F000000..1F3FFFFF`.
 
