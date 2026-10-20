@@ -176,7 +176,7 @@ void ioClass(Ar& a, Riu& r) {
       bool have = false;
       for (auto& h : r.hypothesisBits_) have = have || h.address == c.address;
       if (!have) { c.reads = 0; r.hypothesisBits_.push_back(c); }
-      else for (auto& h : r.hypothesisBits_) if (h.address == c.address) h.rmw = c.rmw;
+      else for (auto& h : r.hypothesisBits_) if (h.address == c.address) { h.rmw = c.rmw; h.init = c.init; }
     }
   a(r.exploratoryAfecIndirect_, r.afecIndirectValue_, r.afecIndirectReads_, r.afecIndirectWrites_, r.avdNoiseReads_, r.avdHtotalReads_, r.vifCrLockReads_,
     r.exploratoryAvdNoSyncEvents_, r.diagnosticAvd11dbBit7_, r.exploratoryVifRevision_, r.vifRevisionReads_, r.vifZeroInput_, r.vifZeroInputReads_,
@@ -389,6 +389,7 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   auto sections = disassemble(file);
   uint32_t pc = 0, cpi = 0;
   uint64_t cycles = 0, ramSize = 0, dispatches = 0;
+  std::vector<std::string> extraTokens;   // option tokens present now but not in the snapshot (superset load)
   {
     auto& s = find(sections, "meta");
     Ar a(s.bytes.data(), s.bytes.size());
@@ -406,6 +407,7 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
       if (subset) for (auto& l : oldLines) { auto it = std::find(remaining.begin(), remaining.end(), l); if (it == remaining.end()) { subset = false; break; } remaining.erase(it); }
       if (!subset) throw SnapshotError("snapshot was taken under a different run configuration (diagnostic assumptions/options differ)");
       for (auto& l : remaining) snapshotOptionDelta_ += l + " ";
+      extraTokens = remaining;
     }
     if (cpi != virtualTime_.cpi() || ramSize != dramBacking_.size()) throw SnapshotError("snapshot hardware configuration (CPI/RAM size) differs");
   }
@@ -466,6 +468,19 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   }
   { auto& s = find(sections, "flash"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, flash_); }
   { auto& s = find(sections, "riu"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, riu_); }
+  // Superset load: options added after the snapshot are either runtime-read (accepted), applied to the restored devices here, or REFUSED.
+  // Silently ignoring an added option whose state lives in the serialized device configuration would mislabel the run.
+  for (size_t i = 0; i < extraTokens.size(); ++i) {
+    const auto& t = extraTokens[i];
+    if (t.rfind("--", 0) != 0) continue;   // a value token, consumed with its option below
+    if (t == "--exploratory-provenance-extensions" || t == "--trace-instructions") continue;   // read from the options at run time
+    if (t == "--exploratory-mmio-bits") { ++i; continue; }                                       // merged into the restored hypothesis list
+    if (t == "--diagnostic-vif-cr-lock" && i + 1 < extraTokens.size()) {
+      riu_.configureDiagnosticVifCrLock(unsigned(std::stoul(extraTokens[i + 1])));
+      ++i; continue;
+    }
+    throw SnapshotError("option " + t + " cannot be added to a snapshot taken without it (its state is part of the snapshot); recreate the checkpoint with it");
+  }
   if (mach.remaining()) throw SnapshotError("machine section has trailing data");
   // CPU-window mirrors of flash (guest SPI writes update the overlay): refresh from the restored overlay.
   {

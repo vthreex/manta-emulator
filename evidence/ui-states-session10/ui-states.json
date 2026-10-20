@@ -1,0 +1,265 @@
+{
+ "1_no_signal_blue_on": {
+  "active_gop_windows": [
+   {
+    "bank": 4,
+    "bpp": 16,
+    "format": 6,
+    "height": 768,
+    "miu_relative_address": "0xfdb880",
+    "pitch": 2720,
+    "width": 1360,
+    "window": 1
+   }
+  ],
+  "blue_screen_bit4_of_806FBD85": true,
+  "dispatches": 6000000,
+  "exploratory_options": [
+   "--exploratory-video-plane",
+   "setting",
+   "--exploratory-gop-black-colorkey"
+  ],
+  "fb_0xDDD880_sha256": "31c1416fae2fe6c264a6401565f99c94761530eb5eac832b9c63666e94350d99",
+  "fb_0xFDB880_sha256": "31c1416fae2fe6c264a6401565f99c94761530eb5eac832b9c63666e94350d99",
+  "keys": [],
+  "native_preview_checksum": "0x6ccbf9c2874ad987",
+  "png": "1_no_signal_blue_on.png",
+  "preview_covered_pixels": 29608,
+  "stop": "instruction budget exhausted"
+ },
+ "2_no_signal_blue_off": {
+  "active_gop_windows": [
+   {
+    "bank": 4,
+    "bpp": 16,
+    "format": 6,
+    "height": 768,
+    "miu_relative_address": "0xddd880",
+    "pitch": 2720,
+    "width": 1360,
+    "window": 1
+   }
+  ],
+  "blue_screen_bit4_of_806FBD85": false,
+  "dispatches": 110000000,
+  "exploratory_options": [
+   "--exploratory-video-plane",
+   "setting",
+   "--exploratory-gop-black-colorkey"
+  ],
+  "fb_0xDDD880_sha256": "88a347043a1113ba1c8a75ab5821111772889f8567590e37a8754c250d30783a",
+  "fb_0xFDB880_sha256": "89c0ab7df5c9952f63b6fdb28cd692a5a57815a4412b87df096a08fca3379557",
+  "keys": [
+   "0xfc@+0",
+   "0x11@+8000000",
+   "0x11@+16000000",
+   "0x0e@+26000000",
+   "0x0e@+36000000",
+   "0x0d@+48000000",
+   "0x20@+62000000"
+  ],
+  "native_preview_checksum": "0xd14dead6d371f007",
+  "png": "2_no_signal_blue_off.png",
+  "preview_covered_pixels": 29608,
+  "stop": "instruction budget exhausted"
+ },
+ "3_info_blue_on": {
+  "active_gop_windows": [
+   {
+    "bank": 4,
+    "bpp": 16,
+    "format": 6,
+    "height": 248,
+    "miu_relative_address": "0xddd880",
+    "pitch": 2720,
+    "width": 1360,
+    "window": 1
+   }
+  ],
+  "blue_screen_bit4_of_806FBD85": true,
+  "dispatches": 40000000,
+  "exploratory_options": [
+   "--exploratory-video-plane",
+   "setting",
+   "--exploratory-gop-black-colorkey"
+  ],
+  "fb_0xDDD880_sha256": "6e8452864d8567bcc99bc92d2367ee1a3b4e9f5c2607a2ce86276fdfcf618d39",
+  "fb_0xFDB880_sha256": "171d7c2719f5fc3d5d3640075723bb672eeff00d2ee993147d71019c3651b2e6",
+  "keys": [
+   "0x16@+0"
+  ],
+  "native_preview_checksum": "0x6d35139643e554a1",
+  "png": "3_info_blue_on.png",
+  "preview_covered_pixels": 92480,
+  "stop": "instruction budget exhausted"
+ },
+ "4_info_blue_off": {
+  "active_gop_windows": [
+   {
+    "bank": 4,
+    "bpp": 16,
+    "format": 6,
+    "height": 248,
+    "miu_relative_address": "0xddd880",
+    "pitch": 2720,
+    "width": 1360,
+    "window": 1
+   }
+  ],
+  "blue_screen_bit4_of_806FBD85": false,
+  "dispatches": 85000000,
+  "exploratory_options": [
+   "--exploratory-video-plane",
+   "setting",
+   "--exploratory-gop-black-colorkey"
+  ],
+  "fb_0xDDD880_sha256": "6e8452864d8567bcc99bc92d2367ee1a3b4e9f5c2607a2ce86276fdfcf618d39",
+  "fb_0xFDB880_sha256": "171d7c2719f5fc3d5d3640075723bb672eeff00d2ee993147d71019c3651b2e6",
+  "keys": [
+   "0xfc@+0",
+   "0x11@+8000000",
+   "0x11@+16000000",
+   "0x0e@+26000000",
+   "0x0e@+36000000",
+   "0x0d@+48000000",
+   "0x16@+62000000"
+  ],
+  "native_preview_checksum": "0x6d35139643e554a1",
+  "png": "4_info_blue_off.png",
+  "preview_covered_pixels": 92480,
+  "stop": "instruction budget exhausted"
+ },
+ "5_menu_setup_blue_on": {
+  "active_gop_windows": [
+   {
+    "bank": 4,
+    "bpp": 16,
+    "format": 6,
+    "height": 768,
+    "miu_relative_address": "0xfdb880",
+    "pitch": 2720,
+    "width": 1360,
+    "window": 1
+   }
+  ],
+  "blue_screen_bit4_of_806FBD85": true,
+  "dispatches": 30000000,
+  "exploratory_options": [
+   "--exploratory-video-plane",
+   "setting",
+   "--exploratory-gop-black-colorkey"
+  ],
+  "fb_0xDDD880_sha256": "24c881bf28ddbebfda20ee817712898af9aef71a0c76036838412d46bc2c61f3",
+  "fb_0xFDB880_sha256": "b698b172946754996e99cc8c6b5c5c16985a71554ad99217c237c59d23516b4f",
+  "keys": [
+   "0xfc@+0",
+   "0x11@+8000000",
+   "0x11@+16000000"
+  ],
+  "native_preview_checksum": "0xa0251cd2a9a42ad5",
+  "png": "5_menu_setup_blue_on.png",
+  "preview_covered_pixels": 1044479,
+  "stop": "instruction budget exhausted"
+ },
+ "6_menu_setup_blue_off": {
+  "active_gop_windows": [
+   {
+    "bank": 4,
+    "bpp": 16,
+    "format": 6,
+    "height": 768,
+    "miu_relative_address": "0xfdb880",
+    "pitch": 2720,
+    "width": 1360,
+    "window": 1
+   }
+  ],
+  "blue_screen_bit4_of_806FBD85": false,
+  "dispatches": 65000000,
+  "exploratory_options": [
+   "--exploratory-video-plane",
+   "setting",
+   "--exploratory-gop-black-colorkey"
+  ],
+  "fb_0xDDD880_sha256": "c5388dc66d0b8f4cd3c9a01d1b699891f58ab5085112c517e3946c849d75f46f",
+  "fb_0xFDB880_sha256": "ece642fc274d18faf814e5b887da14311d76e6c0b6315b0d679ec089933e12a6",
+  "keys": [
+   "0xfc@+0",
+   "0x11@+8000000",
+   "0x11@+16000000",
+   "0x0e@+26000000",
+   "0x0e@+36000000",
+   "0x0d@+48000000"
+  ],
+  "native_preview_checksum": "0x53023f2d6843d875",
+  "png": "6_menu_setup_blue_off.png",
+  "preview_covered_pixels": 1044479,
+  "stop": "instruction budget exhausted"
+ },
+ "7_language_popup": {
+  "active_gop_windows": [
+   {
+    "bank": 4,
+    "bpp": 16,
+    "format": 6,
+    "height": 768,
+    "miu_relative_address": "0xfdb880",
+    "pitch": 2720,
+    "width": 1360,
+    "window": 1
+   }
+  ],
+  "blue_screen_bit4_of_806FBD85": true,
+  "dispatches": 45000000,
+  "exploratory_options": [
+   "--exploratory-video-plane",
+   "setting",
+   "--exploratory-gop-black-colorkey"
+  ],
+  "fb_0xDDD880_sha256": "26fbd491b62209846551812c49a53eff33780bab4ee848066f736e719470db1e",
+  "fb_0xFDB880_sha256": "26fbd491b62209846551812c49a53eff33780bab4ee848066f736e719470db1e",
+  "keys": [
+   "0xfc@+0",
+   "0x11@+8000000",
+   "0x11@+16000000",
+   "0x0d@+28000000"
+  ],
+  "native_preview_checksum": "0xbff8d089ac110f6",
+  "png": "7_language_popup.png",
+  "preview_covered_pixels": 247241,
+  "stop": "instruction budget exhausted"
+ },
+ "8_source_av1_banner": {
+  "active_gop_windows": [
+   {
+    "bank": 4,
+    "bpp": 16,
+    "format": 6,
+    "height": 248,
+    "miu_relative_address": "0xddd880",
+    "pitch": 2720,
+    "width": 1360,
+    "window": 1
+   }
+  ],
+  "blue_screen_bit4_of_806FBD85": true,
+  "dispatches": 40000000,
+  "exploratory_options": [
+   "--exploratory-video-plane",
+   "setting",
+   "--exploratory-gop-black-colorkey",
+   "--exploratory-provenance-extensions",
+   "--exploratory-mmio-bits",
+   "1f203fe1:01:01+rmw"
+  ],
+  "fb_0xDDD880_sha256": "3b4f17ecaed45265d068b95dc5c3bd3348ff573de60687af0bccbb134b691c78",
+  "fb_0xFDB880_sha256": "171d7c2719f5fc3d5d3640075723bb672eeff00d2ee993147d71019c3651b2e6",
+  "keys": [
+   "0x4e@+0"
+  ],
+  "native_preview_checksum": "0xb4515175eaa32d72",
+  "png": "8_source_av1_banner.png",
+  "preview_covered_pixels": 92480,
+  "stop": "instruction budget exhausted"
+ }
+}

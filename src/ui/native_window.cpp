@@ -62,7 +62,7 @@ void drawContent(HDC dc, RECT r, WindowState &st) {
   if (shown && !shown->empty()) snprintf(sum, sizeof sum, "frame checksum %016llx (host bar above is window chrome, not guest content)%s", (unsigned long long)shown->checksum, st.offscreen ? "  [O toggles GOP / offscreen]" : "");
   TextOutA(dc, 8, 42, sum, int(strlen(sum)));
   SetTextColor(dc, RGB(140, 200, 140));
-  const char *help = "Remote (original firmware input path): 0-9 digits (verified)  M menu, arrows, Enter OK (behavioural)  Esc exit, I info (candidates)  S source, P power UNMAPPED  |  O toggles offscreen inspector";
+  const char *help = "Remote (original firmware input path): 0-9 digits (verified)  M menu, arrows, Enter OK (behavioural)  Esc exit, I info (candidates)  F1 AV1 F2 S-Video F3 YPbPr F4 VGA F5 HDMI1 (direct source keys, behavioural)  S source, P power UNMAPPED  |  O toggles offscreen inspector";
   TextOutA(dc, 8, 60, help, int(strlen(help)));
   RECT area{0, kBar, r.right, r.bottom};
   HBRUSH back = CreateSolidBrush(RGB(20, 20, 20)); FillRect(dc, &area, back); DeleteObject(back);
@@ -131,6 +131,8 @@ LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM a, LPARAM b) {
       case 'M': function = "MENU"; break;   case 'S': function = "SOURCE"; break;  case VK_ESCAPE: function = "EXIT"; break;
       case VK_RETURN: function = "OK"; break;  case VK_UP: function = "UP"; break;  case VK_DOWN: function = "DOWN"; break;
       case VK_LEFT: function = "LEFT"; break;  case VK_RIGHT: function = "RIGHT"; break;  case 'P': function = "POWER"; break;  case 'I': function = "INFO"; break;
+      case VK_F1: function = "SOURCE_AV1"; break;  case VK_F2: function = "SOURCE_SVIDEO"; break;  case VK_F3: function = "SOURCE_YPBPR"; break;
+      case VK_F4: function = "SOURCE_VGA"; break;  case VK_F5: function = "SOURCE_HDMI1"; break;
       default: break;
     }
     static char digitName[] = "DIGIT_0";   // digits are VERIFIED functions (original control flow, see docs/ir-input-path.md)

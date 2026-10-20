@@ -22,3 +22,9 @@ INFO	0x16	CANDIDATE: app 0x1b; closes the menu and shows OSD 3 (the bottom sourc
 MUTE	0x0F	BEHAVIOURAL: app 0x1a; closes the menu and shows OSD 14 with the crossed-out speaker icon - run kb4/u0f (frame crop in evidence/menu-diagnostic/)
 SLEEP	0x17	BEHAVIOURAL: app 0x25; shows OSD 14 with a moon-and-star icon - run kb3/u17
 UP	0x0B	BEHAVIOURAL: app 0x07 (stub jumps to 8046A984, the arrow-key class path); with the menu open after one DOWN the highlight returns to the first item (frame identical to the post-MENU frame) - run kb6/u0b
+
+SOURCE_AV1	0x4E	BEHAVIOURAL: app 0x62; direct source key, original 8048710C(id 7) shows the source banner "AV 1" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE_SVIDEO	0xF3	BEHAVIOURAL: app 0x63; direct source key, original 8048710C(id 9) shows the source banner "S-Video" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE_YPBPR	0xEF	BEHAVIOURAL: app 0x5f; direct source key, original 8048710C(id 3) shows the source banner "YPBPR" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE_VGA	0xF5	BEHAVIOURAL: app 0x60; direct source key, original 8048710C(id 4) shows the source banner "VGA" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE_HDMI1	0xF7	BEHAVIOURAL: app 0x61; direct source key, original 8048710C(id 5) shows the source banner "HDMI1" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
