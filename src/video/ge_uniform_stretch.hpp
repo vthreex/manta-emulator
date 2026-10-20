@@ -66,6 +66,11 @@ struct GeUniformStretch {
     p.empty = cl > cr || ct > cb || p.left > p.right || p.top > p.bottom;
     if (model == Alpha::AlphaBit && !(word & 0x8000)) p.empty = true;   // transparent source: no write
     p.pixel = model == Alpha::OpaqueSource ? uint16_t(0x8000 | (word & 0x7fff)) : word;
+    if (!p.empty && nearestNonUniform && uint64_t(p.right + 1) * 2 > p.pitch && p.pitch >= 2 * (p.left + 1)) {
+      // HYPOTHESIS P1 (nearest model only): columns beyond the destination pitch are not written (the rectangle is clamped to the pitch). The original ZUI's
+      // selection-bar draw programs destination x 65..189 into a 188-pixel (376-byte) pitch; wrap-around into the next row is not assumed.
+      p.right = p.pitch / 2 - 1;
+    }
     if (!p.empty) {
       if (uint64_t(p.right + 1) * 2 > p.pitch) throw std::runtime_error("GE uniform stretch exceeds programmed pitch");
       uint64_t end = uint64_t(p.destination) + uint64_t(p.bottom) * p.pitch + uint64_t(p.right + 1) * 2;

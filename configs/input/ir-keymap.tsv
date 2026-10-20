@@ -17,3 +17,7 @@ DOWN	0x0E	BEHAVIOURAL: app 0x0B; with the menu open the highlight moves one item
 LEFT	0x10	BEHAVIOURAL: app 0x0C; with the menu open the page tab moves left (Picture -> Lock, wrapping because the antenna tab is disabled) - run m2
 RIGHT	0x11	BEHAVIOURAL: app 0x0F; with the menu open the page tab moves right (Picture -> Sound -> Setup, Lock -> Picture) - runs m2/m3
 OK	0x0D	BEHAVIOURAL: app 0x0D; with the menu open on Picture it opens the item panel (rows with slider bars) - run m2
+EXIT	0x20	CANDIDATE: app 0x09; with the menu open the original code hides OSD 1 and shows OSD 2 (the NO SIGNAL screen) about 2.4M dispatches after the key - run m4; only one raw byte tested in that position per run, name is behavioural
+INFO	0x16	CANDIDATE: app 0x1b; closes the menu and shows OSD 3 (the bottom source/info bar) - runs m5 and kb3/u16; could equally be a SOURCE-info key
+MUTE	0x0F	BEHAVIOURAL: app 0x1a; closes the menu and shows OSD 14 with the crossed-out speaker icon - run kb4/u0f (frame crop in evidence/menu-diagnostic/)
+SLEEP	0x17	BEHAVIOURAL: app 0x25; shows OSD 14 with a moon-and-star icon - run kb3/u17

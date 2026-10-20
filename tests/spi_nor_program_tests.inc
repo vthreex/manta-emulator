@@ -279,6 +279,11 @@ void geNearestStretchTests(){
   require(px(30,10)!=0xeeee && px(0,0)!=0xeeee && px(10,40)!=0xeeee,"samples that are not magenta are written");
   regs[0x1c]={1,0xffff};rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read,true);});   // key mode bit unknown
   regs[0x1c]={0,0xffff};regs[0x00]={7,0xffff};
+  // Hypothesis P1: a destination rectangle wider than the destination pitch is clamped to the pitch instead of refused (nearest model only).
+  regs[0x33]={200,0xffff};
+  auto clamped=GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read,true);
+  require(clamped.right==99 && clamped.samples.size()==100*100,"columns beyond the 200-byte pitch are not sampled or written (hypothesis P1)");
+  regs[0x33]={600,0xffff};
   regs[0x5e]={0x1001,0xffff};rejects([&]{GeUniformStretch::decode(GeStretchRequest::decode(0x8040,get),GeUniformStretch::Alpha::OpaqueSource,read,true);});   // non-zero phase stays guarded
 }
 void geI2GlyphTests(){
