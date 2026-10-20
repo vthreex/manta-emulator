@@ -559,7 +559,7 @@ public:
   }
   void addHypothesisBits(uint32_t address, unsigned mask, unsigned value, int scBank = -1, bool rmw = false, bool init = false) {
     if (!((address >= 0x1f200000u && address < 0x1f400000u) || address == 0x1f001cd0u) || !(mask & 255) || (value & ~mask & 255)) throw std::runtime_error("invalid bit hypothesis");
-    for (auto& h : hypothesisBits_) if (h.address == address) throw std::runtime_error("duplicate bit hypothesis");
+    for (auto& h : hypothesisBits_) if (h.address == address && h.scBank == scBank && (h.mask & mask)) throw std::runtime_error("duplicate bit hypothesis");   // disjoint masks of one byte may be bracketed separately
     if (scBank >= 0 && (address < 0x1f205e04u || address >= 0x1f206000u)) throw std::runtime_error("scaler bank scope needs an address inside BF205E04..");
     hypothesisBits_.push_back({address, uint8_t(mask), uint8_t(value), 0, scBank, rmw, init});
     if (init) {   // EXPLORATORY reset value: the MASK bits start known with VALUE; the guest's own writes replace them as for any register

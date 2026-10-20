@@ -29,6 +29,22 @@ Raws `0x15` / `0x1C` open the volume bar (level "15"). Evidence: `evidence/ui-st
 
 Initial DTV (id 28) is not reachable from the direct keys.
 
+## USB, DTV and ATV (selected through the Input Source list)
+
+| source | id | result | blocker / needs |
+| --- | --- | --- | --- |
+| **USB** | 10 | **reaches the original media player**: "No Device", PHOTO / MUSIC / MOVIE / TEXT (OSD `0x1A`); RIGHT/LEFT move the selection (PHOTO -> MUSIC); UP/DOWN/OK/MENU draw nothing with no device | audio `1F225DD8`, `1F225CBC` = 0 (+rmw), `MOVZ` support in the RMW prover (opt-in). EXIT from the player stops in the scaler restore chain: `1F205E78@bank1`, `1F205E10@bank0x1A`, `1F205F80@bank0x19`, then a rewrite of a bracketed byte at `805F887C` |
+| DTV | 0 | no hardware stop; the list stays up: `805DB6C0..805DB6D8` writes `0x78/0x56` to the mailbox pair `1F206728/29` and polls until a coprocessor changes it (DVB-T demodulator handshake) | needs the demodulator/mailbox peer |
+| ATV | 1 | `805014C8`: AFEC `BF206BA8` bit 4 reset value (checkpoint with `+init`), then VIF carrier lock | see above |
+
+Findings behind this: `80544D74` is a TSP helper (`LBU / ANDI / ORI / MOVZ / SB` on TSP+0x2844 bit 0); with `--exploratory-provenance-extensions` the RMW prover now
+accepts `MOVZ/MOVN` whose condition register is independent (the chosen operand's bit dependencies carry over). The USB player needs no USB device model to show
+"No Device"; real device content (mass storage / FAT) is not modeled. Evidence: `evidence/ui-states-session10/10_usb_player_no_device.png`,
+`11_usb_player_music_selected.png`, `tests/usb_player_regression.py`.
+
+Hypothesis plumbing: same-address hypotheses may now coexist when their masks are disjoint (or their scaler banks differ); a restored snapshot keeps every
+process-configured hypothesis keyed by address + bank + mask.
+
 ## What each blocker is (all from the original code / provenance, none supplied by default)
 
 * **Identity read-write-back** `80504374` (`LBU/ANDI FF/SB` of AFEC `3C4D`): the unknown byte is written back unchanged. Strict mode stops there. Accepted only

@@ -174,9 +174,9 @@ void ioClass(Ar& a, Riu& r) {
   if (a.loading())
     for (auto& c : configured) {
       bool have = false;
-      for (auto& h : r.hypothesisBits_) have = have || h.address == c.address;
+      for (auto& h : r.hypothesisBits_) have = have || (h.address == c.address && h.scBank == c.scBank && h.mask == c.mask);
       if (!have) { c.reads = 0; r.hypothesisBits_.push_back(c); }
-      else for (auto& h : r.hypothesisBits_) if (h.address == c.address) { h.rmw = c.rmw; h.init = c.init; }
+      else for (auto& h : r.hypothesisBits_) if (h.address == c.address && h.scBank == c.scBank && h.mask == c.mask) { h.rmw = c.rmw; h.init = c.init; }
     }
   a(r.exploratoryAfecIndirect_, r.afecIndirectValue_, r.afecIndirectReads_, r.afecIndirectWrites_, r.avdNoiseReads_, r.avdHtotalReads_, r.vifCrLockReads_,
     r.exploratoryAvdNoSyncEvents_, r.diagnosticAvd11dbBit7_, r.exploratoryVifRevision_, r.vifRevisionReads_, r.vifZeroInput_, r.vifZeroInputReads_,

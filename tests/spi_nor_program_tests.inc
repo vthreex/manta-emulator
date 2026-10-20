@@ -469,8 +469,10 @@ void hypothesisBitsTests(){
   try{r.write(0x1f206f5d,1,0,0x80528000,0xff,2);}catch(const std::exception&){rejected=true;}
   require(rejected,"guest writes cannot manufacture a hardware-owned status byte");
   rejected=false;
-  try{r.addHypothesisBits(0x1f206f5d,0x01,0x01);}catch(const std::exception&){rejected=true;}
-  require(rejected,"duplicate hypotheses are refused");
+  try{r.addHypothesisBits(0x1f206f5d,0x02,0x02);}catch(const std::exception&){rejected=true;}
+  require(rejected,"overlapping hypotheses on one byte are refused");
+  r.addHypothesisBits(0x1f206f5d,0x01,0x01);
+  require((r.knownBits(0x1f206f5d,1)&0x53)==0x53,"a disjoint mask of the same byte may be bracketed separately");
   rejected=false;
   try{r.addHypothesisBits(0x1f206f5e,0x01,0x02);}catch(const std::exception&){rejected=true;}
   require(rejected,"a value outside its mask is refused");

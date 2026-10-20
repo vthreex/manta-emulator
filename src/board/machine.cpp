@@ -1672,6 +1672,11 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
                !dependent[rs] && !dependent[rt] && !dependent[(w >> 11) & 31]) {
       auto rd = (w >> 11) & 31;
       if (rd && ((w & 63) == 10 ? values[rt] == 0 : values[rt] != 0)) values[rd] = values[rs];
+    } else if (options_.provenanceExtensions && op == 0 && ((w & 63) == 10 || (w & 63) == 11) && !dependent[rt] && ((w >> 11) & 31) != 0) {
+      // EXPLORATORY (opt-in): MOVZ/MOVN whose condition register is independent selects, deterministically, either the source or the old destination;
+      // the chosen register's bit dependencies carry over unchanged (no sampled bit is compared, so nothing is decided from it).
+      auto rd = (w >> 11) & 31;
+      if ((w & 63) == 10 ? values[rt] == 0 : values[rt] != 0) { values[rd] = values[rs]; dependent[rd] = dependent[rs]; }
     } else if (op == 31 && (w & 63) == 0) {
       // Original805EE830: LBU a0; EXT a1,a2,16,8; ANDI a0,BF; SB.
       // The independent EXT is not a use of the sampled control byte.
