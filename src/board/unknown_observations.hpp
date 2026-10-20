@@ -1,6 +1,7 @@
 #pragma once
 #include "snapshot/archive.hpp"
 #include <array>
+#include <cstring>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -33,6 +34,14 @@ public:
   }
   bool registerUnknown(unsigned reg) const { return registers_.at(reg); }
   std::string observe(uint32_t pc, uint32_t w, const std::function<uint32_t(unsigned)> &reg) {
+    // Fast path: no register holds an unknown observation (then its timing flag and clock origin are clear as well), so a non-memory
+    // instruction can neither consume nor produce one. Loads and stores always take the full path (RAM bytes may be unknown).
+    {
+      uint64_t any[4]; static_assert(sizeof(any) == sizeof(registers_), "bool array layout");
+      std::memcpy(any, registers_.data(), sizeof(any));
+      unsigned fop = w >> 26;
+      if (!(any[0] | any[1] | any[2] | any[3]) && (fop < 32 || fop == 47 || fop == 51)) return {};
+    }
     // Exact identity copies in the stock clock snapshot routine. Other masks,
     // arithmetic, branch conditions and MMIO stores still reject the data.
     if ((pc == 0x805fd444 && w == 0x311100ff && clockOrigins_[8]) ||

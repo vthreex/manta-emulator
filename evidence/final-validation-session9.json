@@ -1,0 +1,59 @@
+{
+ "binary": "work/build/manta_final.exe",
+ "binary_sha256": "a7cf032d1b59d573ad114fb2441229b840eadf82995e1a8a823af1dddc8c959a",
+ "native_checks": 1987,
+ "python_suites": {
+  "diagnostic_options": "PASS (2 s)",
+  "ge_bitblt_option": "PASS (1 s)",
+  "ge_fill_option": "PASS (1 s)",
+  "immutable_input": "PASS (1 s)",
+  "clock_profile": "PASS (7 s)",
+  "zui_flow": "PASS (2 s)",
+  "vif_agc": "PASS (1 s)",
+  "ge_clear": "PASS (8 s)",
+  "window_preview": "PASS (3 s)",
+  "pm_power_boot": "PASS (1 s)",
+  "ir_keymap": "PASS (0 s)",
+  "shutdown": "PASS (10 s)",
+  "snapshot": "PASS (14 s)",
+  "firmware": "PASS (201 s)",
+  "display": "PASS (287 s)"
+ },
+ "strict_replay": {
+  "trace_events": 6592741,
+  "reference_fields": 289,
+  "differing_reference_fields": [],
+  "coverage_identical": true,
+  "pm51_history_identical": true,
+  "new_observation_only_fields": [
+   "flash_overlay_sectors",
+   "flash_overlay_sha256",
+   "flash_stock_sha256",
+   "pm_ir_fifo_received",
+   "spi_nor_erases",
+   "spi_nor_ignored_writes",
+   "spi_nor_programmed_bytes",
+   "spi_nor_programs",
+   "spi_nor_zero_to_one_requests"
+  ]
+ },
+ "snapshot": {
+  "schema": 1,
+  "no_signal_bytes": 27430694,
+  "menu_bytes": 28608770,
+  "load_seconds_process": 1.08,
+  "save_extra_seconds": 0.6,
+  "cold_boot_minutes": 15
+ },
+ "speed": {
+  "segment": "35M dispatches resumed from NO SIGNAL checkpoint",
+  "before_seconds": 16.2,
+  "after_seconds": 11.0,
+  "summary_and_state_digest_identical": true
+ },
+ "power_bracket": {
+  "raw": "0x0a",
+  "bit6_0_and_1": "both stop at 80547324 reading 1F002030 (unmodeled)"
+ },
+ "not_run": "probe-only suites needing extra images; TSP/OpenRISC reference fixtures remain stale and were not regenerated"
+}

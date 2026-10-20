@@ -128,6 +128,7 @@ void ioClass(Ar& a, PreservedBits& p) {
     }
   }
   a(p.started_);
+  if (a.loading()) p.restored();
 }
 void ioClass(Ar& a, AudioNoAck& n) { a.tag("AudioNoAck"); a(n.pending_, n.branch_, n.samples, n.comparisons, n.timeouts, n.returns); }
 void ioClass(Ar& a, PmActivityScenario& s) { a.tag("PmActivity"); a(s.stage_, s.samples, s.predicates, s.branches); }

@@ -12,10 +12,18 @@
 #include <thread>
 #include <chrono>
 namespace manta {
+static void appendHex(std::string &out, uint64_t n) {   // "0x" + lowercase hex without padding (same text as the former ostream formatting)
+  char buf[18];
+  int i = 18;
+  do { buf[--i] = "0123456789abcdef"[n & 15]; n >>= 4; } while (n);
+  out += "0x";
+  out.append(buf + i, size_t(18 - i));
+}
 static std::string hex(uint64_t n) {
-  std::ostringstream s;
-  s << "0x" << std::hex << n;
-  return s.str();
+  std::string s;
+  s.reserve(18);
+  appendHex(s, n);
+  return s;
 }
 Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options_(o), virtualTime_(o.exploratoryCpi) {
   if((!o.opaqueReadPolicy.empty() && (!o.symbolicInit || !o.deferDiagnosticReads)) ||
@@ -488,14 +496,19 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
      !(options_.pauseMmio && options_.pauseMmio==a)){
     ++suppressedOrQmemTrace_;return;
   }
-  std::ostringstream s;
-  s << "{\"tick\":" << dispatches_ << ",\"pc\":\"" << hex(cpu_.reg(UC_MIPS_REG_PC))
-    << "\",\"kind\":\"" << k << "\",\"address\":\"" << hex(a) << "\",\"width\":" << n
-    << ",\"value\":\"" << hex(v) << "\",\"ra\":\"" << hex(cpu_.reg(UC_MIPS_REG_RA))
-    << "\",\"sp\":\"" << hex(cpu_.reg(UC_MIPS_REG_SP)) << "\",\"detail\":\"" << *recordedDetail << "\"";
-  if(virtualTime_.cpi()!=1)s << ",\"virtual_cpu_cycles\":" << virtualTime_.cycles(dispatches_);
-  s << '}';
-  auto line = s.str();
+  std::string line;
+  line.reserve(160 + k.size() + recordedDetail->size());
+  line += "{\"tick\":"; line += std::to_string(dispatches_);
+  line += ",\"pc\":\""; appendHex(line, cpu_.reg(UC_MIPS_REG_PC));
+  line += "\",\"kind\":\""; line += k;
+  line += "\",\"address\":\""; appendHex(line, a);
+  line += "\",\"width\":"; line += std::to_string(n);
+  line += ",\"value\":\""; appendHex(line, v);
+  line += "\",\"ra\":\""; appendHex(line, cpu_.reg(UC_MIPS_REG_RA));
+  line += "\",\"sp\":\""; appendHex(line, cpu_.reg(UC_MIPS_REG_SP));
+  line += "\",\"detail\":\""; line += *recordedDetail; line += "\"";
+  if(virtualTime_.cpi()!=1){ line += ",\"virtual_cpu_cycles\":"; line += std::to_string(virtualTime_.cycles(dispatches_)); }
+  line += '}';
   if ((k == "read" || k == "write") && a >= 0x1f203e00 && a < 0x1f204000)
     ++gopEvents_;
   if ((k == "read" || k == "write") && a >= 0x1f205000 && a < 0x1f205200)

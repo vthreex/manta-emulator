@@ -1,6 +1,7 @@
 #pragma once
 #include "snapshot/archive.hpp"
 #include <array>
+#include <bitset>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -17,7 +18,14 @@ class PreservedBits {
   using Value=std::array<Bit,32>;
   std::array<Value,32> registers_{};
   std::map<uint32_t,std::array<Bit,8>> memory_;
+  // Negative filter in front of memory_: a set bit means a 4 KB page (hashed) MAY hold an entry; a clear bit proves it holds none. Never cleared.
+  std::bitset<65536> pageMaybe_;
+  static size_t pageSlot(uint32_t a){return (a>>12)&0xffff;}
+  bool maybeUnknown(uint32_t a)const{return pageMaybe_[pageSlot(a)];}
+  void noteUnknown(uint32_t a){pageMaybe_[pageSlot(a)]=true;}
   bool started_=false;
+  uint32_t live_=0;   // bit r set when registers_[r] holds any unknown bit (fast path when zero)
+  void refreshLive(){live_=0;for(unsigned r=0;r<32;++r)if(unknown(registers_[r]))live_|=1u<<r;}
 public:
   static uint32_t backingAddress(uint32_t a) {
     if(a>=0x40000000 && a<0x48000000)return 0x08000000+a-0x40000000;
@@ -31,8 +39,11 @@ public:
     started_=true;
     auto &v=registers_.at(rt); v={};
     for(unsigned i=0;i<width*8;++i) if(!(known&(uint32_t(1)<<i))) v[i]={key(i/8),uint8_t(i%8)};
+    if(unknown(v))live_|=1u<<rt; else live_&=~(1u<<rt);
   }
+  void restored(){refreshLive();pageMaybe_.reset();for(auto &kv:memory_)noteUnknown(kv.first);}   // after the snapshot loader rewrote registers_
   uint32_t mask(unsigned rt) const {
+    if(!(live_>>rt&1))return 0;
     uint32_t m=0; for(unsigned i=0;i<32;++i) if(registers_.at(rt)[i].byte) m|=uint32_t(1)<<i;
     return m;
   }
@@ -40,11 +51,11 @@ public:
   void markMemoryUnknown(uint32_t address,uint32_t key){
     started_=true;
     std::array<Bit,8> v{};for(unsigned bit=0;bit<8;++bit)v[bit]={key,uint8_t(bit)};
-    memory_[backingAddress(address)]=v;
+    memory_[backingAddress(address)]=v;noteUnknown(backingAddress(address));
   }
-  bool memoryUnknown(uint32_t address) const { return memory_.contains(backingAddress(address)); }
+  bool memoryUnknown(uint32_t address) const { return maybeUnknown(backingAddress(address)) && memory_.contains(backingAddress(address)); }
   void overwriteKnownMemory(uint32_t address,size_t size) {
-    for(size_t i=0;i<size;++i)memory_.erase(backingAddress(address+uint32_t(i)));
+    for(size_t i=0;i<size;++i){auto k=backingAddress(address+uint32_t(i));if(maybeUnknown(k))memory_.erase(k);}
   }
   bool exactByteOrigin(unsigned rt,uint32_t byte)const {
     if(mask(rt)!=255)return false;
@@ -67,9 +78,11 @@ public:
       const std::function<void(uint32_t,unsigned,uint32_t)> &preserveWrite) {
     if(!started_)return {};
     unsigned op=w>>26,rs=(w>>21)&31,rt=(w>>16)&31,rd=(w>>11)&31,fn=w&63,shift=(w>>6)&31;
-    auto use=[&](unsigned r){return unknown(registers_[r]);};
+    // No register holds an unknown bit: every instruction below except EXT and loads/stores leaves the state unchanged and cannot reject.
+    if(!live_ && op!=31 && op!=35 && op!=36 && op!=37 && op!=40 && op!=41 && op!=43)return {};
+    auto use=[&](unsigned r){return (live_>>r&1)!=0;};
     auto reject=[](){return std::string("unknown preserved register bit affects guest decision/address/device");};
-    auto assign=[&](unsigned dest,const Value &v){if(dest)registers_[dest]=v;};
+    auto assign=[&](unsigned dest,const Value &v){if(dest){registers_[dest]=v;if(unknown(v))live_|=1u<<dest;else live_&=~(1u<<dest);}};
     Value result{};
     if(op==31 && fn==0) {
       unsigned length=rd+1;
@@ -153,12 +166,12 @@ public:
           for(unsigned byte=0;byte<width;++byte) {
             std::array<Bit,8> v{};
             for(unsigned bit=0;bit<8;++bit) v[bit]=registers_[rt][byte*8+bit];
-            if(m&(255u<<(byte*8)))memory_[a+byte]=v;
-            else memory_.erase(a+byte);
+            if(m&(255u<<(byte*8))){memory_[a+byte]=v;noteUnknown(a+byte);}
+            else if(maybeUnknown(a+byte))memory_.erase(a+byte);
           }
         } else if(m)return reject();
       } else {
-        for(unsigned byte=0;byte<width;++byte) if(memory_.contains(a+byte))
+        for(unsigned byte=0;byte<width;++byte) if(maybeUnknown(a+byte) && memory_.contains(a+byte))
           for(unsigned bit=0;bit<8;++bit)result[byte*8+bit]=memory_.at(a+byte)[bit];
         assign(rt,result); // MMIO source is seeded separately after this dispatch
       }
@@ -188,7 +201,7 @@ public:
     else if(op==31){useRs=useRt=true;dest=(fn==32?rd:rt);}
     else {for(unsigned r=1;r<32;++r)if(use(r))return "unsupported instruction during preserved-bit provenance";}
     if((useRs&&use(rs)) || (useRt&&use(rt)))return reject();
-    if(dest>0)registers_[dest]={};
+    if(dest>0){registers_[dest]={};live_&=~(1u<<dest);}
     return {};
   }
 };
