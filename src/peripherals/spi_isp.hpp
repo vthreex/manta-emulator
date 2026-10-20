@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -10,6 +11,7 @@ namespace manta {
 // by 8053C19C..C250 and 8053C574..C910. Only observed read transactions are
 // implemented. Flash status protection bits and unsupported opcodes stop.
 class SpiIsp {
+  friend void ioClass(snap::Ar&, SpiIsp&);
   bool clockConfigured_ = false, enabled_ = false, trigger_ = false, readPending_ = false;
   uint64_t commandReady_ = 0, writeReady_ = 0, readReady_ = 0;
   uint32_t input_ = 0, inputKnown_ = 0;

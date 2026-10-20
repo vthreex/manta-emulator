@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <vector>
 #include <stdexcept>
@@ -9,6 +10,7 @@ namespace manta {
 // the same transaction at a different register base. No MCU response is
 // synthesized. The 16-bit address is a port encoding, not a capacity claim.
 class VdMcuProgram {
+  friend void ioClass(snap::Ar&, VdMcuProgram&);
   int hold_=-1, control_=-1, low_=-1, high_=-1, execution_=-1;
   uint16_t cursor_=0;
   std::vector<uint8_t> code_,valid_;

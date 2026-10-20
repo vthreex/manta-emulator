@@ -538,6 +538,20 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
 }
 void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
+  if (m.replayingTlb_) return;   // save-state TLB replay executes synthetic MIPS code: no board side effects
+  // Save state: capture BEFORE this instruction is dispatched so a resumed run re-enters exactly here.
+  if (!m.options_.saveState.empty() && !m.snapshotWritten_ && m.dispatches_ >= m.options_.saveStateAt) {
+    if (!m.snapshotFirstWanted_) m.snapshotFirstWanted_ = m.dispatches_ + 1;
+    if (m.snapshotBoundaryOk(uint32_t(a))) {
+      try { m.writeSnapshot(uint32_t(a)); }
+      catch (const std::exception& e) { m.snapshotWritten_ = true; m.stop(std::string("save-state failed: ") + e.what()); return; }
+      m.snapshotWritten_ = true;
+      if (m.options_.saveStateStop) { m.stop("save-state written; run stopped"); return; }
+    } else if (++m.snapshotDeferrals_ > m.options_.saveStateMaxDefer) {
+      m.stop("save-state: no safe instruction boundary within the deferral limit");
+      return;
+    }
+  }
   ++m.dispatches_;
   if((!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty()) && (m.dispatches_ & 0x3fff)==0)m.serviceVirtualRemote();
   if(!m.options_.historyPcs.empty() && a>=0x80000000u && a<0x81000000u)
@@ -713,9 +727,12 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   }else m.cpu_.read(observedPhysical,&w,4);
   if ((w >> 26) == 16 && ((w >> 21) & 31) == 4 &&
       (((w >> 11) & 31) <= 6 || ((w >> 11) & 31) == 10)) {
+    if ((w & 7) == 0) m.cp0Shadow_[(w >> 11) & 31] = m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31));
     m.event("cp0_mmu_write", (w >> 11) & 31, 4, m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31)),
             "original guest MTC0 MMU register; select " + std::to_string(w & 7));
   }
+  if (w == 0x42000002) m.tlbInstalls_.push_back({m.cp0Shadow_[0], m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3]});
+  if (w == 0x42000006) m.tlbwrSeen_ = true;
   if (w == 0x42000002 || w == 0x42000006)
     m.event("guest_tlb_write", uint32_t(a), 4, w, "original architectural TLB entry installation");
   if (a == 0x8053dbe0) {
@@ -1786,7 +1803,11 @@ int Msd309Machine::run() {
           "DIAGNOSTIC host entry transfer after real early register writes; "
           "MIU completion and stage copy bypassed");
   }
-  auto e = cpu_.run(options_.stage2 ? 0x81000000 : 0xbfc00000, options_.limit);
+  if (!options_.loadState.empty()) restoreSnapshot(options_.loadState);
+  if (!options_.saveState.empty() && options_.loadState.empty() && (options_.trace.empty() == false || options_.replay.empty() == false))
+    throw std::runtime_error("save-state cannot be combined with --record-trace/--replay-trace");
+  auto e = resumed_ ? cpu_.run(resumePc_, options_.limit > dispatches_ ? options_.limit - dispatches_ : 1)
+                    : cpu_.run(options_.stage2 ? 0x81000000 : 0xbfc00000, options_.limit);
   while (!stopped_ && joinResume_) {
     // DIAGNOSTIC HTotal join: the hook stored the resume PC and stopped Unicorn.
     joinResume_ = false;
@@ -2189,6 +2210,17 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryAvdNoise>=0)s<<",\n  \"exploratory_avd_noise_constant\": "<<options_.exploratoryAvdNoise<<",\n  \"exploratory_avd_noise_reads\": "<<riu_.avdNoiseReads();
   if(options_.exploratoryAvdHtotal>=0)s<<",\n  \"exploratory_avd_htotal_constant\": "<<options_.exploratoryAvdHtotal<<",\n  \"exploratory_avd_htotal_reads\": "<<riu_.avdHtotalReads();
   if(!riu_.guardedStretchDetail().empty())s<<",\n  \"ge_guarded_stretch_request\": \""<<riu_.guardedStretchDetail()<<"\"";
+  if(options_.stateDigest){
+    auto sections=const_cast<Msd309Machine*>(this)->captureSections(cpu_.reg(UC_MIPS_REG_PC));
+    std::string all;
+    s<<",\n  \"state_digest\": {";
+    bool firstSection=true;
+    for(auto& sec:sections){
+      auto d=sha256(sec.bytes);all+=sec.name+d;
+      s<<(firstSection?"":", ")<<"\""<<sec.name<<"\": \""<<d<<"\"";firstSection=false;
+    }
+    s<<", \"overall\": \""<<sha256(std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(all.data()),all.size()))<<"\"}";
+  }
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
   if(options_.exploratoryGeGradientFill)s<<",\n  \"exploratory_ge_gradient_fill\": true,\n  \"ge_gradient_fills_retired\": "<<riu_.geGradientFills;

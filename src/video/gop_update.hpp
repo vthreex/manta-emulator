@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <optional>
 namespace manta {
@@ -6,6 +7,7 @@ namespace manta {
 // force0200. Global-bank scope and output-sync latch domain are explicit
 // exploratory hypotheses; no reset ACK/IRQ value is supplied.
 class GopUpdate {
+  friend void ioClass(snap::Ar&, GopUpdate&);
   bool normalHigh_=false,forceHigh_=false,pending_=false;
   uint16_t known_=0,busy_=0;
   std::optional<uint64_t> requestedEdge_;

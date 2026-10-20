@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <map>
@@ -9,6 +10,7 @@ namespace manta {
 // after the guest caches them in RAM. No branch or device command may consume
 // them. This deliberately stops at the first use rather than choosing a value.
 class UnknownObservations {
+  friend void ioClass(snap::Ar&, UnknownObservations&);
   std::array<bool, 32> registers_{};
   std::array<bool, 32> timingRegisters_{};
   std::array<uint32_t,32> clockOrigins_{};

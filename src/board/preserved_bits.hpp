@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <functional>
@@ -11,6 +12,7 @@ namespace manta {
 // identity can preserve it. Decisions requiring unknown bits, addresses and
 // new device uses reject; a known unequal bit may prove an equality predicate.
 class PreservedBits {
+  friend void ioClass(snap::Ar&, PreservedBits&);
   struct Bit { uint32_t byte=0; uint8_t bit=0; bool inverted=false; bool operator==(const Bit &) const=default; };
   using Value=std::array<Bit,32>;
   std::array<Value,32> registers_{};

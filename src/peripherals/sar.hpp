@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <optional>
 #include <cstdint>
@@ -7,6 +8,7 @@ namespace manta {
 // Eight-bit SAR result interface identified in original byte readers.
 // Input/reference voltage and conversion latency are explicit fixtures.
 class SarAdc {
+  friend void ioClass(snap::Ar&, SarAdc&);
   std::array<std::optional<unsigned>,8> inputs_{};
   std::array<std::optional<uint8_t>,8> result_{};
   bool running_=false;uint64_t due_=0,period_=0,conversions_=0;

@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <vector>
 #include <stdexcept>
@@ -6,6 +7,7 @@ namespace manta {
 // Actual 805047D4 upload/readback sequence, independently matching the
 // related HAL_AVD_VDMCU_LoadDSP. This is a programming port, not a ready MCU.
 class AvdMcuProgram {
+  friend void ioClass(snap::Ar&, AvdMcuProgram&);
   int hold_=-1,mode_=-1,low_=-1,high_=-1;
   uint16_t cursor_=0;
   std::vector<uint8_t> code_=std::vector<uint8_t>(65536),valid_=std::vector<uint8_t>(65536);

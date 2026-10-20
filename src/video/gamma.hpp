@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <stdexcept>
@@ -7,6 +8,7 @@ namespace manta {
 // address, 12-bit samples, busy until the programmed RAM write completes.
 // This is gamma RAM, not an OSD renderer. Deadline is provisional virtual time.
 class GammaRam {
+  friend void ioClass(snap::Ar&, GammaRam&);
   uint8_t busy_ = 0;
   uint16_t address_ = 0, sample_ = 0;
   unsigned channel_ = 0;

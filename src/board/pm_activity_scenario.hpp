@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 namespace manta {
 // Explicit single-observation path constraint, not a PM register/reset model.
@@ -7,6 +8,7 @@ namespace manta {
 // Only the SHA-verified getter's boolean predicate may become known under
 // the user-selected assumption that this observation is not RTC resume.
 class PmActivityScenario {
+  friend void ioClass(snap::Ar&, PmActivityScenario&);
   unsigned stage_=0;
 public:
   uint64_t samples=0,predicates=0,branches=0;

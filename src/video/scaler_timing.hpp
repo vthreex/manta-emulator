@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <optional>
 #include <stdexcept>
@@ -14,6 +15,7 @@ struct PanelTiming {
 // explicit assumptions. Never active in strict mode. One dispatch is one
 // tick of the existing 312 MHz virtual timebase, not a physical CPU estimate.
 class ScalerTiming {
+  friend void ioClass(snap::Ar&, ScalerTiming&);
   std::optional<PanelTiming> timing_;
   uint64_t origin_=0, hz_=0;
   bool enabled_=false;

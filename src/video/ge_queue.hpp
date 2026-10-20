@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -9,6 +10,7 @@ namespace manta {
 // execution space (3..7), and busy (0). Both empty counts are 16.
 // Stage topology and latency are experimental; no physical reset is implied.
 class GeQueue {
+  friend void ioClass(snap::Ar&, GeQueue&);
   struct Entry { uint16_t reg, value; uint64_t due; std::function<void()> raster; };
   std::deque<Entry> submission_, execution_;
   bool initialized_=false, running_=false;
@@ -20,6 +22,7 @@ public:
   static bool aperture(uint32_t a) { return a>=0x1f205000 && a<0x1f205200; }
   void exploratoryReset() { initialized_=running_=true; submission_.clear(); execution_.clear(); }
   bool initialized() const { return initialized_; }
+  bool idle() const { return submission_.empty() && execution_.empty(); }
   void clock(bool enabled) { running_=enabled; }
   void advance(uint64_t tick) {
     if(tick<tick_)throw std::runtime_error("GE virtual time moved backwards");

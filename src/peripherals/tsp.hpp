@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <deque>
 #include <optional>
@@ -12,6 +13,7 @@ namespace manta {
 // coupling to engine-control bit1 are a separate, explicitly selected experiment.
 // File-in descriptors may be accepted, but no unimplemented TS DMA is retired.
 class TspQueue {
+  friend void ioClass(snap::Ar&, TspQueue&);
 public:
   struct FileIn { uint32_t address,size; uint16_t control; uint64_t tick; };
   static constexpr unsigned capacity=16;
@@ -62,6 +64,7 @@ public:
 // source in 64-byte units and NUM in four-byte units. Payload is copied into
 // internal QMEM; untouched SRAM bytes remain unknown. Bus latency provisional.
 class TspDownload {
+  friend void ioClass(snap::Ar&, TspDownload&);
   std::array<uint8_t,0x4000> qmem_{};
   std::array<bool,0x4000> valid_{};
   std::vector<uint8_t> payload_;

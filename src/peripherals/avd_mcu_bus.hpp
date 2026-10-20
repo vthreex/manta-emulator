@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include "cpu/vd_mcu.hpp"
 #include <array>
 #include <map>
@@ -7,6 +8,7 @@ namespace manta {
 // 11DC..11DF host-assisted requests and original MIPS 35C0/35DC..35DF accesses.
 // No reset byte, idle mailbox, received signal or completion is initialized.
 class AvdMcuBus {
+  friend void ioClass(snap::Ar&, AvdMcuBus&);
   std::array<VdByte,256> ram_{};
   std::map<uint16_t,uint8_t> deferred_;
   bool deferStartup_=false;

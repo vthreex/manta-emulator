@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include "cpu/vd_mcu.hpp"
 #include <optional>
 namespace manta {
@@ -7,6 +8,7 @@ namespace manta {
 // NOT documented. This aggregate wiring is an explicitly configured hypothesis,
 // never a reset value or a status that advances on reads.
 class PmPowerGood {
+  friend void ioClass(snap::Ar&, PmPowerGood&);
   std::optional<bool> externalGood_;
 public:
   uint64_t transitions=0;

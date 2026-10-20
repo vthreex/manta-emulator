@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -9,6 +10,7 @@ namespace manta {
 // Command 82h reset/index coupling is an explicit experiment. Captures are
 // uninterpreted external records, never host-generated menu/key events.
 class IrDma {
+  friend void ioClass(snap::Ar&, IrDma&);
   std::optional<uint32_t> base_;
   unsigned capacity_=0,index_=0;uint64_t starts_=0,captures_=0;
   bool capturedSinceStart_=false;

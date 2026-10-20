@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <optional>
@@ -11,6 +12,7 @@ namespace manta {
 // reg43/44/45 carry five original coefficient bytes.
 // Initial idle state and 64-dispatch transfer delay are explicit experiments.
 class PqSram {
+  friend void ioClass(snap::Ar&, PqSram&);
   struct Transfer { unsigned plane,address; std::array<uint8_t,5> bytes; uint64_t ready; };
   bool idleKnown_=false;
   std::optional<Transfer> pending_;

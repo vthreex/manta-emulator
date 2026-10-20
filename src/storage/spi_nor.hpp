@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -13,6 +14,7 @@ enum class NorModel { W25Q64BV, MX25L6405D };
 enum class SpiUnknownInput { Stop, Deferred, AssumedPullUp, AssumedPullDown };
 struct SpiSample { uint8_t value = 0xa5, known = 0; };
 class SpiNor {
+  friend void ioClass(snap::Ar&, SpiNor&);
   std::vector<uint8_t> packet_;
   unsigned outputIndex_ = 0;
   bool selected_ = false, wel_ = false, asleep_ = false;

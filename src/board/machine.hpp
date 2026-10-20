@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include "video/gop_preview.hpp"
 #include "input/remote_queue.hpp"
 #include <memory>
@@ -126,6 +127,14 @@ struct Options {
   IrKeyMap irKeyMap;                            // function -> raw IR byte (evidence-labelled)
   std::vector<ScriptedKey> irScript;            // deterministic replay: inject at/after a dispatch count
   bool exploratoryPmIrRptLatch=false;           // HYPOTHESIS: RPT latches the popped entry's repeat flag
+  // Full-machine save state (see docs/save-state.md). saveState: write a snapshot at the first safe instruction boundary at or after dispatch
+  // saveStateAt; loadState: construct the machine normally (same options), then resume from the snapshot instead of the reset vector.
+  std::filesystem::path saveState, loadState;
+  bool stateDigest=false;        // add a per-section SHA-256 digest of the complete serialized machine state to the summary
+  uint64_t saveStateAt=0;
+  bool saveStateStop=false;      // stop the run right after the snapshot was written
+  uint64_t saveStateMaxDefer=200000000;   // give up (fail closed) when no safe boundary occurs this many dispatches after saveStateAt
+  std::string stateFingerprint;  // hash of the run configuration, set by main(); a snapshot only loads under the identical configuration
   std::vector<uint32_t> watchPcRegs;   // read-only probe: record registers/stack words at these original PCs
   std::filesystem::path trace, replay, summary, coverage, exportGopFrame;
   std::shared_ptr<GopPreviewStore> previewStore;   // DIAGNOSTIC GOP preview hand-off to the native window (filled on the emulator thread)
@@ -133,6 +142,11 @@ struct Options {
   std::filesystem::path pm51History;
 };
 class Msd309Machine {
+  friend void ioClass(snap::Ar&, Msd309Machine&);
+  struct Poll;
+  struct Instruction;
+  friend void ioClass(snap::Ar&, Poll&);
+  friend void ioClass(snap::Ar&, Instruction&);
   std::vector<uint8_t> dramBacking_; // outlives CPU mappings, shared MIU aliases
   Engine cpu_;
   Flash flash_;
@@ -180,6 +194,23 @@ class Msd309Machine {
   std::array<uint8_t,3> spiJedec_{};
   std::array<uint8_t,40> spiDescriptor_{};
   uint64_t dispatches_ = 0, mmio_ = 0, flashReads_ = 0, dramWrites_ = 0;
+  // Save-state support: shadow of the CP0 MMU registers written by MTC0 and the guest's TLBWI installs (Unicorn exposes no TLB read-back);
+  // the installs are replayed on load before the CPU context is restored.
+  struct TlbInstall { uint32_t index, pageMask, entryHi, entryLo0, entryLo1; };
+  std::array<uint32_t,32> cp0Shadow_{};
+  std::vector<TlbInstall> tlbInstalls_;
+  bool tlbwrSeen_=false, replayingTlb_=false;
+  bool snapshotWritten_=false;
+  uint64_t snapshotDeferrals_=0, snapshotFirstWanted_=0;
+  uint32_t resumePc_=0;
+  bool resumed_=false;
+public:
+  struct SnapSection { std::string name; std::vector<uint8_t> bytes; };
+private:
+  std::vector<SnapSection> captureSections(uint32_t pc);
+  bool snapshotBoundaryOk(uint32_t pc);
+  void writeSnapshot(uint32_t pc);
+  void restoreSnapshot(const std::filesystem::path& path);
   bool stopped_ = false;
   bool joinResume_ = false;
   bool restoreBranchSeen_ = false;

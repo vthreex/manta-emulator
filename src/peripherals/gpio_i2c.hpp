@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -7,6 +8,7 @@ namespace manta {
 // line. A pulled-up bus resolves low if any participant drives low.
 // No slave is attached: address and data ACK bits are therefore high.
 class GpioI2c {
+  friend void ioClass(snap::Ar&, GpioI2c&);
   struct Bus {
     uint32_t input, output, oen;
     uint8_t sclMask, sdaMask;

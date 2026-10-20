@@ -1,10 +1,12 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 namespace manta {
 // Explicit symbolic scenario, NOT a DSP register/reset-value model. The
 // reply byte stays invalid; only the verified guest's != E3 predicate is
 // constrained. No instruction, PC, register value or hardware reply is set.
 class AudioNoAck {
+  friend void ioClass(snap::Ar&, AudioNoAck&);
   bool pending_=false;
   uint32_t branch_=0;
 public:

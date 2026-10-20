@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <map>
@@ -11,6 +12,7 @@ namespace manta {
 // readback bytes. No DSP ISA, reset contents, alive flag or mailbox modeled.
 // Completion is atomic at the final port phase (functional timing model).
 class AudioIdma {
+  friend void ioClass(snap::Ar&, AudioIdma&);
   std::map<uint16_t,std::array<uint8_t,3>> words_;
   std::array<uint8_t,3> staged_{},readback_{};
   std::optional<uint16_t> writeAddress_,readAddress_;

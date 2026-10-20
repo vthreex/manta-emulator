@@ -1,10 +1,12 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 namespace manta {
 // Functional self-calibration handshake only. Stock 804F1048..109C programs
 // CA_START, delays, clears it and polls CA_END. The analogue result and power
 // good bits remain unknown. Delay threshold/pacing is explicitly provisional.
 class UtmiCalibration {
+  friend void ioClass(snap::Ar&, UtmiCalibration&);
   bool clockReset_ = false, clockEnabled_ = false, started_ = false, released_ = false;
   uint64_t start_ = 0, ready_ = 0;
 

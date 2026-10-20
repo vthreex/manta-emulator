@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include "peripherals/vd_mcu_program.hpp"
 #include "peripherals/avd_mcu_program.hpp"
 #include <functional>
@@ -15,6 +16,7 @@ struct VdHardwareBoundary:std::runtime_error {
 // Bounded auxiliary startup experiment, not a complete MStar MCU hardware
 // model. Original code storage is shared with the guest programming port.
 class VdMcuCpu {
+  friend void ioClass(snap::Ar&, VdMcuCpu&);
   struct Impl;
   std::unique_ptr<Impl> impl_;
   void resetProgramStorage(std::span<const uint8_t> code,
@@ -62,5 +64,12 @@ public:
   uint8_t accumulatorKnown()const;
   uint16_t accumulatorOrigin()const;
   std::vector<uint8_t> stateBytes()const; // diagnostic fingerprint, not a restore format
+  // Full-machine save state. `bind` is invoked while loading, after the configuration flags and the binding kind are read and before the
+  // dynamic CPU state is overlaid; it must re-attach the program storage through one of the rebind functions below.
+  void snapshot(snap::Ar& a,const std::function<void(VdMcuCpu&)>& bind);
+  void rebindProgram(VdMcuProgram& program);
+  void rebindProgram(AvdMcuProgram& program);
+  void rebindPm(std::span<const uint8_t> code,std::function<bool(uint16_t)> sourceValid);
+  bool bound()const;
 };
 }

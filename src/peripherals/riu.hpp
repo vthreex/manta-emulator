@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include "peripherals/pm_ir_fifo.hpp"
 #include "peripherals/vif_zero_input.hpp"
 #include "peripherals/avd_mcu_bus.hpp"
@@ -40,6 +41,7 @@ struct RiuByte {
   uint8_t value = 0xa5, known = 0;
 };
 class Riu {
+  friend void ioClass(snap::Ar&, Riu&);
   GopUpdate gopUpdate_;
   std::map<uint32_t,RiuByte> gopActive_;
   std::optional<uint64_t> gopSyncEdge(uint64_t tick)const;
@@ -333,6 +335,7 @@ public:
   bool candidateGeBitBlt=false;
   uint64_t geBitBlts=0,geBitBltPixels=0;
   std::string geRegisterFile() const;
+  bool geQueueIdle() const { return ge_.idle(); }
   std::string geReg0History() const;   // read-only dump of every known GE register (index=value)
   // Read-only GOP timeline (bounded): guest writes into the GOP aperture and active-latch events, anchored to the original PC.
   struct GopLogEntry { uint64_t tick; uint32_t pc; char kind; unsigned bank, offset, value, n; };

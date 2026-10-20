@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <functional>
@@ -11,6 +12,7 @@ namespace manta {
 // Unknown register/peripheral bits never become successful status values.
 struct OrWord {uint32_t value=0,known=0;std::optional<uint32_t> origin;};
 class OpenRisc {
+  friend void ioClass(snap::Ar&, OpenRisc&);
   std::array<OrWord,32> r_{};
   std::map<unsigned,uint32_t> spr_;
   uint32_t pc_=0,ppc_=0,sr_=0x8001;

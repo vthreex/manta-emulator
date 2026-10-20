@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <optional>
@@ -8,6 +9,7 @@ namespace manta {
 // index in register5, and pulses bit8 with mode bits12/13 set. No reset
 // colors or read-mode responses are supplied.
 class GopPalette {
+  friend void ioClass(snap::Ar&, GopPalette&);
   struct Pending { uint8_t index; uint32_t color; uint16_t mode; };
   std::array<std::array<std::optional<uint32_t>,256>,2> colors_{};
   std::array<std::array<std::optional<uint16_t>,256>,2> modes_{};

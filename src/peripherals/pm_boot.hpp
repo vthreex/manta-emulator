@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <optional>
 #include <cstdint>
 namespace manta {
@@ -6,6 +7,7 @@ namespace manta {
 // standby=1, sleep=2, deep sleep=3. This is an explicit external PM boundary,
 // not PM51 execution, a firmware-ready response or a silicon reset default.
 class PmBootReason {
+  friend void ioClass(snap::Ar&, PmBootReason&);
   std::optional<uint8_t> cause_;
 public:
   void acApplied(){cause_=0xff;}

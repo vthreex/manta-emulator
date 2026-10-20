@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <deque>
 #include <optional>
@@ -8,6 +9,7 @@ namespace manta {
 // IR_FIFO_READ_PULSE3DB0 bit0 advances. Reset occupancy is UNKNOWN unless
 // the explicit cold-empty experiment or an actual guest clear establishes it.
 class PmIrFifo {
+  friend void ioClass(snap::Ar&, PmIrFifo&);
   struct Entry {uint8_t key;bool repeat;};
   std::deque<Entry> entries_;
   bool known_=false;

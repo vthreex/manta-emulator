@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include "cpu/vd_mcu.hpp"
 #include "storage/sha256.hpp"
 #include <array>
@@ -9,6 +10,7 @@ namespace manta {
 // Explicit housekeeping/SPI reset experiment. Status outputs have no defaults.
 // CODE is a view of original flash; RIU observations use the host CPU's backing.
 class Pm51 {
+  friend void ioClass(snap::Ar&, Pm51&);
   VdMcuCpu cpu_;
   std::span<const uint8_t> code_;
   std::array<VdByte,1024> ram_{};
@@ -35,27 +37,7 @@ class Pm51 {
   };
   std::deque<InstructionObservation> instructionHistory_;
   std::deque<BusObservation> busHistory_;
-  void observeBus(uint16_t address,VdByte value,bool write,bool accepted){
-    if(!captureHistory)return;
-    busHistory_.push_back({tick_,cpu_.pc(),address,cpu_.port2(),value,write,accepted});
-    if(busHistory_.size()>64)busHistory_.pop_front();
-  }
-public:
-  uint64_t divider=32,budget=1000000,ramReads=0,ramWrites=0,riuReads=0,riuWrites=0;
-  uint64_t markerWrites=0,controlWrites=0;
-  bool firstVisits=true;
-  bool captureHistory=false; // bounded diagnostics only; never part of hardware state
-  bool probeDeferredStartupConfigurations=false; // probe-only; no hardware effects/readback
-  std::function<VdByte(uint16_t)> sharedRead;
-  std::function<bool(uint16_t,VdByte)> sharedWrite;
-  std::function<bool(uint8_t,uint16_t,VdByte)> extendedWrite;
-  std::function<bool(uint16_t,uint8_t)> codeSourceValid;
-  std::function<bool()> executionStopped;
-  std::function<void(const std::string&,uint32_t,unsigned,uint32_t,const std::string&)> event;
-  void start(std::span<const uint8_t> code){
-    if(started_ || !divider || !sharedRead || !sharedWrite)
-      throw std::runtime_error("PM startup configuration incomplete/repeated");
-    code_=code;
+  void installHooks(){
     cpu_.busRead=[this](uint16_t a)->std::optional<VdByte>{
       if(a==0x1018 && romControl_){auto v=VdByte{*romControl_,255,0};observeBus(a,v,false,true);return v;}
       if(a>=0x4000 && a<0x4400){
@@ -109,9 +91,38 @@ public:
     cpu_.external=[this](uint16_t a,bool w,uint8_t v){
       event("pm51_unresolved_xdata",a,1,v,w?"unimplemented original PM write; no effects supplied":"unimplemented original PM read; no value supplied");
     };
+  }
+  void observeBus(uint16_t address,VdByte value,bool write,bool accepted){
+    if(!captureHistory)return;
+    busHistory_.push_back({tick_,cpu_.pc(),address,cpu_.port2(),value,write,accepted});
+    if(busHistory_.size()>64)busHistory_.pop_front();
+  }
+public:
+  uint64_t divider=32,budget=1000000,ramReads=0,ramWrites=0,riuReads=0,riuWrites=0;
+  uint64_t markerWrites=0,controlWrites=0;
+  bool firstVisits=true;
+  bool captureHistory=false; // bounded diagnostics only; never part of hardware state
+  bool probeDeferredStartupConfigurations=false; // probe-only; no hardware effects/readback
+  std::function<VdByte(uint16_t)> sharedRead;
+  std::function<bool(uint16_t,VdByte)> sharedWrite;
+  std::function<bool(uint8_t,uint16_t,VdByte)> extendedWrite;
+  std::function<bool(uint16_t,uint8_t)> codeSourceValid;
+  std::function<bool()> executionStopped;
+  std::function<void(const std::string&,uint32_t,unsigned,uint32_t,const std::string&)> event;
+  void start(std::span<const uint8_t> code){
+    if(started_ || !divider || !sharedRead || !sharedWrite)
+      throw std::runtime_error("PM startup configuration incomplete/repeated");
+    code_=code;
+    installHooks();
     cpu_.resetPmCandidate(code_,[this](uint16_t a){return !codeSourceValid || codeSourceValid(a,code_[a]);});
     started_=true;
     event("pm51_start",0x10000,0,0,"original 65536-byte CODE view; exploratory standard reset concurrent with housekeeping CPU, no ready/marker produced");
+  }
+  // Save-state restore of a started PM51: reinstall the bus/trace callbacks, then re-attach the code view (state is overlaid afterwards).
+  void setSnapshotCode(std::span<const uint8_t> code){code_=code;}
+  void rebind(std::span<const uint8_t> code){
+    code_=code;installHooks();
+    cpu_.rebindPm(code_,[this](uint16_t a){return !codeSourceValid || codeSourceValid(a,code_[a]);});
   }
   void advance(uint64_t tick){
     if(!started_ || !cpu_.running())return;

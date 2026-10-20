@@ -204,6 +204,29 @@ void geCopySnapshotTests(){
   require(std::equal(oldRow0.begin(),oldRow0.end(),mem.begin()+0x1fe000+768*pitch),"the aliased 769th source row carries the destination row-0 bytes read BEFORE the copy (snapshot semantics)");
   require(std::equal(mem.begin(),mem.begin()+1360*2,mem.begin()+0x1fe000),"destination row 0 receives source row 0");
 }
+void snapshotArchiveTests(){
+  using namespace manta;
+  using namespace manta::snap;
+  std::map<std::string,std::vector<std::optional<uint16_t>>> m{{"a",{1,std::nullopt,3}},{"zz",{}},{"b",{65535}}};
+  std::deque<std::pair<uint8_t,bool>> dq{{1,true},{2,false}};
+  std::set<uint32_t> st{9,3,7};std::bitset<70> bs;bs[0]=bs[69]=true;bs[33]=true;
+  std::unordered_map<uint32_t,uint64_t> um1,um2;for(uint32_t i=0;i<50;++i)um1[i*7919u]=i*3u;for(uint32_t i=50;i-->0;)um2[i*7919u]=i*3u;
+  std::array<std::array<uint16_t,4>,2> arr{{{1,2,3,4},{5,6,7,8}}};std::string text="hello world";text+=char(0);
+  bool flag=true;double d=1.5;
+  std::vector<uint8_t> bytes;{Ar w(bytes);w(m,dq,st,bs,um1,arr,text,flag,d);}
+  std::vector<uint8_t> bytes2;{auto copy=um2;Ar w(bytes2);auto m2=m;auto dq2=dq;auto st2=st;auto bs2=bs;auto arr2=arr;auto t2=text;auto f2=flag;auto d2=d;w(m2,dq2,st2,bs2,copy,arr2,t2,f2,d2);}
+  require(bytes==bytes2,"archive output does not depend on unordered-container insertion order");
+  decltype(m) m3;decltype(dq) dq3;decltype(st) st3;std::bitset<70> bs3;std::unordered_map<uint32_t,uint64_t> um3;decltype(arr) arr3{};std::string t3;bool f3=false;double d3=0;
+  {Ar r(bytes.data(),bytes.size());r(m3,dq3,st3,bs3,um3,arr3,t3,f3,d3);require(r.remaining()==0,"archive consumed exactly its bytes");}
+  require(m3==m && dq3==dq && st3==st && bs3==bs && um3==um1 && arr3==arr && t3==text && f3 && d3==1.5,"archive round trip of nested containers, optionals, bitsets and strings");
+  bool truncated=false;try{Ar r(bytes.data(),bytes.size()-1);decltype(m) a;decltype(dq) b;decltype(st) c;std::bitset<70> e;std::unordered_map<uint32_t,uint64_t> f;decltype(arr) g{};std::string h;bool i=false;double j=0;r(a,b,c,e,f,g,h,i,j);}catch(const SnapshotError&){truncated=true;}
+  require(truncated,"a truncated archive is rejected");
+  std::vector<uint8_t> hostile(8,0xff);bool implausible=false;try{Ar r(hostile.data(),hostile.size());std::vector<uint32_t> v;r(v);}catch(const SnapshotError&){implausible=true;}
+  require(implausible,"an implausible element count is rejected instead of allocating");
+  std::vector<uint8_t> tagged;{Ar w(tagged);w.tag("one");}
+  bool mismatch=false;try{Ar r(tagged.data(),tagged.size());r.tag("two");}catch(const SnapshotError&){mismatch=true;}
+  require(mismatch,"a structure tag mismatch is detected while loading");
+}
 void geUniformStretchTests(){
   using namespace manta;
   static const std::pair<unsigned,uint16_t> connected[]={{0x00,7},{0x01,0x11},{0x34,0x0c09},{0x20,0x6c80},{0x21,0x03d4},{0x26,0xd880},{0x27,0x00dd},{0x30,8},{0x33,0x0aa0},

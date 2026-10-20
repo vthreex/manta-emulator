@@ -4,6 +4,7 @@
 #include "cpu/mcu_value_mask.hpp"
 #include <array>
 #include <cstddef>
+#include <cstring>
 #include <exception>
 #include <sstream>
 namespace manta {
@@ -536,6 +537,46 @@ uint16_t VdMcuCpu::dataPointer()const{
 }
 uint8_t VdMcuCpu::accumulatorKnown()const{return impl_->aKnown;}
 uint16_t VdMcuCpu::accumulatorOrigin()const{return impl_->aOrigin;}
+bool VdMcuCpu::bound()const{return impl_->context.cpu.mCodeMem!=nullptr;}
+void VdMcuCpu::rebindProgram(VdMcuProgram& program){
+  impl_->name="VD MCU";
+  resetProgramStorage(program.codeStorage(),[&program](uint16_t a){return program.byteKnown(a);},1);
+}
+void VdMcuCpu::rebindProgram(AvdMcuProgram& program){
+  impl_->name="AVD MCU";
+  resetProgramStorage(program.codeStorage(),[&program](uint16_t a){return program.byteKnown(a);},1);
+}
+void VdMcuCpu::rebindPm(std::span<const uint8_t> code,std::function<bool(uint16_t)> sourceValid){
+  if(code.size()!=65536)throw std::runtime_error("PM51 snapshot rebind: wrong code view size");
+  impl_->name="PM51 candidate";
+  resetProgramStorage(code,sourceValid?std::move(sourceValid):[](uint16_t){return true;},code.size());
+}
+void VdMcuCpu::snapshot(snap::Ar& a,const std::function<void(VdMcuCpu&)>& bind){
+  auto& m=*impl_;auto& c=m.context.cpu;
+  a.tag("VdMcuCpu");
+  snap::io(a,deferSfr8eWrite);snap::io(a,deferResetKeyWrites);snap::io(a,standardInterrupts);snap::io(a,candidateR8051Uart);snap::io(a,symbolicCodeTables);
+  bool isBound=c.mCodeMem!=nullptr;
+  snap::io(a,isBound);
+  uint8_t nameId=!std::strcmp(m.name,"AVD MCU")?1:!std::strcmp(m.name,"PM51 candidate")?2:0;
+  snap::io(a,nameId);
+  if(a.loading()){
+    if(nameId>2)throw snap::SnapshotError("MCU name id invalid");
+    if(isBound){if(!bind)throw snap::SnapshotError("bound MCU snapshot without a rebind function");bind(*this);}
+    m.name=nameId==1?"AVD MCU":nameId==2?"PM51 candidate":"VD MCU";
+  }
+  for(auto& v:c.mLowerData)snap::io(a,v);
+  snap::io(a,m.upper);
+  for(auto& v:c.mSFR)snap::io(a,v);
+  snap::io(a,c.mPC);snap::io(a,c.mTickDelay);snap::io(a,c.mInterruptActive);
+  snap::io(a,c.int_a[0]);snap::io(a,c.int_a[1]);snap::io(a,c.int_psw[0]);snap::io(a,c.int_psw[1]);snap::io(a,c.int_sp[0]);snap::io(a,c.int_sp[1]);
+  for(auto& v:c.serial_out)snap::io(a,v);
+  snap::io(a,c.serial_out_idx);snap::io(a,c.serial_out_remaining_bits);snap::io(a,c.serial_interrupt_trigger);
+  snap::io(a,m.executed);snap::io(a,m.ticks);snap::io(a,m.deferredKeyCount);snap::io(a,m.running);snap::io(a,m.total);snap::io(a,m.interrupts);
+  snap::io(a,m.aKnown);snap::io(a,m.aOrigin);snap::io(a,m.registerKnown);snap::io(a,m.registerOrigin);snap::io(a,m.parityUnknown);snap::io(a,m.carryKnown);
+  snap::io(a,m.dplKnown);snap::io(a,m.dphKnown);snap::io(a,m.bKnown);snap::io(a,m.arithmeticFlagsKnown);
+  for(auto& v:m.uartRegisters){snap::io(a,v.value);snap::io(a,v.known);snap::io(a,v.origin);}
+  snap::io(a,m.uartTxPending);
+}
 std::vector<uint8_t> VdMcuCpu::stateBytes()const{
   const auto& m=*impl_;const auto& c=m.context.cpu;std::vector<uint8_t> b;
   auto append=[&](uint64_t value,unsigned width){for(unsigned i=0;i<width;++i)b.push_back(uint8_t(value>>(8*i)));};

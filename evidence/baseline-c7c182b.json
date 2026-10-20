@@ -1,0 +1,15 @@
+{
+  "commit": "c7c182b",
+  "executable": "work/build/manta_v1.exe",
+  "executable_sha256": "8bd95eb39f805293f2b09f4695d675fd8f5a308758cb52195434a2bf93bb69ec",
+  "native_checks": 1981,
+  "python_suites_run_against_this_binary": {
+    "diagnostic_options": "PASS", "ge_bitblt_option": "PASS", "ge_fill_option": "PASS", "immutable_input": "PASS", "clock_profile": "PASS",
+    "zui_flow": "PASS", "vif_agc": "PASS", "ge_clear": "PASS", "window_preview": "PASS", "pm_power_boot": "PASS", "ir_keymap": "PASS",
+    "firmware": "PASS (227 s)", "display": "PASS (370 s)"
+  },
+  "strict_replay": {"trace_events": 6592741, "reference_summary_fields": 289, "different_values": [], "coverage_identical": true, "pm51_history_identical": true,
+                    "new_observation_fields_only": ["spi_nor_programs", "spi_nor_erases", "spi_nor_programmed_bytes", "spi_nor_ignored_writes", "spi_nor_zero_to_one_requests", "flash_overlay_sectors", "flash_overlay_sha256", "flash_stock_sha256", "pm_ir_fifo_received"]},
+  "not_run": "probe-only suites needing extra images (avd_*, vd_firmware, copro_firmware, pm51_firmware, audio_dsp_disasm, pm_activity_forensics, qmem_trace_filter, tsp, openrisc, comb_ge, ge_gop, vif probes); they exercise separate probe binaries; TSP/OpenRISC reference fixtures remain stale and were not regenerated",
+  "pm_power_boot_regression": "passes (the cc225d7-era failure does not reproduce)"
+}

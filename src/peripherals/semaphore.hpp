@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <optional>
@@ -7,6 +8,7 @@ namespace manta {
 // Original HAL at 8053B924..BA20: 16-bit resource IDs, four-byte RIU stride,
 // zero releases/resets. Reset ownership is unknown unless explicitly supplied.
 class HardwareSemaphore {
+  friend void ioClass(snap::Ar&, HardwareSemaphore&);
   std::array<std::optional<uint16_t>,9> owners_{};
   uint64_t acquisitions_=0,releases_=0,contentions_=0;
 public:

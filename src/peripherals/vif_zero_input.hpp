@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <optional>
@@ -12,6 +13,7 @@ namespace manta {
 // PGA2 saturation/distribution, clock availability and settling time are
 // hypotheses. VGA, carrier/HSYNC lock and all other observations stay invalid.
 class VifZeroInput {
+  friend void ioClass(snap::Ar&, VifZeroInput&);
 public:
   struct Field { uint8_t value=0xa5,known=0;bool operator==(const Field&)const=default; };
   // Original T4 addresses, correlated by the complete original initializer and

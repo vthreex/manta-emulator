@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -7,6 +8,7 @@ namespace manta {
 // 80548380 and 8054841C routines. Clock pacing is an explicit functional
 // approximation: one guest dispatch = one tick of a 312 MHz virtual clock.
 class Rtc {
+  friend void ioClass(snap::Ar&, Rtc&);
   uint64_t lastTick_ = 0, oscillatorFraction_ = 0, dividerFraction_ = 0;
   uint32_t counter_ = 0, snapshot_ = 0;
   uint8_t control_ = 0;

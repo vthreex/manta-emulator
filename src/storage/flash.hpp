@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <filesystem>
 #include <map>
@@ -7,6 +8,7 @@
 #include <vector>
 namespace manta {
 class Flash {
+  friend void ioClass(snap::Ar&, Flash&);
   std::vector<uint8_t> stock_;
   std::map<uint32_t, std::array<uint8_t, 4096>> sectors_;
   bool wel_ = false;

@@ -1,4 +1,5 @@
 #pragma once
+#include "snapshot/archive.hpp"
 #include <cstdint>
 #include <optional>
 namespace manta {
@@ -7,6 +8,7 @@ namespace manta {
 // then reads low nibble of 4B15 and compares with four. Only code zero at an
 // explicitly grounded input is hypothesized; no connected-voltage conversion.
 class ScartGroundedInput {
+  friend void ioClass(snap::Ar&, ScartGroundedInput&);
   bool grounded_=false,initialized_=false,configured_=false;
   uint64_t reads_=0;
 public:
