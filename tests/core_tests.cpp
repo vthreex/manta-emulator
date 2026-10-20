@@ -2391,8 +2391,28 @@ void avdBusTests(){
     bus.read(0x8000)->origin==0x11dc,"private RAM copying preserves unknown peripheral provenance");
   require(!bus.write(0x8100,{0,255,0}) && !bus.read(0x8100),"private XRAM extent remains bounded");
 }
+void i2GlyphAlphaTests(){
+  // Register file of a real glyph request (captured from the original ZUI font renderer); blend coefficient in register 11 low byte.
+  auto make=[](uint16_t reg11,uint16_t reg13){
+    std::map<unsigned,uint16_t> r{{0,0x45},{1,0x01},{0x11,reg11},{0x13,reg13},{0x14,0x0101},{0x15,0x0101},{0x16,0},{0x17,0},{0x20,0x1000},{0x21,0},
+      {0x26,0x2000},{0x27,0},{0x30,2},{0x33,64},{0x34,0x0c01},{0x35,0x0101},{0x36,0xff01},{0x37,0xffff},{0x38,0xaaff},{0x39,0xffff},{0x3a,0xccff},{0x3b,0xffff},{0x3c,0xffff},
+      {0x55,0},{0x56,15},{0x57,0},{0x58,3},{0x59,0x40},{0x64,0x1000},{0x65,0x1000},{0x68,0},{0x69,0},{0x6a,7},{0x6b,3},{0x6c,0},{0x6d,0},{0x6e,8},{0x6f,4}};
+    return r;
+  };
+  auto decode=[&](uint16_t reg11,uint16_t reg13){
+    auto r=make(reg11,reg13);
+    return manta::GeI2Glyph::decode(0x0040,[&](unsigned i){return std::pair<uint16_t,uint16_t>{r.count(i)?r.at(i):0,0xffff};},
+      [](uint32_t,size_t n){return std::vector<uint8_t>(n,0);});
+  };
+  require(decode(0xff02,0).constantAlpha==255,"source-alpha blend mode ignores constant alpha register 13 (it was 0 for every original font glyph)");
+  require(decode(0xff02,0x80).constantAlpha==255,"source-alpha blend mode does not scale by register 13");
+  require(decode(0xff01,0x80).constantAlpha==0x80,"constant-alpha blend mode uses register 13");
+  bool rejected=false;try{decode(0xff03,0xff);}catch(const std::exception&){rejected=true;}
+  require(rejected,"unknown blend coefficient is refused, not guessed");
+}
 int main() {
   try {
+    i2GlyphAlphaTests();
     {
       manta::AvdMcuBus bus;std::map<uint32_t,manta::VdByte> bytes;
       bus.sharedWrite=[&](uint32_t a,manta::VdByte v){bytes[a]=v;};

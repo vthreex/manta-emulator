@@ -16,8 +16,12 @@ namespace manta {
 //   H1  registers 35..3C hold four ARGB8888 words, low halfword first (entry i = reg[36+2i]<<16 | reg[35+2i]);
 //   H2  the 2-bit source is packed most-significant pair first, row pitch from register 30 (the dumped glyph reads as a letter this way);
 //   H3  the key range [reg 16/17 .. reg 14/15] is compared per RGB channel against the palette entry; a match leaves the destination alone;
-//   H4  blend alpha = palette alpha * constant alpha (register 13) / 255, source-over on 8-bit channels (expanded from ARGB1555 by replication),
-//       rounded to nearest, then truncated to 5 bits; the destination alpha bit becomes 1;
+//   H4  blend alpha = palette alpha * A / 255, source-over on 8-bit channels (expanded from ARGB1555 by replication), rounded to nearest,
+//       then truncated to 5 bits; the destination alpha bit becomes 1. A depends on the blend coefficient in the low byte of register 11
+//       (Marlon GE numbering, ASSUMED): 1 = constant alpha, A = register 13; 2 = source alpha, A = 255 (register 13 is not a factor).
+//       Evidence for the split is the original code, not hardware: the ZUI font renderer (80520A84) calls the library helper 805200A4 with
+//       blend mode 2 and constant alpha 0 for every glyph, bitmap draws (8049D03C) use mode 1 with constant alpha FF. Treating register 13 as a
+//       factor in mode 2 made all such text invisible (an earlier version of this model did exactly that);
 //   H5  the programmed source height may be 5 less than the destination height (the original's 805241C4 quirk); the model is only accepted
 //       when the extra rows are all index 0, so both readings give the same pixels.
 struct GeI2Glyph {
@@ -60,7 +64,9 @@ struct GeI2Glyph {
     for (unsigned i = 0; i < 4; ++i) g.palette[i] = field(reg, 0x35 + 2 * i) | (field(reg, 0x36 + 2 * i) << 16);
     g.keyHigh = field(reg, 0x14) | (field(reg, 0x15) << 16);
     g.keyLow = field(reg, 0x16) | (field(reg, 0x17) << 16);
-    g.constantAlpha = field(reg, 0x13) & 0xff;
+    auto coefficient = field(reg, 0x11) & 0xff;
+    if (coefficient != 1 && coefficient != 2) throw std::runtime_error("GE I2 glyph: blend coefficient is neither constant alpha (1) nor source alpha (2)");
+    g.constantAlpha = coefficient == 2 ? 255 : (field(reg, 0x13) & 0xff);
     uint32_t cl = field(reg, 0x55), cr = field(reg, 0x56), ct = field(reg, 0x57), cb = field(reg, 0x58);
     g.left = std::max(g.destLeft, cl); g.right = std::min(dr, cr); g.top = std::max(g.destTop, ct); g.bottom = std::min(db, cb);
     if (cl > cr || ct > cb || g.left > g.right || g.top > g.bottom) { g.left = 1; g.right = 0; return g; }   // empty

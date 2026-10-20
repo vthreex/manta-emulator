@@ -119,6 +119,7 @@ struct Options {
   std::filesystem::path dumpPrefix;
   struct OffscreenSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; };
   std::vector<OffscreenSurface> offscreenInspector;   // DIAGNOSTIC read-only viewer of a guest surface that is NOT a GOP window (at most one)
+  std::string videoPlane;   // EXPLORATORY presentation: "" (neutral checker), black, blue, setting (guest Blue Screen setting); never changes guest state
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
   uint64_t gopTimelineFrom=0;   // DIAGNOSTIC: first tick of the GOP write/latch timeline printed in the summary
   std::vector<uint32_t> historyPcs;   // DIAGNOSTIC: also sample the GOP history when one of these original PCs executes

@@ -1963,6 +1963,23 @@ void Msd309Machine::publishPreview() const {
   if(riu_.geBlendCopies)frame.label+=" | EXPLORATORY GE blend-copy model in use (not Titania4 behavior)";
   if(riu_.geI2Glyphs)frame.label+=" | EXPLORATORY GE I2-glyph model in use (not Titania4 behavior)";
   if(riu_.geUniformStretches)frame.label+=" | EXPLORATORY GE uniform-stretch model in use (alpha semantics are a hypothesis, not Titania4 behavior)";
+  if(!options_.videoPlane.empty()){
+    // EXPLORATORY: the emulator has no video plane. Pixels no enabled GOP window provides (or whose ARGB1555 alpha bit is clear) are shown in a
+    // flat colour instead of the checker. Colour source: fixed black/blue, or the guest's own Blue Screen setting (original settings byte
+    // 806FBD50 bit 5; verified to toggle with the menu item on the original firmware image only). No input signal exists, so this is the
+    // no-signal background a TV would show there; it is not decoded video and not verified panel output.
+    bool blue=options_.videoPlane=="blue";
+    std::string why=options_.videoPlane;
+    if(options_.videoPlane=="setting"){
+      blue=false;why="setting: guest Blue Screen setting unreadable -> black";
+      constexpr uint32_t setting=0x006fbd50;
+      if(flash_.stockDigest()=="471e1f1c284e3c0fc9af68be0d8a79d0d635e0a1cca31066cd1e6df91e406d83" && dramBacking_.size()>setting && !preservedBits_.memoryUnknown(setting) && !unknownObservations_.bytes().contains(setting)){
+        blue=(dramBacking_[setting]&0x20)!=0;why=std::string("setting: guest Blue Screen ")+(blue?"On -> blue":"Off -> black");
+      }
+    }
+    frame.planeActive=true;frame.planeRgb=blue?0x000000ffu:0u;
+    frame.label+=" | EXPLORATORY VIDEO PLANE (not emulated video; "+why+") behind the guest graphics";
+  }
   if (!options_.gopFrameHistory.empty() && !frame.empty() && frame.checksum != historyChecksum_ && historyFrames_ < 128) {
     // Every distinct GOP content state, in guest-time order (diagnostic timeline; the window itself only shows the latest).
     historyChecksum_ = frame.checksum;

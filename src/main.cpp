@@ -20,7 +20,7 @@ static std::filesystem::path utf8Path(const std::string &s) {
 static std::string stateFingerprint(const std::vector<std::string> &args, std::string &canonicalOut) {
   static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--save-state-at",
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--preview-capture",
-    "--preview-close-after-ms", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--dump-prefix", "--watch-pc-regs",
+    "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at"};
   static const std::set<std::string> flags = {"--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
@@ -227,6 +227,10 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--state-digest")o.stateDigest = true;
       else if (a == "--load-state-allow-extra-options")o.loadAllowExtraOptions = true;
       else if (a == "--profile")o.profile = utf8Path(value(i));
+      else if (a == "--exploratory-video-plane"){
+        o.videoPlane = value(i);
+        if(o.videoPlane!="black" && o.videoPlane!="blue" && o.videoPlane!="setting")throw std::runtime_error("--exploratory-video-plane needs black, blue or setting");
+      }
       else if (a == "--save-state-max-defer")o.saveStateMaxDefer = std::stoull(value(i), nullptr, 0);
       else if (a == "--load-state")o.loadState = utf8Path(value(i));
       else if (a == "--record-trace")
@@ -475,6 +479,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--ir-script DISPATCH:FUNCTION,...: deterministic scripted remote presses (FUNCTION or raw=0xNN), delivered to the emulated PM IR FIFO at/after that dispatch\n"
                "--exploratory-pm-ir-rpt-latch: HYPOTHESIS: IR RPT (3DAD bit0) latches the repeat flag of the entry just popped; requires --candidate-pm-ir-fifo\n"
                "--gop-frame-history DIR: DIAGNOSTIC: write a BMP of the GOP preview into DIR (plus index.json) each time its content changes (max 128); directory must exist\n"
+               "--exploratory-video-plane black|blue|setting: EXPLORATORY presentation only: show a flat colour (instead of the neutral checker) where no guest graphics pixel exists (no GOP window, or ARGB1555 alpha bit clear); the emulator has no video plane. setting = the guest Blue Screen menu setting decides blue/black (original settings byte, this firmware image only). Not decoded video, not verified panel output; never changes guest state\n"
                "--preview-capture FILE.bmp / --preview-close-after-ms N: windowed mode only; save the window client area after the guest run stopped, then close (automation)\n"
                "--export-gop-frame FILE.json: after the run, decode the guest memory of every enabled+latched GOP window (format 6 assumed ARGB1555) to FILE_bankB_winW.bmp plus metadata; debug export only, no composition, never an authentic-frame claim\n"
                "--save-state FILE [--save-state-at DISPATCH] [--save-state-stop] [--save-state-max-defer N]: write a full-machine snapshot (CPU, RAM, flash overlay, every device, provenance) at the first safe instruction boundary at/after DISPATCH; versioned, per-section and overall SHA-256, committed atomically through a temporary file (docs/save-state.md)\n"
