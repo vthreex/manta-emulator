@@ -119,6 +119,8 @@ struct Options {
   std::filesystem::path dumpPrefix;
   struct OffscreenSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; };
   std::vector<OffscreenSurface> offscreenInspector;   // DIAGNOSTIC read-only viewer of a guest surface that is NOT a GOP window (at most one)
+  bool provenanceExtensions = false;   // opt-in: identity read-write-back RMW and INS bit-identity propagation (strict boot stays byte-identical when off)
+  bool videoPlaneBlackKey = false;   // EXPLORATORY HYPOTHESIS: opaque RGB-black guest pixels are see-through to the video plane (colour key); requires videoPlane
   std::string videoPlane;   // EXPLORATORY presentation: "" (neutral checker), black, blue, setting (guest Blue Screen setting); never changes guest state
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
   uint64_t gopTimelineFrom=0;   // DIAGNOSTIC: first tick of the GOP write/latch timeline printed in the summary
@@ -230,6 +232,7 @@ private:
   std::string opaquePolicyRules_;
   bool observePolicyRead(uint32_t pc,uint32_t address,unsigned width);
   uint32_t proveImmediateRmw(uint32_t pc, uint32_t address, unsigned width);
+  bool rmwIdentity_ = false;   // set by proveImmediateRmw: the proven read-modify-write writes every sampled bit back to its own position (no bit defined)
   bool proveDiagnosticCache(uint32_t pc, uint32_t address, unsigned width);
   void stop(std::string why, uint32_t address = 0);
   void event(const std::string &kind, uint32_t address, unsigned width, uint32_t value,

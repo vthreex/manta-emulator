@@ -43,7 +43,9 @@ inline uint32_t argb1555ToBgra(uint16_t p) {
 }
 // Layers are composed in (bank, window) ascending order: hardware priority is NOT established.
 // Opaque pixels (alpha bit set) replace what is below; clear-alpha pixels leave it unchanged.
-inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t maxWidth = 1920, uint32_t maxHeight = 1080) {
+// blackKey: EXPLORATORY HYPOTHESIS (not Titania4-verified): an opaque pure-black pixel (RGB 0) is treated like a clear-alpha pixel, i.e. a GOP
+// transparent-colour key on black. The original ZUI clears its surfaces to alpha FF black; nothing in the firmware shows how the GOP treats that.
+inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t maxWidth = 1920, uint32_t maxHeight = 1080, bool blackKey = false) {
   GopPreviewFrame f;
   f.label = "DIAGNOSTIC GOP PREVIEW - guest framebuffer pixels of enabled GOP windows; not verified panel scan-out";
   std::stable_sort(layers.begin(), layers.end(), [](const GopLayer& a, const GopLayer& b) {
@@ -74,7 +76,7 @@ inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t
       for (uint32_t xx = 0; xx < l.width && l.x + xx < w; ++xx) {
         size_t src = size_t(yy) * l.pitch + size_t(xx) * 2;
         uint16_t p = uint16_t(l.memory[src] | (l.memory[src + 1] << 8));
-        if (!(p & 0x8000)) continue;
+        if (!(p & 0x8000) || (blackKey && !(p & 0x7fff))) continue;
         size_t dst = size_t(l.y + yy) * w + l.x + xx;
         f.bgra[dst] = argb1555ToBgra(p); f.covered[dst] = 1;
       }

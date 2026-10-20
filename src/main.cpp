@@ -22,7 +22,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at"};
-  static const std::set<std::string> flags = {"--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
+  static const std::set<std::string> flags = {"--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
     if (valued.count(args[i])) { ++i; continue; }
@@ -146,6 +146,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--diagnostic-htotal-branch-join")o.diagnosticHtotalBranchJoin=true;
       else if(a=="--candidate-spi-nor-write")o.candidateSpiNorWrite=true;
       else if(a=="--exploratory-usb-no-device")o.exploratoryUsbNoDevice=true;
+      else if(a=="--exploratory-provenance-extensions")o.provenanceExtensions=true;
       else if(a=="--exploratory-mmio-bits"){
         auto spec=value(i);   // HEXADDR:HEXMASK:HEXVALUE
         unsigned long addr=0,mask=0,val=0;char c1=0,c2=0;int scBank=-1;
@@ -227,6 +228,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--state-digest")o.stateDigest = true;
       else if (a == "--load-state-allow-extra-options")o.loadAllowExtraOptions = true;
       else if (a == "--profile")o.profile = utf8Path(value(i));
+      else if (a == "--exploratory-gop-black-colorkey")o.videoPlaneBlackKey = true;
       else if (a == "--exploratory-video-plane"){
         o.videoPlane = value(i);
         if(o.videoPlane!="black" && o.videoPlane!="blue" && o.videoPlane!="setting")throw std::runtime_error("--exploratory-video-plane needs black, blue or setting");
@@ -411,6 +413,7 @@ static int appMain(const std::vector<std::string> &args) {
                 "--diagnostic-avd-11db-bit7 N: BRACKETING DIAGNOSTIC (run both 0 and 1), not a reset value: defines AFEC 11DB bit 7 whose producer is unknown\n"
                 "--candidate-spi-nor-write: opt-in guest SPI NOR WRSR/page-program/erase (06/01/02/20/52/D8) into a copy-on-write overlay; stock image never written; requires --candidate-spi\n"
                 "--diagnostic-restore-by-identity-branch: DIAGNOSTIC ONLY: SerFlash write routine 8053CB80 branch whose both arms restore ISP 1C8 bit 2 to its tested value; requires --candidate-spi-nor-write\n"
+                "--exploratory-provenance-extensions: opt-in generic extensions of the unknown-bit tracking: an identity read-write-back of an unknown register byte (LBU/ANDI FF/SB to the same address) and bit-field INS keep their bit identities instead of stopping; off by default so the strict boot stays byte-identical; requires guarded exploration\n"
                 "--exploratory-usb-no-device: HYPOTHESIS: a guest-powered USB port-0 PHY with no device attached shows SE0, so USBC+0x10 line-state bits 7:6 read 0; all other USBC bits stay invalid; requires guarded exploration\n"
                 "--diagnostic-usb-unpowered-dplus N: BRACKETING DIAGNOSTIC (run 0 and 1), not a reset value: line-state D+ (USBC+0x10 bit 6) of a USB port whose PHY the guest powered down; requires guarded exploration\n"
                 "--diagnostic-htotal-branch-join: DIAGNOSTIC ONLY, not hardware behavior: execute both original outcomes of the HTotal comparison at 80501BFC separately, mark every differing RAM cell/register unknown, resume at the join 80501758\n"
@@ -479,6 +482,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--ir-script DISPATCH:FUNCTION,...: deterministic scripted remote presses (FUNCTION or raw=0xNN), delivered to the emulated PM IR FIFO at/after that dispatch\n"
                "--exploratory-pm-ir-rpt-latch: HYPOTHESIS: IR RPT (3DAD bit0) latches the repeat flag of the entry just popped; requires --candidate-pm-ir-fifo\n"
                "--gop-frame-history DIR: DIAGNOSTIC: write a BMP of the GOP preview into DIR (plus index.json) each time its content changes (max 128); directory must exist\n"
+               "--exploratory-gop-black-colorkey: HYPOTHESIS (unverified, needs --exploratory-video-plane): opaque pure-black guest pixels are treated as see-through (GOP transparent-colour key on black), so the video-plane colour shows behind them; presentation only\n"
                "--exploratory-video-plane black|blue|setting: EXPLORATORY presentation only: show a flat colour (instead of the neutral checker) where no guest graphics pixel exists (no GOP window, or ARGB1555 alpha bit clear); the emulator has no video plane. setting = the guest Blue Screen menu setting decides blue/black (original settings byte, this firmware image only). Not decoded video, not verified panel output; never changes guest state\n"
                "--preview-capture FILE.bmp / --preview-close-after-ms N: windowed mode only; save the window client area after the guest run stopped, then close (automation)\n"
                "--export-gop-frame FILE.json: after the run, decode the guest memory of every enabled+latched GOP window (format 6 assumed ARGB1555) to FILE_bankB_winW.bmp plus metadata; debug export only, no composition, never an authentic-frame claim\n"

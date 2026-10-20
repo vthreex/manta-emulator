@@ -1,0 +1,19 @@
+{
+ "binary": "work/build/manta_v11.exe",
+ "binary_sha256": "9a70148e9763283e61db6fa45c36e46749624befcce63e4346f54c06ce2b97fa",
+ "native_checks": 1991,
+ "python_suites": "all 15 PASS (diagnostic_options, ge_bitblt_option, ge_fill_option, immutable_input, clock_profile, zui_flow, vif_agc, ge_clear, window_preview, pm_power_boot, ir_keymap, shutdown, snapshot, firmware, display)",
+ "strict_replay": {
+  "trace_events": 6592741,
+  "dispatches": 854795171,
+  "differing_reference_fields": "only the 9 observation-only spi/flash/pm_ir_fifo fields",
+  "coverage_identical": true,
+  "pm51_history_identical": true
+ },
+ "note": "an earlier build with the provenance extensions always on changed the strict replay (stopped at 814,470,984); they are now opt-in (--exploratory-provenance-extensions) and the replay is identical again",
+ "fixes": [
+  "I2 glyph blend mode (text invisible)",
+  "opt-in video plane + black colour-key hypothesis"
+ ],
+ "findings": "docs/ui-issues-language-bluescreen-checker-source.md"
+}

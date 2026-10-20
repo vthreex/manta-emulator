@@ -24,9 +24,11 @@ class PreservedBits {
   bool maybeUnknown(uint32_t a)const{return pageMaybe_[pageSlot(a)];}
   void noteUnknown(uint32_t a){pageMaybe_[pageSlot(a)]=true;}
   bool started_=false;
+  bool insPropagation_=false;   // opt-in (--exploratory-provenance-extensions): INS keeps the identity of untouched bits
   uint32_t live_=0;   // bit r set when registers_[r] holds any unknown bit (fast path when zero)
   void refreshLive(){live_=0;for(unsigned r=0;r<32;++r)if(unknown(registers_[r]))live_|=1u<<r;}
 public:
+  void enableInsPropagation(){insPropagation_=true;}
   static uint32_t backingAddress(uint32_t a) {
     if(a>=0x40000000 && a<0x48000000)return 0x08000000+a-0x40000000;
     if(a>=0x80000000 && a<0xc0000000)return a&0x1fffffff;
@@ -88,6 +90,15 @@ public:
       unsigned length=rd+1;
       if(shift+length>32)return "invalid EXT during preserved-bit provenance";
       for(unsigned i=0;i<length;++i)result[i]=registers_[rs][shift+i];
+      assign(rt,result);return {};
+    }
+    if(op==31 && fn==4 && insPropagation_) {
+      // INS rt, rs, pos, size: bits outside [pos,pos+size) keep rt's identity; the inserted field comes from rs, which must be known.
+      unsigned msb=rd,lsb=shift;
+      if(msb<lsb)return "invalid INS during preserved-bit provenance";
+      if(use(rs))return reject();
+      result=registers_[rt];
+      for(unsigned i=lsb;i<=msb && i<32;++i)result[i]={};
       assign(rt,result);return {};
     }
     if(op==31 && rs==0 && (w&0x7ff)==0x620) {

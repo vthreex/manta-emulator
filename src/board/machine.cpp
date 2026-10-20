@@ -141,6 +141,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("bit hypotheses: requires guarded exploration");
     riu_.addHypothesisBits(h.address,h.mask,h.value,h.scBank);
   }
+  if(o.provenanceExtensions){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("provenance extensions require guarded exploration");
+    preservedBits_.enableInsPropagation();
+  }
   if(o.exploratoryAvdNoise>=0){
     if(!o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
       throw std::runtime_error("AVD noise constant hypothesis requires the absent-HSYNC hypothesis and guarded exploration");
@@ -938,6 +942,8 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       auto defined = m.proveImmediateRmw(pc, a, n);
       if (defined)
         m.riu_.prepareRmw(a, defined);
+      else if (m.rmwIdentity_ && m.options_.provenanceExtensions)
+        m.riu_.prepareRmw(a, 0);   // identity write-back of an unknown register byte: nothing becomes known
     }
     if (m.options_.symbolicInit) {
       uint32_t words[8]{};
@@ -1578,6 +1584,7 @@ bool Msd309Machine::proveDiagnosticCache(uint32_t pc, uint32_t a, unsigned n) {
 // bits through it. Reject sampled-value branches, calls, escaping stores and other
 // uses of the sampled value. This is bit provenance, not a status response.
 uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigned width) {
+  rmwIdentity_ = false;
   if ((pc < 0x803b0180 || pc >= 0x806b8ce0) && (pc < 0xbfc00000 || pc >= 0xbfc02c60))
     return 0;
   uint32_t w;
@@ -1712,6 +1719,9 @@ uint32_t Msd309Machine::proveImmediateRmw(uint32_t pc, uint32_t address, unsigne
       if (target != address || n != width || !changed || dependent[rs])
         return 0;
       auto full = width == 4 ? 0xffffffff : (uint32_t(1) << (width * 8)) - 1;
+      // Only AND/OR with immediates and independent values reach here, so bit i of the stored value is bit i of the sample or a known
+      // constant. When no bit is defined every stored bit is the sampled bit itself: an identity write-back, not a decision.
+      if (!(full & ~dependent[rt]) && (dependent[rt] & full) == full) rmwIdentity_ = true;
       return full & ~dependent[rt];
     } else
       return 0;
@@ -1958,7 +1968,7 @@ void Msd309Machine::publishPreview() const {
     options_.previewStore->publishOffscreen(std::move(off));
   }
   auto layers = collectGopLayers();
-  auto frame = composeGopPreview(layers);
+  auto frame = composeGopPreview(layers,1920,1080,options_.videoPlaneBlackKey && !options_.videoPlane.empty());
   if(options_.exploratoryGeHeight5Full)frame.label+=" | HYPOTHESIS: register 6F=height-5 copies full height";
   if(riu_.geBlendCopies)frame.label+=" | EXPLORATORY GE blend-copy model in use (not Titania4 behavior)";
   if(riu_.geI2Glyphs)frame.label+=" | EXPLORATORY GE I2-glyph model in use (not Titania4 behavior)";
@@ -1979,6 +1989,7 @@ void Msd309Machine::publishPreview() const {
     }
     frame.planeActive=true;frame.planeRgb=blue?0x000000ffu:0u;
     frame.label+=" | EXPLORATORY VIDEO PLANE (not emulated video; "+why+") behind the guest graphics";
+    if(options_.videoPlaneBlackKey)frame.label+=" | HYPOTHESIS: opaque black guest pixels are colour-keyed transparent (unverified)";
   }
   if (!options_.gopFrameHistory.empty() && !frame.empty() && frame.checksum != historyChecksum_ && historyFrames_ < 128) {
     // Every distinct GOP content state, in guest-time order (diagnostic timeline; the window itself only shows the latest).
