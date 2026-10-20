@@ -70,11 +70,15 @@ with tempfile.TemporaryDirectory(prefix='manta-snapshot-test-') as d:
     msg = load_attempt(data, extra=['--max-or1k-instructions', '123456789'])
     assert 'different run configuration' in msg, msg[-300:]
     checks['different_configuration_rejected'] = True
-    # superset load: only with the explicit flag, only when every option of the snapshot is still present; the extras are reported
-    r = run(['--load-state', str(good), '--load-state-allow-extra-options', '--max-or1k-instructions', '123456789', '--max-instructions', str(a.save_at + 2000000)], d / 'sup.json')
+    # superset load: only with the explicit flag, only when every option of the snapshot is still present; supported extras are applied/reported,
+    # options whose state lives inside the snapshot are REFUSED (never silently ignored)
+    r = run(['--load-state', str(good), '--load-state-allow-extra-options', '--exploratory-provenance-extensions', '--max-instructions', str(a.save_at + 2000000)], d / 'sup.json')
     sup = json.load(open(d / 'sup.json'))
-    assert r.returncode in (0, 2) and '--max-or1k-instructions' in sup.get('snapshot_option_delta', ''), (r.stderr + r.stdout)[-300:]
+    assert r.returncode in (0, 2) and '--exploratory-provenance-extensions' in sup.get('snapshot_option_delta', ''), (r.stderr + r.stdout)[-300:]
     checks['superset_load_reports_extra_options'] = sup['snapshot_option_delta'].strip()
+    r = run(['--load-state', str(good), '--load-state-allow-extra-options', '--max-or1k-instructions', '123456789', '--max-instructions', str(a.save_at + 2000000)], d / 'sup2.json', expect_fail=True)
+    assert 'cannot be added to a snapshot' in (r.stderr + r.stdout), (r.stderr + r.stdout)[-300:]
+    checks['superset_load_refuses_unsupported_extra_option'] = True
     msg = load_attempt(b'not a snapshot at all, but long enough to pass size checks' * 4)
     assert 'checksum' in msg or 'not a Manta' in msg, msg[-300:]
     checks['garbage_rejected'] = True
