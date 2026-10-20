@@ -939,9 +939,9 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
   for(const auto& h:hypothesisBits_)
     if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h)){
-      // PM power byte 1F001CD0: the original setter (804F1320) read-modify-writes bits 5:4 and carries bit 6 back unchanged; such a store cannot
-      // manufacture the hypothesised bits, every other store (and every other hypothesis) is still refused.
-      bool carriedBack=h.address==0x1f001cd0u && (((v>>(8*(h.address-a)))&h.mask)==h.value);
+      // A read-modify-write that carries the hypothesised bits back unchanged (PM byte 1F001CD0 via 804F1320; any hypothesis declared +rmw, e.g. GOP register 1F203FE0 via 8053A210) cannot
+      // manufacture the hypothesised bits; any store that changes them is still refused.
+      bool carriedBack=(h.rmw || h.address==0x1f001cd0u) && (((v>>(8*(h.address-a)))&h.mask)==h.value);
       if(!carriedBack)throw std::runtime_error("hardware-owned status byte under a bit hypothesis; guest writes cannot manufacture it");
     }
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04)

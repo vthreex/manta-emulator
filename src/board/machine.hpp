@@ -86,7 +86,7 @@ struct Options {
   bool exploratoryGeNearestStretch=false;   // EXPLORATORY: also execute NON-uniform ARGB1555->C stretches with nearest sampling (needs opaque-source)
   int exploratoryGeUniformStretch=-1;   // EXPLORATORY: 0 opaque-source, 1 alpha-bit (uniform-colour stretched BitBlt only)
   int exploratoryAfecIndirect=-1;   // HYPOTHESIS: content of the indirectly addressed AFEC register 6A3C (bracket it)
-  struct BitHypothesis { uint32_t address; unsigned mask, value; int scBank = -1; };
+  struct BitHypothesis { uint32_t address; unsigned mask, value; int scBank = -1; bool rmw = false; bool init = false; };
   std::vector<BitHypothesis> bitHypotheses;   // HYPOTHESIS: --exploratory-mmio-bits ADDR:MASK:VALUE (bit-scoped constants)
   int exploratoryAvdNoise=-1;   // HYPOTHESIS: AFEC noise-magnitude byte BF206A04 reads this constant (requires absent-HSYNC); bracket it
   int exploratoryAvdHtotal=-1;   // HYPOTHESIS: published AFEC HTotal reads this constant (requires absent-HSYNC); bracket it

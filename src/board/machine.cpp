@@ -139,7 +139,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   }
   for(const auto& h:o.bitHypotheses){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("bit hypotheses: requires guarded exploration");
-    riu_.addHypothesisBits(h.address,h.mask,h.value,h.scBank);
+    riu_.addHypothesisBits(h.address,h.mask,h.value,h.scBank,h.rmw,h.init);
   }
   if(o.provenanceExtensions){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("provenance extensions require guarded exploration");
@@ -2215,6 +2215,15 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
   if(options_.exploratoryAvdNoSyncEvents)s<<",\n  \"exploratory_avd_no_sync_events\": true,\n  \"avd_event_acks\": "<<riu_.avdMcuBus().eventAcks;
   if(options_.diagnosticAvd11dbBit7>=0)s<<",\n  \"diagnostic_avd_11db_bit7\": "<<options_.diagnosticAvd11dbBit7;
+  if(!options_.watchData.empty()){
+    s<<",\n  \"watched_unknown_bit_origins\": [";bool firstWo=true;
+    for(auto& [wa,wl]:options_.watchData)for(uint32_t k=0;k<wl && k<64;++k){
+      auto d=preservedBits_.describeMemory(wa+k);if(d.empty())continue;
+      if(!firstWo)s<<',';firstWo=false;
+      s<<"\n    {\"address\":\""<<hex(wa+k)<<"\",\"origins\":\""<<d<<"\"}";
+    }
+    s<<"\n  ]";
+  }
   if(!dataAccess_.empty()){
     s<<",\n  \"watched_data_accesses\": [";bool firstDa=true;
     for(auto& [key,e]:dataAccess_){

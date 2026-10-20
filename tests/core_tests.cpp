@@ -2391,6 +2391,27 @@ void avdBusTests(){
     bus.read(0x8000)->origin==0x11dc,"private RAM copying preserves unknown peripheral provenance");
   require(!bus.write(0x8100,{0,255,0}) && !bus.read(0x8100),"private XRAM extent remains bounded");
 }
+void hypothesisKindTests(){
+  // +init: reset-value hypothesis; the MASK bits start known with VALUE, the guest's own write replaces them, other bits stay unknown.
+  {
+    manta::Riu r;r.event=[](const auto &, auto, auto, auto, const auto &) {};r.symbolicInit=true;
+    r.addHypothesisBits(0x1f206ba8,0x10,0x10,-1,false,true);
+    require((r.knownBits(0x1f206ba8,1)&0xff)==0x10,"reset-value hypothesis makes only the masked bit known");
+    r.prepareMaskedRead(0x1f206ba8,0x10);require((r.read(0x1f206ba8,1,0x1234,0x10,1)&0x10)==0x10 && r.stopReason.empty(),"reset-value hypothesis seeds the value");
+    r.write(0x1f206ba8,1,0x00,0x80503b84,0xff,5);
+    r.prepareMaskedRead(0x1f206ba8,0x10);require((r.read(0x1f206ba8,1,0x1234,0x10,6)&0x10)==0 && r.stopReason.empty(),"a guest write replaces a reset-value hypothesis (ordinary register behaviour)");
+  }
+  // default hypothesis stays read-only; +rmw allows only a store that carries the hypothesised bits back unchanged
+  {
+    manta::Riu r;r.event=[](const auto &, auto, auto, auto, const auto &) {};r.symbolicInit=true;
+    r.addHypothesisBits(0x1f204151,0x01,0x01);
+    rejects([&]{r.write(0x1f204150,2,0x0100,0x8053a358,0xffff,1);});
+    manta::Riu q;q.event=[](const auto &, auto, auto, auto, const auto &) {};q.symbolicInit=true;
+    q.addHypothesisBits(0x1f204151,0x01,0x01,-1,true,false);
+    q.write(0x1f204150,2,0x0103,0x8053a358,0xffff,1);
+    rejects([&]{q.write(0x1f204150,2,0x0003,0x8053a358,0xffff,2);});
+  }
+}
 void i2GlyphAlphaTests(){
   // Register file of a real glyph request (captured from the original ZUI font renderer); blend coefficient in register 11 low byte.
   auto make=[](uint16_t reg11,uint16_t reg13){
@@ -2413,6 +2434,7 @@ void i2GlyphAlphaTests(){
 int main() {
   try {
     i2GlyphAlphaTests();
+    hypothesisKindTests();
     {
       manta::AvdMcuBus bus;std::map<uint32_t,manta::VdByte> bytes;
       bus.sharedWrite=[&](uint32_t a,manta::VdByte v){bytes[a]=v;};

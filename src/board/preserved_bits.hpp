@@ -1,6 +1,7 @@
 #pragma once
 #include "snapshot/archive.hpp"
 #include <array>
+#include <cstdio>
 #include <bitset>
 #include <cstdint>
 #include <functional>
@@ -54,6 +55,14 @@ public:
     started_=true;
     std::array<Bit,8> v{};for(unsigned bit=0;bit<8;++bit)v[bit]={key,uint8_t(bit)};
     memory_[backingAddress(address)]=v;noteUnknown(backingAddress(address));
+  }
+  // Observation only: per-bit origin (originating register-byte key and bit) of an unknown RAM byte, for diagnostics.
+  std::string describeMemory(uint32_t address) const {
+    auto it=memory_.find(backingAddress(address));if(it==memory_.end())return {};
+    std::string out;char buf[48];
+    for(unsigned bit=0;bit<8;++bit){const auto &x=it->second[bit];if(!x.byte)continue;
+      snprintf(buf,sizeof buf,"%sbit%u<-%08x.%u%s",out.empty()?"":" ",bit,x.byte,unsigned(x.bit),x.inverted?"(inv)":"");out+=buf;}
+    return out;
   }
   bool memoryUnknown(uint32_t address) const { return maybeUnknown(backingAddress(address)) && memory_.contains(backingAddress(address)); }
   void overwriteKnownMemory(uint32_t address,size_t size) {
