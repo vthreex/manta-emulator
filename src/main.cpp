@@ -20,7 +20,7 @@ static std::filesystem::path utf8Path(const std::string &s) {
 static std::string stateFingerprint(const std::vector<std::string> &args, std::string &canonicalOut) {
   static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--save-state-at",
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--preview-capture",
-    "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--dump-prefix", "--watch-pc-regs",
+    "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at"};
   static const std::set<std::string> flags = {"--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
@@ -304,6 +304,11 @@ static int appMain(const std::vector<std::string> &args) {
           o.watchPcRegs.push_back(uint32_t(pc));pos=comma+1;
         }
       }
+      else if (a == "--watch-guest-access"){
+        auto spec=value(i);auto at=spec.find('+');
+        if(at==std::string::npos)throw std::runtime_error("--watch-guest-access needs HEXADDR+HEXLEN");
+        o.watchData.push_back({uint32_t(std::stoul(spec.substr(0,at),nullptr,16)),uint32_t(std::stoul(spec.substr(at+1),nullptr,16))});
+      }
       else if (a == "--dump-guest-range"){
         auto spec=value(i);auto at=spec.find('+');
         if(at==std::string::npos)throw std::runtime_error("--dump-guest-range needs HEXADDR+HEXLEN");
@@ -491,6 +496,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--load-state-allow-extra-options: also accept a snapshot whose recorded options are a strict subset of the current ones; the extra options are reported as snapshot_option_delta (use for labelled hypotheses added after the checkpoint)\n"
                "--state-digest: add per-section SHA-256 digests of the complete machine state to the summary (equivalence tests)\n"
                "--profile FILE: opt-in statistical profiler (instruction-pointer histogram of the emulation thread); never changes guest state\n"
+               "--watch-guest-access HEXADDR+HEXLEN: READ-ONLY observation; the summary lists every instruction (pc, ra, count, first/last value) that loads from or stores to that guest physical range; repeatable\n"
                "--summary FILE --coverage FILE --max-instructions N\n"
                "--tsp-firmware-dump FILE: bounded private dump of original guest TSP_SetBase input; requires --candidate-tsp\n"
                "--break-pc PC --pause-on-mmio PHYSICAL_ADDRESS\n"

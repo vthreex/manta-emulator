@@ -873,6 +873,15 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       ++m.flashReads_;
     if (op >= 40 && address < 0x08000000)
       ++m.dramWrites_;
+    if (!m.options_.watchData.empty())
+      for (auto& [wa, wl] : m.options_.watchData)
+        if (address < uint64_t(wa) + wl && uint64_t(address) + ((op==32||op==36||op==40)?1u:(op==33||op==37||op==41)?2u:4u) > wa) {
+          auto& e = m.dataAccess_[(uint64_t(a) << 1) | (op >= 40 ? 1u : 0u)];
+          auto value = m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31));
+          if (!e.count) { e.firstDispatch = m.dispatches_; e.ra = m.cpu_.reg(UC_MIPS_REG_RA); e.firstValue = value; e.address = address; }
+          e.lastValue = value; ++e.count;
+          break;
+        }
   }
   if (m.options_.traceInstructions)
     m.event("instruction", uint32_t(a), 4, w,
@@ -1976,15 +1985,15 @@ void Msd309Machine::publishPreview() const {
   if(!options_.videoPlane.empty()){
     // EXPLORATORY: the emulator has no video plane. Pixels no enabled GOP window provides (or whose ARGB1555 alpha bit is clear) are shown in a
     // flat colour instead of the checker. Colour source: fixed black/blue, or the guest's own Blue Screen setting (original settings byte
-    // 806FBD50 bit 5; verified to toggle with the menu item on the original firmware image only). No input signal exists, so this is the
+    // 806FBD85 bit 4; verified to toggle with the menu item on the original firmware image only). No input signal exists, so this is the
     // no-signal background a TV would show there; it is not decoded video and not verified panel output.
     bool blue=options_.videoPlane=="blue";
     std::string why=options_.videoPlane;
     if(options_.videoPlane=="setting"){
       blue=false;why="setting: guest Blue Screen setting unreadable -> black";
-      constexpr uint32_t setting=0x006fbd50;
+      constexpr uint32_t setting=0x006fbd85;
       if(flash_.stockDigest()=="471e1f1c284e3c0fc9af68be0d8a79d0d635e0a1cca31066cd1e6df91e406d83" && dramBacking_.size()>setting && !preservedBits_.memoryUnknown(setting) && !unknownObservations_.bytes().contains(setting)){
-        blue=(dramBacking_[setting]&0x20)!=0;why=std::string("setting: guest Blue Screen ")+(blue?"On -> blue":"Off -> black");
+        blue=(dramBacking_[setting]&0x10)!=0;why=std::string("setting: guest Blue Screen ")+(blue?"On -> blue":"Off -> black");
       }
     }
     frame.planeActive=true;frame.planeRgb=blue?0x000000ffu:0u;
@@ -2206,6 +2215,14 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"ge_parameter_retirements\": " << riu_.geCompleted();
   if(options_.exploratoryAvdNoSyncEvents)s<<",\n  \"exploratory_avd_no_sync_events\": true,\n  \"avd_event_acks\": "<<riu_.avdMcuBus().eventAcks;
   if(options_.diagnosticAvd11dbBit7>=0)s<<",\n  \"diagnostic_avd_11db_bit7\": "<<options_.diagnosticAvd11dbBit7;
+  if(!dataAccess_.empty()){
+    s<<",\n  \"watched_data_accesses\": [";bool firstDa=true;
+    for(auto& [key,e]:dataAccess_){
+      if(!firstDa)s<<',';firstDa=false;
+      s<<"\n    {\"pc\":\""<<hex(uint32_t(key>>1))<<"\",\"kind\":\""<<((key&1)?"store":"load")<<"\",\"count\":"<<e.count<<",\"first_dispatch\":"<<e.firstDispatch<<",\"address\":\""<<hex(e.address)<<"\",\"ra\":\""<<hex(e.ra)<<"\",\"first_value\":\""<<hex(e.firstValue)<<"\",\"last_value\":\""<<hex(e.lastValue)<<"\"}";
+    }
+    s<<"\n  ]";
+  }
   if(!watchHits_.empty()){
     s<<",\n  \"watched_pc_hits\": {";bool firstPc=true;
     for(auto& [pc,entry]:watchHits_){

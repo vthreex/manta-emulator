@@ -21,7 +21,7 @@ DOWN `0x0E` (OSD Language -> Restore User Default -> Blue Screen), OK `0x0D`.
 
 ## 2. Blue Screen "not working" — the setting works; nothing displays it
 
-* OK on Blue Screen toggles On/Off in guest state: RAM `0x806FBD50` bit 5 (On = 1, Off = 0; byte `E1` <-> `D1`), the menu value
+* OK on Blue Screen toggles On/Off in guest state: bit 12 of the settings word at `0x806FBD84`, i.e. **bit 4 of byte `0x806FBD85`** (`0x10` = On, `0x00` = Off). The toggle handler is `804D2AB4..804D2AD8` (read-modify-write of the word at settings-base+0x38, base `0x806FBD4C`), followed by a call to `8047A00C(0)`. **Correction:** an earlier note named `0x806FBD50` bit 5; that halfword is the settings **checksum** (verified by `80472F60..80472F84`, a running byte sum + `0x55` compared with `lhu 4(base)`, and rewritten by `8047424C`); it changes with every setting (the language selection changes it too), so it only looked like the Blue Screen bit by coincidence. The menu text follows, the firmware saves the settings to SPI flash, and re-runs its scaler source setup.
   text follows, and the firmware saves it to SPI flash (page programs ~0.45M dispatches later). It also re-runs its scaler
   source setup (`803E0430` -> `805EF0F0`, `805F1878`, `805F25EC`).
 * The emulator has no video plane, so there is nothing that turns the setting into a visible colour. Which scaler/mixer

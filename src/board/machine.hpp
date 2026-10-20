@@ -115,6 +115,7 @@ struct Options {
   uint64_t orBudget=10000000;
   uint64_t orDivider=1;
   uint32_t breakpoint = 0, pauseMmio = 0;
+  std::vector<std::pair<uint32_t,uint32_t>> watchData;   // read-only observation: guest physical (address,length) whose loads/stores are recorded per instruction
   std::vector<std::pair<uint32_t,uint32_t>> dumpRanges;   // read-only: guest physical (address,length) written to FILE_<addr>.bin after the run
   std::filesystem::path dumpPrefix;
   struct OffscreenSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; };
@@ -253,6 +254,8 @@ public:
   struct WatchHit { uint64_t dispatch; uint32_t reg[32]; uint32_t stack[8]; };
   std::map<uint32_t, std::pair<uint64_t, std::vector<WatchHit>>> watchHits_; // pc -> (count, first 6 + last 18 hits)
   std::vector<uint8_t> watchSet_;   // bitmap over code addresses (empty = off)
+  struct DataAccess { uint64_t count = 0, firstDispatch = 0; uint32_t ra = 0, firstValue = 0, lastValue = 0, address = 0; };
+  std::map<uint64_t, DataAccess> dataAccess_;   // (pc<<1 | isStore) -> counters; observation only
   std::vector<GopLayer> collectGopLayers() const;
   void publishPreview() const;
   struct IrLogEntry { uint64_t dispatch; std::string function; int raw; bool accepted; std::string note; };
