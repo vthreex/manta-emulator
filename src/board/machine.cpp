@@ -139,7 +139,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   }
   for(const auto& h:o.bitHypotheses){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("bit hypotheses: requires guarded exploration");
-    riu_.addHypothesisBits(h.address,h.mask,h.value,h.scBank,h.rmw,h.init);
+    riu_.addHypothesisBits(h.address,h.mask,h.value,h.scBank,h.rmw,h.init,h.ack);
   }
   if(o.provenanceExtensions){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("provenance extensions require guarded exploration");

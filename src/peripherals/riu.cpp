@@ -618,6 +618,9 @@ RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
   return it==gopActive_.end()?RiuByte{}:it->second;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  for(auto& h:hypothesisBits_)if(h.ack && h.pending && a<=h.address && uint64_t(a)+n>h.address){
+    auto& byte=bytes_[storageKey(h.address)];byte.value=h.value;byte.known=255;h.pending=false;
+  }
   if(vifZeroInput_.enabled())for(unsigned i=0;i<n;++i)if(VifZeroInput::observation(a+i)){
     updateVifZeroInput(tick);
     if(vifZeroInput_.sample(a+i).known){
@@ -942,6 +945,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h)){
       // A read-modify-write that carries the hypothesised bits back unchanged (PM byte 1F001CD0 via 804F1320; any hypothesis declared +rmw, e.g. GOP register 1F203FE0 via 8053A210) cannot
       // manufacture the hypothesised bits; any store that changes them is still refused.
+      if(h.ack)continue;   // peer-acknowledged mailbox byte: the guest writes it normally (armed below)
       bool carriedBack=(h.rmw || h.address==0x1f001cd0u) && (((v>>(8*(h.address-a)))&h.mask)==h.value);
       if(!carriedBack)throw std::runtime_error("hardware-owned status byte under a bit hypothesis; guest writes cannot manufacture it");
     }
@@ -955,6 +959,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(a<=observed && uint64_t(a)+n>observed)
       throw std::runtime_error("VIF live AGC observation is hardware-owned; guest writes cannot manufacture measurements");
   // Also invalidate if an observer ever performs a nested controller write.
+  for(auto& h:hypothesisBits_)if(h.ack && a<=h.address && uint64_t(a)+n>h.address){h.pending=true;++h.reads;
+    event("exploratory_mailbox_ack_armed",h.address,1,h.value,"HYPOTHESIS, not a measurement: a peer coprocessor acknowledges this mailbox byte; the next guest read returns the acknowledge value");}
   tspBurstMappingActive_=false;
   advanceGopUpdate(tick); // latch the old shadow state before this timestamped write
   advancePm(tick);

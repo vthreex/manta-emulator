@@ -176,7 +176,7 @@ void ioClass(Ar& a, Riu& r) {
       bool have = false;
       for (auto& h : r.hypothesisBits_) have = have || (h.address == c.address && h.scBank == c.scBank && h.mask == c.mask);
       if (!have) { c.reads = 0; r.hypothesisBits_.push_back(c); }
-      else for (auto& h : r.hypothesisBits_) if (h.address == c.address && h.scBank == c.scBank && h.mask == c.mask) { h.rmw = c.rmw; h.init = c.init; }
+      else for (auto& h : r.hypothesisBits_) if (h.address == c.address && h.scBank == c.scBank && h.mask == c.mask) { h.rmw = c.rmw; h.init = c.init; h.ack = c.ack; }
     }
   a(r.exploratoryAfecIndirect_, r.afecIndirectValue_, r.afecIndirectReads_, r.afecIndirectWrites_, r.avdNoiseReads_, r.avdHtotalReads_, r.vifCrLockReads_,
     r.exploratoryAvdNoSyncEvents_, r.diagnosticAvd11dbBit7_, r.exploratoryVifRevision_, r.vifRevisionReads_, r.vifZeroInput_, r.vifZeroInputReads_,
@@ -468,6 +468,7 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   }
   { auto& s = find(sections, "flash"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, flash_); }
   { auto& s = find(sections, "riu"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, riu_); }
+  riu_.reapplyInitHypotheses();
   riu_.exploratoryGeLine = options_.exploratoryGeLine;   // not part of the snapshot format: always taken from the current options
   // Superset load: options added after the snapshot are either runtime-read (accepted), applied to the restored devices here, or REFUSED.
   // Silently ignoring an added option whose state lives in the serialized device configuration would mislabel the run.

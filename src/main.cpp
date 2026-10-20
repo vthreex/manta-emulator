@@ -152,15 +152,16 @@ static int appMain(const std::vector<std::string> &args) {
         unsigned long addr=0,mask=0,val=0;char c1=0,c2=0;int scBank=-1;
         auto at=spec.find('@');
         if(at!=std::string::npos){scBank=int(std::stoul(spec.substr(at+1),nullptr,0));spec=spec.substr(0,at);}
-        bool rmw=false,init=false;
+        bool rmw=false,init=false,ack=false;
         for(bool again=true;again;){
           again=false;
           if(spec.size()>4 && spec.compare(spec.size()-4,4,"+rmw")==0){rmw=true;spec.resize(spec.size()-4);again=true;}
           if(spec.size()>5 && spec.compare(spec.size()-5,5,"+init")==0){init=true;spec.resize(spec.size()-5);again=true;}
+          if(spec.size()>4 && spec.compare(spec.size()-4,4,"+ack")==0){ack=true;spec.resize(spec.size()-4);again=true;}
         }
-        if(std::sscanf(spec.c_str(),"%lx%c%lx%c%lx",&addr,&c1,&mask,&c2,&val)!=5 || c1!=':' || c2!=':' || mask>255 || val>255 || (val&~mask) || !((addr>=0x1f200000ul && addr<0x1f400000ul) || addr==0x1f001cd0ul))
-          throw std::runtime_error("--exploratory-mmio-bits needs 1F2xxxxx (or the PM status byte 1F001CD0):MASK:VALUE[+rmw][+init][@SCBANK] (hex, value within mask)");
-        o.bitHypotheses.push_back({uint32_t(addr),unsigned(mask),unsigned(val),scBank,rmw,init});
+        if(std::sscanf(spec.c_str(),"%lx%c%lx%c%lx",&addr,&c1,&mask,&c2,&val)!=5 || c1!=':' || c2!=':' || mask>255 || val>255 || (val&~mask) || !(addr>=0x1f000000ul && addr<0x1f400000ul))
+          throw std::runtime_error("--exploratory-mmio-bits needs a RIU address 1F000000..1F3FFFFF:MASK:VALUE[+rmw][+init][+ack][@SCBANK] (hex, value within mask)");
+        o.bitHypotheses.push_back({uint32_t(addr),unsigned(mask),unsigned(val),scBank,rmw,init,ack});
       }
       else if(a=="--exploratory-afec-indirect-6a3c"){
         auto token=value(i);size_t used=0;auto n=std::stoul(token,&used,0);

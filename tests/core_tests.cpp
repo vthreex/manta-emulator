@@ -2401,6 +2401,17 @@ void hypothesisKindTests(){
     r.write(0x1f206ba8,1,0x00,0x80503b84,0xff,5);
     r.prepareMaskedRead(0x1f206ba8,0x10);require((r.read(0x1f206ba8,1,0x1234,0x10,6)&0x10)==0 && r.stopReason.empty(),"a guest write replaces a reset-value hypothesis (ordinary register behaviour)");
   }
+  // +ack: peer-acknowledged mailbox byte; the guest writes it normally, the next read returns the acknowledge value, and every new write re-arms it
+  {
+    manta::Riu r;r.event=[](const auto &, auto, auto, auto, const auto &) {};r.symbolicInit=true;
+    r.addHypothesisBits(0x1f204160,0xff,0x00,-1,false,false,true);
+    r.write(0x1f204160,1,0x78,0x805db6b0,0xff,1);
+    r.prepareMaskedRead(0x1f204160,0xff);
+    require(r.read(0x1f204160,1,0x805db6c0,0xff,2)==0 && r.stopReason.empty(),"mailbox ack returns the acknowledge value after a guest write");
+    r.write(0x1f204160,1,0x56,0x805db6b0,0xff,3);
+    r.prepareMaskedRead(0x1f204160,0xff);
+    require(r.read(0x1f204160,1,0x805db6c0,0xff,4)==0 && r.hypothesisBits()[0].reads==2,"each guest write re-arms the acknowledge");
+  }
   // default hypothesis stays read-only; +rmw allows only a store that carries the hypothesised bits back unchanged
   {
     manta::Riu r;r.event=[](const auto &, auto, auto, auto, const auto &) {};r.symbolicInit=true;

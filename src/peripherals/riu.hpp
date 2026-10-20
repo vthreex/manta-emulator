@@ -118,7 +118,7 @@ class Riu {
   std::string guardedStretchDetail_;
   int exploratoryAvdHtotal_=-1;
   int exploratoryAvdNoise_=-1;
-  struct HypothesisBits { uint32_t address; uint8_t mask, value; uint64_t reads; int scBank; bool rmw = false; bool init = false; };   // rmw: guest-writable register, only MASK is hardware-owned; carried-back stores allowed
+  struct HypothesisBits { uint32_t address; uint8_t mask, value; uint64_t reads; int scBank; bool rmw = false; bool init = false; bool ack = false; bool pending = false; };   // ack: peer-acknowledged mailbox byte (the next read after a guest write returns VALUE)   // rmw: guest-writable register, only MASK is hardware-owned; carried-back stores allowed
   std::vector<HypothesisBits> hypothesisBits_;   // EXPLORATORY: bit-scoped constants for hardware-owned status bytes
   int exploratoryAfecIndirect_=-1;   // -1 off, else initial 16-bit content of the indirectly addressed register 6A3C
   uint16_t afecIndirectValue_=0;
@@ -554,23 +554,38 @@ public:
   // HYPOTHESIS: only the bits in `mask` of the byte at `address` read as `value`; every other bit keeps its provenance. Guest writes are rejected.
   // scBank >= 0 scopes an address inside the banked scaler aperture (BF205E04..) to that bank selector value (BF205E00).
   bool hypothesisApplies(const HypothesisBits& h) const {
-    if (h.init) return false;   // reset-value hypothesis: seeded into storage once, then ordinary register behaviour
+    if (h.init || h.ack) return false;   // reset-value / mailbox-ack hypotheses use ordinary storage: seeded into storage once, then ordinary register behaviour
     if (h.scBank < 0) return true;
     auto it = bytes_.find(0x1f205e00);
     return it != bytes_.end() && it->second.known == 255 && it->second.value == unsigned(h.scBank);
   }
-  void addHypothesisBits(uint32_t address, unsigned mask, unsigned value, int scBank = -1, bool rmw = false, bool init = false) {
-    if (!((address >= 0x1f200000u && address < 0x1f400000u) || address == 0x1f001cd0u) || !(mask & 255) || (value & ~mask & 255)) throw std::runtime_error("invalid bit hypothesis");
+  void addHypothesisBits(uint32_t address, unsigned mask, unsigned value, int scBank = -1, bool rmw = false, bool init = false, bool ack = false) {
+    if (!(address >= 0x1f000000u && address < 0x1f400000u) || !(mask & 255) || (value & ~mask & 255)) throw std::runtime_error("invalid bit hypothesis");
     for (auto& h : hypothesisBits_) if (h.address == address && h.scBank == scBank && (h.mask & mask)) throw std::runtime_error("duplicate bit hypothesis");   // disjoint masks of one byte may be bracketed separately
     if (scBank >= 0 && (address < 0x1f205e04u || address >= 0x1f206000u)) throw std::runtime_error("scaler bank scope needs an address inside BF205E04..");
-    hypothesisBits_.push_back({address, uint8_t(mask), uint8_t(value), 0, scBank, rmw, init});
+    hypothesisBits_.push_back({address, uint8_t(mask), uint8_t(value), 0, scBank, rmw, init, ack, false});
     if (init) {   // EXPLORATORY reset value: the MASK bits start known with VALUE; the guest's own writes replace them as for any register
-      auto& b = bytes_[storageKey(address)];
+      auto& b = bytes_[initKey(address, scBank)];
       b.value = uint8_t((b.value & ~mask) | value);
       b.known |= uint8_t(mask);
     }
   }
   const std::vector<HypothesisBits>& hypothesisBits() const { return hypothesisBits_; }
+  // After a snapshot restore: reset-value (+init) hypotheses seed bytes whose masked bits are still unknown (a restored byte the guest already wrote is left alone).
+  // Storage key for seeding a reset-value hypothesis; a scaler-bank-scoped one addresses its own bank without needing the (unknown) current selector.
+  uint32_t initKey(uint32_t address, int scBank) const {
+    if (scBank >= 0 && address >= 0x1f205e04u && address < 0x1f206000u) return 0x81000000u + (uint32_t(scBank) << 10) + address - 0x1f205e00u;
+    return storageKey(address);
+  }
+  void reapplyInitHypotheses() {
+    for (auto& h : hypothesisBits_) {
+      if (!h.init) continue;
+      auto& b = bytes_[initKey(h.address, h.scBank)];
+      if ((b.known & h.mask) == h.mask) continue;
+      b.value = uint8_t((b.value & ~h.mask) | h.value);
+      b.known |= h.mask;
+    }
+  }
   uint64_t avdNoiseReads() const { return avdNoiseReads_; }
   uint64_t avdHtotalReads() const { return avdHtotalReads_; }
   const std::string& guardedStretchDetail() const { return guardedStretchDetail_; }
