@@ -9,5 +9,5 @@
     "after Right then Left": "fa3d35f5eec818d2 (back on Picture page, first item)",
     "after Esc": "a75e13eb0886697d = identical to the NO SIGNAL frame before the menu"
   },
-  "notes": "the second Down landed while the page was still redrawing and was folded into the next frames; frame hashes are of the diagnostic GOP preview (exploratory GE models), not panel output"
+  "notes": "the frame after the second Down (25ce01451293cc4c) was not compared with a scripted frame (likely Aspect Ratio highlighted, not visually checked); frame hashes are of the diagnostic GOP preview (exploratory GE models), not panel output"
 }
