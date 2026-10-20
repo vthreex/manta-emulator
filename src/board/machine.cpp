@@ -1,4 +1,5 @@
 #include "board/machine.hpp"
+#include "profile/sampler.hpp"
 #include "board/mmio_read_mask.hpp"
 #include "board/htotal_join.hpp"
 #include "storage/sha256.hpp"
@@ -959,6 +960,13 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       if(std::equal(std::begin(expected),std::end(expected),std::begin(actual)))
         m.riu_.prepareMaskedRead(a,1); // full straight-line original reader; only bit 0 returned
     }
+    if(m.options_.symbolicInit && pc==0x804f130c && a==0x1f001cd0 && n==1) {
+      // Original PM bit-test helper 804F1304: LBU / ANDI 0xFF / AND a0 / JR / SLTU; only the bits selected by a0 reach the result.
+      constexpr uint32_t expected[]={0x90a31cd0,0x306300ff,0x00831024,0x03e00008,0x0002102b};
+      uint32_t actual[5]{}; m.cpu_.read(pc&0x1fffffff,actual,sizeof(actual));
+      if(std::equal(std::begin(expected),std::end(expected),std::begin(actual)) && (m.cpu_.reg(UC_MIPS_REG_4)&0xff))
+        m.riu_.prepareMaskedRead(a,m.cpu_.reg(UC_MIPS_REG_4)&0xff);
+    }
     if(m.options_.deferDiagnosticReads && m.options_.symbolicInit && n==2 && m.riu_.scBank()==2 &&
        ((pc==0x805fe1b4 && a==0x1f205e10) || (pc==0x805fe1b8 && a==0x1f205e14))) {
       constexpr uint32_t expected[]={0x94850000,0x94620000,0x8ee40010,0x3c038073,0x30a5ffff,
@@ -1806,6 +1814,8 @@ int Msd309Machine::run() {
   if (!options_.loadState.empty()) restoreSnapshot(options_.loadState);
   if (!options_.saveState.empty() && options_.loadState.empty() && (options_.trace.empty() == false || options_.replay.empty() == false))
     throw std::runtime_error("save-state cannot be combined with --record-trace/--replay-trace");
+  Sampler sampler;
+  if (!options_.profile.empty()) sampler.start(500);
   auto e = resumed_ ? cpu_.run(resumePc_, options_.limit > dispatches_ ? options_.limit - dispatches_ : 1)
                     : cpu_.run(options_.stage2 ? 0x81000000 : 0xbfc00000, options_.limit);
   while (!stopped_ && joinResume_) {
@@ -1814,6 +1824,7 @@ int Msd309Machine::run() {
     if (dispatches_ >= options_.limit)break;
     e = cpu_.run(joinResumePc_, options_.limit - dispatches_);
   }
+  if (!options_.profile.empty()) sampler.stopAndWrite(options_.profile);
   if (!stopped_) {
     blockingPc_ = cpu_.reg(UC_MIPS_REG_PC);
     reason_ = e == UC_ERR_OK ? "instruction budget exhausted" : uc_strerror(e);
@@ -2210,6 +2221,7 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryAvdNoise>=0)s<<",\n  \"exploratory_avd_noise_constant\": "<<options_.exploratoryAvdNoise<<",\n  \"exploratory_avd_noise_reads\": "<<riu_.avdNoiseReads();
   if(options_.exploratoryAvdHtotal>=0)s<<",\n  \"exploratory_avd_htotal_constant\": "<<options_.exploratoryAvdHtotal<<",\n  \"exploratory_avd_htotal_reads\": "<<riu_.avdHtotalReads();
   if(!riu_.guardedStretchDetail().empty())s<<",\n  \"ge_guarded_stretch_request\": \""<<riu_.guardedStretchDetail()<<"\"";
+  if(!snapshotOptionDelta_.empty())s<<",\n  \"snapshot_option_delta\": \""<<snapshotOptionDelta_<<"\"";
   if(options_.stateDigest){
     auto sections=const_cast<Msd309Machine*>(this)->captureSections(cpu_.reg(UC_MIPS_REG_PC));
     std::string all;

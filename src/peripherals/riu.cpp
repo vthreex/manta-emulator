@@ -938,8 +938,12 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
   for(const auto& h:hypothesisBits_)
-    if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h))
-      throw std::runtime_error("hardware-owned status byte under a bit hypothesis; guest writes cannot manufacture it");
+    if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h)){
+      // PM power byte 1F001CD0: the original setter (804F1320) read-modify-writes bits 5:4 and carries bit 6 back unchanged; such a store cannot
+      // manufacture the hypothesised bits, every other store (and every other hypothesis) is still refused.
+      bool carriedBack=h.address==0x1f001cd0u && (((v>>(8*(h.address-a)))&h.mask)==h.value);
+      if(!carriedBack)throw std::runtime_error("hardware-owned status byte under a bit hypothesis; guest writes cannot manufacture it");
+    }
   if(exploratoryAvdNoise_>=0 && a<=0x1f206a04 && uint64_t(a)+n>0x1f206a04)
     throw std::runtime_error("AFEC noise magnitude is hardware-owned; guest writes cannot manufacture it");
   if(exploratoryAvdHtotal_>=0 && ((a<=0x1f206b8d && uint64_t(a)+n>0x1f206b8d) || (a<=0x1f206b90 && uint64_t(a)+n>0x1f206b90)))

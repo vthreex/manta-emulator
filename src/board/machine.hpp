@@ -130,11 +130,13 @@ struct Options {
   // Full-machine save state (see docs/save-state.md). saveState: write a snapshot at the first safe instruction boundary at or after dispatch
   // saveStateAt; loadState: construct the machine normally (same options), then resume from the snapshot instead of the reset vector.
   std::filesystem::path saveState, loadState;
+  std::filesystem::path profile;   // DIAGNOSTIC: write an instruction-pointer sampling histogram of the emulation thread (Windows)
   bool stateDigest=false;        // add a per-section SHA-256 digest of the complete serialized machine state to the summary
   uint64_t saveStateAt=0;
   bool saveStateStop=false;      // stop the run right after the snapshot was written
   uint64_t saveStateMaxDefer=200000000;   // give up (fail closed) when no safe boundary occurs this many dispatches after saveStateAt
-  std::string stateFingerprint;  // hash of the run configuration, set by main(); a snapshot only loads under the identical configuration
+  std::string stateFingerprint, stateCanonical;   // canonical option lines (the fingerprint is their hash)
+  bool loadAllowExtraOptions=false;   // accept a snapshot written under a SUBSET of the current options (extra hypotheses apply only after the load; reported)  // hash of the run configuration, set by main(); a snapshot only loads under the identical configuration
   std::vector<uint32_t> watchPcRegs;   // read-only probe: record registers/stack words at these original PCs
   std::filesystem::path trace, replay, summary, coverage, exportGopFrame;
   std::shared_ptr<GopPreviewStore> previewStore;   // DIAGNOSTIC GOP preview hand-off to the native window (filled on the emulator thread)
@@ -200,6 +202,7 @@ class Msd309Machine {
   std::array<uint32_t,32> cp0Shadow_{};
   std::vector<TlbInstall> tlbInstalls_;
   bool tlbwrSeen_=false, replayingTlb_=false;
+  std::string snapshotOptionDelta_;   // options present now but not when the snapshot was written (only with loadAllowExtraOptions)
   bool snapshotWritten_=false;
   uint64_t snapshotDeferrals_=0, snapshotFirstWanted_=0;
   uint32_t resumePc_=0;

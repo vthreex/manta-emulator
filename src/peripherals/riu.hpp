@@ -557,7 +557,7 @@ public:
     return it != bytes_.end() && it->second.known == 255 && it->second.value == unsigned(h.scBank);
   }
   void addHypothesisBits(uint32_t address, unsigned mask, unsigned value, int scBank = -1) {
-    if (address < 0x1f200000u || address >= 0x1f400000u || !(mask & 255) || (value & ~mask & 255)) throw std::runtime_error("invalid bit hypothesis");
+    if (!((address >= 0x1f200000u && address < 0x1f400000u) || address == 0x1f001cd0u) || !(mask & 255) || (value & ~mask & 255)) throw std::runtime_error("invalid bit hypothesis");
     for (auto& h : hypothesisBits_) if (h.address == address) throw std::runtime_error("duplicate bit hypothesis");
     if (scBank >= 0 && (address < 0x1f205e04u || address >= 0x1f206000u)) throw std::runtime_error("scaler bank scope needs an address inside BF205E04..");
     hypothesisBits_.push_back({address, uint8_t(mask), uint8_t(value), 0, scBank});

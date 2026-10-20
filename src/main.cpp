@@ -17,12 +17,12 @@ static std::filesystem::path utf8Path(const std::string &s) {
 }
 // Hash of every option that can change guest-visible machine behaviour. Output/observation options and the run length are excluded so a
 // snapshot can be resumed with a different summary path, budget or remote script, but never under different hardware assumptions.
-static std::string stateFingerprint(const std::vector<std::string> &args) {
-  static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--save-state-at",
+static std::string stateFingerprint(const std::vector<std::string> &args, std::string &canonicalOut) {
+  static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--save-state-at",
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--preview-capture",
     "--preview-close-after-ms", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at"};
-  static const std::set<std::string> flags = {"--save-state-stop", "--state-digest", "--headless", "--window-smoke-test"};
+  static const std::set<std::string> flags = {"--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
     if (valued.count(args[i])) { ++i; continue; }
@@ -30,6 +30,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args) {
     canonical += args[i];
     canonical.push_back(char(10));
   }
+  canonicalOut = canonical;
   return manta::sha256(std::span<const uint8_t>(reinterpret_cast<const uint8_t *>(canonical.data()), canonical.size()));
 }
 static int appMain(const std::vector<std::string> &args) {
@@ -150,8 +151,8 @@ static int appMain(const std::vector<std::string> &args) {
         unsigned long addr=0,mask=0,val=0;char c1=0,c2=0;int scBank=-1;
         auto at=spec.find('@');
         if(at!=std::string::npos){scBank=int(std::stoul(spec.substr(at+1),nullptr,0));spec=spec.substr(0,at);}
-        if(std::sscanf(spec.c_str(),"%lx%c%lx%c%lx",&addr,&c1,&mask,&c2,&val)!=5 || c1!=':' || c2!=':' || mask>255 || val>255 || (val&~mask) || addr<0x1f200000ul || addr>=0x1f400000ul)
-          throw std::runtime_error("--exploratory-mmio-bits needs 1F2xxxxx:MASK:VALUE[@SCBANK] (hex, value within mask)");
+        if(std::sscanf(spec.c_str(),"%lx%c%lx%c%lx",&addr,&c1,&mask,&c2,&val)!=5 || c1!=':' || c2!=':' || mask>255 || val>255 || (val&~mask) || !((addr>=0x1f200000ul && addr<0x1f400000ul) || addr==0x1f001cd0ul))
+          throw std::runtime_error("--exploratory-mmio-bits needs 1F2xxxxx (or the PM status byte 1F001CD0):MASK:VALUE[@SCBANK] (hex, value within mask)");
         o.bitHypotheses.push_back({uint32_t(addr),unsigned(mask),unsigned(val),scBank});
       }
       else if(a=="--exploratory-afec-indirect-6a3c"){
@@ -224,6 +225,8 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--save-state-at")o.saveStateAt = std::stoull(value(i), nullptr, 0);
       else if (a == "--save-state-stop")o.saveStateStop = true;
       else if (a == "--state-digest")o.stateDigest = true;
+      else if (a == "--load-state-allow-extra-options")o.loadAllowExtraOptions = true;
+      else if (a == "--profile")o.profile = utf8Path(value(i));
       else if (a == "--save-state-max-defer")o.saveStateMaxDefer = std::stoull(value(i), nullptr, 0);
       else if (a == "--load-state")o.loadState = utf8Path(value(i));
       else if (a == "--record-trace")
@@ -542,7 +545,7 @@ static int appMain(const std::vector<std::string> &args) {
         o.irKeyMap = map;
         break;
       }
-    o.stateFingerprint = stateFingerprint(args);
+    o.stateFingerprint = stateFingerprint(args, o.stateCanonical);
     auto previewStore = o.previewStore;
     manta::Msd309Machine machine(std::move(flash), o);
     if (headless) return machine.run();

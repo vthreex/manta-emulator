@@ -167,8 +167,15 @@ void ioClass(Ar& a, Riu& r) {
     r.analogDisconnected_, r.exploratoryAvdNoHsync_, r.avdHsyncReads_, r.exploratoryUsbNoDevice_, r.diagnosticUsbUnpoweredDplus_, r.diagnosticVifCrLock_,
     r.guardedStretchDetail_, r.exploratoryAvdHtotal_, r.exploratoryAvdNoise_);
   uint64_t nh = a.count(r.hypothesisBits_.size());
+  auto configured = r.hypothesisBits_;   // hypotheses requested by THIS process (superset load adds some the snapshot never had)
   if (a.loading()) { r.hypothesisBits_.clear(); r.hypothesisBits_.resize(size_t(nh)); }
   for (auto& h : r.hypothesisBits_) a(h.address, h.mask, h.value, h.reads, h.scBank);
+  if (a.loading())
+    for (auto& c : configured) {
+      bool have = false;
+      for (auto& h : r.hypothesisBits_) have = have || h.address == c.address;
+      if (!have) { c.reads = 0; r.hypothesisBits_.push_back(c); }
+    }
   a(r.exploratoryAfecIndirect_, r.afecIndirectValue_, r.afecIndirectReads_, r.afecIndirectWrites_, r.avdNoiseReads_, r.avdHtotalReads_, r.vifCrLockReads_,
     r.exploratoryAvdNoSyncEvents_, r.diagnosticAvd11dbBit7_, r.exploratoryVifRevision_, r.vifRevisionReads_, r.vifZeroInput_, r.vifZeroInputReads_,
     r.pqSram_, r.irDma_, r.exploratoryIrDmaReset_, r.exploratoryIrCapturePresent_, r.irCaptureStatusReads_, r.pmIrFifo_, r.candidatePmIrFifo_,
@@ -302,10 +309,10 @@ std::vector<Msd309Machine::SnapSection> Msd309Machine::captureSections(uint32_t 
     Section s{"meta", {}};
     Ar a(s.bytes);
     a.tag("meta");
-    std::string fw = flash_.stockDigest(), fp = options_.stateFingerprint;
+    std::string fw = flash_.stockDigest(), fp = options_.stateFingerprint, canon = options_.stateCanonical;
     uint32_t cpi = virtualTime_.cpi();
     uint64_t cycles = virtualTime_.cycles(dispatches_), ramSize = dramBacking_.size();
-    a(fw, fp, pc, dispatches_, cycles, cpi, ramSize);
+    a(fw, fp, pc, dispatches_, cycles, cpi, ramSize, canon);
     sections.push_back(std::move(s));
   }
   {
@@ -384,10 +391,20 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     auto& s = find(sections, "meta");
     Ar a(s.bytes.data(), s.bytes.size());
     a.tag("meta");
-    std::string fw, fp;
+    std::string fw, fp, canon;
     a(fw, fp, pc, dispatches, cycles, cpi, ramSize);
+    if (a.remaining()) a(canon);   // option lines (absent in the first snapshots of schema 1)
     if (fw != flash_.stockDigest()) throw SnapshotError("snapshot was taken with a different firmware image");
-    if (fp != options_.stateFingerprint) throw SnapshotError("snapshot was taken under a different run configuration (diagnostic assumptions/options differ)");
+    if (fp != options_.stateFingerprint) {
+      // Optionally accept additional options: every option of the snapshot must still be present (as a multiset of lines).
+      auto split = [](const std::string& text) { std::vector<std::string> v; std::string cur; for (char c : text) { if (c == char(10)) { v.push_back(cur); cur.clear(); } else cur.push_back(c); } return v; };
+      auto oldLines = split(canon), nowLines = split(options_.stateCanonical);
+      bool subset = options_.loadAllowExtraOptions && !canon.empty();
+      std::vector<std::string> remaining = nowLines;
+      if (subset) for (auto& l : oldLines) { auto it = std::find(remaining.begin(), remaining.end(), l); if (it == remaining.end()) { subset = false; break; } remaining.erase(it); }
+      if (!subset) throw SnapshotError("snapshot was taken under a different run configuration (diagnostic assumptions/options differ)");
+      for (auto& l : remaining) snapshotOptionDelta_ += l + " ";
+    }
     if (cpi != virtualTime_.cpi() || ramSize != dramBacking_.size()) throw SnapshotError("snapshot hardware configuration (CPI/RAM size) differs");
   }
   Ar mach(find(sections, "machine").bytes.data(), find(sections, "machine").bytes.size());
@@ -458,6 +475,5 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   if (dispatches_ != dispatches) throw SnapshotError("snapshot dispatch counter inconsistent");
   resumePc_ = pc;
   resumed_ = true;
-  snapshotWritten_ = true;   // a resumed run does not immediately re-save
 }
 }  // namespace manta
