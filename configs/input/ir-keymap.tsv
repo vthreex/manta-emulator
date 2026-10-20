@@ -21,3 +21,4 @@ EXIT	0x20	CANDIDATE: app 0x09; with the menu open the original code hides OSD 1 
 INFO	0x16	CANDIDATE: app 0x1b; closes the menu and shows OSD 3 (the bottom source/info bar) - runs m5 and kb3/u16; could equally be a SOURCE-info key
 MUTE	0x0F	BEHAVIOURAL: app 0x1a; closes the menu and shows OSD 14 with the crossed-out speaker icon - run kb4/u0f (frame crop in evidence/menu-diagnostic/)
 SLEEP	0x17	BEHAVIOURAL: app 0x25; shows OSD 14 with a moon-and-star icon - run kb3/u17
+UP	0x0B	BEHAVIOURAL: app 0x07 (stub jumps to 8046A984, the arrow-key class path); with the menu open after one DOWN the highlight returns to the first item (frame identical to the post-MENU frame) - run kb6/u0b

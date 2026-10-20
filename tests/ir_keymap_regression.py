@@ -31,7 +31,7 @@ for l in lines:
     recorded[int(r, 0)] = (None if c == '' else int(c, 0), int(t, 0))
 assert len(recorded) == 253 and all(recorded[r][0] == table[r] for r in table), 'recorded table differs from the firmware'
 decoded = [r for r in table if table[r] is not None]
-assert len(decoded) == 73, len(decoded)
+assert len(decoded) == 74, len(decoded)
 keymap = {}
 raws = {}
 for l in (root / 'configs/input/ir-keymap.tsv').read_text().splitlines():

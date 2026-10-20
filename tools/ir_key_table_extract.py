@@ -24,7 +24,8 @@ def extract(firmware):
         # sb $v0,-0x6ef4($s2): opcode 0x28, rs=$s2(18), rt=$v0(2), imm=0x910c
         is_sb = i3 == (0x28 << 26 | 18 << 21 | 2 << 16 | 0x910c)
         is_lui = i0 == (0x0f << 26 | 18 << 16 | 0x806c)
-        is_jump = i2 == (0x02 << 26 | (0x8046aa70 >> 2 & 0x3ffffff))
+        # the common tail is 8046AA70; the navigation-family stubs (app codes 7 and a few others) jump to 8046A984, which stores the 'arrow key' class and continues at 8046A754
+        is_jump = i2 in (0x02 << 26 | (0x8046aa70 >> 2 & 0x3ffffff), 0x02 << 26 | (0x8046a984 >> 2 & 0x3ffffff))
         is_addiu = i1 >> 16 == 0x2402
         if is_lui and is_addiu and is_jump and is_sb:
             code = i1 & 0xffff

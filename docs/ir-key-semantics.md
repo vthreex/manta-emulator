@@ -30,9 +30,13 @@ used when software flag mask 1 (DTV source id 28) is set: the sources map to mas
 | ZOOM/ASPECT/PIP | 0x0C | 0x82 | OSD 14 with an overlapped-windows icon (kb3/u0c) | candidate, name unknown |
 | PICTURE mode | 0x42 | 0x21 | OSD 14 with a monitor icon (kb3/u42) | candidate, name unknown |
 | INFO (candidate) | 0x16 | 0x1b | closes the menu and shows OSD 3, the bottom source/info bar (runs m5, kb3/u16) | candidate |
-| UP | unidentified | | none of raw 0x21, 0x13, 0x22, 0x1d, 0x1b, 0x14, 0x43, 0x44, 0x47 acted in the open menu | unidentified |
+| UP | **0x0B** | 0x07 | stub jumps to `8046A984` (arrow-key class path); with the menu open and the highlight on the 2nd item it returns to the first (frame byte-identical to the post-MENU frame) - run kb6/u0b | verified by behaviour |
+| (menu closers) | 0x00 (app 0x64), 0x40, 0x58 (0x6B) | | each closes the open menu and returns to the NO SIGNAL screen (kb5/u00, kb6/u40, kb5/u58); user functions unnamed | unidentified |
+| (panels) | 0x15 (app 5), 0x1C (app 6), 0x41, 0xF1 | | open other windows over the menu (kb6); unnamed | unidentified |
 | SOURCE | unidentified | | no raw byte has opened an input-source list (OSD 5..11 side panels) in any run | unidentified |
 | INFO, VOL+/-, CH+/-, MUTE | unidentified | | | unidentified |
 
 Notes: `0x0C` (app 0x82), `0x17` (0x25), `0x1A` (4) and `0x42` (0x21) open OSD 14; `0x12`, `0x18`, `0x19`, `0x4A`, `0x54`, `0x57`, `0x5B`/`0x71`, `0xF4` open OSD 15; `0x0D`, `0x16`, `0xEF`, `0xF5`, `0xF6`
 open OSD 3 when no menu is open. Their user functions are not named.
+
+In-menu sweep coverage: every raw byte with a decoded stub (74) was injected with the menu open: kb3 (16), kb4, kb5 (32) and kb6 (8) single-key runs plus m4/m5/m6. Besides MENU/UP/DOWN/LEFT/RIGHT/OK, only the closers and banner keys above changed the screen; 0x1E and 0x1F changed nothing.
