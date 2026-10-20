@@ -1,0 +1,13 @@
+{
+  "result": "REAL Windows key messages posted to the native emulator window drive the original firmware menu; no --ir-script, no direct guest calls",
+  "driver": "tools/live_window_keys.py (ctypes PostMessageW WM_KEYDOWN/WM_KEYUP to the MantaGuestDisplay window once the GOP history shows >= 1.30B dispatches)",
+  "binary": "manta_k4.exe, keymap configs/input/ir-keymap.tsv",
+  "keys_in_order": ["M (raw 0xFC)", "Down (0x0E)", "Down", "Right (0x11)", "Left (0x10)", "Enter (0x0D)", "Esc (0x20)"],
+  "frame_hash_matches_scripted_runs": {
+    "after M": "fa3d35f5eec818d2 = Picture page, Picture Mode highlighted",
+    "after first Down": "6176db66763df49d = Color Temperature highlighted",
+    "after Right then Left": "fa3d35f5eec818d2 (back on Picture page, first item)",
+    "after Esc": "a75e13eb0886697d = identical to the NO SIGNAL frame before the menu"
+  },
+  "notes": "the second Down landed while the page was still redrawing and was folded into the next frames; frame hashes are of the diagnostic GOP preview (exploratory GE models), not panel output"
+}
