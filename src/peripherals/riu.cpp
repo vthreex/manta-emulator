@@ -2,6 +2,7 @@
 #include "video/ge_stretch_request.hpp"
 #include "video/ge_uniform_stretch.hpp"
 #include "video/ge_i2_glyph.hpp"
+#include "video/ge_line.hpp"
 #include "video/ge_blend_copy.hpp"
 #include <optional>
 #include <array>
@@ -1414,6 +1415,24 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         geBitBltPixels+=count;
         event("ge_bitblt_retired",plan.destination,plan.pitch,count,
           "original command 0040: known plain same-format RGB565/ARGB8888 copy; no stretch, format C or GOP enable assumed");
+      };
+    }else if(candidateGeRectFill && exploratoryGeLine && a==0x1f205180 && v==0x10){
+      if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
+      GeLine plan;
+      try{
+        plan=GeLine::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeFillIgnoredReg00);
+      }catch(const std::exception& error){
+        guardedStretchDetail_=std::string("line decode refused (cmd 16): ")+error.what()+"; GE registers (index=value):"+geRegisterFile()+geReg0History();
+        throw;
+      }
+      raster=[this,plan]{
+        plan.execute(dramWritable,dramWrite);
+        ++geLines;
+        auto count=plan.empty?0u:(plan.x1-plan.x0+1)*(plan.y1-plan.y0+1);
+        geLinePixels+=count;
+        event("exploratory_ge_line_retired",plan.destination,plan.pitch,count,
+          "EXPLORATORY, NOT TITANIA4-VERIFIED: axis-aligned one-pixel line (command 0x10), colour quantized like the exploratory format-C fill; slopes, patterns, blending and gradients are not modeled");
       };
     }else if(candidateGeRectFill && a==0x1f205180){
       if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");

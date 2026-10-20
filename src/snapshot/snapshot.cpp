@@ -468,12 +468,13 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   }
   { auto& s = find(sections, "flash"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, flash_); }
   { auto& s = find(sections, "riu"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, riu_); }
+  riu_.exploratoryGeLine = options_.exploratoryGeLine;   // not part of the snapshot format: always taken from the current options
   // Superset load: options added after the snapshot are either runtime-read (accepted), applied to the restored devices here, or REFUSED.
   // Silently ignoring an added option whose state lives in the serialized device configuration would mislabel the run.
   for (size_t i = 0; i < extraTokens.size(); ++i) {
     const auto& t = extraTokens[i];
     if (t.rfind("--", 0) != 0) continue;   // a value token, consumed with its option below
-    if (t == "--exploratory-provenance-extensions" || t == "--trace-instructions") continue;   // read from the options at run time
+    if (t == "--exploratory-provenance-extensions" || t == "--trace-instructions" || t == "--exploratory-ge-line") continue;   // read from the options at run time
     if (t == "--exploratory-mmio-bits") { ++i; continue; }                                       // merged into the restored hypothesis list
     if (t == "--diagnostic-vif-cr-lock" && i + 1 < extraTokens.size()) {
       riu_.configureDiagnosticVifCrLock(unsigned(std::stoul(extraTokens[i + 1])));

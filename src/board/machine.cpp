@@ -171,6 +171,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if(!o.candidateGeRectFill)throw std::runtime_error("I8 fill hypothesis requires the candidate GE rectangle model");
     riu_.exploratoryGeI8Fill=true;
   }
+  if(o.exploratoryGeLine){
+    if(!o.candidateGeRectFill)throw std::runtime_error("GE line hypothesis requires the candidate GE rectangle model");
+    riu_.exploratoryGeLine=true;
+  }
   if(o.exploratoryGeGradientFill){
     if(!o.candidateGeRectFill)throw std::runtime_error("GE gradient hypothesis requires the candidate GE rectangle model");
     riu_.exploratoryGeGradientFill=true;
@@ -2307,6 +2311,7 @@ std::string Msd309Machine::summary() const {
   }
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(options_.exploratoryGeLine)s<<",\n  \"exploratory_ge_line\": true,\n  \"ge_lines_retired\": "<<riu_.geLines<<",\n  \"ge_line_pixels_written\": "<<riu_.geLinePixels;
   if(options_.exploratoryGeGradientFill)s<<",\n  \"exploratory_ge_gradient_fill\": true,\n  \"ge_gradient_fills_retired\": "<<riu_.geGradientFills;
   if(options_.exploratoryGeFillIgnoredReg00)s<<",\n  \"exploratory_ge_fill_ignored_reg00_bits\": "<<options_.exploratoryGeFillIgnoredReg00;
   if(options_.exploratoryGeI8Fill)s<<",\n  \"exploratory_ge_i8_fill\": true,\n  \"ge_i8_fills_retired\": "<<riu_.geI8Fills<<",\n  \"ge_i8_fill_pixels_written\": "<<riu_.geI8FillPixels;
