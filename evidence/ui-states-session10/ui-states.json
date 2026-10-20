@@ -261,5 +261,22 @@
   "png": "8_source_av1_banner.png",
   "preview_covered_pixels": 92480,
   "stop": "instruction budget exhausted"
+ },
+ "9_input_source_list": {
+  "dispatch_after_inject": 40227584,
+  "exploratory_options": [
+   "--exploratory-provenance-extensions",
+   "--exploratory-mmio-bits 1f203fe1:01:01+rmw (only needed to complete the switch after OK)"
+  ],
+  "keys": [
+   "0x41@+0 (SOURCE)",
+   "0x0b@+14M",
+   "0x0b@+26M",
+   "0x0b@+38M (UP x3: SCART -> AV 1)"
+  ],
+  "native_preview_checksum": "0x203cf87f8c0b85a4",
+  "note": "original Input Source list with AV 1 highlighted; window-extent preview of the 575,232-pixel panel",
+  "png": "9_input_source_list.png",
+  "preview_covered_pixels": 575232
  }
 }

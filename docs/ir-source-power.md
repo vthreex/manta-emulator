@@ -6,6 +6,7 @@ Nothing here is a measurement of a real remote; names are behavioural.
 
 ## SOURCE
 
+* **CORRECTION (session 10): raw `0x41` is the SOURCE key and opens the original Input Source list (docs/source-switching.md).** The earlier sweep below only looked for a cycling key and missed it.
 * **No raw byte of the 74 decoded stubs cycles through the sources.** A sweep of every decoded raw byte from the checkpoint
   (watching `8048710C`, `8048848C`, `804C3684`, `8046A758`) found no key that advances a source cycle.
 * **Direct source-select keys exist.** The key table maps app codes `0x5C..0x63` to the source-switch function `8048710C`

@@ -32,6 +32,7 @@ for l in lines:
 assert len(recorded) == 253 and all(recorded[r][0] == table[r] for r in table), 'recorded table differs from the firmware'
 decoded = [r for r in table if table[r] is not None]
 assert len(decoded) == 74, len(decoded)
+CONDITIONAL = {0x41: '8046AE40'}   # SOURCE: 8046AE40 stores code 0x20 only when bit 3 of 0x806C0868 is set (docs/source-switching.md)
 keymap = {}
 raws = {}
 for l in (root / 'configs/input/ir-keymap.tsv').read_text().splitlines():
@@ -42,6 +43,9 @@ for l in (root / 'configs/input/ir-keymap.tsv').read_text().splitlines():
     f, raw, ev = parts[0], int(parts[1], 0), parts[2]
     assert f not in keymap and raw not in raws, ('duplicate', l)
     keymap[f], raws[raw] = raw, f
+    if raw in CONDITIONAL:   # conditional handler, not the plain stub: the evidence must name that handler (its code is stored only when a flag bit is set)
+        assert table[raw] is None and CONDITIONAL[raw] in ev and recorded[raw][1] == int(CONDITIONAL[raw], 16), ('conditional handler not as recorded', l)
+        continue
     assert table[raw] is not None, ('raw byte not decoded by the firmware table', l)
     m = re.search(r'app 0x([0-9A-Fa-f]+)', ev)
     assert m and int(m.group(1), 16) == (table[raw] & 0xff), ('evidence app code differs from the table', l, table[raw])

@@ -2,7 +2,16 @@
 
 All results: NO SIGNAL checkpoint (`docs/save-state.md`), ONE genuine virtual-remote raw byte (original PM IR FIFO -> key reader -> app code ->
 `8048710C(source_id)`), no guest function called, no firmware byte patched. No video signal exists, so every switch ends back at NO SIGNAL (that is
-the correct original behaviour without an input). The SOURCE button itself is not identified (no raw byte cycles sources); these are *direct* source keys.
+the correct original behaviour without an input). The SOURCE button is raw `0x41` (list below); the eight direct source keys are separate raw bytes.
+
+## SOURCE key and the Input Source list (found late; earlier notes saying "no source list" were wrong)
+
+**Raw `0x41` is the SOURCE key.** Handler `8046AE40` stores code `0x20` when bit 3 of `0x806C0868` is set (otherwise `8046ABE4`); the original firmware then opens its
+**Input Source** list: DTV, ATV, AV 1, AV 2, S-Video, SCART, YPBPR, HDMI1, HDMI2, VGA, USB and "OK: ENTER" (575,232-pixel panel, current source highlighted).
+UP `0x0B` / DOWN `0x0E` move the highlight, OK `0x0D` calls the original `8048710C(id)`. It was previously logged as an "unnamed panel" because the earlier
+sweeps only looked for the *banner/list names* in the sweep summary, not at the frame. From the NO SIGNAL checkpoint: SOURCE, UP x3 (SCART -> AV 1), OK
+completes the AV 1 switch (banner "AV 1", then NO SIGNAL) under the same opt-in hypotheses as the direct key; the list auto-hides after about 100M dispatches.
+Raws `0x15` / `0x1C` open the volume bar (level "15"). Evidence: `evidence/ui-states-session10/9_input_source_list.png`, `tests/source_switch_regression.py` (`list_av1`).
 
 ## Matrix (banner text is drawn by the original ZUI from its own string resources)
 
