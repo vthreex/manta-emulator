@@ -91,6 +91,7 @@ struct Options {
   uint64_t diagnosticRiuWriteLogFrom=UINT64_MAX;   // diagnostic: list guest-written RIU addresses since this cycle count
   std::string diagnosticDramDumpFile; uint32_t diagnosticDramDumpAddr=0, diagnosticDramDumpSize=0;   // diagnostic (observation only): write this DRAM range to FILE when the summary is produced
   std::vector<uint32_t> diagnosticRiuPeeks;   // diagnostic (observation only): report stored value/known bits of these RIU addresses in the summary
+  bool exploratoryMvopPlane=false;      // EXPLORATORY: show the framebuffer the guest programs into the MVOP (RIU 0x1F202800 block) as a video plane behind the GOP layers
   bool exploratoryRiuZeroUnknown=false;  // LABELLED HYPOTHESIS (diagnostic only): never-defined RIU registers read as 0 and are listed
   std::string exploratoryCoproJpdDump;  // diagnostic: write the JPD output picture (raw packed 4:2:2) to this file
   bool exploratoryCoproJpd=false;       // EXPLORATORY: model the coprocessor JPEG decoder block from its register programming (peripherals/jpd.hpp)

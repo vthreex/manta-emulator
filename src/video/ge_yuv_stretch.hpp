@@ -21,7 +21,8 @@ struct GeYuvStretch {
     // 0xE -> 0xE (packed YUV) or 0xE -> 0xC (ARGB1555 destination; EXPLORATORY BT.601 full-range conversion, 5-bit truncation, alpha bit forced on: all assumptions)
     if (r.sourceFormat != 0x0e || (r.destinationFormat != 0x0e && r.destinationFormat != 0x0c)) throw std::runtime_error("GE YUV stretch: only format 0xE -> 0xE or 0xE -> 0xC");
     const bool toRgb = r.destinationFormat == 0x0c;
-    if (r.sourceKey() || r.dither() || r.blend()) throw std::runtime_error("GE YUV stretch: key/dither/blend not modelled");
+    // Blend with GE register 11 low byte 0 ("ONE", the established reading of the blend-copy model) is treated as REPLACE (HYPOTHESIS); any other blend stays refused.
+    if (r.sourceKey() || r.dither() || (r.blend() && (r.alpha11 & 0xff) != 0)) throw std::runtime_error("GE YUV stretch: key/dither/blend not modelled");
     if (r.source >= 0x08000000 || r.destination >= 0x08000000) throw std::runtime_error("GE YUV stretch requires MIU0 byte addressing");
     if (!r.destinationPitch || r.destinationPitch % 4 || !r.sourcePitch || r.sourcePitch % 4) throw std::runtime_error("GE YUV stretch: pitch invalid");
     if (!read) throw std::runtime_error("GE YUV stretch: guest source unavailable");

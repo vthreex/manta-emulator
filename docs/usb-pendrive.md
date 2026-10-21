@@ -59,3 +59,8 @@ The USB photo browser now runs end to end from a checkpoint saved at the drive p
 shows C:\ with Return / PHOTO, and the file browser's thumbnail requests go through the coprocessor's STILLIMAGE path: Gradient.jpg (1280x720, scale 1) and Test_Pattern.jpg (640x480) are decoded by the
 JPD model, and 250 YUV422 -> ARGB1555 GE stretches (`--exploratory-ge-yuv-stretch`, BT.601 full-range, nearest; all labelled assumptions) were retired in a 2.345B-dispatch run without a stop.
 Note: `--diagnostic-riu-zero-unknown-reads` must keep the USB line-state hypothesis (fixed): without it the guest never saw the stick.
+
+## Photo on screen (exploratory presentation, `--exploratory-mvop-plane`)
+The original MVOP HAL (writes from `80545xxx`) programs RIU `0x1F202884/88` = frame base / 8 (`0x00646000` -> `0x03230000`, the framebuffer the GE stretch just filled), `0x1F202894` = width (1904), `0x1F202898` = height (1050).
+The preview shows that framebuffer (assumed packed YUV 4:2:2, BT.601 full range, nearest scaled to the canvas) behind the GOP layers; with `--exploratory-video-plane black --exploratory-gop-black-colorkey` (a labelled hypothesis: opaque black OSD pixels are see-through)
+the opened photo appears behind the browser: `evidence/usb-photo-mvop-plane-diagnostic.png` (Test_Pattern.jpg: JPEG decoded by the JPD model, stretched by the original GE commands). No MVOP enable bit is modelled, so a stale picture can remain after leaving the viewer.

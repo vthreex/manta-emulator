@@ -523,6 +523,7 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
         t == "--exploratory-copro-dump-start") { ++i; continue; }
     if (t == "--exploratory-copro-seq") { i += 2; continue; }
     if (t == "--diagnostic-riu-write-log" || t == "--diagnostic-riu-peek") { ++i; continue; }
+    if (t == "--exploratory-mvop-plane") continue;
     if (t == "--diagnostic-dram-dump") { i += 3; continue; }
     if (t == "--exploratory-usb-pendrive") { ++i; continue; }   // read at run time (device model is created after the restore)   // read from the options at run time
     if (t == "--exploratory-mmio-bits") { ++i; continue; }                                       // merged into the restored hypothesis list

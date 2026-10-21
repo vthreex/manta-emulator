@@ -2384,6 +2384,31 @@ void Msd309Machine::publishPreview() const {
   if(riu_.geBlendCopies)frame.label+=" | EXPLORATORY GE blend-copy model in use (not Titania4 behavior)";
   if(riu_.geI2Glyphs)frame.label+=" | EXPLORATORY GE I2-glyph model in use (not Titania4 behavior)";
   if(riu_.geUniformStretches)frame.label+=" | EXPLORATORY GE uniform-stretch model in use (alpha semantics are a hypothesis, not Titania4 behavior)";
+  if(options_.exploratoryMvopPlane && !frame.empty()){
+    // EXPLORATORY, NOT verified: the original MVOP HAL (writes from 80545xxx) programs RIU 0x1F202884/88 = frame base / 8 (the guest's 1920x1080 YUV framebuffer),
+    // 0x1F202894 = width, 0x1F202898 = height (observed: 0x00646000 -> 0x03230000, 1904 x 1050 for the photo viewer). ASSUMPTIONS: packed YUV 4:2:2 (Y0 U Y1 V),
+    // pitch = width * 2, BT.601 full range, nearest scaling to the preview canvas; no enable bit is modelled, so a stale picture can show.
+    auto rd16=[&](uint32_t a,uint32_t& v){uint8_t lo=0,hi=0;if(!riu_.coproPeekByte(a,lo))return false;if(!riu_.coproPeekByte(a+1,hi))hi=0;v=lo|(uint32_t(hi)<<8);return true;};   // ASSUMPTION: a never-written high byte reads 0 (the guest writes only the low byte of the base-high register)
+    uint32_t b0=0,b1=0,w=0,h=0;
+    if(rd16(0x1f202884u,b0)&&rd16(0x1f202888u,b1)&&rd16(0x1f202894u,w)&&rd16(0x1f202898u,h) && w>=16 && w<=4096 && h>=16 && h<=2160){
+      uint64_t base=(uint64_t(b0)|(uint64_t(b1)<<16))*8,pitch=uint64_t(w)*2;
+      if(base+pitch*h<=dramBacking_.size()){
+        frame.planeBgra.assign(size_t(frame.width)*frame.height,0xff000000u);
+        for(uint32_t y=0;y<frame.height;++y){
+          uint32_t sy=std::min<uint64_t>(uint64_t(y)*h/frame.height,h-1);
+          for(uint32_t x=0;x<frame.width;++x){
+            uint32_t sx=std::min<uint64_t>(uint64_t(x)*w/frame.width,w-1);
+            const uint8_t* p=dramBacking_.data()+base+sy*pitch+uint64_t(sx&~1u)*2;
+            double Y=(sx&1)?p[2]:p[0],U=p[1]-128.0,V=p[3]-128.0;
+            auto c=[](double d){return uint32_t(d<0?0:d>255?255:d+0.5);};
+            frame.planeBgra[size_t(y)*frame.width+x]=0xff000000u|(c(Y+1.402*V)<<16)|(c(Y-0.344136*U-0.714136*V)<<8)|c(Y+1.772*U);
+          }
+        }
+        { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }   // plane content counts as a distinct frame state
+        frame.label+=" | EXPLORATORY MVOP VIDEO PLANE "+hex(base)+" "+std::to_string(w)+"x"+std::to_string(h)+" (YUV422 assumed; not verified panel output)";
+      }
+    }
+  }
   if(!options_.videoPlane.empty()){
     // EXPLORATORY: the emulator has no video plane. Pixels no enabled GOP window provides (or whose ARGB1555 alpha bit is clear) are shown in a
     // flat colour instead of the checker. Colour source: fixed black/blue, or the guest's own Blue Screen setting (original settings byte

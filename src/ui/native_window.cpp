@@ -73,7 +73,7 @@ void drawContent(HDC dc, RECT r, WindowState &st) {
     for (uint32_t y = 0; y < f.height; ++y)
       for (uint32_t x = 0; x < f.width; ++x) {
         size_t i = size_t(y) * f.width + x;
-        out[i] = f.covered[i] ? (f.bgra[i] & 0x00ffffffu) : f.planeActive ? f.planeRgb : ((((x >> 4) ^ (y >> 4)) & 1) ? 0x00505050u : 0x00383838u);
+        out[i] = f.covered[i] ? (f.bgra[i] & 0x00ffffffu) : !f.planeBgra.empty() ? (f.planeBgra[i] & 0x00ffffffu) : f.planeActive ? f.planeRgb : ((((x >> 4) ^ (y >> 4)) & 1) ? 0x00505050u : 0x00383838u);
       }
     BITMAPINFO bi{}; bi.bmiHeader = {sizeof(BITMAPINFOHEADER), LONG(f.width), -LONG(f.height), 1, 32, BI_RGB, 0, 0, 0, 0, 0};
     int aw = r.right, ah = r.bottom - kBar;

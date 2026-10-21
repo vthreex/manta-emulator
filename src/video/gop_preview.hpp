@@ -31,6 +31,7 @@ struct GopPreviewFrame {
   std::string description;       // layer geometry/format/checksum summary
   // EXPLORATORY presentation only (--exploratory-video-plane): colour shown where no guest graphics pixel exists. The emulator has no video
   // plane; when this is inactive the presenter shows the neutral checker. Never part of the checksum.
+  std::vector<uint32_t> planeBgra;   // EXPLORATORY MVOP video plane (same size as bgra), 0xAARRGGBB; empty = none
   bool planeActive = false;
   uint32_t planeRgb = 0;         // 0x00RRGGBB
   uint64_t checksum = 0;         // FNV-1a over the BGRA words (deterministic)
@@ -95,7 +96,7 @@ inline std::vector<uint8_t> previewFrameToBmp32(const GopPreviewFrame& f) {
   out[0] = 'B'; out[1] = 'M'; put32(2, header + imageBytes); put32(10, header); put32(14, 40);
   put32(18, f.width); put32(22, uint32_t(-int32_t(f.height))); put16(26, 1); put16(28, 32); put32(34, imageBytes);
   for (size_t i = 0; i < f.bgra.size(); ++i) {
-    uint32_t v = f.covered[i] ? f.bgra[i] : (f.planeActive ? (0xff000000u | f.planeRgb) : 0u);
+    uint32_t v = f.covered[i] ? f.bgra[i] : (!f.planeBgra.empty() ? f.planeBgra[i] : f.planeActive ? (0xff000000u | f.planeRgb) : 0u);
     out[header + i * 4] = uint8_t(v); out[header + i * 4 + 1] = uint8_t(v >> 8); out[header + i * 4 + 2] = uint8_t(v >> 16); out[header + i * 4 + 3] = uint8_t(v >> 24);
   }
   return out;
