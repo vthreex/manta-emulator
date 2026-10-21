@@ -39,6 +39,7 @@ public:
   // Guest RAM shared with the engine (mapShared at address 0): reads inside it bypass the engine API.
   void setBacking(const uint8_t *base, size_t size) { backing_ = base; backingSize_ = size; }
   void tickCount(uint32_t delta);
+  void setIrqLines(uint32_t mask);   // external hardware interrupt lines IP2..IP6 (bit0 = IP2); needs the Manta IRQ extension of the engine
   void calibrateDirectRegisters();
 };
 } // namespace manta

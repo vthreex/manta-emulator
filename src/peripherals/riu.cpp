@@ -618,6 +618,16 @@ RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
   return it==gopActive_.end()?RiuByte{}:it->second;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(fiqModel && a>=0x1f2033b0u && a+n<=0x1f2033c0u){
+    uint32_t v=0;
+    for(unsigned i=0;i<n;++i){
+      unsigned off=a+i-0x1f2033b0u, reg=off>>2, byte=off&3;   // registers at +0,+4 (bank 1 low/high half) and +8,+12 (bank 3)
+      if(byte<2 && reg<4){ uint32_t word=fiqPending[(reg>>1)?3:1]; v|=((word>>(16*(reg&1)+8*byte))&255u)<<(8*i); }
+    }
+    ++fiqStatusReads;
+    event("fiq_status_read",a,n,v,"EXPLORATORY MIPS FIQ controller model (not verified hardware)");
+    return v;
+  }
   if(a>=0x1f205e04 && a<0x1f206000)seedLazyInit(a,n);
   for(auto& h:hypothesisBits_)if(h.ack && h.pending && a<=h.address && uint64_t(a)+n>h.address){
     auto& byte=bytes_[storageKey(h.address)];byte.value=h.value;byte.known=255;h.pending=false;
@@ -942,6 +952,16 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(fiqModel && a>=0x1f2033b0u && a+n<=0x1f2033c0u){
+    for(unsigned i=0;i<n;++i){
+      unsigned off=a+i-0x1f2033b0u, reg=off>>2, byte=off&3;
+      if(byte<2 && reg<4) fiqPending[(reg>>1)?3:1]&=~(((v>>(8*i))&255u)<<(16*(reg&1)+8*byte));   // write 1 to clear
+    }
+    ++fiqStatusWrites;
+    event("fiq_status_write",a,n,v,"EXPLORATORY MIPS FIQ controller model: write-1-to-clear (not verified hardware)");
+    if(fiqChanged)fiqChanged();
+    return;
+  }
   if(usbHost.enabled() && UsbHost::inRange(a,n) && usbHost.owns(a,n)){usbHost.write(a,n,v,tick);return;}
   if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
@@ -1056,6 +1076,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(fiqModel && fiqChanged && a<0x1f2033a0u && uint64_t(a)+n>0x1f203390u)fiqChanged();   // guest changed an FIQ mask word
   if(coproNotify && ((a<0x1f206800u && uint64_t(a)+n>0x1f206700u) || (a<=0x1f201fe0u && uint64_t(a)+n>0x1f201fe0u))) coproNotify(a,n,v);
   if(vifZeroInput_.enabled())for(auto config:VifZeroInput::configuration)
     if(a<=config && uint64_t(a)+n>config){updateVifZeroInput(tick);break;}

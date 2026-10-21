@@ -69,4 +69,12 @@ void Engine::tickCount(uint32_t delta) {
   throw std::runtime_error("--cp0-timer requires the source-built Unicorn timer extension");
 #endif
 }
+void Engine::setIrqLines(uint32_t mask) {
+#ifdef UC_MIPS_MANTA_IRQ_API
+  check(uc_reg_write(handle, UC_MIPS_REG_CP0_IRQ, &mask));
+#else
+  (void)mask;
+  throw std::runtime_error("MIPS external interrupt lines require the Manta IRQ extension of the engine (tools/patch_unicorn_irq.py)");
+#endif
+}
 } // namespace manta

@@ -84,6 +84,7 @@ struct Options {
   bool exploratoryCopro=false;          // EXPLORATORY: run the original resource-61 multimedia coprocessor image (OpenRISC, peripherals/copro.hpp) once the guest releases it
   uint32_t exploratoryCoproWatch=0;      // diagnostic: report writes to this coprocessor-DRAM word
   std::string exploratoryCoproDumpStart; // write DRAM and the mailbox bytes to FILE / FILE.mail when the coprocessor is released (offline harness input)
+  int exploratoryCoproMipsIrq=-1;       // EXPLORATORY: hardware interrupt index (FIQ bank 1/3: 32..63, 96..127) raised toward the MIPS when the coprocessor fires its reply mailbox; -1 = none
   bool exploratoryCoproZeroUnknown=false; // LABELLED HYPOTHESIS: coprocessor registers with unknown semantics read as 0 (listed in the summary)
   std::string exploratoryUsbPendrive;   // EXPLORATORY: attach a USB mass-storage device (image file) to port 0 (peripherals/usb_host.hpp)
   bool exploratoryGeLine=false;   // EXPLORATORY: GE command 0x10 axis-aligned one-pixel line into format C (video/ge_line.hpp)
@@ -170,6 +171,8 @@ class Msd309Machine {
   VirtualTime virtualTime_;
   Copro copro_;
   void startCopro(uint32_t riuAddress);
+  void updateIrqLines();
+  uint32_t irqLinesApplied_=0;
   uint64_t coproLoadInspections_=0;
   std::string coproLoadedSha_;
   uint64_t suppressedOrQmemTrace_=0;

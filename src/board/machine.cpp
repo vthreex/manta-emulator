@@ -425,6 +425,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     return options_.candidateMiu && size>0 && uint64_t(address)+size<=0x08000000 &&
       uint64_t(address)+size<=dramBacking_.size();
   };
+  if(o.exploratoryCoproMipsIrq>=0){
+    if(!o.exploratoryCopro || !o.cp0Timer)throw std::runtime_error("--exploratory-copro-mips-irq requires --exploratory-copro and --cp0-timer");
+    const int hw=o.exploratoryCoproMipsIrq;
+    if(!((hw>=32&&hw<64)||(hw>=96&&hw<128)))throw std::runtime_error("--exploratory-copro-mips-irq supports FIQ banks 32..63 and 96..127 only");
+    riu_.fiqModel=true;
+    riu_.fiqChanged=[this]{updateIrqLines();};
+    copro_.onReply=[this,hw]{riu_.fiqRaise(unsigned(hw));};
+  }
   if(o.exploratoryCopro){
     copro_.zeroUnknownReads=o.exploratoryCoproZeroUnknown;
     copro_.mailRead=[this](uint32_t a,uint8_t& v){return riu_.coproPeekByte(a,v);};
@@ -535,6 +543,14 @@ void Msd309Machine::formatEventLine(std::string &line, uint64_t tick, uint32_t p
   line += '}';
 }
 // The guest wrote 3 to the reset-control byte 1F201FE0 (the original enable sequence; the meaning of the value is inferred from ordering only).
+void Msd309Machine::updateIrqLines() {
+  const uint32_t lines = riu_.fiqLine() ? 2u : 0u;   // FIQ -> Cause.IP3 (the guest's IP3 slot at 806F70B0 is the FIQ dispatcher path)
+  if (lines == irqLinesApplied_) return;
+  irqLinesApplied_ = lines;
+  ++riu_.fiqLineChanges;
+  cpu_.setIrqLines(lines);
+  event("mips_irq_lines", lines, 4, lines, "EXPLORATORY: external interrupt line state toward the MIPS core (IP2=bit0, IP3=bit1)");
+}
 void Msd309Machine::startCopro(uint32_t riuAddress) {
   const size_t ramSize = std::min<size_t>(dramBacking_.size(), 0x08000000);
   uint32_t first = 0;
@@ -2673,7 +2689,7 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryCopro){
     s<<",\n  \"exploratory_copro\": {\"started\": "<<(copro_.started?"true":"false")<<", \"stopped\": "<<(copro_.stopped?"true":"false")
      <<", \"stop_reason\": \""<<jsonText(copro_.stopReason)<<"\", \"instructions\": "<<copro_.instructions()<<", \"pc\": \""<<hex(copro_.pc())
-     <<"\", \"starts\": "<<copro_.starts<<", \"holds\": "<<copro_.holds<<", \"mailbox_irqs\": "<<copro_.mailboxIrqs<<", \"host_notify_writes\": "<<copro_.hostNotifies<<", \"latched_unknown_effect_writes\": "<<copro_.latchedWrites
+     <<"\", \"fiq_raises\": "<<riu_.fiqRaises<<", \"fiq_status_reads\": "<<riu_.fiqStatusReads<<", \"fiq_status_writes\": "<<riu_.fiqStatusWrites<<", \"fiq_line_changes\": "<<riu_.fiqLineChanges<<", \"fiq_pending_bank1\": "<<riu_.fiqPending[1]<<", \"fiq_pending_bank3\": "<<riu_.fiqPending[3]<<", \"fiq_mask_words\": ["<<[&]{std::string o;for(uint32_t base:{0x1f203390u,0x1f203394u,0x1f203398u,0x1f20339cu}){uint8_t b0=0,b1=0;bool k=riu_.coproPeekByte(base,b0)&&riu_.coproPeekByte(base+1,b1);o+=(o.empty()?"":", ");o+=k?std::to_string(b0|(b1<<8)):std::string("-1");}return o;}()<<"], \"starts\": "<<copro_.starts<<", \"holds\": "<<copro_.holds<<", \"mailbox_irqs\": "<<copro_.mailboxIrqs<<", \"host_notify_writes\": "<<copro_.hostNotifies<<", \"latched_unknown_effect_writes\": "<<copro_.latchedWrites
      <<", \"zero_unknown_reads\": "<<(options_.exploratoryCoproZeroUnknown?"true":"false")<<", \"unknown_read_total\": "<<copro_.unknownReadTotal<<", \"unknown_reads_first_512\": [";
     bool firstUnknown=true;
     for(auto& kv:copro_.unknownReads){s<<(firstUnknown?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second<<"]";firstUnknown=false;}

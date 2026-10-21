@@ -35,6 +35,7 @@ public:
   std::function<void(const std::string&, uint32_t, unsigned, uint32_t, const std::string&)> event;
   std::string uart, stopReason;
   std::map<uint32_t, uint64_t> unknownReads;                               // address -> count (zeroUnknownReads only)
+  std::function<void()> onReply;   // the coprocessor fired its reply mailbox (mailbox 1 control bit 0 set)
   uint32_t watchAddr = 0;   // diagnostic only
   std::vector<std::string> notes, mailLog;   // mailLog: every MIPS->CP fire and CP->MIPS reply (first 600)
   void logMail(const std::string& m) { if (mailLog.size() < 600) mailLog.push_back(m); }
@@ -223,6 +224,7 @@ private:
       uint32_t off = a - kWindow;
       if (off >= kMailBase && off + n <= kMailEnd) {
         for (unsigned i = 0; i < n; ++i) if (mailWrite) mailWrite(0x1f200000u + off + i, uint8_t(v >> (8 * i)));
+        if (off == 0x6720 && (v & 1) && onReply) onReply();
         if (off == 0x6720 && (v & 1)) logMail("CP reply @cp" + std::to_string(cpu_.instructions()) + " ctrl=" + hex8(v & 0xff).substr(6) + " " + mailDesc(0x6720));
         if (off == 0x6700) logMail("CP wrote ctrl0=" + hex8(v & 0xff).substr(6) + " @cp" + std::to_string(cpu_.instructions()));
         updateIrq();

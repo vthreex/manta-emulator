@@ -432,6 +432,24 @@ public:
   uint32_t usbStoredReg(uint32_t off) const { return get(UsbHost::kBase+off*2,2)|(get(UsbHost::kBase+(off+2)*2,2)<<16); }
   // EXPLORATORY multimedia coprocessor (opt-in): shared view of the mailbox window and a notification of MIPS stores to it / to the reset-control byte.
   std::function<void(uint32_t, unsigned, uint32_t)> coproNotify;
+  // EXPLORATORY MIPS FIQ controller (opt-in with the coprocessor): pending bits for hardware interrupt banks 1 (32..63, status 1F2033B0/B4) and 3 (96..127,
+  // status 1F2033B8/BC); a status write of 1s clears them (the original FIQ dispatcher 8060AA88 writes the status back, then 0). Masks are the guest's own
+  // 1F203390/94 and 1F203398/9C words (bit set = masked); a mask the guest has not written counts as masked. Not a verified model of the real controller.
+  bool fiqModel = false;
+  uint32_t fiqPending[4] = {0, 0, 0, 0};
+  uint64_t fiqRaises = 0, fiqStatusReads = 0, fiqStatusWrites = 0, fiqLineChanges = 0;
+  std::function<void()> fiqChanged;
+  void fiqRaise(unsigned hw) { if (!fiqModel || hw >= 128) return; fiqPending[hw >> 5] |= 1u << (hw & 31); ++fiqRaises; if (fiqChanged) fiqChanged(); }
+  bool fiqLine() const {
+    for (unsigned bank : {1u, 3u}) {
+      uint32_t maskAddr = bank == 1 ? 0x1f203390u : 0x1f203398u, mask = 0xffffffffu;
+      uint8_t b[4]; bool known = true;
+      for (unsigned i = 0; i < 4; ++i) known = known && coproPeekByte(maskAddr + (i < 2 ? i : i + 2), b[i]);   // two 16-bit registers, 4 bytes apart
+      if (known) mask = uint32_t(b[0]) | uint32_t(b[1]) << 8 | uint32_t(b[2]) << 16 | uint32_t(b[3]) << 24;
+      if (fiqPending[bank] & ~mask) return true;
+    }
+    return false;
+  }
   bool coproPeekByte(uint32_t a, uint8_t& v) const { auto it = bytes_.find(a); if (it == bytes_.end() || it->second.known != 255) return false; v = it->second.value; return true; }
   void coproPokeByte(uint32_t a, uint8_t v) { bytes_[a] = {v, 255}; }
   UsbHost usbHost;                     // not serialized (EXPLORATORY pendrive model)
