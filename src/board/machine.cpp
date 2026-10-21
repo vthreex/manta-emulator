@@ -171,6 +171,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if(!o.candidateGeRectFill)throw std::runtime_error("I8 fill hypothesis requires the candidate GE rectangle model");
     riu_.exploratoryGeI8Fill=true;
   }
+  if(!o.exploratoryUsbPendrive.empty()){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("USB pendrive attach requires guarded exploration");
+    riu_.usbDeviceAttachedPort0=true;
+  }
   if(o.exploratoryGeLine){
     if(!o.candidateGeRectFill)throw std::runtime_error("GE line hypothesis requires the candidate GE rectangle model");
     riu_.exploratoryGeLine=true;
@@ -407,6 +411,22 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     return options_.candidateMiu && size>0 && uint64_t(address)+size<=0x08000000 &&
       uint64_t(address)+size<=dramBacking_.size();
   };
+  if(!o.exploratoryUsbPendrive.empty()){
+    std::ifstream image(o.exploratoryUsbPendrive,std::ios::binary);
+    if(!image)throw std::runtime_error("cannot open USB pendrive image "+o.exploratoryUsbPendrive);
+    riu_.usbHost.attach(std::vector<uint8_t>((std::istreambuf_iterator<char>(image)),std::istreambuf_iterator<char>()));
+    auto& bus=riu_.usbHost.bus;
+    bus.read=[this](uint32_t a,size_t n){
+      a&=0x1fffffff;   // the driver programs KSEG0/KSEG1 aliases; the MIU decodes the low 29 address bits
+      try{return riu_.dramRead(a,n);}catch(const std::exception& e){throw std::runtime_error(std::string("USB host DMA read of ")+hex(a)+" ("+std::to_string(n)+" bytes): "+e.what());}};
+    bus.write=[this](uint32_t a,std::span<const uint8_t> b){riu_.dramWrite(a&0x1fffffff,b);};
+    bus.event=[this](const std::string& k,uint32_t a,uint32_t n,const std::string& d){event(k,a,n,0,d);};
+    bus.phyPowered=[this](unsigned port){return riu_.usbPhyPowered(port);};
+    bus.storedKnown=[this](uint32_t off){return riu_.usbStoredKnown(off);};
+    bus.storedReg=[this](uint32_t off){
+      if(!riu_.usbStoredKnown(off))throw std::runtime_error("USB host register "+std::to_string(off)+" read by the controller model before the guest defined it");
+      return riu_.usbStoredReg(off);};
+  }
   if(!o.pm51History.empty() && !o.exploratoryPm51SpiStartup)
     throw std::runtime_error("PM history requires original PM SPI startup experiment");
   if((o.exploratoryPmPowerGood || o.candidatePm51Uart) && !o.exploratoryPm51SpiStartup)
@@ -2311,6 +2331,16 @@ std::string Msd309Machine::summary() const {
   }
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(!options_.exploratoryUsbPendrive.empty()){
+    auto& u=riu_.usbHost;
+    s<<",\n  \"exploratory_usb_pendrive\": {\"transactions\": "<<u.transactions<<", \"qtds_retired\": "<<u.qtdsRetired<<", \"async_scans\": "<<u.scans;
+    if(auto* d=u.device())s<<", \"scsi_commands\": "<<d->commands<<", \"blocks_read\": "<<d->readBlocks<<", \"blocks_written\": "<<d->writtenBlocks;
+    s<<", \"trace\": [";
+    bool first=true;
+    for(auto& t:u.trace){s<<(first?"":", ")<<"\""<<t<<"\"";first=false;}
+    if(auto* d=u.device())for(auto& t:d->log){s<<(first?"":", ")<<"\""<<t<<"\"";first=false;}
+    s<<"]}";
+  }
   if(options_.exploratoryGeLine)s<<",\n  \"exploratory_ge_line\": true,\n  \"ge_lines_retired\": "<<riu_.geLines<<",\n  \"ge_line_pixels_written\": "<<riu_.geLinePixels;
   if(options_.exploratoryGeGradientFill)s<<",\n  \"exploratory_ge_gradient_fill\": true,\n  \"ge_gradient_fills_retired\": "<<riu_.geGradientFills;
   if(options_.exploratoryGeFillIgnoredReg00)s<<",\n  \"exploratory_ge_fill_ignored_reg00_bits\": "<<options_.exploratoryGeFillIgnoredReg00;

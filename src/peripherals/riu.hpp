@@ -12,6 +12,7 @@
 #include "peripherals/gpio_i2c.hpp"
 #include "peripherals/rtc.hpp"
 #include "peripherals/utmi.hpp"
+#include "peripherals/usb_host.hpp"
 #include "peripherals/spi_isp.hpp"
 #include "peripherals/semaphore.hpp"
 #include "video/gamma.hpp"
@@ -353,6 +354,11 @@ public:
   // EXPLORATORY: offscreen-to-GOP surface copy with blend coefficient ONE (see video/ge_blend_copy.hpp).
   bool exploratoryGeBlendCopy=false;
   uint16_t exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: reg00 bits assumed not to affect a solid fill
+  // stored (guest-written) 16-bit RIU register pair at a UHC byte offset; 0xffff known mask required
+  bool usbStoredKnown(uint32_t off) const { return knownBits(UsbHost::kBase+off*2,2)==0xffff && knownBits(UsbHost::kBase+(off+2)*2,2)==0xffff; }
+  uint32_t usbStoredReg(uint32_t off) const { return get(UsbHost::kBase+off*2,2)|(get(UsbHost::kBase+(off+2)*2,2)<<16); }
+  UsbHost usbHost;                     // not serialized (EXPLORATORY pendrive model)
+  bool usbDeviceAttachedPort0=false;   // not serialized: re-applied from the options after a restore
   bool exploratoryGeLine=false;   // not serialized: re-applied from the options after a restore
   uint64_t geLines=0,geLinePixels=0;
   bool exploratoryGeGradientFill=false;   // EXPLORATORY: command 0x2030 gradient rectangle fill
@@ -525,6 +531,7 @@ public:
       if (!(a <= reg && uint64_t(a) + n > reg)) continue;
       bool known = (knownBits(pwr, 2) & 0x8000) != 0;
       bool powered = known && !(get(pwr, 2) & 0x8000);
+      if (usbDeviceAttachedPort0 && port == 0 && powered) { if (value) *value = 0x40u; return reg; }   // full-speed J state: D+ high
       if (exploratoryUsbNoDevice_ && powered) { if (value) *value = 0; return reg; }
       if (diagnosticUsbUnpoweredDplus_ >= 0 && known && !powered) { if (value) *value = diagnosticUsbUnpoweredDplus_ ? 0x40u : 0u; return reg; }
       return 0;

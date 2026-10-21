@@ -631,6 +631,8 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     }
     break;
   }
+  if(usbHost.enabled() && UsbHost::inRange(a,n) && usbHost.owns(a,n))return usbHost.read(a,n,tick);
+  if(usbHost.enabled())usbHost.advance(tick);
   advanceGopUpdate(tick);
   advancePm(tick);
   advanceTsp(tick);
@@ -940,6 +942,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(usbHost.enabled() && UsbHost::inRange(a,n) && usbHost.owns(a,n)){usbHost.write(a,n,v,tick);return;}
   if(candidateAvdMcuProgram && a<=0x1f206bf8 && uint64_t(a)+n>0x1f206bf8)
     throw std::runtime_error("AVD event-byte acknowledgement semantics unsupported; a guest store cannot manufacture pending events");
   for(const auto& h:hypothesisBits_)

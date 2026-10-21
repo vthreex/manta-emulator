@@ -362,6 +362,7 @@ std::vector<Msd309Machine::SnapSection> Msd309Machine::captureSections(uint32_t 
   { Section s{"flash", {}}; Ar a(s.bytes); ioClass(a, flash_); sections.push_back(std::move(s)); }
   { Section s{"riu", {}}; Ar a(s.bytes); ioClass(a, riu_); sections.push_back(std::move(s)); }
   { Section s{"machine", {}}; Ar a(s.bytes); ioClass(a, *this); sections.push_back(std::move(s)); }
+  if (riu_.usbHost.enabled()) { Section s{"usb", {}}; Ar a(s.bytes); riu_.usbHost.serialize(a); sections.push_back(std::move(s)); }   // EXPLORATORY pendrive state
   return sections;
 }
 void Msd309Machine::writeSnapshot(uint32_t pc) {
@@ -468,14 +469,21 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   }
   { auto& s = find(sections, "flash"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, flash_); }
   { auto& s = find(sections, "riu"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, riu_); }
+  {
+    bool haveUsb = false;
+    for (auto& s : sections) if (s.name == "usb") { haveUsb = true; if (!riu_.usbHost.enabled()) throw SnapshotError("snapshot holds USB pendrive state but --exploratory-usb-pendrive is absent"); Ar a(s.bytes.data(), s.bytes.size()); riu_.usbHost.serialize(a); }
+    (void)haveUsb;   // absent section + attached option: fresh device (superset load of the option)
+  }
   riu_.reapplyInitHypotheses();
-  riu_.exploratoryGeLine = options_.exploratoryGeLine;   // not part of the snapshot format: always taken from the current options
+  riu_.exploratoryGeLine = options_.exploratoryGeLine;
+  riu_.usbDeviceAttachedPort0 = !options_.exploratoryUsbPendrive.empty();   // not part of the snapshot format: always taken from the current options
   // Superset load: options added after the snapshot are either runtime-read (accepted), applied to the restored devices here, or REFUSED.
   // Silently ignoring an added option whose state lives in the serialized device configuration would mislabel the run.
   for (size_t i = 0; i < extraTokens.size(); ++i) {
     const auto& t = extraTokens[i];
     if (t.rfind("--", 0) != 0) continue;   // a value token, consumed with its option below
-    if (t == "--exploratory-provenance-extensions" || t == "--trace-instructions" || t == "--exploratory-ge-line") continue;   // read from the options at run time
+    if (t == "--exploratory-provenance-extensions" || t == "--trace-instructions" || t == "--exploratory-ge-line") continue;
+    if (t == "--exploratory-usb-pendrive") { ++i; continue; }   // read at run time (device model is created after the restore)   // read from the options at run time
     if (t == "--exploratory-mmio-bits") { ++i; continue; }                                       // merged into the restored hypothesis list
     if (t == "--diagnostic-vif-cr-lock" && i + 1 < extraTokens.size()) {
       riu_.configureDiagnosticVifCrLock(unsigned(std::stoul(extraTokens[i + 1])));

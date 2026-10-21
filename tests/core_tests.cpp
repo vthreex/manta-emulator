@@ -1211,6 +1211,7 @@ void htotalBranchJoinTests(){
   }
 }
 #include "spi_nor_program_tests.inc"
+#include "usb_host_tests.inc"
 void geStretchRequestTests(){
   using Req=manta::GeStretchRequest;
   // Final 0x60=8040 request recorded from original OSD 3 instructions
@@ -2909,6 +2910,7 @@ int main() {
     virtualTimeTests();
     spiTests();
     spiNorProgramTests();
+    usbHostTests();
     usbNoDeviceTests();
     vifCrLockBracketTests();
     avdHtotalConstantTests();

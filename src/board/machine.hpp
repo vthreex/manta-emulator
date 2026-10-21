@@ -79,6 +79,7 @@ struct Options {
   bool exploratoryGeCopySnapshot=false;   // HYPOTHESIS B4: overlapping GE blend copies are read-before-write snapshots
   bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': GE copies cover every destination row (6F = height-5 is an encoding artefact)
   unsigned exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: GE reg00 bits (other than bit 0) assumed not to affect a solid fill
+  std::string exploratoryUsbPendrive;   // EXPLORATORY: attach a USB mass-storage device (image file) to port 0 (peripherals/usb_host.hpp)
   bool exploratoryGeLine=false;   // EXPLORATORY: GE command 0x10 axis-aligned one-pixel line into format C (video/ge_line.hpp)
   bool exploratoryGeGradientFill=false;   // EXPLORATORY: GE command 0x2030 gradient rectangle fill into format C
   bool exploratoryGeI8Fill=false;   // EXPLORATORY: format-4 rectangle fill, index = low byte of the colour registers

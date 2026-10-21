@@ -184,6 +184,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-ge-nearest-stretch")o.exploratoryGeNearestStretch=true;
       else if(a=="--exploratory-ge-gradient-fill")o.exploratoryGeGradientFill=true;
       else if(a=="--exploratory-ge-line")o.exploratoryGeLine=true;
+      else if(a=="--exploratory-usb-pendrive")o.exploratoryUsbPendrive=value(i);
       else if(a=="--exploratory-ge-fill-ignore-reg00"){auto v=std::stoul(value(i),nullptr,0);if(v==0||v>6||(v&1))throw std::runtime_error("--exploratory-ge-fill-ignore-reg00 takes a mask within bits 1..2 of GE register 00");o.exploratoryGeFillIgnoredReg00=unsigned(v);}
       else if(a=="--exploratory-ge-height5-full-copy")o.exploratoryGeHeight5Full=true;
       else if(a=="--exploratory-ge-copy-snapshot")o.exploratoryGeCopySnapshot=true;
