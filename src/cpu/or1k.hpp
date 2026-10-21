@@ -2,6 +2,7 @@
 // ORBIS32 (OpenRISC 1000, 32-bit) interpreter for the multimedia coprocessor (EXPLORATORY; instruction set per the public OpenRISC 1000
 // architecture manual, little-endian memory image as found in the original resource, see docs/multimedia-copro-startup.md).
 // Concrete values only: unknown hardware stays unknown at the bus (the bus callbacks decide whether an access is modelled).
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cstdint>
 #include <cstdio>
@@ -65,6 +66,11 @@ public:
       pc_ = cur + 4;
     } else pc_ = nextPc;
     return true;
+  }
+
+  void serialize(snap::Ar& a) {   // snapshot: complete architectural + timing state (callbacks and bigEndian are re-bound by the owner)
+    a.tag("or1k");
+    a(r_, pc_, sr_, epcr_, eear_, esr_, ttmr_, ttcr_, picmr_, picsr_, levelLines_, maclo_, machi_, delayTarget_, branchPc_, delayActive_, halted_, exceptionTaken_, sleeping_, instructions_, spr_);
   }
 
 private:

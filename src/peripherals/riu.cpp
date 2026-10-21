@@ -958,6 +958,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if (tick >= writeLogFrom && (writeLog.size() < 6000 || writeLog.count(a))) { auto& s = writeLog[a]; if (!s.count) s.firstPc = pc; ++s.count; s.last = v; s.width = n; }
   if(fiqModel && a>=0x1f2033b0u && a+n<=0x1f2033c0u){
     for(unsigned i=0;i<n;++i){
       unsigned off=a+i-0x1f2033b0u, reg=off>>2, byte=off&3;
@@ -1389,6 +1390,23 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeStretchRequest request;
       try{request=GeStretchRequest::decode(uint16_t(v),registers);}
       catch(const std::exception&){throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");}
+      if(exploratoryGeYuvStretch && request.sourceFormat==0x0e && request.destinationFormat==0x0e){
+        GeYuvStretch yuv;
+        try{yuv=GeYuvStretch::decode(request,dramRead);}
+        catch(const std::exception& error){
+          guardedStretchDetail_=request.describe()+"; exploratory YUV stretch refused: "+error.what();
+          event("ge_stretch_request_guarded",a,n,v,"GUARDED, not executed: "+guardedStretchDetail_);
+          throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");
+        }
+        raster=[this,yuv]{
+          yuv.execute(dramWritable,dramWrite);
+          ++geYuvStretches;
+          auto count=yuv.empty?0u:(yuv.right-yuv.left+1)*(yuv.bottom-yuv.top+1);
+          geYuvStretchPixels+=count;
+          event("exploratory_ge_yuv_stretch_retired",yuv.destination,yuv.pitch,count,
+            "EXPLORATORY, NOT TITANIA4-VERIFIED: packed YUV422 (Y0 U Y1 V assumed) nearest stretch; chroma pair from the nearest source pair of the pair's first pixel; no dither/blend/key");
+        };
+      }else{
       GeUniformStretch plan;
       try{
         plan=GeUniformStretch::decode(request,exploratoryGeUniformStretch==0?GeUniformStretch::Alpha::OpaqueSource:GeUniformStretch::Alpha::AlphaBit,dramRead,exploratoryGeNearestStretch);
@@ -1406,6 +1424,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
           "EXPLORATORY, NOT TITANIA4-VERIFIED: single-colour source (sampling/filter cannot matter); alpha hypothesis "+
           std::string(exploratoryGeUniformStretch==0?"opaque-source (alpha bit ignored, constant alpha FF)":"alpha-bit (clear = transparent)")+"; dither assumed no-op; pixel "+std::to_string(plan.pixel));
       };
+      }
     }else if(candidateGeBitBlt && a==0x1f205180 && (v&0x70)==0x40){
       if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
       if(v==0x8040 || v==0xc040){
@@ -1433,7 +1452,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeBitBlt plan;
       try{
         plan=GeBitBlt::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};});
+          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeYuvStretch);
       }catch(const std::exception& error){
         // Observation only: the exact exception text is a tested contract; the register file travels in the summary.
         guardedStretchDetail_=std::string("plain-BitBlt decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+(copyRefusal_.empty()?"":"; exploratory blend-copy refused: "+copyRefusal_)+"; GE registers (index=value):";

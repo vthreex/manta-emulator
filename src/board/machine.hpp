@@ -87,6 +87,9 @@ struct Options {
   uint32_t exploratoryCoproWatch=0;      // diagnostic: report writes to this coprocessor-DRAM word
   std::string exploratoryCoproDumpStart; // write DRAM and the mailbox bytes to FILE / FILE.mail when the coprocessor is released (offline harness input)
   int exploratoryCoproMipsIrq=-1;       // EXPLORATORY: hardware interrupt index (FIQ bank 1/3: 32..63, 96..127) raised toward the MIPS when the coprocessor fires its reply mailbox; -1 = none
+  bool exploratoryGeYuvStretch=false;   // EXPLORATORY: nearest stretch for packed YUV422 (GE format 0xE -> 0xE); needs --exploratory-ge-uniform-stretch
+  uint64_t diagnosticRiuWriteLogFrom=UINT64_MAX;   // diagnostic: list guest-written RIU addresses since this cycle count
+  std::string diagnosticDramDumpFile; uint32_t diagnosticDramDumpAddr=0, diagnosticDramDumpSize=0;   // diagnostic (observation only): write this DRAM range to FILE when the summary is produced
   bool exploratoryRiuZeroUnknown=false;  // LABELLED HYPOTHESIS (diagnostic only): never-defined RIU registers read as 0 and are listed
   std::string exploratoryCoproJpdDump;  // diagnostic: write the JPD output picture (raw packed 4:2:2) to this file
   bool exploratoryCoproJpd=false;       // EXPLORATORY: model the coprocessor JPEG decoder block from its register programming (peripherals/jpd.hpp)
@@ -176,6 +179,7 @@ class Msd309Machine {
   VirtualTime virtualTime_;
   Copro copro_;
   void startCopro(uint32_t riuAddress);
+  void attachCopro();
   void updateIrqLines();
   uint32_t irqLinesApplied_=0;
   uint64_t coproLoadInspections_=0;

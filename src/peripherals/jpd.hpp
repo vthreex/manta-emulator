@@ -10,6 +10,7 @@
 //                               NxN coefficients scaled by N/8, 4:2:0 -> 4:2:2 chroma by vertical replication, packed byte order Y0 U Y1 V,
 //                               event bit 0 = decode done, instantaneous completion
 #pragma once
+#include "snapshot/archive.hpp"
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -29,6 +30,7 @@ public:
   uint64_t starts = 0, completed = 0, blocks = 0;
   std::string lastNote, dumpPath;   // dumpPath: diagnostic - write each decoded picture (raw packed 4:2:2) to this file
 
+  void serialize(snap::Ar& a) { a.tag("jpd"); a(r_, table_, tableIndex_, events_, writes_, starts, completed, blocks, lastNote); }
   bool owns(uint32_t off, unsigned n) const { return off >= kBase && off + n <= kEnd; }
   uint32_t read(uint32_t off, unsigned n) {
     uint32_t v = 0;

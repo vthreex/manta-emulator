@@ -70,9 +70,20 @@ public:
   std::map<uint32_t, uint8_t> latch;   // writes to registers whose effect is unknown: stored so the CP reads back what it wrote ("write latch only")
   bool started = false, stopped = false;
 
-  void start(uint32_t entry = 0x100) {   // 0x100 is the architectural OpenRISC reset vector
+  void rebind() {   // (re)attach the bus callbacks; used by start() and after a snapshot restore
     cpu_.read = [this](uint32_t a, unsigned n) { return busRead(a, n); };
     cpu_.write = [this](uint32_t a, unsigned n, uint32_t v) { busWrite(a, n, v); };
+  }
+  void serialize(snap::Ar& a) {   // snapshot state of the running coprocessor (DRAM is in the machine's own section)
+    a.tag("copro");
+    a(started, stopped, stopReason, uart, intc_, intcKnown_, irqLine2_, intcWrites_, mailboxIrqs, hostNotifies, latchedWrites, starts, holds, unknownReadTotal, dlab_,
+      latch, unknownReads, mailLog, notes);
+    cpu_.serialize(a);
+    jpd.serialize(a);
+    if (a.loading() && started) { rebind(); cpu_.bigEndian = false; cpu_.setLevel(2, irqLine2_); }
+  }
+  void start(uint32_t entry = 0x100) {   // 0x100 is the architectural OpenRISC reset vector
+    rebind();
     cpu_.reset(entry);
     intc_.fill(0); intcKnown_.fill(0); latch.clear(); dlab_ = 0; irqLine2_ = false;
     ++starts;

@@ -45,3 +45,11 @@ the code to its global `0x14100A` and the shift to `0x141008` together), bit6=re
 Still assumptions (not evidence): reduced-size IDCT method (orthonormal N-point IDCT of the top-left NxN coefficients scaled N/8), vertical chroma replication, byte order Y0 U Y1 V,
 instant completion, event bit 0 = done, component->table selection (Y Q0/DC0/AC0, Cb/Cr Q1/DC1/AC1).
 Open: after START the driver still ends the job with `error: 0x0001` (event/status semantics of `2E28`/`2E60` are not right yet), progressive / other sampling / SUVQ / scale 1/4,1/8 are refused by the model.
+
+## End-to-end result: the logo reaches a 1920x1080 guest framebuffer (diagnostic, exploratory models)
+Chain (all original firmware code + the opt-in models): original JPEG resource -> coprocessor decoder driving the JPD model (976x544 packed 4:2:2 at `0x027AA000`) -> original GE stretch `0x8040`
+(`--exploratory-ge-yuv-stretch`, nearest, packed Y0 U Y1 V assumed) into `0x02D00000` (1920x1068 rows written, 6-row margins) -> original GE plain copy `0x0040` (programmed height 5 rows short:
+hypothesis H5) into `0x03230000`. Both framebuffers are byte-identical and show the Manta logo (`evidence/logo-framebuffer-0x3230000-diagnostic.png`, half size, BT.601 conversion by the viewer).
+Measured with a snapshot saved at 560M dispatches (coprocessor, JPD and FIQ state are part of the save state).
+Not shown on any display layer yet: through 1.5B dispatches the only enabled GOP window is the OSD bar (bank 4); GOP register writes since 416M are all bank 4, and the MVOP (`0x1F202400` block) only
+receives timing writes. Whatever scans `0x03230000` out (or whether the original shows it at a later UI state) is still unknown.

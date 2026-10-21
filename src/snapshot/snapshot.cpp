@@ -375,6 +375,12 @@ std::vector<Msd309Machine::SnapSection> Msd309Machine::captureSections(uint32_t 
   { Section s{"riu", {}}; Ar a(s.bytes); ioClass(a, riu_); sections.push_back(std::move(s)); }
   { Section s{"machine", {}}; Ar a(s.bytes); ioClass(a, *this); sections.push_back(std::move(s)); }
   if (riu_.usbHost.enabled()) { Section s{"usb", {}}; Ar a(s.bytes); riu_.usbHost.serialize(a); sections.push_back(std::move(s)); }   // EXPLORATORY pendrive state
+  if (options_.exploratoryCopro && copro_.started) {   // EXPLORATORY coprocessor model state
+    Section s{"copro", {}}; Ar a(s.bytes);
+    copro_.serialize(a);
+    a(riu_.fiqPending, riu_.fiqRaises, riu_.fiqStatusReads, riu_.fiqStatusWrites, riu_.fiqLineChanges, irqLinesApplied_);
+    sections.push_back(std::move(s));
+  }
   return sections;
 }
 void Msd309Machine::writeSnapshot(uint32_t pc) {
@@ -488,6 +494,18 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     for (auto& s : sections) if (s.name == "usb") { haveUsb = true; if (!riu_.usbHost.enabled()) throw SnapshotError("snapshot holds USB pendrive state but --exploratory-usb-pendrive is absent"); Ar a(s.bytes.data(), s.bytes.size()); riu_.usbHost.serialize(a); }
     (void)haveUsb;   // absent section + attached option: fresh device (superset load of the option)
   }
+  {
+    bool haveCopro = false;
+    for (auto& s : sections) if (s.name == "copro") {
+      haveCopro = true;
+      if (!options_.exploratoryCopro) throw SnapshotError("snapshot holds coprocessor state but --exploratory-copro is absent");
+      Ar a(s.bytes.data(), s.bytes.size());
+      copro_.serialize(a);
+      a(riu_.fiqPending, riu_.fiqRaises, riu_.fiqStatusReads, riu_.fiqStatusWrites, riu_.fiqLineChanges, irqLinesApplied_);
+      attachCopro();
+    }
+    (void)haveCopro;
+  }
   riu_.reapplyInitHypotheses();
   riu_.exploratoryGeLine = options_.exploratoryGeLine;
   riu_.usbDeviceAttachedPort0 = !options_.exploratoryUsbPendrive.empty();   // not part of the snapshot format: always taken from the current options
@@ -497,6 +515,15 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     const auto& t = extraTokens[i];
     if (t.rfind("--", 0) != 0) continue;   // a value token, consumed with its option below
     if (t == "--exploratory-provenance-extensions" || t == "--trace-instructions" || t == "--exploratory-ge-line") continue;
+    // Coprocessor / JPD / FIQ / YUV-stretch / zero-unknown diagnostics: all read at run time, none has state in the snapshot (the coprocessor model refuses a snapshot taken
+    // after the guest released the core).
+    if (t == "--exploratory-copro" || t == "--exploratory-copro-zero-unknown-reads" || t == "--exploratory-copro-jpd" || t == "--exploratory-ge-yuv-stretch" ||
+        t == "--diagnostic-riu-zero-unknown-reads") continue;
+    if (t == "--exploratory-copro-mips-irq" || t == "--exploratory-copro-jpd-dump" || t == "--exploratory-copro-capture" || t == "--exploratory-copro-watch" ||
+        t == "--exploratory-copro-dump-start") { ++i; continue; }
+    if (t == "--exploratory-copro-seq") { i += 2; continue; }
+    if (t == "--diagnostic-riu-write-log") { ++i; continue; }
+    if (t == "--diagnostic-dram-dump") { i += 3; continue; }
     if (t == "--exploratory-usb-pendrive") { ++i; continue; }   // read at run time (device model is created after the restore)   // read from the options at run time
     if (t == "--exploratory-mmio-bits") { ++i; continue; }                                       // merged into the restored hypothesis list
     if (t == "--diagnostic-vif-cr-lock" && i + 1 < extraTokens.size()) {
@@ -517,5 +544,6 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   importStats();
   resumePc_ = pc;
   resumed_ = true;
+  if (options_.exploratoryCopro && copro_.started && irqLinesApplied_) cpu_.setIrqLines(irqLinesApplied_);
 }
 }  // namespace manta

@@ -183,7 +183,6 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   }
   if(o.exploratoryCopro){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("coprocessor execution requires guarded exploration");
-    if(!o.saveState.empty() || !o.loadState.empty())throw std::runtime_error("coprocessor state is not part of the snapshot format yet");
   }
   if(!o.exploratoryUsbPendrive.empty()){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("USB pendrive attach requires guarded exploration");
@@ -434,6 +433,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     copro_.onReply=[this,hw]{riu_.fiqRaise(unsigned(hw));};
   }
   riu_.zeroUnknownReads=o.exploratoryRiuZeroUnknown;
+  riu_.writeLogFrom=o.diagnosticRiuWriteLogFrom;
+  riu_.exploratoryGeYuvStretch=o.exploratoryGeYuvStretch;
   if(o.exploratoryCopro){
     copro_.zeroUnknownReads=o.exploratoryCoproZeroUnknown;
     copro_.mailRead=[this](uint32_t a,uint8_t& v){return riu_.coproPeekByte(a,v);};
@@ -552,6 +553,21 @@ void Msd309Machine::updateIrqLines() {
   cpu_.setIrqLines(lines);
   event("mips_irq_lines", lines, 4, lines, "EXPLORATORY: external interrupt line state toward the MIPS core (IP2=bit0, IP3=bit1)");
 }
+// Run-time wiring of the coprocessor model that is not snapshot state (used when it starts and after a snapshot restore).
+void Msd309Machine::attachCopro() {
+  const size_t ramSize = std::min<size_t>(dramBacking_.size(), 0x08000000);
+  copro_.jpdEnabled = options_.exploratoryCoproJpd;
+  copro_.jpd.dumpPath = options_.exploratoryCoproJpdDump;
+  copro_.jpd.ram = dramBacking_.data();
+  copro_.jpd.ramSize = ramSize;
+  copro_.jpd.ramWritten = [this](uint32_t a, size_t n){ preservedBits_.overwriteKnownMemory(a, n); unknownObservations_.overwriteKnownMemory(a, n); };
+  copro_.watchAddr = options_.exploratoryCoproWatch;
+  copro_.captureAddr = options_.exploratoryCoproCapture;
+  copro_.seqLo = options_.exploratoryCoproSeqLo;
+  copro_.seqHi = options_.exploratoryCoproSeqHi;
+  copro_.ram = dramBacking_.data();
+  copro_.ramSize = ramSize;
+}
 void Msd309Machine::startCopro(uint32_t riuAddress) {
   const size_t ramSize = std::min<size_t>(dramBacking_.size(), 0x08000000);
   uint32_t first = 0;
@@ -566,17 +582,7 @@ void Msd309Machine::startCopro(uint32_t riuAddress) {
     std::ofstream m(options_.exploratoryCoproDumpStart + ".mail");
     for (uint32_t o = 0x6700; o < 0x6800; ++o) { uint8_t v = 0; if (riu_.coproPeekByte(0x1f200000u + o, v)) m << std::hex << o << " " << unsigned(v) << char(10); }
   }
-  copro_.jpdEnabled = options_.exploratoryCoproJpd;
-  copro_.jpd.dumpPath = options_.exploratoryCoproJpdDump;
-  copro_.jpd.ram = dramBacking_.data();
-  copro_.jpd.ramSize = ramSize;
-  copro_.jpd.ramWritten = [this](uint32_t a, size_t n){ preservedBits_.overwriteKnownMemory(a, n); unknownObservations_.overwriteKnownMemory(a, n); };
-  copro_.watchAddr = options_.exploratoryCoproWatch;
-  copro_.captureAddr = options_.exploratoryCoproCapture;
-  copro_.seqLo = options_.exploratoryCoproSeqLo;
-  copro_.seqHi = options_.exploratoryCoproSeqHi;
-  copro_.ram = dramBacking_.data();
-  copro_.ramSize = ramSize;
+  attachCopro();
   copro_.start(0x100);
   event("copro_started", riuAddress, 1, 3, "EXPLORATORY: original DRAM image executes on the OpenRISC core from the architectural reset vector 0x100; stepped 16384 instructions per 16384 MIPS dispatches");
 }
@@ -2220,7 +2226,12 @@ int Msd309Machine::run() {
           "DIAGNOSTIC host entry transfer after real early register writes; "
           "MIU completion and stage copy bypassed");
   }
-  if (!options_.loadState.empty()) restoreSnapshot(options_.loadState);
+  if (!options_.loadState.empty()) {
+    restoreSnapshot(options_.loadState);
+    uint8_t ctl = 0;
+    if (options_.exploratoryCopro && !copro_.started && riu_.coproPeekByte(0x1f201fe0u, ctl) && ctl == 3)
+      throw std::runtime_error("the snapshot postdates the guest's coprocessor release (1F201FE0 = 3); the coprocessor model needs a snapshot from before that point");
+  }
   if (!options_.saveState.empty() && options_.loadState.empty() && (options_.trace.empty() == false || options_.replay.empty() == false))
     throw std::runtime_error("save-state cannot be combined with --record-trace/--replay-trace");
   Sampler sampler;
@@ -2478,6 +2489,10 @@ void Msd309Machine::dumpGuestRanges() const {
   }
 }
 std::string Msd309Machine::summary() const {
+  if (!options_.diagnosticDramDumpFile.empty() && uint64_t(options_.diagnosticDramDumpAddr) + options_.diagnosticDramDumpSize <= dramBacking_.size()) {
+    std::ofstream d(options_.diagnosticDramDumpFile, std::ios::binary);
+    d.write(reinterpret_cast<const char*>(dramBacking_.data()) + options_.diagnosticDramDumpAddr, std::streamsize(options_.diagnosticDramDumpSize));
+  }
   flushStats();
   const_cast<Msd309Machine *>(this)->flushTicks();
   std::ostringstream s;
@@ -2693,8 +2708,14 @@ std::string Msd309Machine::summary() const {
     }
     s<<", \"overall\": \""<<sha256(std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(all.data()),all.size()))<<"\"}";
   }
+  if(options_.exploratoryGeYuvStretch)s<<",\n  \"exploratory_ge_yuv_stretch\": true,\n  \"ge_yuv_stretches_retired\": "<<riu_.geYuvStretches<<",\n  \"ge_yuv_stretch_pixels_written\": "<<riu_.geYuvStretchPixels;
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(options_.diagnosticRiuWriteLogFrom!=UINT64_MAX){
+    s<<",\n  \"diagnostic_riu_write_log\": [";
+    bool f=true;for(auto& kv:riu_.writeLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second.count<<", \""<<hex(kv.second.firstPc)<<"\", \""<<hex(kv.second.last)<<"\"]";f=false;}
+    s<<"]";
+  }
   if(options_.exploratoryRiuZeroUnknown){
     s<<",\n  \"diagnostic_riu_zero_unknown_reads\": {\"total\": "<<riu_.zeroUnknownTotal<<", \"addresses\": [";
     bool f=true;for(auto& kv:riu_.zeroUnknownLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second<<"]";f=false;}
