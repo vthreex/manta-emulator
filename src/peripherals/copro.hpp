@@ -11,6 +11,7 @@
 //    Its output is PIC line 2, level sensitive. All other status bits read as unknown.
 #pragma once
 #include "cpu/or1k.hpp"
+#include "peripherals/jpd.hpp"
 #include <array>
 #include <cstdint>
 #include <cstdio>
@@ -46,6 +47,8 @@ public:
     (write ? s.writes : s.reads)++;
     s.last = v;
   }
+  bool jpdEnabled = false;            // EXPLORATORY JPEG decoder block model (peripherals/jpd.hpp)
+  Jpd jpd;
   uint32_t captureAddr = 0;           // diagnostic: record the sequence of values the coprocessor writes to this peripheral address (first 16384)
   std::vector<uint32_t> captured;
   uint32_t seqLo = 0, seqHi = 0;      // diagnostic: ordered access sequence (kind, address, value, pc) for peripheral addresses in [seqLo, seqHi), first 6000
@@ -179,6 +182,7 @@ private:
     if (a >= 0x90000000u && a < 0x90000008u) return (a & 7) == 5 ? 0x60u : (a & 7) == 2 ? 0x01u : 0u;
     if (a >= kWindow && a < kWindow + kWindowSize) {
       uint32_t off = a - kWindow, v = 0;
+      if (jpdEnabled && jpd.owns(off, n)) { v = jpd.read(off, n); ioNote(a, false, v); return v; }
       if (off >= kMailBase && off + n <= kMailEnd) {
         for (unsigned i = 0; i < n; ++i) v |= uint32_t(mailByte(off + i)) << (8 * i);
         return v;
@@ -237,6 +241,7 @@ private:
     }
     if (a >= kWindow && a < kWindow + kWindowSize) {
       uint32_t off = a - kWindow;
+      if (jpdEnabled && jpd.owns(off, n)) { ioNote(a, true, v); jpd.write(off, n, v); return; }
       if (off >= kMailBase && off + n <= kMailEnd) {
         for (unsigned i = 0; i < n; ++i) if (mailWrite) mailWrite(0x1f200000u + off + i, uint8_t(v >> (8 * i)));
         if (off == 0x6720 && (v & 1) && onReply) onReply();

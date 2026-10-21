@@ -35,3 +35,13 @@ Length record `(lo16, hi16)`; an empty length is `(0, 0)`:
 | 2E50..2E5C | read only | TBD (32-bit pairs: current positions?) |
 | 2E60 | read | status/error (read once after START) |
 | 2E70 | `0x3B` | TBD |
+
+## Executable model (`--exploratory-copro-jpd`, src/peripherals/jpd.hpp) — first result
+Driven only by the original coprocessor driver's register programming and table writes, the model decodes the boot-logo JPEG (1940x1080, 4:2:0, DRI 122, scale 1/2) from guest DRAM:
+**8,296 MCUs / 49,776 blocks -> 976x544 packed 4:2:2 at `0x027AA000`** (exactly the buffer the MIPS later stretches with GE command 0x8040, pitch 1952).
+The decoded picture is the Manta logo (`evidence/jpd-logo-decode-diagnostic.png`, converted for viewing with BT.601 full-range - the conversion is the viewer's, not the hardware's).
+Fields from the driver code: SCONFIG [1:0]=Y H-sampling, bit2=Y V-sampling-1, bit3=colour, [5:4]=scale code (0 1/1, 1 1/2, 2 1/4, 3 1/8; the driver writes
+the code to its global `0x14100A` and the shift to `0x141008` together), bit6=restart enable, bit8 always set, bit9=separate U/V Q tables, bit13 set before START, bit7=START.
+Still assumptions (not evidence): reduced-size IDCT method (orthonormal N-point IDCT of the top-left NxN coefficients scaled N/8), vertical chroma replication, byte order Y0 U Y1 V,
+instant completion, event bit 0 = done, component->table selection (Y Q0/DC0/AC0, Cb/Cr Q1/DC1/AC1).
+Open: after START the driver still ends the job with `error: 0x0001` (event/status semantics of `2E28`/`2E60` are not right yet), progressive / other sampling / SUVQ / scale 1/4,1/8 are refused by the model.

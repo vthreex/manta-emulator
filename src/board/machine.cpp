@@ -566,6 +566,11 @@ void Msd309Machine::startCopro(uint32_t riuAddress) {
     std::ofstream m(options_.exploratoryCoproDumpStart + ".mail");
     for (uint32_t o = 0x6700; o < 0x6800; ++o) { uint8_t v = 0; if (riu_.coproPeekByte(0x1f200000u + o, v)) m << std::hex << o << " " << unsigned(v) << char(10); }
   }
+  copro_.jpdEnabled = options_.exploratoryCoproJpd;
+  copro_.jpd.dumpPath = options_.exploratoryCoproJpdDump;
+  copro_.jpd.ram = dramBacking_.data();
+  copro_.jpd.ramSize = ramSize;
+  copro_.jpd.ramWritten = [this](uint32_t a, size_t n){ preservedBits_.overwriteKnownMemory(a, n); unknownObservations_.overwriteKnownMemory(a, n); };
   copro_.watchAddr = options_.exploratoryCoproWatch;
   copro_.captureAddr = options_.exploratoryCoproCapture;
   copro_.seqLo = options_.exploratoryCoproSeqLo;
@@ -2698,7 +2703,7 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryCopro){
     s<<",\n  \"exploratory_copro\": {\"started\": "<<(copro_.started?"true":"false")<<", \"stopped\": "<<(copro_.stopped?"true":"false")
      <<", \"stop_reason\": \""<<jsonText(copro_.stopReason)<<"\", \"instructions\": "<<copro_.instructions()<<", \"pc\": \""<<hex(copro_.pc())
-     <<"\", \"fiq_raises\": "<<riu_.fiqRaises<<", \"fiq_status_reads\": "<<riu_.fiqStatusReads<<", \"fiq_status_writes\": "<<riu_.fiqStatusWrites<<", \"fiq_line_changes\": "<<riu_.fiqLineChanges<<", \"fiq_pending_bank1\": "<<riu_.fiqPending[1]<<", \"fiq_pending_bank3\": "<<riu_.fiqPending[3]<<", \"fiq_mask_words\": ["<<[&]{std::string o;for(uint32_t base:{0x1f203390u,0x1f203394u,0x1f203398u,0x1f20339cu}){uint8_t b0=0,b1=0;bool k=riu_.coproPeekByte(base,b0)&&riu_.coproPeekByte(base+1,b1);o+=(o.empty()?"":", ");o+=k?std::to_string(b0|(b1<<8)):std::string("-1");}return o;}()<<"], \"starts\": "<<copro_.starts<<", \"holds\": "<<copro_.holds<<", \"mailbox_irqs\": "<<copro_.mailboxIrqs<<", \"host_notify_writes\": "<<copro_.hostNotifies<<", \"latched_unknown_effect_writes\": "<<copro_.latchedWrites
+     <<"\", \"jpd\": {\"starts\": "<<copro_.jpd.starts<<", \"completed\": "<<copro_.jpd.completed<<", \"blocks\": "<<copro_.jpd.blocks<<", \"note\": \""<<jsonText(copro_.jpd.lastNote)<<"\"}, \"fiq_raises\": "<<riu_.fiqRaises<<", \"fiq_status_reads\": "<<riu_.fiqStatusReads<<", \"fiq_status_writes\": "<<riu_.fiqStatusWrites<<", \"fiq_line_changes\": "<<riu_.fiqLineChanges<<", \"fiq_pending_bank1\": "<<riu_.fiqPending[1]<<", \"fiq_pending_bank3\": "<<riu_.fiqPending[3]<<", \"fiq_mask_words\": ["<<[&]{std::string o;for(uint32_t base:{0x1f203390u,0x1f203394u,0x1f203398u,0x1f20339cu}){uint8_t b0=0,b1=0;bool k=riu_.coproPeekByte(base,b0)&&riu_.coproPeekByte(base+1,b1);o+=(o.empty()?"":", ");o+=k?std::to_string(b0|(b1<<8)):std::string("-1");}return o;}()<<"], \"starts\": "<<copro_.starts<<", \"holds\": "<<copro_.holds<<", \"mailbox_irqs\": "<<copro_.mailboxIrqs<<", \"host_notify_writes\": "<<copro_.hostNotifies<<", \"latched_unknown_effect_writes\": "<<copro_.latchedWrites
      <<", \"zero_unknown_reads\": "<<(options_.exploratoryCoproZeroUnknown?"true":"false")<<", \"unknown_read_total\": "<<copro_.unknownReadTotal<<", \"unknown_reads_first_512\": [";
     bool firstUnknown=true;
     for(auto& kv:copro_.unknownReads){s<<(firstUnknown?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second<<"]";firstUnknown=false;}
