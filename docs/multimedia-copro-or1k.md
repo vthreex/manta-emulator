@@ -46,3 +46,18 @@ the image in between - without modelling the hold the reloaded image corrupted t
 - Next step: (1) add a deterministic external-interrupt register to the Unicorn extension (set Cause.IP2/IP3); (2) model the MIPS INTC status/mask words with the
   mailbox-reply source (hardware index for CP->MIPS mail is 106 or 114 - decide by bracketing); (3) then watch whether the MIPS acknowledges and the decoder receives
   its next command (the logo JPEG at `0x03230000` is already in the Input buffer region).
+
+## MIPS interrupt delivery works (`--exploratory-copro-mips-irq 104`, IRQ-capable engine)
+- `tools/patch_unicorn_irq.py` adds `UC_MIPS_REG_CP0_IRQ` (Cause.IP2..IP6 level mask) to the timer-patched Unicorn 2.1.4; the build lives in `work/unicorn-irq*`
+  (separate from the working engine) and `work/build-irq` links it. Without the extension `--exploratory-copro-mips-irq` refuses to run.
+- FIQ model (EXPLORATORY, `Riu::fiqModel`): pending bits for banks 32..63 (status `1F2033B0/B4`) and 96..127 (`1F2033B8/BC`), write-1-to-clear (the original FIQ
+  dispatcher `8060AA88` writes the status back, then 0), masks are the guest's own `1F203390/94/98/9C` words (bit set = masked). Output: Cause.IP3.
+- The MIPS unmasked only hardware interrupts **100 and 104** (mask words after boot: bank 3 low half `0xFEEF`), not 106/114 as the role table suggested. Raising **104** when
+  the coprocessor fires its reply mailbox makes the original MIPS MBX driver read and acknowledge the reply (2 raises -> 9, 36 status reads/writes).
+- Result: the MIPS then sends the still-image decode request (class 0x2B, command 0x10, 4 parameters) and later class 0x2C commands; the original coprocessor decoder
+  parses the boot-logo JPEG from the Input buffer: `[Still Image] Decoder, JPEG, size: 4147200`, `Image WxH: 1940x1080`, `Scaled WxH: 970(976)x540`, `Scale factor: 2`,
+  `INITED --> BEFORE WORKING --> WORKING`, `Decode done`, then `WORKING --> STOPPED, error: 0x0001`. No JPD hardware is modelled, so "decode done" is NOT a decoded picture:
+  the unknown JPD registers read 0 under `--exploratory-copro-zero-unknown-reads` and the Output buffer (`0x827AA000`) has not been checked.
+- New MIPS stop: `805E6268` reads RIU `0x1F206504` (a save/restore of the register group `0x6500/6504/6514/65B8/65F4`, unmodelled). The opaque-read-policy mechanism
+  (exact code hash, INVALID values only) is the intended way past a pure save/restore; not done yet.
+- 1940x1080: the JPEG header really is 1940x1080 (printed by the original decoder).
