@@ -2695,6 +2695,7 @@ std::string Msd309Machine::summary() const {
     for(auto& kv:copro_.unknownReads){s<<(firstUnknown?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second<<"]";firstUnknown=false;}
     s<<"], \"watch_notes\": [";
     for(size_t i=0;i<copro_.notes.size();++i)s<<(i?", ":"")<<"\""<<jsonText(copro_.notes[i])<<"\"";
+    s<<"], \"io_log\": ["; {bool f=true; for(auto& kv:copro_.ioLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second.reads<<", "<<kv.second.writes<<", \""<<hex(kv.second.last)<<"\", \""<<hex(kv.second.firstPc)<<"\"]"; f=false;}}
     s<<"], \"mail_log\": [";
     for(size_t i=0;i<copro_.mailLog.size();++i)s<<(i?", ":"")<<"\""<<jsonText(copro_.mailLog[i])<<"\"";
     s<<"], \"uart\": \""<<jsonText(copro_.uart)<<"\"}";

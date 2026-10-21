@@ -61,3 +61,14 @@ the image in between - without modelling the hold the reloaded image corrupted t
 - New MIPS stop: `805E6268` reads RIU `0x1F206504` (a save/restore of the register group `0x6500/6504/6514/65B8/65F4`, unmodelled). The opaque-read-policy mechanism
   (exact code hash, INVALID values only) is the intended way past a pure save/restore; not done yet.
 - 1940x1080: the JPEG header really is 1940x1080 (printed by the original decoder).
+
+## What the decoder touches (summary `exploratory_copro.io_log`, run irq6)
+Peripheral window accesses other than mailbox/INTC (address, reads, writes, last value, first pc): JPD block `0xA0202E00..2E70` (config/status words; reads of `2E04` x4,
+`2E00`, `2E28`, `2E60`; writes of tables/addresses), `0xA0202F00/2F04` (index + data port: **528 half-word writes** - the HAL's `HAL_JPD_LoadCode` / "Send CMD to JPD firmware" path,
+i.e. the JPD contains a small processor that runs its own loaded firmware), `0xA02016D4`, `0xA0200D0D`, `0xA020250D` (clock/power-style bytes), `0xA0201250/54`, `0xA0201FD4/FDC`.
+With every unknown read returning 0 the decoder's wait loops fall through ("Decode done" then error 0x0001), so the result is not a picture.
+Open: the JPD register semantics and the loaded JPD firmware's ISA are not documented; no public MStar `halJPD` source exists (searched). Needs reverse engineering of the CP's HAL_JPD
+functions (`0xBD6xx..0xBEAxx`) before a faithful JPD model is possible.
+
+The MIPS side, once the decoder reply arrives, continues into the ADC auto-calibration at `805E6238` (RIU bank `0x6500..65F5`, polls `65F5` bit 0 in a 0x28-iteration tuning loop) - a
+separate unmodelled hardware block, unrelated to the logo decode.

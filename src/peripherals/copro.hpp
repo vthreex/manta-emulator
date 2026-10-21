@@ -36,6 +36,15 @@ public:
   std::string uart, stopReason;
   std::map<uint32_t, uint64_t> unknownReads;                               // address -> count (zeroUnknownReads only)
   std::function<void()> onReply;   // the coprocessor fired its reply mailbox (mailbox 1 control bit 0 set)
+  struct IoStat { uint64_t reads = 0, writes = 0; uint32_t last = 0, firstPc = 0; };
+  std::map<uint32_t, IoStat> ioLog;   // every other peripheral-window / 0xB0000000 access by address (capped at 600 distinct addresses)
+  void ioNote(uint32_t a, bool write, uint32_t v) {
+    if (ioLog.size() >= 600 && !ioLog.count(a)) return;
+    auto& s = ioLog[a];
+    if (!s.reads && !s.writes) s.firstPc = cpu_.pc();
+    (write ? s.writes : s.reads)++;
+    s.last = v;
+  }
   uint32_t watchAddr = 0;   // diagnostic only
   std::vector<std::string> notes, mailLog;   // mailLog: every MIPS->CP fire and CP->MIPS reply (first 600)
   void logMail(const std::string& m) { if (mailLog.size() < 600) mailLog.push_back(m); }
@@ -198,9 +207,9 @@ private:
         auto it = latch.find(a + i);
         if (it == latch.end()) all = false; else v |= uint32_t(it->second) << (8 * i);
       }
-      if (all) return v;
+      if (all) { ioNote(a, false, v); return v; }
     }
-    if (zeroUnknownReads) { countUnknown(a); return 0; }
+    if (zeroUnknownReads) { countUnknown(a); ioNote(a, false, 0); return 0; }
     fail("read", a, n);
   }
   void busWrite(uint32_t a, unsigned n, uint32_t v) {
@@ -246,6 +255,7 @@ private:
     if ((a >= kWindow && a < kWindow + kWindowSize) || (a >= 0xB0000000u && a < 0xB0001000u)) {
       for (unsigned i = 0; i < n; ++i) latch[a + i] = uint8_t(v >> (8 * i));
       ++latchedWrites;
+      ioNote(a, true, v);
       return;
     }
     fail("write", a, n);
