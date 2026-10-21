@@ -19,7 +19,7 @@ static std::filesystem::path utf8Path(const std::string &s) {
 // snapshot can be resumed with a different summary path, budget or remote script, but never under different hardware assumptions.
 static std::string stateFingerprint(const std::vector<std::string> &args, std::string &canonicalOut) {
   static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--save-state-at",
-    "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--preview-capture",
+    "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at"};
   static const std::set<std::string> flags = {"--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
@@ -106,6 +106,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-copro-watch")o.exploratoryCoproWatch=uint32_t(std::stoul(value(i),nullptr,0));
       else if (a == "--exploratory-ge-yuv-stretch")o.exploratoryGeYuvStretch=true;
       else if (a == "--diagnostic-dram-dump"){o.diagnosticDramDumpAddr=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpSize=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpFile=value(i);}
+      else if (a == "--diagnostic-riu-peek")o.diagnosticRiuPeeks.push_back(uint32_t(std::stoul(value(i),nullptr,0)));
       else if (a == "--diagnostic-riu-write-log")o.diagnosticRiuWriteLogFrom=std::stoull(value(i),nullptr,0);
       else if (a == "--diagnostic-riu-zero-unknown-reads")o.exploratoryRiuZeroUnknown=true;
       else if (a == "--exploratory-copro-jpd")o.exploratoryCoproJpd=true;

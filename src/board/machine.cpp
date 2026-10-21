@@ -2711,6 +2711,11 @@ std::string Msd309Machine::summary() const {
   if(options_.exploratoryGeYuvStretch)s<<",\n  \"exploratory_ge_yuv_stretch\": true,\n  \"ge_yuv_stretches_retired\": "<<riu_.geYuvStretches<<",\n  \"ge_yuv_stretch_pixels_written\": "<<riu_.geYuvStretchPixels;
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(!options_.diagnosticRiuPeeks.empty()){
+    s<<",\n  \"diagnostic_riu_peek\": [";
+    bool f=true;for(auto a:options_.diagnosticRiuPeeks){uint8_t v=0;bool k=riu_.coproPeekByte(a,v);s<<(f?"":", ")<<"[\""<<hex(a)<<"\", "<<(k?int(v):-1)<<"]";f=false;}
+    s<<"]";
+  }
   if(options_.diagnosticRiuWriteLogFrom!=UINT64_MAX){
     s<<",\n  \"diagnostic_riu_write_log\": [";
     bool f=true;for(auto& kv:riu_.writeLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second.count<<", \""<<hex(kv.second.firstPc)<<"\", \""<<hex(kv.second.last)<<"\"]";f=false;}

@@ -946,8 +946,10 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   if (!known && zeroUnknownReads) {
     ++zeroUnknownTotal;
     if (zeroUnknownLog.size() < 4000 || zeroUnknownLog.count(a)) ++zeroUnknownLog[a];
-    event("read", a, n, 0, "HYPOTHESIS (diagnostic): unknown register read returns 0; not a measurement");
-    return 0;
+    uint32_t zv = 0, lineValue = 0;
+    if (auto reg = usbLineStateRegister(a, n, &lineValue)) { zv &= ~(0xc0u << (8 * (reg - a))); zv |= lineValue << (8 * (reg - a)); }   // the guest-powered-PHY line-state hypotheses still apply
+    event("read", a, n, zv, "HYPOTHESIS (diagnostic): unknown register read returns 0 (USB line-state bits from their own hypothesis); not a measurement");
+    return zv;
   }
   if (!known) {
     stopReason = "unmodeled MMIO read";
@@ -1390,7 +1392,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeStretchRequest request;
       try{request=GeStretchRequest::decode(uint16_t(v),registers);}
       catch(const std::exception&){throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");}
-      if(exploratoryGeYuvStretch && request.sourceFormat==0x0e && request.destinationFormat==0x0e){
+      if(exploratoryGeYuvStretch && request.sourceFormat==0x0e && (request.destinationFormat==0x0e || request.destinationFormat==0x0c)){
         GeYuvStretch yuv;
         try{yuv=GeYuvStretch::decode(request,dramRead);}
         catch(const std::exception& error){

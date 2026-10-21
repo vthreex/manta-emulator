@@ -18,7 +18,9 @@ struct GeYuvStretch {
   std::vector<uint16_t> out;   // clipped rectangle, row-major 16-bit words (little endian in memory)
   using Read = std::function<std::vector<uint8_t>(uint32_t, size_t)>;
   static GeYuvStretch decode(const GeStretchRequest& r, const Read& read) {
-    if (r.sourceFormat != 0x0e || r.destinationFormat != 0x0e) throw std::runtime_error("GE YUV stretch: only format 0xE -> 0xE");
+    // 0xE -> 0xE (packed YUV) or 0xE -> 0xC (ARGB1555 destination; EXPLORATORY BT.601 full-range conversion, 5-bit truncation, alpha bit forced on: all assumptions)
+    if (r.sourceFormat != 0x0e || (r.destinationFormat != 0x0e && r.destinationFormat != 0x0c)) throw std::runtime_error("GE YUV stretch: only format 0xE -> 0xE or 0xE -> 0xC");
+    const bool toRgb = r.destinationFormat == 0x0c;
     if (r.sourceKey() || r.dither() || r.blend()) throw std::runtime_error("GE YUV stretch: key/dither/blend not modelled");
     if (r.source >= 0x08000000 || r.destination >= 0x08000000) throw std::runtime_error("GE YUV stretch requires MIU0 byte addressing");
     if (!r.destinationPitch || r.destinationPitch % 4 || !r.sourcePitch || r.sourcePitch % 4) throw std::runtime_error("GE YUV stretch: pitch invalid");
@@ -50,7 +52,12 @@ struct GeYuvStretch {
         uint32_t sx = position(x, r.destLeft, r.ratioX, r.phaseX, r.srcWidth);
         uint32_t cx = position(x & ~1u, r.destLeft, r.ratioX, r.phaseX, r.srcWidth) & ~1u;   // chroma pair of the pair's first destination pixel
         uint8_t yv = row[2 * sx], u = row[2 * cx + 1], v = (cx + 1 < r.srcWidth) ? row[2 * (cx + 1) + 1] : row[2 * cx + 1];
-        p.out.push_back(uint16_t(yv | ((x & 1) ? v : u) << 8));
+        if (!toRgb) { p.out.push_back(uint16_t(yv | ((x & 1) ? v : u) << 8)); continue; }
+        // chroma shared by the pair: use this pair's U and V
+        uint8_t cu = u, cv = (cx + 1 < r.srcWidth) ? row[2 * (cx + 1) + 1] : u;
+        auto clamp = [](double d) { return uint32_t(d < 0 ? 0 : d > 255 ? 255 : d + 0.5); };
+        uint32_t R = clamp(yv + 1.402 * (cv - 128)), G = clamp(yv - 0.344136 * (cu - 128) - 0.714136 * (cv - 128)), Bc = clamp(yv + 1.772 * (cu - 128));
+        p.out.push_back(uint16_t(0x8000 | (R >> 3) << 10 | (G >> 3) << 5 | (Bc >> 3)));
       }
     }
     return p;

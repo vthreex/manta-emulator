@@ -53,3 +53,9 @@ media player changes from "No Device" to **"USB 2.0"** with PHOTO / MUSIC / MOVI
   value above marked as assumed.
 * Photo decode needs the hardware JPEG decoder (JPD) and the video/MVOP path: not modeled.
 * Video (MVD/H.264/MPEG) decode and audio output: not modeled.
+
+## With the coprocessor and JPEG block (`--exploratory-copro --exploratory-copro-jpd ...`, IRQ-capable engine in `work/build-irq`)
+The USB photo browser now runs end to end from a checkpoint saved at the drive page (`copro-drive.snap`, made with the pendrive attached from 1.3B): the original media player enumerates the stick,
+shows C:\ with Return / PHOTO, and the file browser's thumbnail requests go through the coprocessor's STILLIMAGE path: Gradient.jpg (1280x720, scale 1) and Test_Pattern.jpg (640x480) are decoded by the
+JPD model, and 250 YUV422 -> ARGB1555 GE stretches (`--exploratory-ge-yuv-stretch`, BT.601 full-range, nearest; all labelled assumptions) were retired in a 2.345B-dispatch run without a stop.
+Note: `--diagnostic-riu-zero-unknown-reads` must keep the USB line-state hypothesis (fixed): without it the guest never saw the stick.
