@@ -567,6 +567,9 @@ void Msd309Machine::startCopro(uint32_t riuAddress) {
     for (uint32_t o = 0x6700; o < 0x6800; ++o) { uint8_t v = 0; if (riu_.coproPeekByte(0x1f200000u + o, v)) m << std::hex << o << " " << unsigned(v) << char(10); }
   }
   copro_.watchAddr = options_.exploratoryCoproWatch;
+  copro_.captureAddr = options_.exploratoryCoproCapture;
+  copro_.seqLo = options_.exploratoryCoproSeqLo;
+  copro_.seqHi = options_.exploratoryCoproSeqHi;
   copro_.ram = dramBacking_.data();
   copro_.ramSize = ramSize;
   copro_.start(0x100);
@@ -2701,6 +2704,8 @@ std::string Msd309Machine::summary() const {
     for(auto& kv:copro_.unknownReads){s<<(firstUnknown?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second<<"]";firstUnknown=false;}
     s<<"], \"watch_notes\": [";
     for(size_t i=0;i<copro_.notes.size();++i)s<<(i?", ":"")<<"\""<<jsonText(copro_.notes[i])<<"\"";
+    s<<"], \"seq\": ["; for(size_t i=0;i<copro_.seq.size();++i){auto& e=copro_.seq[i];s<<(i?",":"")<<"["<<e[0]<<","<<e[1]<<","<<e[2]<<","<<e[3]<<"]";}
+    s<<"], \"captured_writes\": ["; for(size_t i=0;i<copro_.captured.size();++i)s<<(i?",":"")<<copro_.captured[i];
     s<<"], \"io_log\": ["; {bool f=true; for(auto& kv:copro_.ioLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second.reads<<", "<<kv.second.writes<<", \""<<hex(kv.second.last)<<"\", \""<<hex(kv.second.firstPc)<<"\"]"; f=false;}}
     s<<"], \"mail_log\": [";
     for(size_t i=0;i<copro_.mailLog.size();++i)s<<(i?", ":"")<<"\""<<jsonText(copro_.mailLog[i])<<"\"";

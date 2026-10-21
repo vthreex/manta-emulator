@@ -39,12 +39,18 @@ public:
   struct IoStat { uint64_t reads = 0, writes = 0; uint32_t last = 0, firstPc = 0; };
   std::map<uint32_t, IoStat> ioLog;   // every other peripheral-window / 0xB0000000 access by address (capped at 600 distinct addresses)
   void ioNote(uint32_t a, bool write, uint32_t v) {
+    seqNote(a, write, v);
     if (ioLog.size() >= 600 && !ioLog.count(a)) return;
     auto& s = ioLog[a];
     if (!s.reads && !s.writes) s.firstPc = cpu_.pc();
     (write ? s.writes : s.reads)++;
     s.last = v;
   }
+  uint32_t captureAddr = 0;           // diagnostic: record the sequence of values the coprocessor writes to this peripheral address (first 16384)
+  std::vector<uint32_t> captured;
+  uint32_t seqLo = 0, seqHi = 0;      // diagnostic: ordered access sequence (kind, address, value, pc) for peripheral addresses in [seqLo, seqHi), first 6000
+  std::vector<std::array<uint32_t, 4>> seq;
+  void seqNote(uint32_t a, bool write, uint32_t v) { if (seqHi && a >= seqLo && a < seqHi && seq.size() < 6000) seq.push_back({write ? 1u : 0u, a, v, cpu_.pc()}); }
   uint32_t watchAddr = 0;   // diagnostic only
   std::vector<std::string> notes, mailLog;   // mailLog: every MIPS->CP fire and CP->MIPS reply (first 600)
   void logMail(const std::string& m) { if (mailLog.size() < 600) mailLog.push_back(m); }
@@ -256,6 +262,7 @@ private:
       for (unsigned i = 0; i < n; ++i) latch[a + i] = uint8_t(v >> (8 * i));
       ++latchedWrites;
       ioNote(a, true, v);
+      if (captureAddr && a == captureAddr && captured.size() < 16384) captured.push_back(v);
       return;
     }
     fail("write", a, n);

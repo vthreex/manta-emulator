@@ -82,6 +82,8 @@ struct Options {
   bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': GE copies cover every destination row (6F = height-5 is an encoding artefact)
   unsigned exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: GE reg00 bits (other than bit 0) assumed not to affect a solid fill
   bool exploratoryCopro=false;          // EXPLORATORY: run the original resource-61 multimedia coprocessor image (OpenRISC, peripherals/copro.hpp) once the guest releases it
+  uint32_t exploratoryCoproSeqLo=0, exploratoryCoproSeqHi=0;   // diagnostic: ordered coprocessor access sequence for this RIU-window range
+  uint32_t exploratoryCoproCapture=0;    // diagnostic: capture the value sequence written by the coprocessor to this RIU-window address
   uint32_t exploratoryCoproWatch=0;      // diagnostic: report writes to this coprocessor-DRAM word
   std::string exploratoryCoproDumpStart; // write DRAM and the mailbox bytes to FILE / FILE.mail when the coprocessor is released (offline harness input)
   int exploratoryCoproMipsIrq=-1;       // EXPLORATORY: hardware interrupt index (FIQ bank 1/3: 32..63, 96..127) raised toward the MIPS when the coprocessor fires its reply mailbox; -1 = none

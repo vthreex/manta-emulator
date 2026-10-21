@@ -101,6 +101,8 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-cpi")o.exploratoryCpi=std::stoull(value(i),nullptr,0);
       else if (a == "--copro-probes")o.coproProbes=true;
       else if (a == "--exploratory-copro")o.exploratoryCopro=true;
+      else if (a == "--exploratory-copro-seq"){o.exploratoryCoproSeqLo=uint32_t(std::stoul(value(i),nullptr,0));o.exploratoryCoproSeqHi=uint32_t(std::stoul(value(i),nullptr,0));}
+      else if (a == "--exploratory-copro-capture")o.exploratoryCoproCapture=uint32_t(std::stoul(value(i),nullptr,0));
       else if (a == "--exploratory-copro-watch")o.exploratoryCoproWatch=uint32_t(std::stoul(value(i),nullptr,0));
       else if (a == "--diagnostic-riu-zero-unknown-reads")o.exploratoryRiuZeroUnknown=true;
       else if (a == "--exploratory-copro-mips-irq")o.exploratoryCoproMipsIrq=std::stoi(value(i),nullptr,0);
