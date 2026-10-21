@@ -6,6 +6,7 @@
 #include <memory>
 #include "cpu/engine.hpp"
 #include "peripherals/riu.hpp"
+#include "peripherals/copro.hpp"
 #include "storage/flash.hpp"
 #include "board/unknown_observations.hpp"
 #include "board/preserved_bits.hpp"
@@ -80,6 +81,10 @@ struct Options {
   bool exploratoryGeCopySnapshot=false;   // HYPOTHESIS B4: overlapping GE blend copies are read-before-write snapshots
   bool exploratoryGeHeight5Full=false;   // HYPOTHESIS B3': GE copies cover every destination row (6F = height-5 is an encoding artefact)
   unsigned exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: GE reg00 bits (other than bit 0) assumed not to affect a solid fill
+  bool exploratoryCopro=false;          // EXPLORATORY: run the original resource-61 multimedia coprocessor image (OpenRISC, peripherals/copro.hpp) once the guest releases it
+  uint32_t exploratoryCoproWatch=0;      // diagnostic: report writes to this coprocessor-DRAM word
+  std::string exploratoryCoproDumpStart; // write DRAM and the mailbox bytes to FILE / FILE.mail when the coprocessor is released (offline harness input)
+  bool exploratoryCoproZeroUnknown=false; // LABELLED HYPOTHESIS: coprocessor registers with unknown semantics read as 0 (listed in the summary)
   std::string exploratoryUsbPendrive;   // EXPLORATORY: attach a USB mass-storage device (image file) to port 0 (peripherals/usb_host.hpp)
   bool exploratoryGeLine=false;   // EXPLORATORY: GE command 0x10 axis-aligned one-pixel line into format C (video/ge_line.hpp)
   bool exploratoryGeGradientFill=false;   // EXPLORATORY: GE command 0x2030 gradient rectangle fill into format C
@@ -163,6 +168,8 @@ class Msd309Machine {
   Riu riu_;
   Options options_;
   VirtualTime virtualTime_;
+  Copro copro_;
+  void startCopro(uint32_t riuAddress);
   uint64_t coproLoadInspections_=0;
   std::string coproLoadedSha_;
   uint64_t suppressedOrQmemTrace_=0;

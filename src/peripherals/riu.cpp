@@ -1056,6 +1056,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(coproNotify && ((a<0x1f206800u && uint64_t(a)+n>0x1f206700u) || (a<=0x1f201fe0u && uint64_t(a)+n>0x1f201fe0u))) coproNotify(a,n,v);
   if(vifZeroInput_.enabled())for(auto config:VifZeroInput::configuration)
     if(a<=config && uint64_t(a)+n>config){updateVifZeroInput(tick);break;}
   if(candidatePmIrFifo_ && a<=0x1f007b45 && uint64_t(a)+n>0x1f007b45 &&

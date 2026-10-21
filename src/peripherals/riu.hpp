@@ -430,6 +430,10 @@ public:
   // stored (guest-written) 16-bit RIU register pair at a UHC byte offset; 0xffff known mask required
   bool usbStoredKnown(uint32_t off) const { return knownBits(UsbHost::kBase+off*2,2)==0xffff && knownBits(UsbHost::kBase+(off+2)*2,2)==0xffff; }
   uint32_t usbStoredReg(uint32_t off) const { return get(UsbHost::kBase+off*2,2)|(get(UsbHost::kBase+(off+2)*2,2)<<16); }
+  // EXPLORATORY multimedia coprocessor (opt-in): shared view of the mailbox window and a notification of MIPS stores to it / to the reset-control byte.
+  std::function<void(uint32_t, unsigned, uint32_t)> coproNotify;
+  bool coproPeekByte(uint32_t a, uint8_t& v) const { auto it = bytes_.find(a); if (it == bytes_.end() || it->second.known != 255) return false; v = it->second.value; return true; }
+  void coproPokeByte(uint32_t a, uint8_t v) { bytes_[a] = {v, 255}; }
   UsbHost usbHost;                     // not serialized (EXPLORATORY pendrive model)
   bool usbDeviceAttachedPort0=false;   // not serialized: re-applied from the options after a restore
   bool exploratoryGeLine=false;   // not serialized: re-applied from the options after a restore

@@ -19,6 +19,16 @@ static void appendHex(std::string &out, uint64_t n) {   // "0x" + lowercase hex 
   out += "0x";
   out.append(buf + i, size_t(18 - i));
 }
+static std::string jsonText(const std::string& in) {
+  std::string out;
+  for (unsigned char c : in) {
+    if (c == '"' || c == '\\') { out += '\\'; out += char(c); }
+    else if (c == 10) out += "\\n";
+    else if (c < 32 || c > 126) { char b[8]; std::snprintf(b, sizeof b, "\\u%04x", c); out += b; }
+    else out += char(c);
+  }
+  return out;
+}
 static std::string hex(uint64_t n) {
   std::string s;
   s.reserve(18);
@@ -170,6 +180,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryGeI8Fill){
     if(!o.candidateGeRectFill)throw std::runtime_error("I8 fill hypothesis requires the candidate GE rectangle model");
     riu_.exploratoryGeI8Fill=true;
+  }
+  if(o.exploratoryCopro){
+    if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("coprocessor execution requires guarded exploration");
+    if(!o.saveState.empty() || !o.loadState.empty())throw std::runtime_error("coprocessor state is not part of the snapshot format yet");
   }
   if(!o.exploratoryUsbPendrive.empty()){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("USB pendrive attach requires guarded exploration");
@@ -411,6 +425,18 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     return options_.candidateMiu && size>0 && uint64_t(address)+size<=0x08000000 &&
       uint64_t(address)+size<=dramBacking_.size();
   };
+  if(o.exploratoryCopro){
+    copro_.zeroUnknownReads=o.exploratoryCoproZeroUnknown;
+    copro_.mailRead=[this](uint32_t a,uint8_t& v){return riu_.coproPeekByte(a,v);};
+    copro_.mailWrite=[this](uint32_t a,uint8_t v){riu_.coproPokeByte(a,v);};
+    copro_.ramWritten=[this](uint32_t a,size_t n){preservedBits_.overwriteKnownMemory(a,n);unknownObservations_.overwriteKnownMemory(a,n);};
+    copro_.event=[this](const std::string& k,uint32_t a,unsigned n,uint32_t v,const std::string& d){event(k,a,n,v,d);};
+    riu_.coproNotify=[this](uint32_t a,unsigned n,uint32_t v){
+      if(a<=0x1f201fe0u && uint64_t(a)+n>0x1f201fe0u){
+        uint32_t ctl=(v>>(8*(0x1f201fe0u-a)))&255;
+        if(ctl==3)startCopro(a);else copro_.hold(ctl);
+      }else copro_.mipsWrote(a,n,v);};
+  }
   if(!o.exploratoryUsbPendrive.empty()){
     std::ifstream image(o.exploratoryUsbPendrive,std::ios::binary);
     if(!image)throw std::runtime_error("cannot open USB pendrive image "+o.exploratoryUsbPendrive);
@@ -507,6 +533,27 @@ void Msd309Machine::formatEventLine(std::string &line, uint64_t tick, uint32_t p
   line += "\",\"detail\":\""; line += detail; line += "\"";
   if (cycles) { line += ",\"virtual_cpu_cycles\":"; line += std::to_string(cycleCount); }
   line += '}';
+}
+// The guest wrote 3 to the reset-control byte 1F201FE0 (the original enable sequence; the meaning of the value is inferred from ordering only).
+void Msd309Machine::startCopro(uint32_t riuAddress) {
+  const size_t ramSize = std::min<size_t>(dramBacking_.size(), 0x08000000);
+  uint32_t first = 0;
+  std::memcpy(&first, dramBacking_.data() + 0x100, 4);
+  if (ramSize < 0x1000 || first == 0) {
+    event("copro_start_refused", riuAddress, 1, 3, "reset-control write seen but no code at the OpenRISC reset vector 0x100 in DRAM; coprocessor not started");
+    return;
+  }
+  if (!options_.exploratoryCoproDumpStart.empty()) {
+    std::ofstream d(options_.exploratoryCoproDumpStart, std::ios::binary);
+    d.write(reinterpret_cast<const char*>(dramBacking_.data()), std::streamsize(ramSize));
+    std::ofstream m(options_.exploratoryCoproDumpStart + ".mail");
+    for (uint32_t o = 0x6700; o < 0x6800; ++o) { uint8_t v = 0; if (riu_.coproPeekByte(0x1f200000u + o, v)) m << std::hex << o << " " << unsigned(v) << char(10); }
+  }
+  copro_.watchAddr = options_.exploratoryCoproWatch;
+  copro_.ram = dramBacking_.data();
+  copro_.ramSize = ramSize;
+  copro_.start(0x100);
+  event("copro_started", riuAddress, 1, 3, "EXPLORATORY: original DRAM image executes on the OpenRISC core from the architectural reset vector 0x100; stepped 16384 instructions per 16384 MIPS dispatches");
 }
 void Msd309Machine::event(EvText kt, uint32_t a, unsigned n, uint32_t v, EvText dt) {
   ++sideEffectGen_;
@@ -704,6 +751,7 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
     }
   }
   ++m.dispatches_;
+  if(m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff)==0)m.copro_.run(0x4000);
   if((!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty()) && (m.dispatches_ & 0x3fff)==0)m.serviceVirtualRemote();
   if(!m.options_.historyPcs.empty() && a>=0x80000000u && a<0x81000000u)
     for(auto pc:m.options_.historyPcs)if(pc==a){m.publishPreview();break;}
@@ -1160,6 +1208,7 @@ void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
   if (uint32_t(a) <= m.prevPc_ && !m.options_.noLoopSkip) m.loopSkipVisit(uint32_t(a));   // backward transfer: possible busy-wait loop head
   m.prevPc_ = uint32_t(a);
   ++m.dispatches_;
+  if (m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff) == 0) m.copro_.run(0x4000);
   if ((m.dispatches_ & 0x3fff) == 0 && (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty())) m.serviceVirtualRemote();
   if (m.options_.previewStore && (m.dispatches_ & 0xfffff) == 0) m.publishPreview();
   else if (!m.options_.gopFrameHistory.empty() && (m.dispatches_ & 0x3fff) == 0) m.publishPreview();
@@ -2621,6 +2670,19 @@ std::string Msd309Machine::summary() const {
   }
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(options_.exploratoryCopro){
+    s<<",\n  \"exploratory_copro\": {\"started\": "<<(copro_.started?"true":"false")<<", \"stopped\": "<<(copro_.stopped?"true":"false")
+     <<", \"stop_reason\": \""<<jsonText(copro_.stopReason)<<"\", \"instructions\": "<<copro_.instructions()<<", \"pc\": \""<<hex(copro_.pc())
+     <<"\", \"starts\": "<<copro_.starts<<", \"holds\": "<<copro_.holds<<", \"mailbox_irqs\": "<<copro_.mailboxIrqs<<", \"host_notify_writes\": "<<copro_.hostNotifies<<", \"latched_unknown_effect_writes\": "<<copro_.latchedWrites
+     <<", \"zero_unknown_reads\": "<<(options_.exploratoryCoproZeroUnknown?"true":"false")<<", \"unknown_read_total\": "<<copro_.unknownReadTotal<<", \"unknown_reads_first_512\": [";
+    bool firstUnknown=true;
+    for(auto& kv:copro_.unknownReads){s<<(firstUnknown?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second<<"]";firstUnknown=false;}
+    s<<"], \"watch_notes\": [";
+    for(size_t i=0;i<copro_.notes.size();++i)s<<(i?", ":"")<<"\""<<jsonText(copro_.notes[i])<<"\"";
+    s<<"], \"mail_log\": [";
+    for(size_t i=0;i<copro_.mailLog.size();++i)s<<(i?", ":"")<<"\""<<jsonText(copro_.mailLog[i])<<"\"";
+    s<<"], \"uart\": \""<<jsonText(copro_.uart)<<"\"}";
+  }
   if(!options_.exploratoryUsbPendrive.empty()){
     auto& u=riu_.usbHost;
     s<<",\n  \"exploratory_usb_pendrive\": {\"transactions\": "<<u.transactions<<", \"qtds_retired\": "<<u.qtdsRetired<<", \"async_scans\": "<<u.scans;

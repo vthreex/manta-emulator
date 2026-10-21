@@ -100,6 +100,10 @@ static int appMain(const std::vector<std::string> &args) {
         o.cp0Timer = true;
       else if (a == "--exploratory-cpi")o.exploratoryCpi=std::stoull(value(i),nullptr,0);
       else if (a == "--copro-probes")o.coproProbes=true;
+      else if (a == "--exploratory-copro")o.exploratoryCopro=true;
+      else if (a == "--exploratory-copro-watch")o.exploratoryCoproWatch=uint32_t(std::stoul(value(i),nullptr,0));
+      else if (a == "--exploratory-copro-dump-start")o.exploratoryCoproDumpStart=value(i);
+      else if (a == "--exploratory-copro-zero-unknown-reads")o.exploratoryCoproZeroUnknown=true;
       else if (a == "--opaque-read-policy")o.opaqueReadPolicy=value(i);
       else if (a == "--opaque-policy-wait-ms")o.opaquePolicyWaitMs=std::stoull(value(i),nullptr,0);
       else if (a == "--or1k-no-qmem-trace")o.noOrQmemTrace=true;
@@ -385,6 +389,8 @@ static int appMain(const std::vector<std::string> &args) {
                "--virtual-rtc: guest-programmed counter with deterministic virtual clock\n"
                "--cp0-timer: source-built engine Count/Compare and guest interrupt entry\n"
                "--exploratory-cpi N: UNCALIBRATED average cycles/instruction 1(default),2,4,8,16; shared peripheral/Count clock; guarded exploration only\n"
+               "--exploratory-copro: EXPLORATORY run the original multimedia coprocessor image (OpenRISC) after the guest releases it; unknown registers stop it\n"
+               "--exploratory-copro-zero-unknown-reads: LABELLED HYPOTHESIS, unknown coprocessor registers read as 0\n"
                "--copro-probes: inspect original multimedia loader output in guest RAM; no processor/reset/status emulation\n"
                "--opaque-read-policy FILE: guarded INVALID observations at exact code/hash/PC/address/width only; no values or readiness\n"
                "--opaque-policy-wait-ms N: debugger freeze of ALL virtual clocks at unmatched reads, maximum300000; default0\n"

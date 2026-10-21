@@ -22,7 +22,7 @@ public:
   static constexpr uint32_t kSM = 1u << 0, kTEE = 1u << 1, kIEE = 1u << 2, kF = 1u << 9, kCY = 1u << 10, kOV = 1u << 11, kDSX = 1u << 13, kEPH = 1u << 14;
 
   void reset(uint32_t pc) {
-    r_.fill(0); pc_ = pc; delayActive_ = false; sr_ = kSM | (1u << 15); epcr_ = eear_ = esr_ = 0; ttmr_ = ttcr_ = 0; picmr_ = picsr_ = 0;
+    r_.fill(0); pc_ = pc; delayActive_ = false; sr_ = kSM | (1u << 15); epcr_ = eear_ = esr_ = 0; ttmr_ = ttcr_ = 0; picmr_ = picsr_ = levelLines_ = 0;
     maclo_ = machi_ = 0; instructions_ = 0; halted_ = false; spr_.clear(); sleeping_ = false;
   }
   uint32_t pc() const { return pc_; }
@@ -34,7 +34,9 @@ public:
   void halt() { halted_ = true; }
   bool sleeping() const { return sleeping_; }
   void setIrq(unsigned line, bool level) { if (level) picsr_ |= 1u << line; else picsr_ &= ~(1u << line); }
-  uint32_t picsr() const { return picsr_; }
+  // Level-sensitive line: the device owns the state, a PICSR write cannot clear it.
+  void setLevel(unsigned line, bool level) { if (level) levelLines_ |= 1u << line; else levelLines_ &= ~(1u << line); }
+  uint32_t picsr() const { return picsr_ | levelLines_; }
   uint32_t picmr() const { return picmr_; }
   uint32_t ttcr() const { return ttcr_; }
 
@@ -43,9 +45,9 @@ public:
     if (halted_) return false;
     ++instructions_;
     tickTimer(1);
-    if (!delayActive_ && (sr_ & kIEE) && ((picsr_ & picmr_) != 0 || ((ttmr_ >> 28) & 1 && (ttmr_ >> 29) & 1) && (sr_ & kTEE))) {
+    if (!delayActive_ && (sr_ & kIEE) && (((picsr_ | levelLines_) & picmr_) != 0 || ((ttmr_ >> 28) & 1 && (ttmr_ >> 29) & 1) && (sr_ & kTEE))) {
       if ((sr_ & kTEE) && ((ttmr_ >> 28) & 1) && ((ttmr_ >> 29) & 1)) { exception(0x500, pc_, pc_); exceptionTaken_ = false; return true; }
-      if (picsr_ & picmr_) { exception(0x800, pc_, pc_); exceptionTaken_ = false; return true; }
+      if ((picsr_ | levelLines_) & picmr_) { exception(0x800, pc_, pc_); exceptionTaken_ = false; return true; }
     }
     uint32_t cur = pc_;
     if (cur & 3) { exception(0x600, cur, cur); exceptionTaken_ = false; return true; }   // unaligned instruction fetch: alignment exception, EEAR = the bad PC
@@ -67,7 +69,7 @@ public:
 
 private:
   std::array<uint32_t, 32> r_{};
-  uint32_t pc_ = 0, sr_ = 0, epcr_ = 0, eear_ = 0, esr_ = 0, ttmr_ = 0, ttcr_ = 0, picmr_ = 0, picsr_ = 0, maclo_ = 0, machi_ = 0;
+  uint32_t pc_ = 0, sr_ = 0, epcr_ = 0, eear_ = 0, esr_ = 0, ttmr_ = 0, ttcr_ = 0, picmr_ = 0, picsr_ = 0, levelLines_ = 0, maclo_ = 0, machi_ = 0;
   uint32_t delayTarget_ = 0, branchPc_ = 0;
   bool delayActive_ = false, halted_ = false, exceptionTaken_ = false, sleeping_ = false;
   uint64_t instructions_ = 0;
@@ -125,7 +127,7 @@ private:
     case 0x2801: return maclo_;
     case 0x2802: return machi_;
     case 0x4800: return picmr_;
-    case 0x4802: return picsr_;
+    case 0x4802: return picsr_ | levelLines_;
     case 0x5000: return ttmr_;
     case 0x5001: return ttcr_;
     }
