@@ -39,3 +39,17 @@ W/B ADJUST (MODE SCART, Standard, gains 150/152/152, offsets 1024), PICTURE MODE
 ## Evidence
 
 `evidence/ui-states-session10/12_factory_setting_root.png` .. `16_lock_password_dialog.png`; `tests/factory_menu_regression.py`.
+
+## More launch codes found statically in the firmware (session 11), and what was tried
+Method: scan the ZUI key-handler region `804A0000..80500000` for digit-only 16-bit constants, then follow the owning window through the per-OSD key dispatcher (`804C31B0`: OSD id in `806D7E9C` selects a handler via the table at `8061F050`).
+
+| code | where it is compared | owner | effect in the code | tried |
+|---|---|---|---|---|
+| `8202` | `804CB858` (buffer `806D7DD8`) | all menu windows incl. the Lock password dialog | posts command `0x18` -> Factory Setting (OSD `0x12`) | works in the menu and inside the Lock System password dialog (OSDs `1, 0x12`) |
+| `4578` | `804CB850` | same | posts `0x345` -> Hotel Menu (OSD `0x1D`) | works (existing regression) |
+| `9999` | `804C11A8` (buffer `806D7DB0`) | handler of **OSD `0x12` = the Factory Setting window itself** (`804C1150`) | posts `804A0460(0x24, 1)` | typed inside Factory Setting: the buffer reaches `0x9999`, no visible change and no new OSD; the command `0x24` target is not identified |
+| `2580` | `804C50CC` (buffer `806D7DC4`) | handler `804C5060` of **OSD `8`** (reached only from state 0 of the UI-wrapper state machine `804A3E50`, called from `80476240`) | `804C5370` -> `804C4AE8(0x18)` = the same command that opens Factory Setting | OSD 8 never appears in the NO SIGNAL / menu states, so it could not be exercised; typed elsewhere it only fills the global launch buffer |
+| `2588` | `804C50D8` | OSD 8 | `804C4AE8(0x19)` (a second service command, not identified) | same |
+Other digit-looking constants in that region are timeouts (`0x1388`, `0x1770`, `0x7530`, `0x2710`, `0x5460`), not codes.
+Lock-password dialog: `0000`, `1234`, `2580`, `2588`, `8888`, `9999` were typed after OK on Lock System; none produced a different OSD. Whether one is accepted depends on the stored password (not located).
+`tools/try_launch_codes.py` drives these experiments (parallel headless runs from `no-signal-ready-v2.snap` / `factory-menu.snap`).
