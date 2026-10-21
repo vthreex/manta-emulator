@@ -602,7 +602,7 @@ void Riu::publishGopAck(){
 void Riu::latchGopRegisters(uint64_t tick,const char* cause){
   if(gopLog.size()<12000)gopLog.push_back({tick,0,'L',0,0,0,0});
   gopActive_.clear();
-  for(const auto& [key,value]:bytes_)if(key>=0x80000000u && key<0x80004000u)gopActive_[key]=value;
+  bytes_.forEach([&](uint32_t key,const RiuByte& value){if(key>=0x80000000u && key<0x80004000u)gopActive_[key]=value;});
   event("exploratory_gop_register_latch",0x1f203ffc,2,gopUpdate_.busy(),
     std::string(cause)+"; actual shadow bytes latched="+std::to_string(gopActive_.size())+
     "; global-bank scope/output-sync domain provisional; virtual tick="+std::to_string(tick));

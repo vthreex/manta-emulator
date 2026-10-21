@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <functional>
+#include <bitset>
 namespace manta {
 // Diagnostic execution only. Unknown observations remain invalid, including
 // after the guest caches them in RAM. No branch or device command may consume
@@ -13,9 +14,15 @@ namespace manta {
 class UnknownObservations {
   friend void ioClass(snap::Ar&, UnknownObservations&);
   std::array<bool, 32> registers_{};
+  uint32_t unknownMask_ = 0;   // bit r set when registers_[r]; kept in step with every write (cheap "any unknown register" test)
   std::array<bool, 32> timingRegisters_{};
   std::array<uint32_t,32> clockOrigins_{};
   std::map<uint32_t, uint32_t> bytes_; // address -> originating MMIO register
+  // Negative filter in front of bytes_: a clear bit proves that 4 KB page (hashed) holds no unknown byte. Set on insertion, never cleared.
+  std::bitset<65536> pageMaybe_;
+  static size_t pageSlot(uint32_t a) { return (a >> 12) & 0xffff; }
+  void noteByte(uint32_t a) { pageMaybe_[pageSlot(a)] = true; }
+  bool maybeByte(uint32_t a) const { return pageMaybe_[pageSlot(a)]; }
   uint32_t spiCacheAddress_ = 0;
   bool spiCacheArmed_ = false;
 public:
@@ -23,31 +30,39 @@ public:
   void seedTimingSnapshot(unsigned reg) { seed(reg); timingRegisters_[reg] = true; }
   bool timingSnapshotUnknown(unsigned reg) const { return registers_[reg] && timingRegisters_[reg]; }
   void seedSpiCache(uint32_t address) { seed(4); spiCacheAddress_ = address & 0x1fffffff; spiCacheArmed_ = true; }
-  void seed(unsigned reg) { registers_.at(reg) = true; timingRegisters_[reg] = false; clockOrigins_[reg] = 0; }
+  void seed(unsigned reg) { registers_.at(reg) = true; unknownMask_ |= 1u << reg; timingRegisters_[reg] = false; clockOrigins_[reg] = 0; }
   const auto &bytes() const { return bytes_; }
   void markMemoryUnknown(uint32_t address,size_t size,uint32_t origin){
-    for(size_t i=0;i<size;++i)bytes_[(address+uint32_t(i))&0x1fffffff]=origin;
+    for(size_t i=0;i<size;++i){auto k=(address+uint32_t(i))&0x1fffffff;bytes_[k]=origin;noteByte(k);}
   }
-  void markRegisterKnown(unsigned reg){ registers_.at(reg)=false; timingRegisters_[reg]=false; clockOrigins_[reg]=0; }
+  // Fast-path support for the per-instruction hook (identical results, no state change):
+  bool anyRegisterUnknown() const {
+    return unknownMask_ != 0;
+  }
+  // True when no byte of [ea, ea+width) (physical, low 29 bits) can be unknown.
+  bool memoryClean(uint32_t ea, unsigned width) const {
+    uint32_t a = ea & 0x1fffffff;
+    return !maybeByte(a) && !maybeByte((a + width - 1) & 0x1fffffff);
+  }
+  void restored() { pageMaybe_.reset(); for (auto& kv : bytes_) noteByte(kv.first); unknownMask_ = 0; for (unsigned r = 0; r < 32; ++r) if (registers_[r]) unknownMask_ |= 1u << r; }   // after the snapshot loader rewrote bytes_
+  void markRegisterKnown(unsigned reg){ registers_.at(reg)=false; unknownMask_ &= ~(1u << reg); timingRegisters_[reg]=false; clockOrigins_[reg]=0; }
   void overwriteKnownMemory(uint32_t address,size_t size) {
-    for(size_t i=0;i<size;++i)bytes_.erase((address+uint32_t(i))&0x1fffffff);
+    for(size_t i=0;i<size;++i){auto k=(address+uint32_t(i))&0x1fffffff;if(maybeByte(k))bytes_.erase(k);}
   }
   bool registerUnknown(unsigned reg) const { return registers_.at(reg); }
   std::string observe(uint32_t pc, uint32_t w, const std::function<uint32_t(unsigned)> &reg) {
     // Fast path: no register holds an unknown observation (then its timing flag and clock origin are clear as well), so a non-memory
     // instruction can neither consume nor produce one. Loads and stores always take the full path (RAM bytes may be unknown).
     {
-      uint64_t any[4]; static_assert(sizeof(any) == sizeof(registers_), "bool array layout");
-      std::memcpy(any, registers_.data(), sizeof(any));
       unsigned fop = w >> 26;
-      if (!(any[0] | any[1] | any[2] | any[3]) && (fop < 32 || fop == 47 || fop == 51)) return {};
+      if (!unknownMask_ && (fop < 32 || fop == 47 || fop == 51)) return {};
     }
     // Exact identity copies in the stock clock snapshot routine. Other masks,
     // arithmetic, branch conditions and MMIO stores still reject the data.
     if ((pc == 0x805fd444 && w == 0x311100ff && clockOrigins_[8]) ||
         (pc == 0x805fd44c && w == 0x313200ff && clockOrigins_[9])) {
       unsigned from = pc == 0x805fd444 ? 8 : 9, to = from + 9;
-      registers_[to] = true; clockOrigins_[to] = clockOrigins_[from];
+      registers_[to] = true; unknownMask_ |= 1u << to; clockOrigins_[to] = clockOrigins_[from];
       return {};
     }
     // Stock display timing setup saves/restores one opaque byte around a
@@ -165,7 +180,7 @@ public:
       if (op == 34 || op == 38)
         address &= ~3u;
       for (unsigned i = 0; i < readWidth; ++i)
-        if (bytes_.contains(address + i)) {
+        if (maybeByte(address + i) && bytes_.contains(address + i)) {
           auto origin = bytes_.at(address+i);
           if (op != 35 || (origin != 0x1f201751 && origin != 0x1f201754) ||
               (reloadedClock && reloadedClock != origin))
@@ -187,23 +202,24 @@ public:
         begin = lane;
       }
       for (unsigned i = begin; i < end; ++i) {
-        if (clockCopy && registers_[rt]) bytes_[address+i] = clockOrigins_[rt];
-        else if (spiCache && registers_[rt])
-          bytes_[address + i] = 0x1f001014;
-        else if (cache && registers_[rt])
-          bytes_[address + i] = pc == 0x804698a8 ? 0x1f200a38 : 0x1f200a3c;
-        else if (op != 56)
-          bytes_.erase(address + i); // SC success not known at dispatch
+        if (clockCopy && registers_[rt]) { bytes_[address+i] = clockOrigins_[rt]; noteByte(address + i); }
+        else if (spiCache && registers_[rt]) {
+          bytes_[address + i] = 0x1f001014; noteByte(address + i);
+        } else if (cache && registers_[rt]) {
+          bytes_[address + i] = pc == 0x804698a8 ? 0x1f200a38 : 0x1f200a3c; noteByte(address + i);
+        } else if (op != 56) {
+          if (maybeByte(address + i)) bytes_.erase(address + i); // SC success not known at dispatch
+        }
       }
       if (spiCache) spiCacheArmed_ = false;
     }
     if (destination > 0) {
-      registers_[unsigned(destination)] = false;
+      registers_[unsigned(destination)] = false; unknownMask_ &= ~(1u << unsigned(destination));
       timingRegisters_[unsigned(destination)] = false;
       clockOrigins_[unsigned(destination)] = 0;
-      if (reloadedClock) { registers_[unsigned(destination)] = true; clockOrigins_[unsigned(destination)] = reloadedClock; }
+      if (reloadedClock) { registers_[unsigned(destination)] = true; unknownMask_ |= 1u << unsigned(destination); clockOrigins_[unsigned(destination)] = reloadedClock; }
     }
-    registers_[0] = false;
+    registers_[0] = false; unknownMask_ &= ~1u;
     return {};
   }
 };

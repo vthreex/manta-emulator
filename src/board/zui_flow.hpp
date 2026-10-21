@@ -28,12 +28,13 @@ public:
     activeAddress=0x006d7e9c,queueAddress=0x006d4fd0,headAddress=0x006d51b0,
     tailAddress=0x006d51b4,windowCountAddress=0x006b9190,windowListAddress=0x006b9198;
   static constexpr unsigned queueSize=40,entryBytes=12;
-  static bool watches(uint32_t pc){
-    for(auto address:{0x804e0d48u,0x804e0dbcu,0x8046ca74u,0x80488864u,0x8047602cu,
+  static constexpr std::array<uint32_t,27> watchAddresses{{0x804e0d48u,0x804e0dbcu,0x8046ca74u,0x80488864u,0x8047602cu,
         0x804e0dc4u,0x804c3684u,0x804c370cu,0x804c3574u,0x8049f0dcu,0x8049f040u,
         0x8049f824u,0x804a0640u,0x8049f180u,0x804a0770u,0x8049ee1cu,0x8049dfc4u,
         0x804afdfcu,0x804a071cu,0x80476a10u,0x8046d9dcu,0x80476b88u,
-        0x8048848cu,0x80482da8u,0x80480ca8u,0x8046b690u,0x80501bfcu})if(pc==address)return true;
+        0x8048848cu,0x80482da8u,0x80480ca8u,0x8046b690u,0x80501bfcu}};
+  static bool watches(uint32_t pc){
+    for(auto address:watchAddresses)if(pc==address)return true;
     return false;
   }
   static ZuiFlowSnapshot capture(uint32_t pc,uint64_t tick,const Reader& read){

@@ -139,7 +139,7 @@ void openRiscTests(){
 }
 void irDmaTests(){
   {
-    manta::Riu fifo;fifo.event=[](auto&,auto,auto,auto,auto&){};fifo.symbolicInit=true;fifo.configurePmIrFifo();
+    manta::Riu fifo;fifo.event=[](auto&&,auto,auto,auto,auto&&){};fifo.symbolicInit=true;fifo.configurePmIrFifo();
     fifo.prepareMaskedRead(0x1f007b59,2);fifo.read(0x1f007b59,1,0,0,0);
     require(!fifo.stopReason.empty() && !fifo.pmIrFifo().empty().has_value(),"candidate PM FIFO supplies no unverified reset occupancy");fifo.stopReason.clear();
     fifo.write(0x1f007b45,1,15,0,0,1);
@@ -204,7 +204,7 @@ void irDmaTests(){
   dma.configure(0x1000,2);require(dma.capturePresent()==false && dma.captures()==2,"new descriptor resets current activity while retaining total real capture count");
   rejects([&]{dma.capture(std::span<const uint8_t>(record).first(47),store);});
   rejects([&]{dma.configure(3,2);});rejects([&]{dma.configure(0x10000000,2);});
-  manta::Riu r;r.symbolicInit=true;r.event=[](auto&,auto,auto,auto,auto&){};
+  manta::Riu r;r.symbolicInit=true;r.event=[](auto&&,auto,auto,auto,auto&&){};
   r.configureExploratoryIrDmaReset();
   for(auto [a,v]:{std::pair{0x1f206e70u,0u},{0x1f206e71u,0x8eu},{0x1f206e74u,0x70u},
       {0x1f206e75u,0x68u},{0x1f206e78u,1u},{0x1f206e39u,0u}})r.write(a,1,v,0,255,1);
@@ -247,7 +247,7 @@ void irDmaTests(){
     "original IR HAL and ring predicate compute no-data themselves from stateful activity; no host-generated key, acknowledgment or producer read");
 }
 void gopResetTests(){
-  manta::Riu r;r.symbolicInit=true;r.event=[](auto&,auto,auto,auto,auto&){};
+  manta::Riu r;r.symbolicInit=true;r.event=[](auto&&,auto,auto,auto,auto&&){};
   r.configureExploratoryGopResetWindows();r.configureExploratoryGopBank(0);
   require((r.gopByte(1,0).known&1)==0,"GWIN enable is not assigned a fabricated power-on state");
   r.write(0x1f203e00,2,1,0,1,1);
@@ -676,7 +676,7 @@ void spiTests() {
 
 void gopGuestBankTests() {
   manta::Engine e; e.map(0,0x2000);
-  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};
+  manta::Riu r; r.event=[](auto&&,auto,auto,auto,auto&&){};
   auto read = +[](uc_engine*,uint64_t off,unsigned n,void *p)->uint64_t {
     return static_cast<manta::Riu*>(p)->read(0x1f200000+uint32_t(off),n,0,0,0);
   };
@@ -693,7 +693,7 @@ void gopGuestBankTests() {
           "guest MMIO bus retains separate GOP bank contents");
 }
 void gopMiuAddressTests(){
-  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};
   require(!manta::gopPhysicalAddress(r,1,0,0xddd800),"unknown MIU-select field cannot resolve a framebuffer address");
   constexpr uint32_t original[]={0x2e020004,0x10400010,0x2602fffc,0x97a20010,0x30420020,0x10400014,0x8fbf0024,
     0x8e220000,0x3c030800,0x24040001,0x00431025,0xae220000,0x8fbf0024,0x00801021,0x8fb10020,
@@ -719,7 +719,7 @@ void gopMiuAddressTests(){
     "unknown auxiliary MIU field remains invalid without hiding independently known main MIU selection");
 }
 void displayHardwareTests() {
-  manta::Riu r; r.event = [](auto&,auto,auto,auto,auto&){};
+  manta::Riu r; r.event = [](auto&&,auto,auto,auto,auto&&){};
   require(!r.gopBankKnown(), "GOP reset selector remains unknown");
   rejects([&]{r.write(0x1f203e04,2,123,0,0,0);});
   r.write(0x1f203ffc,2,1,0,0,0);
@@ -808,7 +808,7 @@ void gopUpdateTests() {
   require(u.advance(11) && u.busy()==0 && u.latches==1,"next sync edge completes the actual pending latch");
   u.write(0x200,0xffff,{});
   require(u.write(0,0xffff,{}) && u.forced==1 && u.latches==2,"complete original force pulse latches independently of sync");
-  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};
   r.exploratoryGopVsyncLatch=true;r.configureExploratoryDisplayClock(148500000);
   r.configureExploratoryScBank(0x10);r.write(0x1f20174c,1,0x1c,0,0,0);
   auto panel=[&](unsigned off,unsigned value){r.write(0x1f205e00+off,2,value,0,0,0);};
@@ -858,7 +858,7 @@ void scalerTimingTests() {
   t.vsyncEnd=1125;
   require(!s.program(t,true,0),"out-of-bounds pulse is rejected");
   require(!s.configured() && !s.outputVsync(100),"invalid geometry cannot leave stale output running");
-  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};
+  manta::Riu r; r.event=[](auto&&,auto,auto,auto,auto&&){};
   r.configureExploratoryDisplayClock(148500000);
   r.configureExploratoryScBank(0x10);
   r.write(0x1f20174c,1,0x1c,0,0,0);
@@ -978,7 +978,7 @@ void preservedBitsTests() {
   require(step(0x3082ffff).empty() && p.mask(2)==1,"GE_ReadReg return retains invalid enable provenance");
 }
 void dlcStatusTests() {
-  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};
+  manta::Riu r; r.event=[](auto&&,auto,auto,auto,auto&&){};
   r.configureExploratoryScBank(0x1a);
   require(r.knownBits(0x1f205e10,1)==0,"DLC has no invented power-on request or completion");
   r.configureExploratoryDlcPending(true);
@@ -998,7 +998,7 @@ void dlcStatusTests() {
   require(!r.stopReason.empty(),"opaque sample permission cannot leak to a later read");
 }
 void combBankTests() {
-  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};
   require(!r.combBank(),"strict COMB selector starts unknown");
   rejects([&]{r.write(0x1f206c04,2,0x1234,0,0,0);});
   r.configureExploratoryCombBank(0);r.write(0x1f206c04,2,0x1234,0,0,0);
@@ -1009,7 +1009,7 @@ void combBankTests() {
   require(r.knownBits(0x1f206c04,2)==0,"untouched COMB bank does not inherit earlier table values");
 }
 void combRestoreTests() {
-  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){}; r.symbolicInit=true;
+  manta::Riu r; r.event=[](auto&&,auto,auto,auto,auto&&){}; r.symbolicInit=true;
   r.configureExploratoryCombBank(0); r.write(0x1f206d1c,1,0xc3,0,0,0);
   r.prepareRmw(0x1f206d1d,0xcf); r.write(0x1f206d1d,1,0xc3,0,0,0);
   require(!r.beginCombRestore(0x1f206d1c,0x3030),"strict mode never permits foreign-byte opaque transfer");
@@ -1033,7 +1033,7 @@ void combRestoreTests() {
   require(!r.stopReason.empty() && r.combRestorePending(),"incorrect restore cannot release unknown bits");
 }
 void preservedRegisterRestoreTests() {
-  manta::Riu r; r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;
+  manta::Riu r; r.event=[](auto&&,auto,auto,auto,auto&&){};r.symbolicInit=true;
   {
     // Original 80504534..80504548: saved high nibble plus a fresh low
     // nibble. Neither sample may validate the other's unknown bits.
@@ -1068,7 +1068,7 @@ void preservedRegisterRestoreTests() {
   require(r.gopBankKnown() && r.gopBank()==1 && r.knownBits(0x1f203ffc,2)==15,"GOP experiment defines only low selector nibble, never IRQ or ACK");
 }
 void semaphoreTests() {
-  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};r.candidateSemaphore=true;
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};r.candidateSemaphore=true;
   r.read(0x1f203008,2,0,0,0);
   require(!r.stopReason.empty(),"resource ID reset is unknown, never universal zero");r.stopReason.clear();
   r.write(0x1f203004,2,2,0,0,0);
@@ -1332,7 +1332,7 @@ void geBitBltTests(){
 }
 void opaquePolicyTests(){
   {
-    manta::Riu bus;bus.event=[](auto&,auto,auto,auto,auto&){};
+    manta::Riu bus;bus.event=[](auto&&,auto,auto,auto,auto&&){};
     bus.write(0x1f206b98,2,0xffff,0,0,0);
     require(!(bus.knownBits(0x1f206b98,2)&0x4000),"software writes cannot define live AFEC HSYNC lock");
     bus.configureExploratoryAnalogDisconnected();
@@ -1900,7 +1900,7 @@ void tspQueueTests() {
   require(!manta::immediateReadMask(unsafe),"TSP count read proof rejects an intervening copy");
   constexpr uint32_t unsafeJump[]={0x949f00fc,0x03e00008,0x33ff001f};
   require(!manta::immediateReadMask(unsafeJump),"JR consumes its target before a delay-slot mask; unknown loaded RA cannot pass read proof");
-  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;r.candidateTsp=true;
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};r.symbolicInit=true;r.candidateTsp=true;
   require(r.knownBits(0x1f202afc,2)==0,"TSP candidate status initially remains unknown");
   r.configureExploratoryTspResetLow();r.write(0x1f202be8,2,0,0,0xffff,1);
   r.write(0x1f202be8,2,2,0,0xffff,2);
@@ -1910,7 +1910,7 @@ void tspQueueTests() {
   require((r.read(0x1f202afc,2,0,0xffff,3)&31)==0,"guest count read observes reset FIFO rather than universal zero register");
 }
 void tspIndirectTests() {
-  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;r.candidateTsp=true;
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};r.symbolicInit=true;r.candidateTsp=true;
   r.configureExploratoryTspResetLow();r.write(0x1f202be8,2,0,0,0xffff,1);r.write(0x1f202be8,2,2,0,0xffff,2);
   auto select=[&](uint32_t target){r.write(0x1f202b24,2,(target>>1)&65535,0,0xffff,3);
     r.write(0x1f202b28,2,target>>17,0,0xffff,4);};
@@ -1976,7 +1976,7 @@ void tspDownloadTests() {
   rejects([&]{d.byte(64);});
   rejects([&]{d.start(std::vector<uint8_t>(0x4004),15);});
   rejects([&]{d.start(std::vector<uint8_t>(3),15);});
-  manta::Riu r;r.event=[](auto&,auto,auto,auto,auto&){};r.symbolicInit=true;r.candidateTsp=true;
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};r.symbolicInit=true;r.candidateTsp=true;
   r.configureExploratoryTspResetLow();r.write(0x1f202be8,2,0,0,0xffff,0);r.write(0x1f202be8,2,2,0,0xffff,1);
   r.dramRead=[&](uint32_t address,size_t length){require(address==0x72db00 && length==64,
       "original low/high descriptor fields decode real source and four-byte transfer size");return source;};
@@ -2565,7 +2565,7 @@ int main() {
     require(manta::SarAdc::channel(0x1f002838)==2 && manta::SarAdc::channel(0x1f002839)==3 &&
       manta::SarAdc::channel(0x1f002841)==7 && !manta::SarAdc::channel(0x1f002836),
       "all eight original SAR jump-table byte addresses map independently, including SCART ID channels2/3");
-    manta::Riu id;id.event=[](auto&,auto,auto,auto,auto&){};id.configureExploratoryScartIdGrounded();
+    manta::Riu id;id.event=[](auto&&,auto,auto,auto,auto&&){};id.configureExploratoryScartIdGrounded();
     require(id.knownBits(0x1f002838,1)==0 && id.knownBits(0x1f002839,1)==0,"grounded SCART fixture alone does not create an ADC conversion");
     id.write(0x1f002800,1,0x20,0,0,10);id.write(0x1f002801,1,2,0,0,10);id.write(0x1f002804,1,0,0,0,10);
     id.read(0x1f002838,1,0,0,17);require(!id.stopReason.empty(),"SCART voltage cannot be sampled before programmed SAR latency");id.stopReason.clear();
@@ -2583,7 +2583,7 @@ int main() {
       auto level=code*20;require(cpu.run(0x80486b10,level>=2301?4:6)==UC_ERR_OK && cpu.reg(UC_MIPS_REG_PC)==0x80486b28 &&
         cpu.reg(UC_MIPS_REG_3)==(level>=2301?2u:level>=1001?1u:0u),"original SCART ID classification crosses its actual1001/2301 boundaries; grounded input chooses no ID");
     }
-    manta::Riu scartStrict;scartStrict.event=[](auto&,auto,auto,auto,auto&){};
+    manta::Riu scartStrict;scartStrict.event=[](auto&&,auto,auto,auto,auto&&){};
     scartStrict.write(0x1f204b10,2,0x7f20,0,0xffff,1);
     scartStrict.prepareMaskedRead(0x1f204b15,15);
     scartStrict.read(0x1f204b15,1,0,255,2);

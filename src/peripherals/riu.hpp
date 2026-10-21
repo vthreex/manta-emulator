@@ -3,8 +3,10 @@
 #include "peripherals/pm_ir_fifo.hpp"
 #include "peripherals/vif_zero_input.hpp"
 #include "peripherals/avd_mcu_bus.hpp"
+#include <array>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <map>
 #include <string>
 #include <stdexcept>
@@ -12,6 +14,7 @@
 #include "peripherals/gpio_i2c.hpp"
 #include "peripherals/rtc.hpp"
 #include "peripherals/utmi.hpp"
+#include "peripherals/ev_text.hpp"
 #include "peripherals/usb_host.hpp"
 #include "peripherals/spi_isp.hpp"
 #include "peripherals/semaphore.hpp"
@@ -40,6 +43,76 @@
 namespace manta {
 struct RiuByte {
   uint8_t value = 0xa5, known = 0;
+};
+// Drop-in replacement for std::map<uint32_t,RiuByte> with O(1) access to the RIU window (0x1f000000..0x1f3fffff, paged on demand); every other
+// key (banked synthetic keys, RAM addresses) lives in a std::map. Presence is tracked exactly like map membership, and iteration is ascending,
+// so snapshots serialize byte-identically to the former std::map.
+class RiuByteMap {
+  static constexpr uint32_t kBase = 0x1f000000u, kSize = 0x400000u, kPageBits = 12, kPageSize = 1u << kPageBits;
+  struct Page { std::array<RiuByte, kPageSize> b; std::array<uint8_t, kPageSize> present; Page() : b{}, present{} {} };
+  std::vector<std::unique_ptr<Page>> pages_;
+  std::map<uint32_t, RiuByte> other_;
+  size_t flatCount_ = 0;
+  static RiuByte& dummy() { static RiuByte d; return d; }
+  static bool inFlat(uint32_t k) { return k - kBase < kSize; }
+  Page* page(uint32_t k) const { return pages_.empty() ? nullptr : pages_[(k - kBase) >> kPageBits].get(); }
+public:
+  RiuByteMap() : pages_(kSize >> kPageBits) {}
+  RiuByteMap(const RiuByteMap& o) : pages_(kSize >> kPageBits), other_(o.other_), flatCount_(o.flatCount_) {
+    for (size_t i = 0; i < pages_.size(); ++i) if (o.pages_[i]) pages_[i] = std::make_unique<Page>(*o.pages_[i]);
+  }
+  RiuByteMap& operator=(const RiuByteMap& o) { if (this != &o) { RiuByteMap t(o); *this = std::move(t); } return *this; }
+  RiuByteMap(RiuByteMap&&) = default;
+  RiuByteMap& operator=(RiuByteMap&&) = default;
+  struct It {
+    uint32_t first;
+    RiuByte& second;
+    RiuByte* valid;
+    bool operator==(const It& o) const { return valid == o.valid; }
+    bool operator!=(const It& o) const { return valid != o.valid; }
+    It* operator->() { return this; }
+    const It* operator->() const { return this; }
+  };
+  It end() const { return It{0, dummy(), nullptr}; }
+  It find(uint32_t k) const {
+    if (inFlat(k)) {
+      Page* p = page(k);
+      uint32_t i = (k - kBase) & (kPageSize - 1);
+      if (!p || !p->present[i]) return end();
+      return It{k, p->b[i], &p->b[i]};
+    }
+    auto it = const_cast<std::map<uint32_t, RiuByte>&>(other_).find(k);
+    if (it == other_.end()) return end();
+    return It{k, it->second, &it->second};
+  }
+  bool contains(uint32_t k) const { return find(k) != end(); }
+  RiuByte& at(uint32_t k) const {
+    auto it = find(k);
+    if (it == end()) throw std::out_of_range("RiuByteMap::at");
+    return it.second;
+  }
+  RiuByte& operator[](uint32_t k) {
+    if (inFlat(k)) {
+      auto& p = pages_[(k - kBase) >> kPageBits];
+      if (!p) p = std::make_unique<Page>();
+      uint32_t i = (k - kBase) & (kPageSize - 1);
+      if (!p->present[i]) { p->present[i] = 1; p->b[i] = RiuByte{}; ++flatCount_; }
+      return p->b[i];
+    }
+    return other_[k];
+  }
+  size_t size() const { return flatCount_ + other_.size(); }
+  void clear() { for (auto& p : pages_) p.reset(); other_.clear(); flatCount_ = 0; }
+  // Visit every entry in ascending key order.
+  template <class F> void forEach(F f) const {
+    auto mid = const_cast<std::map<uint32_t, RiuByte>&>(other_).lower_bound(kBase);
+    for (auto it = const_cast<std::map<uint32_t, RiuByte>&>(other_).begin(); it != mid; ++it) f(it->first, it->second);
+    for (size_t pi = 0; pi < pages_.size(); ++pi) {
+      if (!pages_[pi]) continue;
+      for (uint32_t i = 0; i < kPageSize; ++i) if (pages_[pi]->present[i]) f(kBase + uint32_t(pi << kPageBits) + i, pages_[pi]->b[i]);
+    }
+    for (auto it = const_cast<std::map<uint32_t, RiuByte>&>(other_).lower_bound(kBase + kSize); it != other_.end(); ++it) f(it->first, it->second);
+  }
 };
 class Riu {
   friend void ioClass(snap::Ar&, Riu&);
@@ -71,7 +144,7 @@ class Riu {
   bool vdWrite(uint16_t address,VdByte value);
   bool vdMcuSuspended_=false;
   std::string vdMcuBoundaryReason_;
-  std::map<uint32_t, RiuByte> bytes_;
+  RiuByteMap bytes_;
   uint64_t bdmaComplete_ = 0;
   bool bdmaPending_ = false;
   std::vector<uint8_t> bdmaCopyBytes_;
@@ -505,7 +578,7 @@ public:
     put(0x1f201318, 1, 0);
   }
   std::string stopReason, uart;
-  std::function<void(const std::string &, uint32_t, unsigned, uint32_t, const std::string &)> event;
+  std::function<void(EvText, uint32_t, unsigned, uint32_t, EvText)> event;
   std::function<std::vector<uint8_t>(uint32_t, size_t)> flashRead;
   // Guest SPI NOR program/erase into the copy-on-write flash overlay (set by the machine).
   std::function<size_t(uint32_t, std::span<const uint8_t>)> flashProgram;

@@ -13,6 +13,16 @@ using snap::SnapshotUnsupported;
 
 // ---------------------------------------------------------------------------------------------------------------- plain structs
 void ioClass(Ar& a, RiuByte& v) { a(v.value, v.known); }
+// Same byte stream as the former std::map<uint32_t,RiuByte>: element count, then ascending (key, value) pairs.
+void ioClass(Ar& a, RiuByteMap& m) {
+  uint64_t n = a.count(m.size());
+  if (a.saving()) {
+    m.forEach([&](uint32_t k, const RiuByte& v) { uint32_t kk = k; RiuByte vv = v; a(kk); ioClass(a, vv); });
+  } else {
+    m.clear();
+    for (uint64_t i = 0; i < n; ++i) { uint32_t k = 0; RiuByte v{}; a(k); ioClass(a, v); m[k] = v; }
+  }
+}
 void ioClass(Ar& a, VdByte& v) { a(v.value, v.known, v.origin); }
 void ioClass(Ar& a, OrWord& v) { a(v.value, v.known, v.origin); }
 void ioClass(Ar& a, PanelTiming& v) { a(v.htotal, v.vtotal, v.hstart, v.hend, v.vstart, v.vend, v.vsyncStart, v.vsyncEnd, v.invert); }
@@ -111,7 +121,7 @@ void ioClass(Ar& a, AudioIdma& d) {
   a.tag("AudioIdma");
   a(d.words_, d.staged_, d.readback_, d.writeAddress_, d.readAddress_, d.phase_, d.readbackKnown_, d.writeCompleted_, d.readCompleted_, d.wordWrites, d.wordReads);
 }
-void ioClass(Ar& a, UnknownObservations& u) { a.tag("UnknownObs"); a(u.registers_, u.timingRegisters_, u.clockOrigins_, u.bytes_, u.spiCacheAddress_, u.spiCacheArmed_); }
+void ioClass(Ar& a, UnknownObservations& u) { a.tag("UnknownObs"); a(u.registers_, u.timingRegisters_, u.clockOrigins_, u.bytes_, u.spiCacheAddress_, u.spiCacheArmed_); if (a.loading()) u.restored(); }
 void ioClass(Ar& a, PreservedBits& p) {
   a.tag("PreservedBits");
   for (auto& reg : p.registers_) for (auto& b : reg) a(b.byte, b.bit, b.inverted);
@@ -290,8 +300,8 @@ bool Msd309Machine::snapshotBoundaryOk(uint32_t pc) {
   // GE closures cannot be serialized: wait for the original queue to drain by itself (never forced).
   if (!riu_.geQueueIdle()) return false;
   // A branch/jump immediately before this instruction would leave this one in a delay slot: the resume PC alone cannot express that.
-  if (!history_.empty()) {
-    uint32_t prev = history_.back() & 0x1fffffffu, w = 0;
+  if (!historyEmpty()) {
+    uint32_t prev = lastHistoryPc() & 0x1fffffffu, w = 0;
     if (uint64_t(prev) + 4 <= dramBacking_.size() && !dramBacking_.empty()) std::memcpy(&w, dramBacking_.data() + prev, 4); else return false;
     unsigned op = w >> 26, fn = w & 63;
     bool branch = op == 1 || (op >= 2 && op <= 7) || (op >= 20 && op <= 23) || (op == 16 && ((w >> 21) & 31) == 8) || (op == 17 && ((w >> 21) & 31) == 8) ||
@@ -306,6 +316,8 @@ bool Msd309Machine::snapshotBoundaryOk(uint32_t pc) {
 }
 
 std::vector<Msd309Machine::SnapSection> Msd309Machine::captureSections(uint32_t pc) {
+  flushStats();
+  flushTicks();
   std::vector<Section> sections;
   {
     Section s{"meta", {}};
@@ -443,6 +455,8 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     if (blob.size() != payload) { uc_context_free(ctx); throw SnapshotError("CPU context size differs from this Unicorn build"); }
     std::memcpy(reinterpret_cast<uint8_t*>(ctx) + (total - payload), blob.data(), payload);
     auto err = uc_context_restore(cpu_.handle, ctx);
+    ++cpu_.writeGen;
+    pendingTicks_ = 0; tickSynced_ = false;
     uc_context_free(ctx);
     check(err);
   }
@@ -500,6 +514,7 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   }
   check(uc_ctl_flush_tb(cpu_.handle));
   if (dispatches_ != dispatches) throw SnapshotError("snapshot dispatch counter inconsistent");
+  importStats();
   resumePc_ = pc;
   resumed_ = true;
 }

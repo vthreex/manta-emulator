@@ -84,6 +84,13 @@ public:
       registers_.at(rt)[i].inverted=!registers_.at(rt)[i].inverted;
   }
   auto unknownMemoryBytes() const { return memory_.size(); }
+  // Fast-path support for the per-instruction hook (identical results, no state change): true when observe() can neither change state nor reject
+  // for a NON-memory instruction (no register holds an unknown bit), resp. for a memory instruction at raw effective address ea of `width` bytes.
+  bool quiet() const { return !started_ || !live_; }
+  bool memoryClean(uint32_t ea, unsigned width) const {
+    uint32_t a = backingAddress(ea);
+    return !maybeUnknown(a) && !maybeUnknown(a + width - 1);
+  }
   std::string observe(uint32_t w,const std::function<uint32_t(unsigned)> &reg,
       const std::function<uint32_t(uint32_t)> &deviceKey,
       const std::function<void(uint32_t,unsigned,uint32_t)> &preserveWrite) {

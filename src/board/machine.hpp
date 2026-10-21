@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include "snapshot/archive.hpp"
 #include "video/gop_preview.hpp"
 #include "input/remote_queue.hpp"
@@ -96,6 +97,7 @@ struct Options {
   int diagnosticUsbUnpoweredDplus=-1;   // BRACKETING: line-state D+ of a guest-powered-down USB PHY (run 0 and 1)
   bool exploratoryUsbNoDevice=false;   // HYPOTHESIS: powered USB PHY, no device attached (SE0 line state)
   bool candidateSpiNorWrite=false;   // opt-in guest SPI NOR program/erase/WRSR into the copy-on-write overlay
+  bool noLoopSkip=false;                 // disable exact busy-wait loop skipping (A/B testing; results are identical either way)
   bool diagnosticHtotalBranchJoin=false; // DIAGNOSTIC: conservative join of the HTotal comparison outcomes
   bool exploratoryPqSramIdle=false;
   bool exploratoryPqDisabledPorts=false;
@@ -171,20 +173,65 @@ class Msd309Machine {
   std::ofstream trace_;
   std::ifstream replay_;
   std::set<uint32_t> coverage_;
-  std::unordered_map<uint32_t, uint64_t> pcHits_;
+  mutable std::unordered_map<uint32_t, uint64_t> pcHits_;   // canonical counts; the hot path counts in pcHitsFast_ and flushStats() merges
   struct Poll {
     uint32_t value = 0;
     uint64_t epoch = 0, count = 0;
   };
   std::unordered_map<uint64_t, Poll> polls_;
   uint64_t writeEpoch_ = 0, maxPoll_ = 0;
-  std::deque<uint32_t> history_;
+  mutable std::deque<uint32_t> history_;
   struct Instruction {
     uint64_t tick;
     uint32_t pc, word, ra, sp;
   };
-  std::deque<Instruction> recentInstructions_;
-  std::deque<std::string> recentMmio_;
+  mutable std::deque<Instruction> recentInstructions_;
+  // ---- hot-path statistics (identical observable results; see flushStats/importStats) ----
+  static constexpr uint32_t kFastBase = 0x803b0180u, kFastEnd = 0x806b8ce0u;
+  mutable std::vector<uint64_t> pcHitsFast_;           // one counter per word of [kFastBase,kFastEnd)
+  mutable std::array<uint32_t, 64> histRing_{};        // last 64 executed PCs
+  mutable uint64_t histPushes_ = 0;                    // PCs pushed since the last import
+  mutable std::vector<Instruction> recentRing_;        // last 4096 instructions in [kFastBase,kFastEnd)
+  mutable uint64_t recentPushes_ = 0;
+  std::vector<uint8_t> specialPc_;                     // bitmap over [kFastBase,kFastEnd): instruction addresses the full hook must see
+  bool allSlow_ = false;                               // an option needs every instruction in the full hook
+  uint64_t hookLimit_ = UINT64_MAX;                    // dispatch budget enforced by the hook (replaces Unicorn's per-instruction count hook)
+  bool budgetStop_ = false;
+  uint32_t shadowRa_ = 0, shadowSp_ = 0, prevWord_ = 0;   // RA/SP as seen before the current instruction
+  bool shadowValid_ = false;
+  uint64_t shadowGen_ = 0;
+  void flushStats() const;                             // hot-path containers -> canonical containers
+  void importStats();                                  // canonical containers -> hot-path containers (after a restore)
+  void buildSpecialPcs();
+  // ---- batched CP0 Count ticks (exactly equivalent to one tick call per instruction) ----
+  uint64_t pendingTicks_ = 0, tickRemaining_ = 0;   // ticks not yet given to the engine; ticks until the next Compare crossing
+  bool tickSynced_ = false, tickOff_ = false;       // tickRemaining_/tickOff_ valid; Cause.DC set
+  void resyncTicks();
+  void flushTicks() { if (pendingTicks_) { cpu_.tickCount(uint32_t(pendingTicks_)); pendingTicks_ = 0; } }
+  void tickInstr(uint32_t w);
+  // ---- exact busy-wait loop skipping (see loopSkipVisit) ----
+  struct LoopCand {
+    uint32_t pc = 0, period = 0, conf = 0, cooldown = 0, fails = 0;
+    uint64_t lastDispatch = 0, gen = 0, flashReads = 0;
+    bool haveRegs = false;
+    std::array<uint32_t, 34> regs{};
+  };
+  std::array<LoopCand, 256> loopTab_{};
+  uint64_t sideEffectGen_ = 0;   // bumped by everything that could make an otherwise register-identical iteration differ (stores, CP0/FP ops, events, special PCs)
+  uint32_t prevPc_ = 0;
+  uint64_t skippedInstructions_ = 0;
+  bool loopSkipVisit(uint32_t a);
+  void recordPc(uint32_t a);
+  void pushRecent(uint32_t a, uint32_t w);
+  static bool observeBlock(Msd309Machine &m, uint64_t a, uint32_t w);
+  uint32_t lastHistoryPc() const { return histPushes_ ? histRing_[(histPushes_ - 1) & 63] : (history_.empty() ? 0 : history_.back()); }
+  bool historyEmpty() const { return !histPushes_ && history_.empty(); }
+  static void codeHookFull(uc_engine *, uint64_t, uint32_t, void *);
+  mutable std::deque<std::string> recentMmio_;   // canonical "recent MMIO" lines; rebuilt from recentMmioBase_ + mmioRing_ by flushStats()
+  std::deque<std::string> recentMmioBase_;        // lines imported from a snapshot (older than anything in mmioRing_)
+  struct MmioRecord { uint64_t tick = 0; uint32_t pc = 0, address = 0, value = 0, ra = 0, sp = 0; unsigned width = 0; EvStore kind, detail; };
+  mutable std::vector<MmioRecord> mmioRing_ = std::vector<MmioRecord>(256);   // last 256 recorded MMIO events, formatted lazily
+  mutable uint64_t mmioPushes_ = 0;
   UnknownObservations unknownObservations_;
   PreservedBits preservedBits_;
   AudioNoAck audioNoAck_;
@@ -238,8 +285,9 @@ private:
   bool rmwIdentity_ = false;   // set by proveImmediateRmw: the proven read-modify-write writes every sampled bit back to its own position (no bit defined)
   bool proveDiagnosticCache(uint32_t pc, uint32_t address, unsigned width);
   void stop(std::string why, uint32_t address = 0);
-  void event(const std::string &kind, uint32_t address, unsigned width, uint32_t value,
-             const std::string &detail);
+  void event(EvText kind, uint32_t address, unsigned width, uint32_t value, EvText detail);
+  static void formatEventLine(std::string &out, uint64_t tick, uint32_t pc, std::string_view kind, uint32_t address, unsigned width, uint32_t value,
+                              uint32_t ra, uint32_t sp, std::string_view detail, bool cycles, uint64_t cycleCount);
   static void codeHook(uc_engine *, uint64_t, uint32_t, void *);
   static void memoryHook(uc_engine *, uc_mem_type, uint64_t, int, int64_t, void *);
   static bool invalidHook(uc_engine *, uc_mem_type, uint64_t, int, int64_t, void *);

@@ -398,7 +398,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
         throw std::runtime_error("TSP DMA source contains invalid hardware-origin bits");
     std::vector<uint8_t> bytes(size);cpu_.read(address,bytes.data(),size);return bytes;
   };
-  riu_.event = [this](auto &k, auto a, auto n, auto v, auto &d) { event(k, a, n, v, d); };
+  riu_.event = [this](EvText k, uint32_t a, unsigned n, uint32_t v, EvText d) { event(k, a, n, v, d); };
   riu_.dramWrite=[this](uint32_t address,std::span<const uint8_t> bytes) {
     if(!options_.candidateMiu || bytes.empty() || uint64_t(address)+bytes.size()>0x08000000 ||
        uint64_t(address)+bytes.size()>dramBacking_.size())
@@ -450,6 +450,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if (o.candidateMiu) {
     dramBacking_.resize(0x10000000);
     cpu_.mapShared(0, dramBacking_.size(), dramBacking_.data());
+    cpu_.setBacking(dramBacking_.data(), dramBacking_.size());
     // Firmware MsOS_PA2Uncached (805CB940) translates logical MIU1
     // 08000000..0FFFFFFF to D0000000..D7FFFFFF. Guest MMU translates this
     // to bus 40000000..47FFFFFF. It aliases the existing MIU1 backing.
@@ -480,6 +481,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
                     reinterpret_cast<void *>(invalidHook), this, 1, 0));
   check(uc_hook_add(cpu_.handle, &h, UC_HOOK_INTR, reinterpret_cast<void *>(interruptHook), this, 1,
                     0));
+  buildSpecialPcs();
+  importStats();
 }
 void Msd309Machine::stop(std::string why, uint32_t a) {
   if (stopped_)
@@ -490,10 +493,25 @@ void Msd309Machine::stop(std::string why, uint32_t a) {
   reason_ = std::move(why);
   uc_emu_stop(cpu_.handle);
 }
-void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t v,
-                          const std::string &d) {
+void Msd309Machine::formatEventLine(std::string &line, uint64_t tick, uint32_t pc, std::string_view k, uint32_t a, unsigned n, uint32_t v,
+                                    uint32_t ra, uint32_t sp, std::string_view detail, bool cycles, uint64_t cycleCount) {
+  line.reserve(160 + k.size() + detail.size());
+  line += "{\"tick\":"; line += std::to_string(tick);
+  line += ",\"pc\":\""; appendHex(line, pc);
+  line += "\",\"kind\":\""; line += k;
+  line += "\",\"address\":\""; appendHex(line, a);
+  line += "\",\"width\":"; line += std::to_string(n);
+  line += ",\"value\":\""; appendHex(line, v);
+  line += "\",\"ra\":\""; appendHex(line, ra);
+  line += "\",\"sp\":\""; appendHex(line, sp);
+  line += "\",\"detail\":\""; line += detail; line += "\"";
+  if (cycles) { line += ",\"virtual_cpu_cycles\":"; line += std::to_string(cycleCount); }
+  line += '}';
+}
+void Msd309Machine::event(EvText kt, uint32_t a, unsigned n, uint32_t v, EvText dt) {
+  ++sideEffectGen_;
+  const std::string_view k = kt.view();
   std::string knowledgeDetail;
-  const std::string* recordedDetail=&d;
   if(options_.orRegisterLogChanges && k=="or1k_internal_read" && n==4){
     uint64_t key=(uint64_t(riu_.tspCpuPc())<<32)|a;
     auto mask=riu_.tspStoredWordKnownMask(a);
@@ -502,8 +520,8 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
       ++suppressedOrStoredReads_;return;
     }
     lastOrStoredRead_[key]=sample;
-    knowledgeDetail=d+"; known-mask="+hex(mask)+"; identical value/mask repeats summarized; invalid bits stay invalid";
-    recordedDetail=&knowledgeDetail;
+    knowledgeDetail=std::string(dt.view())+"; known-mask="+hex(mask)+"; identical value/mask repeats summarized; invalid bits stay invalid";
+    dt=EvText(knowledgeDetail);
   }
   if(options_.orIdlePollChanges){
     if((k=="write" && a>=0x1f202b00 && a<=0x1f202b05) ||
@@ -524,45 +542,42 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
      !(options_.pauseMmio && options_.pauseMmio==a)){
     ++suppressedOrQmemTrace_;return;
   }
-  std::string line;
-  line.reserve(160 + k.size() + recordedDetail->size());
-  line += "{\"tick\":"; line += std::to_string(dispatches_);
-  line += ",\"pc\":\""; appendHex(line, cpu_.reg(UC_MIPS_REG_PC));
-  line += "\",\"kind\":\""; line += k;
-  line += "\",\"address\":\""; appendHex(line, a);
-  line += "\",\"width\":"; line += std::to_string(n);
-  line += ",\"value\":\""; appendHex(line, v);
-  line += "\",\"ra\":\""; appendHex(line, cpu_.reg(UC_MIPS_REG_RA));
-  line += "\",\"sp\":\""; appendHex(line, cpu_.reg(UC_MIPS_REG_SP));
-  line += "\",\"detail\":\""; line += *recordedDetail; line += "\"";
-  if(virtualTime_.cpi()!=1){ line += ",\"virtual_cpu_cycles\":"; line += std::to_string(virtualTime_.cycles(dispatches_)); }
-  line += '}';
-  if ((k == "read" || k == "write") && a >= 0x1f203e00 && a < 0x1f204000)
+  const bool isRead = k == "read", isWrite = k == "write";
+  const bool recorded = isRead || isWrite || k == "blocked_read" || k == "deferred_read";
+  const bool needLine = trace_.is_open() || replay_.is_open();
+  uint32_t pc = 0, ra = 0, sp = 0;
+  if (recorded || needLine) { pc = cpu_.reg(UC_MIPS_REG_PC); ra = cpu_.reg(UC_MIPS_REG_RA); sp = cpu_.reg(UC_MIPS_REG_SP); }
+  if ((isRead || isWrite) && a >= 0x1f203e00 && a < 0x1f204000)
     ++gopEvents_;
-  if ((k == "read" || k == "write") && a >= 0x1f205000 && a < 0x1f205200)
+  if ((isRead || isWrite) && a >= 0x1f205000 && a < 0x1f205200)
     ++geEvents_;
   if ((k == "blocked_read" || k == "blocked_write") && a >= 0x1f205000 && a < 0x1f205200)
     ++geBlockedEvents_;
-  if (k == "read" || k == "write" || k == "blocked_read" || k == "deferred_read") {
-    recentMmio_.push_back(line);
-    if (recentMmio_.size() > 256)
-      recentMmio_.pop_front();
+  if (recorded) {
+    auto &r = mmioRing_[mmioPushes_ & 255];
+    r.tick = dispatches_; r.pc = pc; r.address = a; r.width = n; r.value = v; r.ra = ra; r.sp = sp;
+    r.kind.set(kt); r.detail.set(dt);
+    ++mmioPushes_;
   }
-  if (trace_.is_open()){
-    trace_ << line << '\n';
-    if(!trace_)stop("trace write failure; execution evidence truncated",a);
+  if (needLine) {
+    std::string line;
+    formatEventLine(line, dispatches_, pc, k, a, n, v, ra, sp, dt.view(), virtualTime_.cpi() != 1, virtualTime_.cycles(dispatches_));
+    if (trace_.is_open()){
+      trace_ << line << '\n';
+      if(!trace_)stop("trace write failure; execution evidence truncated",a);
+    }
+    if (replay_.is_open()) {
+      std::string expected;
+      if (!std::getline(replay_, expected) || expected != line)
+        stop("deterministic replay mismatch", a);
+    }
   }
-  if (replay_.is_open()) {
-    std::string expected;
-    if (!std::getline(replay_, expected) || expected != line)
-      stop("deterministic replay mismatch", a);
-  }
-  if (k == "read" || k == "write" || k == "blocked_read")
+  if (isRead || isWrite || k == "blocked_read")
     ++mmio_;
-  if (k == "write")
+  if (isWrite)
     ++writeEpoch_;
-  if (k == "read") {
-    auto key = (uint64_t(cpu_.reg(UC_MIPS_REG_PC)) << 32) | a;
+  if (isRead) {
+    auto key = (uint64_t(pc) << 32) | a;
     auto &poll = polls_[key];
     if (poll.epoch != writeEpoch_ || poll.value != v)
       poll.count = 0;
@@ -578,9 +593,103 @@ void Msd309Machine::event(const std::string &k, uint32_t a, unsigned n, uint32_t
   if (options_.pauseMmio && a == options_.pauseMmio)
     stop("MMIO breakpoint", a);
 }
-void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
+bool Msd309Machine::observeBlock(Msd309Machine &m, uint64_t a, uint32_t w) {
+  if (m.options_.diagnosticHtotalBranchJoin && a == HtotalBranchJoin::branch && !m.stopped_ &&
+      (m.unknownObservations_.registerUnknown(7) || m.preservedBits_.mask(7)) &&
+      !m.unknownObservations_.registerUnknown(5) && !m.preservedBits_.mask(5) &&
+      m.applyHtotalBranchJoin())
+    return true;
+  if (m.options_.deferDiagnosticReads) {
+    auto why = m.unknownObservations_.observe(
+        uint32_t(a), w, [&](unsigned i) { return m.cpu_.reg(UC_MIPS_REG_0 + int(i)); });
+    if (!why.empty()) {
+      m.event("unknown_observation_use", uint32_t(a), 4, w, why);
+      auto op = w >> 26;
+      auto address = (m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 21) & 31)) + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
+      m.stop(why, op >= 32 && op <= 38 ? address : 0);
+      return true;
+    }
+    if(a==0x80503828 && w==0xa4a46cbc && m.options_.exploratoryCombRestore) {
+      // HAL_AVD_COMB_Set3dCombSpeed: SH duplicates the nibble, SB restores the original low byte.
+      // Both instructions and the whole 0x58-byte function are verified against the original image.
+      std::vector<uint8_t> code(0x58);
+      m.cpu_.read(0x005037e0, code.data(), code.size());
+      uint32_t next = 0;
+      m.cpu_.read(0x0050382c, &next, 4);
+      if (sha256(code) == "98d17c412845002a953b5e10e3c10f67670f739d504546c6f1f0c25d90404500" && next == 0xa0a66cbc) {
+        auto target = (m.cpu_.reg(UC_MIPS_REG_5) + 0x6cbc) & 0x1fffffff;
+        m.riu_.beginCombRestoreInvalidLow(target, m.preservedBits_.mask(4) & 0xffff, 0x80503828, 0x8050382c);
+      }
+    }
+    if(a==0x805f883c && w==0xa4820000 && m.cpu_.reg(UC_MIPS_REG_31)==0x803c69f8) {
+      auto target=m.cpu_.reg(UC_MIPS_REG_4)&0x1fffffff;
+      m.riu_.beginCombRestore(target,m.preservedBits_.mask(2)&0xffff);
+    }
+    // DIAGNOSTIC restore-by-identity branch in the original SerFlash write routine: 8053CB7C..CB80 tests the saved
+    // copy of ISP register BF0011C8 bit 2; both arms (8053CB94..CB9C clears it, 8053CBE8..CBF4 sets it) rewrite that bit
+    // to exactly the value tested. The path consistent with the representative value is executed and the stored bit is
+    // relabelled unknown with its original identity at the join 8053CBA4.
+    bool restoreBranch = false;
+    if (m.options_.diagnosticRestoreByIdentityBranch && a == 0x8053cb80 && w == 0x14400017) {
+      std::vector<uint8_t> code(0x454);
+      m.cpu_.read(0x0053c914, code.data(), code.size());
+      restoreBranch = sha256(code) == "f196f19f68c656f8c079385b51e73ee725324ff4b6f2b012fa25c61bad11afad" &&
+                      m.preservedBits_.exactFieldOrigin(2, m.riu_.preservedStoreKey(0x1f0011c8), 4);
+      m.event(restoreBranch ? "diagnostic_restore_by_identity_branch" : "diagnostic_restore_by_identity_branch_refused", uint32_t(a), 4, w,
+              "DIAGNOSTIC ONLY: both arms rewrite ISP 1C8 bit2 to the tested value; representative path executed, bit relabelled unknown at the join");
+    }
+    if (m.options_.diagnosticRestoreByIdentityBranch && a == 0x8053cba4 && m.restoreBranchSeen_) {
+      m.riu_.forgetBits(0x1f0011c8, 4);
+      m.restoreBranchSeen_ = false;
+    }
+    if (restoreBranch) m.restoreBranchSeen_ = true;
+    const bool scenarioXor=m.options_.explorePmNonresumeBranch &&
+      m.pmActivityScenario_.xorPredicate(uint32_t(a),w,m.cpu_.reg(UC_MIPS_REG_2),
+        m.preservedBits_.exactFieldOrigin(2,0x1f001cd1,15));
+    if(scenarioXor)m.preservedBits_.scenarioXorImmediate(2,8);
+    auto preservedWhy=(scenarioXor||restoreBranch)?std::string{}:m.preservedBits_.observe(w,[&](unsigned r){return m.cpu_.reg(UC_MIPS_REG_0+int(r));},
+      [&](uint32_t address){return m.riu_.preservedStoreKey(address);},
+      [&](uint32_t address,unsigned width,uint32_t unknown){
+        m.riu_.preparePreservedWrite(address,width,unknown);
+        m.event("preserved_control_write",address,width,unknown,"original unknown bits return to the same banked byte/bit identities; no decision or new hardware consumer authorized");
+      });
+    if(!preservedWhy.empty()) {
+      if(m.options_.explorePmNonresumeBranch && m.pmActivityScenario_.resolvePredicate(uint32_t(a),w,
+         m.cpu_.reg(UC_MIPS_REG_2),m.preservedBits_.exactFieldOrigin(2,0x1f001cd1,15,8))){
+        // Resolve only this comparison's result provenance. The engine still
+        // executes the original SLTIU, whose concrete representative yields
+        // zero consistently with the explicit !=8 assumption. No CPU write.
+        m.preservedBits_.seed(2,4,0xffffffffu,[](unsigned){return 0u;});
+        m.event("diagnostic_pm_nonresume_predicate",uint32_t(a),4,w,
+          "SYMBOLIC PATH ASSUMPTION ONLY: this activity observation !=8; hardware byte remains invalid; not verified cold boot; no register/PC/instruction modified");
+        preservedWhy.clear();
+      }
+      if(m.options_.exploratoryAudioNoAck &&
+         m.audioNoAck_.constrain(uint32_t(a),w,m.cpu_.reg(UC_MIPS_REG_2),m.cpu_.reg(UC_MIPS_REG_18),
+           m.preservedBits_.mask(18),m.preservedBits_.exactByteOrigin(2,a==0x804f7b10?0x1f225cb8:0x1f225ab4),m.cpu_.reg(UC_MIPS_REG_16))){
+        m.event("exploratory_audio_no_ack_predicate",uint32_t(a),4,w,
+          "HYPOTHESIS only: original comparison constrained ack!=E3; observed placeholder is INVALID, reply bits remain unknown; no register/PC/firmware modification");
+        preservedWhy.clear();
+      }
+    }
+    if(!preservedWhy.empty()) {
+      auto op=w>>26;
+      auto target=(m.cpu_.reg(UC_MIPS_REG_0+int((w>>21)&31))+uint32_t(int32_t(int16_t(w))))&0x1fffffff;
+      m.stop(preservedWhy,op>=32 && op<=43?target:0);return true;
+    }
+  }
+  if(m.options_.explorePmNonresumeBranch && m.pmActivityScenario_.observeBranch(uint32_t(a),w,
+      m.cpu_.reg(UC_MIPS_REG_2),m.preservedBits_.mask(2)))
+    m.event("diagnostic_pm_nonresume_branch",uint32_t(a),4,w,
+      "original BEQ follows assumed non-resume predicate to 80469CB8; no hardware marker produced; diagnostic application path only");
+  return false;
+}
+void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   if (m.replayingTlb_) return;   // save-state TLB replay executes synthetic MIPS code: no board side effects
+  if (m.dispatches_ >= m.hookLimit_) { m.budgetStop_ = true; uc_emu_stop(m.cpu_.handle); return; }
+  ++m.sideEffectGen_;            // the full hook may emit events/probes: never part of a skippable loop
+  m.prevPc_ = uint32_t(a);
   // Save state: capture BEFORE this instruction is dispatched so a resumed run re-enters exactly here.
   if (!m.options_.saveState.empty() && !m.snapshotWritten_ && m.dispatches_ >= m.options_.saveStateAt) {
     if (!m.snapshotFirstWanted_) m.snapshotFirstWanted_ = m.dispatches_ + 1;
@@ -666,8 +775,12 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   if(m.options_.exploratoryFetchRevisionByte>=0 && a==0x805f4b44)
     m.event("guest_fetch_parameter",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_16),
       "original caller reached selected branch join; no PC change or parameter override");
-  if (m.options_.cp0Timer && m.virtualTime_.countDelta(m.dispatches_))
-    m.cpu_.tickCount(m.virtualTime_.countDelta(m.dispatches_));
+  if (m.options_.cp0Timer) {
+    uint32_t wt = 0;
+    const uint32_t pp = uint32_t(a) & 0x1fffffff;
+    if (uint64_t(pp) + 4 <= m.dramBacking_.size()) std::memcpy(&wt, m.dramBacking_.data() + pp, 4); else m.cpu_.read(pp, &wt, 4);
+    m.tickInstr(wt);
+  }
   if (m.options_.cp0Timer && a == 0x803b0180) {
     ++m.timerEntries_;
     m.event("exception_vector", uint32_t(a), 0, 0,
@@ -747,11 +860,7 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
       "original wait returns remaining pulse count; zero means completed, nonzero means original timer timeout");
   // Repeated polling still executes every instruction and increments its hit
   // count. Only first visits need the ordered-set lookup/insertion.
-  auto& visits=m.pcHits_[uint32_t(a)];
-  if(++visits==1)m.coverage_.insert(uint32_t(a));
-  m.history_.push_back(uint32_t(a));
-  if (m.history_.size() > 64)
-    m.history_.pop_front();
+  m.recordPc(uint32_t(a));
   if (a == 0x81000000)
     m.stage2Reached_ = true;
   if (a == 0x81000480 || a == 0x81004f08)
@@ -793,100 +902,8 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   }
   // Runtime history is bounded; retain thousands of instructions without a
   // 90-million-line trace. RA/SP are call context observations, not an unwind.
-  if (a >= 0x803b0180 && a < 0x806b8ce0) {
-    m.recentInstructions_.push_back(
-        {m.dispatches_, uint32_t(a), w, m.cpu_.reg(UC_MIPS_REG_RA), m.cpu_.reg(UC_MIPS_REG_SP)});
-    if (m.recentInstructions_.size() > 4096)
-      m.recentInstructions_.pop_front();
-  }
-  if (m.options_.diagnosticHtotalBranchJoin && a == HtotalBranchJoin::branch && !m.stopped_ &&
-      (m.unknownObservations_.registerUnknown(7) || m.preservedBits_.mask(7)) &&
-      !m.unknownObservations_.registerUnknown(5) && !m.preservedBits_.mask(5) &&
-      m.applyHtotalBranchJoin())
-    return;
-  if (m.options_.deferDiagnosticReads) {
-    auto why = m.unknownObservations_.observe(
-        uint32_t(a), w, [&](unsigned i) { return m.cpu_.reg(UC_MIPS_REG_0 + int(i)); });
-    if (!why.empty()) {
-      m.event("unknown_observation_use", uint32_t(a), 4, w, why);
-      auto op = w >> 26;
-      auto address = (m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 21) & 31)) + uint32_t(int32_t(int16_t(w)))) & 0x1fffffff;
-      m.stop(why, op >= 32 && op <= 38 ? address : 0);
-      return;
-    }
-    if(a==0x80503828 && w==0xa4a46cbc && m.options_.exploratoryCombRestore) {
-      // HAL_AVD_COMB_Set3dCombSpeed: SH duplicates the nibble, SB restores the original low byte.
-      // Both instructions and the whole 0x58-byte function are verified against the original image.
-      std::vector<uint8_t> code(0x58);
-      m.cpu_.read(0x005037e0, code.data(), code.size());
-      uint32_t next = 0;
-      m.cpu_.read(0x0050382c, &next, 4);
-      if (sha256(code) == "98d17c412845002a953b5e10e3c10f67670f739d504546c6f1f0c25d90404500" && next == 0xa0a66cbc) {
-        auto target = (m.cpu_.reg(UC_MIPS_REG_5) + 0x6cbc) & 0x1fffffff;
-        m.riu_.beginCombRestoreInvalidLow(target, m.preservedBits_.mask(4) & 0xffff, 0x80503828, 0x8050382c);
-      }
-    }
-    if(a==0x805f883c && w==0xa4820000 && m.cpu_.reg(UC_MIPS_REG_31)==0x803c69f8) {
-      auto target=m.cpu_.reg(UC_MIPS_REG_4)&0x1fffffff;
-      m.riu_.beginCombRestore(target,m.preservedBits_.mask(2)&0xffff);
-    }
-    // DIAGNOSTIC restore-by-identity branch in the original SerFlash write routine: 8053CB7C..CB80 tests the saved
-    // copy of ISP register BF0011C8 bit 2; both arms (8053CB94..CB9C clears it, 8053CBE8..CBF4 sets it) rewrite that bit
-    // to exactly the value tested. The path consistent with the representative value is executed and the stored bit is
-    // relabelled unknown with its original identity at the join 8053CBA4.
-    bool restoreBranch = false;
-    if (m.options_.diagnosticRestoreByIdentityBranch && a == 0x8053cb80 && w == 0x14400017) {
-      std::vector<uint8_t> code(0x454);
-      m.cpu_.read(0x0053c914, code.data(), code.size());
-      restoreBranch = sha256(code) == "f196f19f68c656f8c079385b51e73ee725324ff4b6f2b012fa25c61bad11afad" &&
-                      m.preservedBits_.exactFieldOrigin(2, m.riu_.preservedStoreKey(0x1f0011c8), 4);
-      m.event(restoreBranch ? "diagnostic_restore_by_identity_branch" : "diagnostic_restore_by_identity_branch_refused", uint32_t(a), 4, w,
-              "DIAGNOSTIC ONLY: both arms rewrite ISP 1C8 bit2 to the tested value; representative path executed, bit relabelled unknown at the join");
-    }
-    if (m.options_.diagnosticRestoreByIdentityBranch && a == 0x8053cba4 && m.restoreBranchSeen_) {
-      m.riu_.forgetBits(0x1f0011c8, 4);
-      m.restoreBranchSeen_ = false;
-    }
-    if (restoreBranch) m.restoreBranchSeen_ = true;
-    const bool scenarioXor=m.options_.explorePmNonresumeBranch &&
-      m.pmActivityScenario_.xorPredicate(uint32_t(a),w,m.cpu_.reg(UC_MIPS_REG_2),
-        m.preservedBits_.exactFieldOrigin(2,0x1f001cd1,15));
-    if(scenarioXor)m.preservedBits_.scenarioXorImmediate(2,8);
-    auto preservedWhy=(scenarioXor||restoreBranch)?std::string{}:m.preservedBits_.observe(w,[&](unsigned r){return m.cpu_.reg(UC_MIPS_REG_0+int(r));},
-      [&](uint32_t address){return m.riu_.preservedStoreKey(address);},
-      [&](uint32_t address,unsigned width,uint32_t unknown){
-        m.riu_.preparePreservedWrite(address,width,unknown);
-        m.event("preserved_control_write",address,width,unknown,"original unknown bits return to the same banked byte/bit identities; no decision or new hardware consumer authorized");
-      });
-    if(!preservedWhy.empty()) {
-      if(m.options_.explorePmNonresumeBranch && m.pmActivityScenario_.resolvePredicate(uint32_t(a),w,
-         m.cpu_.reg(UC_MIPS_REG_2),m.preservedBits_.exactFieldOrigin(2,0x1f001cd1,15,8))){
-        // Resolve only this comparison's result provenance. The engine still
-        // executes the original SLTIU, whose concrete representative yields
-        // zero consistently with the explicit !=8 assumption. No CPU write.
-        m.preservedBits_.seed(2,4,0xffffffffu,[](unsigned){return 0u;});
-        m.event("diagnostic_pm_nonresume_predicate",uint32_t(a),4,w,
-          "SYMBOLIC PATH ASSUMPTION ONLY: this activity observation !=8; hardware byte remains invalid; not verified cold boot; no register/PC/instruction modified");
-        preservedWhy.clear();
-      }
-      if(m.options_.exploratoryAudioNoAck &&
-         m.audioNoAck_.constrain(uint32_t(a),w,m.cpu_.reg(UC_MIPS_REG_2),m.cpu_.reg(UC_MIPS_REG_18),
-           m.preservedBits_.mask(18),m.preservedBits_.exactByteOrigin(2,a==0x804f7b10?0x1f225cb8:0x1f225ab4),m.cpu_.reg(UC_MIPS_REG_16))){
-        m.event("exploratory_audio_no_ack_predicate",uint32_t(a),4,w,
-          "HYPOTHESIS only: original comparison constrained ack!=E3; observed placeholder is INVALID, reply bits remain unknown; no register/PC/firmware modification");
-        preservedWhy.clear();
-      }
-    }
-    if(!preservedWhy.empty()) {
-      auto op=w>>26;
-      auto target=(m.cpu_.reg(UC_MIPS_REG_0+int((w>>21)&31))+uint32_t(int32_t(int16_t(w))))&0x1fffffff;
-      m.stop(preservedWhy,op>=32 && op<=43?target:0);return;
-    }
-  }
-  if(m.options_.explorePmNonresumeBranch && m.pmActivityScenario_.observeBranch(uint32_t(a),w,
-      m.cpu_.reg(UC_MIPS_REG_2),m.preservedBits_.mask(2)))
-    m.event("diagnostic_pm_nonresume_branch",uint32_t(a),4,w,
-      "original BEQ follows assumed non-resume predicate to 80469CB8; no hardware marker produced; diagnostic application path only");
+  if (a >= kFastBase && a < kFastEnd) m.pushRecent(uint32_t(a), w); else m.shadowValid_ = false;
+  if (observeBlock(m, a, w)) return;
   auto op = w >> 26;
   if ((op >= 32 && op <= 38) || (op >= 40 && op <= 43) || (op == 46)) {
     auto rs = (w >> 21) & 31;
@@ -927,6 +944,263 @@ void Msd309Machine::codeHook(uc_engine *, uint64_t a, uint32_t, void *p) {
   if (m.options_.breakpoint && a == m.options_.breakpoint)
     m.stop("PC breakpoint");
 }
+void Msd309Machine::recordPc(uint32_t a) {
+  if (a >= kFastBase && a < kFastEnd) {
+    auto &c = pcHitsFast_[(a - kFastBase) >> 2];
+    if (++c == 1) coverage_.insert(a);   // idempotent: after a restore the canonical map may already hold this PC
+  } else {
+    auto &v = pcHits_[a];
+    if (++v == 1) coverage_.insert(a);
+  }
+  histRing_[histPushes_ & 63] = a;
+  ++histPushes_;
+}
+// Conservative: true when executing this word may change $29 (sp) or $31 (ra).
+static inline bool mayWriteSpOrRa(uint32_t w) {
+  unsigned op = w >> 26, rt = (w >> 16) & 31, rd = (w >> 11) & 31;
+  return op == 3 || op == 1 || rt == 29 || rt == 31 || rd == 29 || rd == 31;
+}
+void Msd309Machine::pushRecent(uint32_t a, uint32_t w) {
+  // RA/SP as seen before this instruction: re-read only after a host register write, a restore, or an instruction that may have changed them.
+  if (!shadowValid_ || shadowGen_ != cpu_.writeGen || mayWriteSpOrRa(prevWord_)) {
+    shadowRa_ = cpu_.reg(UC_MIPS_REG_RA);
+    shadowSp_ = cpu_.reg(UC_MIPS_REG_SP);
+    shadowValid_ = true;
+    shadowGen_ = cpu_.writeGen;
+  }
+  recentRing_[recentPushes_ & 4095] = {dispatches_, a, w, shadowRa_, shadowSp_};
+  ++recentPushes_;
+  prevWord_ = w;
+}
+void Msd309Machine::flushStats() const {
+  for (size_t i = 0; i < pcHitsFast_.size(); ++i)
+    if (pcHitsFast_[i]) { pcHits_[kFastBase + uint32_t(i * 4)] += pcHitsFast_[i]; pcHitsFast_[i] = 0; }
+  history_.clear();
+  uint64_t n = std::min<uint64_t>(histPushes_, 64);
+  for (uint64_t k = histPushes_ - n; k < histPushes_; ++k) history_.push_back(histRing_[k & 63]);
+  recentInstructions_.clear();
+  n = std::min<uint64_t>(recentPushes_, 4096);
+  for (uint64_t k = recentPushes_ - n; k < recentPushes_; ++k) recentInstructions_.push_back(recentRing_[k & 4095]);
+  recentMmio_ = recentMmioBase_;
+  n = std::min<uint64_t>(mmioPushes_, 256);
+  for (uint64_t k = mmioPushes_ - n; k < mmioPushes_; ++k) {
+    const auto &r = mmioRing_[k & 255];
+    std::string line;
+    formatEventLine(line, r.tick, r.pc, r.kind.view(), r.address, r.width, r.value, r.ra, r.sp, r.detail.view(), virtualTime_.cpi() != 1, virtualTime_.cycles(r.tick));
+    recentMmio_.push_back(std::move(line));
+  }
+  while (recentMmio_.size() > 256) recentMmio_.pop_front();
+}
+void Msd309Machine::importStats() {
+  pcHitsFast_.assign((kFastEnd - kFastBase) / 4, 0);
+  histPushes_ = 0;
+  for (auto pc : history_) { histRing_[histPushes_ & 63] = pc; ++histPushes_; }
+  recentRing_.resize(4096);
+  mmioRing_.resize(256);
+  recentMmioBase_ = recentMmio_;
+  mmioPushes_ = 0;
+  recentPushes_ = 0;
+  for (auto &i : recentInstructions_) { recentRing_[recentPushes_ & 4095] = i; ++recentPushes_; }
+  shadowValid_ = false;
+}
+void Msd309Machine::buildSpecialPcs() {
+  specialPc_.assign(((kFastEnd - kFastBase) / 4 + 7) / 8, 0);
+  auto mark = [&](uint32_t pc) {
+    if (pc >= kFastBase && pc < kFastEnd && !(pc & 3)) { size_t i = (pc - kFastBase) >> 2; specialPc_[i >> 3] |= uint8_t(1u << (i & 7)); }
+  };
+  // Every instruction address the full hook compares against a constant (superset: option-guarded ones are marked regardless of options).
+  static constexpr uint32_t fixed[] = {
+      0x803b0180, 0x803b0600, 0x80539ce4, 0x805f8300, 0x805f833c, 0x805e3e58, 0x8053dbe0, 0x8053dd14,   // exception vector, milestones, GOP/scaler/DLC/SPI
+      0x8050962c, 0x804f2998, 0x80509d54, 0x80509d68,                                                       // VIF control flow probes
+      0x80404bec, 0x8046a190, 0x80469e38,                                                                   // PM application entries
+      0x804e0d48, 0x804e0dc4, 0x80536274, 0x80522d5c, 0x80520a84, 0x8040440c,                               // OSD probes
+      0x804f7a60, 0x804f7a84, 0x804f7b58, 0x804f7b8c,                                                       // audio ack probes
+      0x805f4b18, 0x805f4b44, 0x80538944, 0x8053a43c, 0x803c8250, 0x803c8424, 0x805d819c, 0x80545a40, 0x805f2518,
+      0x80503828, 0x805f883c, 0x8053cb80, 0x8053cba4,                                                       // comb / restore-by-identity diagnostics
+      0x80404bfc, 0x80404c04, 0x8046a198,                                                                   // PM non-resume scenario
+      HtotalBranchJoin::branch};
+  for (auto pc : fixed) mark(pc);
+  for (auto pc : ZuiFlow::watchAddresses) mark(pc);
+  if (options_.breakpoint) mark(options_.breakpoint);
+  for (size_t i = 0; i < watchSet_.size() * 8; ++i)   // --watch-pc-regs
+    if (watchSet_[i >> 3] >> (i & 7) & 1) mark(0x80000000u + uint32_t(i) * 4);
+  allSlow_ = options_.traceInstructions || !options_.watchData.empty() || !options_.historyPcs.empty() || dramBacking_.empty();
+}
+void Msd309Machine::resyncTicks() {
+  const uint32_t cause = cpu_.reg(UC_MIPS_REG_CP0_CAUSE);
+  tickOff_ = (cause >> 27) & 1;
+  const uint32_t dist = cpu_.reg(UC_MIPS_REG_CP0_COMPARE) - cpu_.reg(UC_MIPS_REG_CP0_COUNT);
+  tickRemaining_ = dist ? dist : (uint64_t(1) << 32);   // Compare == Count: no crossing until Count wraps all the way round
+  tickSynced_ = true;
+}
+// The engine adds `delta` to Count before every instruction and raises the timer interrupt on the tick that reaches Compare. Here the ticks are
+// accumulated and handed over in one call exactly when that crossing tick happens, before the guest reads/writes Count/Compare/Cause, and at the
+// host's observation points (flushTicks), which gives the same Count at every point the guest or the host can see it.
+void Msd309Machine::tickInstr(uint32_t w) {
+  if (!tickSynced_) resyncTicks();
+  const uint32_t delta = virtualTime_.countDelta(dispatches_);
+  if (!tickOff_ && delta) {
+    if (tickRemaining_ <= delta || pendingTicks_ + delta >= (uint64_t(1) << 30)) {
+      const bool crossing = tickRemaining_ <= delta;
+      cpu_.tickCount(uint32_t(pendingTicks_ + delta));
+      pendingTicks_ = 0;
+      if (crossing) tickSynced_ = false; else tickRemaining_ -= delta;
+    } else {
+      tickRemaining_ -= delta;
+      pendingTicks_ += delta;
+    }
+  }
+  const unsigned op = w >> 26;
+  if (op == 16) {
+    const unsigned rs = (w >> 21) & 31, rd = (w >> 11) & 31;
+    if (rs == 0 && rd == 9) flushTicks();                                   // MFC0 Count
+    else if (rs == 4 && (rd == 9 || rd == 11 || rd == 13)) { flushTicks(); tickSynced_ = false; }   // MTC0 Count/Compare/Cause
+  } else if (op == 31 && (w & 63) == 59 && ((w >> 11) & 31) == 2) flushTicks();   // RDHWR CC
+}
+// Exact busy-wait skipping. A loop whose complete register state (GPRs, HI, LO) is identical at two consecutive visits of its head, with no store,
+// device access, event, CP0/FP operation or special address in between, is a pure function of RAM it only reads: the next iteration is identical
+// again until an interrupt or a host service point intervenes. Whole iterations are then accounted for without being executed: dispatch counter,
+// CP0 Count, per-PC hit counts, PC history and recent-instruction ring are advanced exactly as if they had run. The skip never crosses the next
+// timer-compare crossing, a multiple of 0x4000 dispatches (remote-key / frame-history service points) or the dispatch budget.
+bool Msd309Machine::loopSkipVisit(uint32_t a) {
+  auto &c = loopTab_[(a >> 2) & 255];
+  const uint64_t d = dispatches_;
+  if (c.pc == a) {
+    uint64_t delta = d - c.lastDispatch;
+    if (delta == c.period && delta <= 64) ++c.conf;
+    else { c.period = delta <= 64 ? uint32_t(delta) : 0; c.conf = 0; c.haveRegs = false; }
+  } else {
+    c = LoopCand{};
+    c.pc = a;
+  }
+  c.lastDispatch = d;
+  if (c.period == 0 || c.conf < 1) return false;
+  if (c.cooldown) { --c.cooldown; return false; }
+  std::array<uint32_t, 34> regs;
+  for (int i = 0; i < 32; ++i) regs[size_t(i)] = cpu_.reg(UC_MIPS_REG_0 + i);
+  regs[32] = cpu_.reg(UC_MIPS_REG_HI);
+  regs[33] = cpu_.reg(UC_MIPS_REG_LO);
+  const bool same = c.haveRegs && c.gen == sideEffectGen_ && c.regs == regs;
+  const uint64_t flashPerIteration = flashReads_ - c.flashReads;
+  c.regs = regs; c.haveRegs = true; c.gen = sideEffectGen_; c.flashReads = flashReads_;
+  if (!same) {
+    c.fails = std::min<uint32_t>(c.fails + 1, 12);
+    c.cooldown = std::min<uint32_t>(1u << c.fails, 4096);
+    return false;
+  }
+  c.fails = 0;
+  const uint32_t L = c.period;
+  if (histPushes_ < L || recentPushes_ < L || hookLimit_ <= d + 1) return false;
+  uint32_t seq[64];
+  for (uint32_t j = 0; j < L; ++j) {
+    seq[j] = histRing_[(histPushes_ - L + j) & 63];
+    if (seq[j] < kFastBase || seq[j] >= kFastEnd) return false;
+  }
+  if (seq[0] != a) return false;
+  // ---- how many whole iterations may be skipped ----
+  uint64_t nMax = hookLimit_ - d - 1;
+  nMax = std::min<uint64_t>(nMax, ((d | 0x3fff) + 1) - d - 1);
+  const uint32_t cpi = virtualTime_.cpi();
+  if (options_.cp0Timer) {
+    flushTicks();
+    const uint32_t cause = cpu_.reg(UC_MIPS_REG_CP0_CAUSE);
+    if (!(cause & (1u << 27))) {   // Cause.DC clear: Count runs
+      const uint32_t dist = cpu_.reg(UC_MIPS_REG_CP0_COMPARE) - cpu_.reg(UC_MIPS_REG_CP0_COUNT);
+      if (dist) {
+        const uint64_t allowedTicks = dist - 1;   // the crossing tick itself must happen in normal execution
+        uint64_t bound;
+        if (cpi == 1) bound = 2 * (allowedTicks + (d / 2)) + 1 - d;   // ticks of instructions d+1..d+n: floor((d+n)/2) - floor(d/2)
+        else if (cpi / 2 == 0) bound = UINT64_MAX;
+        else bound = allowedTicks / (cpi / 2);
+        if (allowedTicks + (d / 2) < (d / 2)) bound = UINT64_MAX;   // overflow guard
+        nMax = std::min<uint64_t>(nMax, bound);
+      }
+    }
+  }
+  const uint64_t K = nMax / L;
+  if (K < 2) return false;
+  const uint64_t n = K * L;
+  // ---- apply: counters ----
+  uint64_t ticks = 0;
+  if (options_.cp0Timer) ticks = cpi == 1 ? (d + n) / 2 - d / 2 : n * (cpi / 2);
+  // recent-instruction words / registers of the iteration just executed
+  Instruction it[64];
+  for (uint32_t j = 0; j < L; ++j) it[j] = recentRing_[(recentPushes_ - L + j) & 4095];
+  const uint64_t H0 = histPushes_, R0 = recentPushes_;
+  dispatches_ += n;
+  if (ticks) { cpu_.tickCount(uint32_t(ticks)); tickSynced_ = false; }
+  flashReads_ += K * flashPerIteration;
+  for (uint32_t j = 0; j < L; ++j) pcHitsFast_[(seq[j] - kFastBase) >> 2] += K;
+  for (uint64_t q = (n > 64 ? n - 64 : 0); q < n; ++q) histRing_[(H0 + q) & 63] = seq[q % L];
+  for (uint64_t q = (n > 4096 ? n - 4096 : 0); q < n; ++q) {
+    auto &e = recentRing_[(R0 + q) & 4095];
+    e = it[q % L];
+    e.tick = d + q + 1;
+  }
+  histPushes_ = H0 + n;
+  recentPushes_ = R0 + n;
+  shadowValid_ = false;
+  skippedInstructions_ += n;
+  // the visit bookkeeping now refers to the new dispatch count
+  c.lastDispatch = dispatches_;
+  return true;
+}
+// Instruction hook. Non-special instructions in the firmware image take a lean path that performs exactly the same observable bookkeeping as
+// codeHookFull (counters, coverage, PC history, recent instructions, timer ticks, provenance guards) without the address-specific probes.
+void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
+  auto &m = *static_cast<Msd309Machine *>(p);
+  if (m.replayingTlb_) return;
+  uint32_t idx = (uint32_t(a) - kFastBase) >> 2;
+  if (m.allSlow_ || uint32_t(a) < kFastBase || uint32_t(a) >= kFastEnd || (m.specialPc_[idx >> 3] >> (idx & 7) & 1) ||
+      (!m.options_.saveState.empty() && !m.snapshotWritten_)) {
+    codeHookFull(uc, a, sz, p);
+    return;
+  }
+  if (m.dispatches_ >= m.hookLimit_) { m.budgetStop_ = true; uc_emu_stop(m.cpu_.handle); return; }
+  if (uint32_t(a) <= m.prevPc_ && !m.options_.noLoopSkip) m.loopSkipVisit(uint32_t(a));   // backward transfer: possible busy-wait loop head
+  m.prevPc_ = uint32_t(a);
+  ++m.dispatches_;
+  if ((m.dispatches_ & 0x3fff) == 0 && (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty())) m.serviceVirtualRemote();
+  if (m.options_.previewStore && (m.dispatches_ & 0xfffff) == 0) m.publishPreview();
+  else if (!m.options_.gopFrameHistory.empty() && (m.dispatches_ & 0x3fff) == 0) m.publishPreview();
+  m.recordPc(uint32_t(a));
+  const uint32_t observedPhysical = uint32_t(a) & 0x1fffffff;
+  const auto *bytes = m.dramBacking_.data() + observedPhysical;
+  uint32_t w = uint32_t(bytes[0]) | (uint32_t(bytes[1]) << 8) | (uint32_t(bytes[2]) << 16) | (uint32_t(bytes[3]) << 24);
+  if (m.options_.cp0Timer) m.tickInstr(w);
+  const unsigned op = w >> 26;
+  if (op >= 40 || op == 16 || (op >= 17 && op <= 19) || op == 49 || op == 50 || op == 53 || op == 54 || (op == 0 && ((w & 63) == 12 || (w & 63) == 13)))
+    ++m.sideEffectGen_;   // store / cache / CP0 / FP / syscall: an iteration containing one is not a pure loop
+  if (op == 16) {   // COP0: MTC0 to MMU registers, TLBWI/TLBWR (same code as the full hook)
+    if (((w >> 21) & 31) == 4 && (((w >> 11) & 31) <= 6 || ((w >> 11) & 31) == 10)) {
+      if ((w & 7) == 0) m.cp0Shadow_[(w >> 11) & 31] = m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31));
+      m.event("cp0_mmu_write", (w >> 11) & 31, 4, m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31)),
+              "original guest MTC0 MMU register; select " + std::to_string(w & 7));
+    }
+    if (w == 0x42000002) m.tlbInstalls_.push_back({m.cp0Shadow_[0], m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3]});
+    if (w == 0x42000006) m.tlbwrSeen_ = true;
+    if (w == 0x42000002 || w == 0x42000006) m.event("guest_tlb_write", uint32_t(a), 4, w, "original architectural TLB entry installation");
+  }
+  m.pushRecent(uint32_t(a), w);
+  const bool mem = (op >= 32 && op <= 38) || (op >= 40 && op <= 43) || op == 46;
+  uint32_t address = 0, ea = 0;
+  if (mem) {
+    ea = m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 21) & 31)) + uint32_t(int32_t(int16_t(w & 65535)));
+    address = ea & 0x1fffffff;
+  }
+  if (m.options_.deferDiagnosticReads) {
+    // Provenance guards: nothing to observe when no register holds an unknown value and the access cannot touch an unknown RAM byte.
+    bool quiet = !m.unknownObservations_.anyRegisterUnknown() && m.preservedBits_.quiet() &&
+                 (mem ? (m.unknownObservations_.memoryClean(ea, 4) && m.preservedBits_.memoryClean(ea, 4))
+                      : ((op < 32 && op != 31) || op == 47 || op == 51));
+    if (!quiet && observeBlock(m, a, w)) return;
+  }
+  if (mem) {
+    if (op < 40 && ((address >= 0x1fc00000 && address < 0x20000000) || (m.options_.candidateSpi && address >= 0x14000000 && address < 0x14800000)))
+      ++m.flashReads_;
+    if (op >= 40 && address < 0x08000000) ++m.dramWrites_;
+  }
+}
 void Msd309Machine::memoryHook(uc_engine *, uc_mem_type type, uint64_t a, int, int64_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   if (type == UC_MEM_READ && a >= 0x1fc00000 && a < 0x20000000)
@@ -943,7 +1217,7 @@ bool Msd309Machine::invalidHook(uc_engine *, uc_mem_type t, uint64_t a, int n, i
 }
 void Msd309Machine::interruptHook(uc_engine *, uint32_t n, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
-  auto last = m.history_.empty() ? 0 : m.history_.back();
+  auto last = m.lastHistoryPc();
   uint32_t words[4]{};
   m.cpu_.read(last & 0x1fffffff, words, 16);
   m.event("cpu_exception", last, 0, n,
@@ -1877,15 +2151,29 @@ int Msd309Machine::run() {
     throw std::runtime_error("save-state cannot be combined with --record-trace/--replay-trace");
   Sampler sampler;
   if (!options_.profile.empty()) sampler.start(500);
-  auto e = resumed_ ? cpu_.run(resumePc_, options_.limit > dispatches_ ? options_.limit - dispatches_ : 1)
-                    : cpu_.run(options_.stage2 ? 0x81000000 : 0xbfc00000, options_.limit);
+  // The dispatch budget is enforced by the hook itself (one callback per instruction instead of two: Unicorn's own count hook is not used).
+  hookLimit_ = options_.limit ? options_.limit : UINT64_MAX;
+  if (resumed_ && options_.limit && options_.limit <= dispatches_) hookLimit_ = dispatches_ + 1;   // an exhausted budget still executes one instruction
+  shadowValid_ = false;
+  std::unordered_map<uint32_t, uint64_t> pcBase;
+  if (std::getenv("MANTA_PC_DELTA")) { flushStats(); pcBase = pcHits_; }
+  auto e = resumed_ ? cpu_.run(resumePc_, 0) : cpu_.run(options_.stage2 ? 0x81000000 : 0xbfc00000, 0);
   while (!stopped_ && joinResume_) {
     // DIAGNOSTIC HTotal join: the hook stored the resume PC and stopped Unicorn.
     joinResume_ = false;
     if (dispatches_ >= options_.limit)break;
-    e = cpu_.run(joinResumePc_, options_.limit - dispatches_);
+    shadowValid_ = false;
+    e = cpu_.run(joinResumePc_, 0);
   }
   if (!options_.profile.empty()) sampler.stopAndWrite(options_.profile);
+  if (std::getenv("MANTA_PC_DELTA")) {
+    flushStats();
+    std::vector<std::pair<uint64_t, uint32_t>> v;
+    for (auto &kv : pcHits_) { auto it = pcBase.find(kv.first); uint64_t b = it == pcBase.end() ? 0 : it->second; if (kv.second > b) v.push_back({kv.second - b, kv.first}); }
+    std::sort(v.rbegin(), v.rend());
+    for (size_t i = 0; i < std::min<size_t>(v.size(), 40); ++i) std::fprintf(stderr, "pcdelta %08x %llu\n", v[i].second, (unsigned long long)v[i].first);
+  }
+  if (std::getenv("MANTA_LOOP_STATS")) { std::fprintf(stderr, "loop-skipped instructions: %llu of %llu\n", (unsigned long long)skippedInstructions_, (unsigned long long)dispatches_); }
   if (!stopped_) {
     blockingPc_ = cpu_.reg(UC_MIPS_REG_PC);
     reason_ = e == UC_ERR_OK ? "instruction budget exhausted" : uc_strerror(e);
@@ -2116,6 +2404,8 @@ void Msd309Machine::dumpGuestRanges() const {
   }
 }
 std::string Msd309Machine::summary() const {
+  flushStats();
+  const_cast<Msd309Machine *>(this)->flushTicks();
   std::ostringstream s;
   s << "{\n  \"mode\": \""
     << (options_.stage2 ? "diagnostic second-stage; reset initialization bypassed"
