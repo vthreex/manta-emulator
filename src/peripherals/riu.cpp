@@ -943,6 +943,12 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
               std::to_string(mask));
     return v;
   }
+  if (!known && zeroUnknownReads) {
+    ++zeroUnknownTotal;
+    if (zeroUnknownLog.size() < 4000 || zeroUnknownLog.count(a)) ++zeroUnknownLog[a];
+    event("read", a, n, 0, "HYPOTHESIS (diagnostic): unknown register read returns 0; not a measurement");
+    return 0;
+  }
   if (!known) {
     stopReason = "unmodeled MMIO read";
     event("blocked_read", a, n, v, "unknown reset/status bits; value is poison, execution stops");

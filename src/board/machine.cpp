@@ -433,6 +433,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     riu_.fiqChanged=[this]{updateIrqLines();};
     copro_.onReply=[this,hw]{riu_.fiqRaise(unsigned(hw));};
   }
+  riu_.zeroUnknownReads=o.exploratoryRiuZeroUnknown;
   if(o.exploratoryCopro){
     copro_.zeroUnknownReads=o.exploratoryCoproZeroUnknown;
     copro_.mailRead=[this](uint32_t a,uint8_t& v){return riu_.coproPeekByte(a,v);};
@@ -2686,6 +2687,11 @@ std::string Msd309Machine::summary() const {
   }
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
+  if(options_.exploratoryRiuZeroUnknown){
+    s<<",\n  \"diagnostic_riu_zero_unknown_reads\": {\"total\": "<<riu_.zeroUnknownTotal<<", \"addresses\": [";
+    bool f=true;for(auto& kv:riu_.zeroUnknownLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second<<"]";f=false;}
+    s<<"]}";
+  }
   if(options_.exploratoryCopro){
     s<<",\n  \"exploratory_copro\": {\"started\": "<<(copro_.started?"true":"false")<<", \"stopped\": "<<(copro_.stopped?"true":"false")
      <<", \"stop_reason\": \""<<jsonText(copro_.stopReason)<<"\", \"instructions\": "<<copro_.instructions()<<", \"pc\": \""<<hex(copro_.pc())

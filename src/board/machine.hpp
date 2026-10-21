@@ -85,6 +85,7 @@ struct Options {
   uint32_t exploratoryCoproWatch=0;      // diagnostic: report writes to this coprocessor-DRAM word
   std::string exploratoryCoproDumpStart; // write DRAM and the mailbox bytes to FILE / FILE.mail when the coprocessor is released (offline harness input)
   int exploratoryCoproMipsIrq=-1;       // EXPLORATORY: hardware interrupt index (FIQ bank 1/3: 32..63, 96..127) raised toward the MIPS when the coprocessor fires its reply mailbox; -1 = none
+  bool exploratoryRiuZeroUnknown=false;  // LABELLED HYPOTHESIS (diagnostic only): never-defined RIU registers read as 0 and are listed
   bool exploratoryCoproZeroUnknown=false; // LABELLED HYPOTHESIS: coprocessor registers with unknown semantics read as 0 (listed in the summary)
   std::string exploratoryUsbPendrive;   // EXPLORATORY: attach a USB mass-storage device (image file) to port 0 (peripherals/usb_host.hpp)
   bool exploratoryGeLine=false;   // EXPLORATORY: GE command 0x10 axis-aligned one-pixel line into format C (video/ge_line.hpp)

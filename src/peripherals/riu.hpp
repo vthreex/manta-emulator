@@ -435,6 +435,10 @@ public:
   // EXPLORATORY MIPS FIQ controller (opt-in with the coprocessor): pending bits for hardware interrupt banks 1 (32..63, status 1F2033B0/B4) and 3 (96..127,
   // status 1F2033B8/BC); a status write of 1s clears them (the original FIQ dispatcher 8060AA88 writes the status back, then 0). Masks are the guest's own
   // 1F203390/94 and 1F203398/9C words (bit set = masked); a mask the guest has not written counts as masked. Not a verified model of the real controller.
+  // LABELLED HYPOTHESIS (diagnostic exploration only): a read of a register nothing has defined returns 0 instead of stopping; every such address is listed.
+  bool zeroUnknownReads = false;
+  std::map<uint32_t, uint64_t> zeroUnknownLog;
+  uint64_t zeroUnknownTotal = 0;
   bool fiqModel = false;
   uint32_t fiqPending[4] = {0, 0, 0, 0};
   uint64_t fiqRaises = 0, fiqStatusReads = 0, fiqStatusWrites = 0, fiqLineChanges = 0;

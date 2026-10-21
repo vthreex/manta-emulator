@@ -72,3 +72,14 @@ functions (`0xBD6xx..0xBEAxx`) before a faithful JPD model is possible.
 
 The MIPS side, once the decoder reply arrives, continues into the ADC auto-calibration at `805E6238` (RIU bank `0x6500..65F5`, polls `65F5` bit 0 in a 0x28-iteration tuning loop) - a
 separate unmodelled hardware block, unrelated to the logo decode.
+
+## Past the ADC calibration: the logo's GE stretch (run z2, `--diagnostic-riu-zero-unknown-reads`, DIAGNOSTIC ONLY)
+- The ADC auto-calibration (`805E6238`, RIU `0x6500..65F5`) is passed with labelled reset-value hypotheses (`--exploratory-mmio-bits 1f2065xx:ff:00+init`; status bit `65F5.0` bracketed 0/1 - identical result);
+  the next unknown was the scaler read `1F205E34` (bank 0x10). `--diagnostic-riu-zero-unknown-reads` (opt-in, invalidates strict evidence) lets never-defined RIU registers read 0 and lists them
+  (z2: 18 distinct addresses, 178,047 reads, almost all `1F205E78` = the known sync-status accessor).
+- With that the MIPS reaches (dispatch 498,596,264) the guarded **GE stretch** command `0x8040` and stops there ("GE BitBlt stretch/filter/mode unsupported"). Decoded request:
+  source `0x027AA000` (= the coprocessor's *Output Mem* `0x827AA000`), pitch 1952, srcRect 970x535 (the decoder's scaled 970x540 logo), format 0xE -> format 0xE, destination `0x02D00000`
+  pitch 3840 (1920 px x 2 bytes), destRect (0,6)-(1919,1073). I.e. the original DISPLAY_LOGO path is: JPEG decoded by the JPD into the Output buffer -> GE stretch (x~1.98) into a 1920-wide
+  16-bit framebuffer -> GOP. The 1940x1080 JPEG becomes 970x540 (scale-down factor 2) and is then stretched back up with a 6-row top/bottom margin.
+- Missing for pixels: (1) JPD output (the Output buffer is all zeros without a JPD model), (2) GE stretch for format 0xE (probably packed YUV422; filter/phase unresolved, see ge-8040-register-spec.md),
+  (3) GOP scan-out of that format.
