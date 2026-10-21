@@ -179,7 +179,10 @@ private:
     bool toHost = (c[12] & 0x80) != 0;
     const uint8_t* cb = &c[15];
     csStatus_ = 0; residue_ = 0;
-    char buf[64]; std::snprintf(buf, sizeof buf, "scsi %02x len=%u %s", cb[0], len, toHost ? "in" : "out"); log.push_back(buf);
+    char buf[96];
+    if (cb[0] == 0x28 || cb[0] == 0x2a) std::snprintf(buf, sizeof buf, "scsi %02x lba=%u blocks=%u", cb[0], uint32_t(cb[2] << 24 | cb[3] << 16 | cb[4] << 8 | cb[5]), uint32_t(cb[7] << 8 | cb[8]));
+    else std::snprintf(buf, sizeof buf, "scsi %02x len=%u %s", cb[0], len, toHost ? "in" : "out");
+    if (log.size() < 600) log.push_back(buf);
     switch (cb[0]) {
     case 0x00: if (len) fail(5, 0x24, len); else queueStatus(); break;   // TEST UNIT READY
     case 0x03: {                                                           // REQUEST SENSE
