@@ -64,3 +64,10 @@ Note: `--diagnostic-riu-zero-unknown-reads` must keep the USB line-state hypothe
 The original MVOP HAL (writes from `80545xxx`) programs RIU `0x1F202884/88` = frame base / 8 (`0x00646000` -> `0x03230000`, the framebuffer the GE stretch just filled), `0x1F202894` = width (1904), `0x1F202898` = height (1050).
 The preview shows that framebuffer (assumed packed YUV 4:2:2, BT.601 full range, nearest scaled to the canvas) behind the GOP layers; with `--exploratory-video-plane black --exploratory-gop-black-colorkey` (a labelled hypothesis: opaque black OSD pixels are see-through)
 the opened photo appears behind the browser: `evidence/usb-photo-mvop-plane-diagnostic.png` (Test_Pattern.jpg: JPEG decoded by the JPD model, stretched by the original GE commands). No MVOP enable bit is modelled, so a stale picture can remain after leaving the viewer.
+
+## Videos on the stick (session 12, exploratory probe, nothing plays yet)
+Stick with `/MOVIE/*` clips (320x240, 3 s, ffmpeg test sources), media browser MOVIE tab, snapshot flow `copro-ns-vid2` -> `vid2-drivelist` (stick image is part of the snapshot fingerprint: a new stick needs new snapshots).
+* All files are listed. Pressing OK on a file: **H.264/AAC `.mp4` is accepted** (red check mark, no popup); **XviD `.avi`, DivX `.avi`, H.264 `.mkv`, MPEG-2 `.mpg` (MP3/MP2 audio) show the firmware's own "Unsupported File" popup** (`804E4EA0`, called from `804E380C`).
+* With watches on `MDrv_MVD_Init` (`8051145C`), `HAL_MVD_LoadCode` (`80513650`), `MDrv_MVD_SetCodecInfo` (`80512C10`) and "Enter Mvd Page" (`80461858`): **none runs** in any case, so the verdict is software only, before any decoder hardware. The mp4 mark also starts no decoder; the playback key (PLAY) is not identified, a second OK did nothing visible.
+* Unknown: why the other containers/audio are refused (candidates: the MP3/MP2 audio, the probe reading the stick). Next cheap test: the same clips with AAC or no audio; then find the PLAY key.
+* The firmware contains MVD (`MDrv_MVD_*`, own firmware via `HAL_MVD_LoadCode`) and HVD (H.264) drivers; neither decoder is modelled.
