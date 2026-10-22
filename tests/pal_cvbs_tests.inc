@@ -45,3 +45,20 @@ void palCvbsTests(){
     require(!m.hsyncLocked&&!m.vsyncSeen&&!m.burstPresent,"open input: no sync, no burst");
   }
 }
+void palDecodeTests(){
+  using namespace manta::cvbs;
+  PalSource src;
+  const auto f=decodePalFrame(src,0);
+  require(f.width==720&&f.height==576&&f.bgra.size()==720*576,"decoded PAL frame is 720x576");
+  // 8 colour bars across the active picture; sample the centre of each bar on a mid picture row
+  auto px=[&](unsigned bar){const unsigned x=unsigned((bar+0.5)*720/8);return f.bgra[size_t(300)*720+x];};
+  auto ch=[](uint32_t p,int shift){return int((p>>shift)&255);};
+  struct Exp{int r,g,b;};
+  // EBU 100/0/75/0 bars, gamma-corrected values; tolerance generous: simple PAL decoder with box filters on a 27 MHz grid
+  const Exp want[8]={{255,255,255},{191,191,0},{0,191,191},{0,191,0},{191,0,191},{191,0,0},{0,0,191},{0,0,0}};
+  for(unsigned b=0;b<8;++b){
+    const auto p=px(b);
+    const int dr=std::abs(ch(p,16)-want[b].r),dg=std::abs(ch(p,8)-want[b].g),db=std::abs(ch(p,0)-want[b].b);
+    require(dr<40&&dg<40&&db<40,"decoded colour bar matches the EBU bar within tolerance");
+  }
+}

@@ -2912,6 +2912,7 @@ int main() {
     virtualTimeTests();
     spiTests();
     palCvbsTests();
+    palDecodeTests();
     spiNorProgramTests();
     usbHostTests();
     usbNoDeviceTests();

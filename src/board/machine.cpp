@@ -83,7 +83,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.exploratoryAvdMcuStartup=o.exploratoryAvdMcuStartup;
   riu_.exploratoryAvdSuspendedBoundary=o.exploratoryAvdSuspendedBoundary;
   if(o.exploratoryAvdSharedRun && (!o.exploratoryAvdMcuStartup || !o.symbolicInit || !o.deferDiagnosticReads ||
-      !o.avdDivider || o.avdDivider>4096 || !o.avdBudget || o.avdBudget>100000000))
+      !o.avdDivider || o.avdDivider>4096 || !o.avdBudget || o.avdBudget>100000000000ull))
     throw std::runtime_error("AVD shared execution requires guarded uploaded startup, explicit bounded scheduling and unknown-value guards");
   if(o.diagnosticAvdDeferredStartup && !o.exploratoryAvdSharedRun)
     throw std::runtime_error("AVD unresolved startup-write retention requires the separate shared-run diagnostic; no effects/reset values inferred");
@@ -170,6 +170,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     const unsigned linesA=measured.linesPerFrame/2,linesB=measured.linesPerFrame-linesA;
     riu_.configureExploratoryAtvSignal(htotal,linesA,linesB,20000);
     atvMeasurement_=measured;
+    if(o.exploratoryAtvPicture)atvPicture_=cvbs::decodePalFrame(pal,0);
   }
   if(o.exploratoryAvdNoise>=0){
     if(!o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
@@ -2425,6 +2426,19 @@ void Msd309Machine::publishPreview() const {
         frame.label+=" | EXPLORATORY MVOP VIDEO PLANE "+hex(base)+" "+std::to_string(w)+"x"+std::to_string(h)+" (YUV422 assumed; not verified panel output)";
       }
     }
+  }
+  if(options_.exploratoryAtvPicture && !atvPicture_.bgra.empty() && !frame.empty()){
+    // EXPLORATORY, NOT panel output: the PAL test signal decoded by the host-side decoder model, stretched to the preview canvas behind the OSD.
+    frame.planeBgra.assign(size_t(frame.width)*frame.height,0xff000000u);
+    for(uint32_t y=0;y<frame.height;++y){
+      const uint32_t sy=std::min<uint64_t>(uint64_t(y)*atvPicture_.height/frame.height,atvPicture_.height-1);
+      for(uint32_t x=0;x<frame.width;++x){
+        const uint32_t sx=std::min<uint64_t>(uint64_t(x)*atvPicture_.width/frame.width,atvPicture_.width-1);
+        frame.planeBgra[size_t(y)*frame.width+x]=atvPicture_.bgra[size_t(sy)*atvPicture_.width+sx];
+      }
+    }
+    { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }
+    frame.label+=" | EXPLORATORY ATV PICTURE: generated PAL colour bars decoded by a host-side decoder model, stretched; NOT scaler/panel output";
   }
   if(!options_.videoPlane.empty()){
     // EXPLORATORY: the emulator has no video plane. Pixels no enabled GOP window provides (or whose ARGB1555 alpha bit is clear) are shown in a

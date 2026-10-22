@@ -90,6 +90,7 @@ struct Options {
   int exploratoryCoproMipsIrq=-1;       // EXPLORATORY: hardware interrupt index (FIQ bank 1/3: 32..63, 96..127) raised toward the MIPS when the coprocessor fires its reply mailbox; -1 = none
   bool exploratoryGeYuvStretch=false;   // EXPLORATORY: nearest stretch for packed YUV422 (GE format 0xE -> 0xE); needs --exploratory-ge-uniform-stretch
   bool exploratoryBdmaCrcMiu=false;     // EXPLORATORY: BDMA CRC32 with a DRAM source (mode 0x330, inferred)
+  bool exploratoryAtvPicture=false;     // EXPLORATORY preview only: decoded PAL test picture as the video plane (needs --exploratory-atv-signal pal)
   bool exploratoryAtvSignalPal=false;   // EXPLORATORY: PAL input signal for the AVD MCU (see docs/atv-signal-model.md); needs the AVD shared run and no absent-input hypotheses
   uint64_t diagnosticRiuWriteLogFrom=UINT64_MAX;   // diagnostic: list guest-written RIU addresses since this cycle count
   std::string diagnosticDramDumpFile; uint32_t diagnosticDramDumpAddr=0, diagnosticDramDumpSize=0;   // diagnostic (observation only): write this DRAM range to FILE when the summary is produced
@@ -182,6 +183,7 @@ class Msd309Machine {
   Engine cpu_;
   Flash flash_;
   Riu riu_;
+  cvbs::DecodedFrame atvPicture_;   // EXPLORATORY: the generated PAL waveform decoded by the software decoder model (preview video plane only)
   cvbs::Measurement atvMeasurement_;   // EXPLORATORY ATV model: what the signal-only front end measured (not serialized; deterministic from the option)
   Options options_;
   VirtualTime virtualTime_;

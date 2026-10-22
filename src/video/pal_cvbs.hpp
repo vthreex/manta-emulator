@@ -255,4 +255,82 @@ inline Measurement measure(const PalSource& src, uint64_t startSample, uint64_t 
   return m;
 }
 
+// ----------------------------------------------------------------------------------------------------------------------------------
+// Software PAL decoder (EXPLORATORY model of the analog video decoder block): composite samples -> 720x576 RGB.
+// Separates luma and chroma with a box filter one subcarrier period wide, demodulates chroma with a reference locked to the measured burst
+// phase (the burst is measured on every line, which also resolves the PAL V-switch), low-pass filters U/V and converts with BT.601. No delay line
+// (simple PAL), no comb filter, no AGC: levels follow from the ADC model assumptions. Not a model of the MSD309's decoder, only of what a PAL decoder does.
+struct DecodedFrame {
+  unsigned width = 0, height = 0;
+  std::vector<uint32_t> bgra;   // 0xAARRGGBB
+};
+
+inline DecodedFrame decodePalFrame(const PalSource& src, uint64_t startSample) {
+  using T = PalTiming;
+  const AdcModel& adc = src.adc;
+  DecodedFrame f;
+  f.width = 720;
+  f.height = 576;
+  f.bgra.assign(size_t(f.width) * f.height, 0xff000000u);
+  const double w = 2.0 * std::numbers::pi * T::subcarrierHz;
+  const unsigned spl = T::samplesPerLine;
+  const unsigned burstA = unsigned(T::burstStartUs * 1e-6 * T::sampleRateHz + 0.5) + 6, burstB = unsigned((T::burstStartUs + T::burstUs) * 1e-6 * T::sampleRateHz) - 6;
+  const unsigned activeA = unsigned(T::activeStartUs * 1e-6 * T::sampleRateHz), activeN = unsigned(T::activeUs * 1e-6 * T::sampleRateHz);
+  const unsigned boxN = unsigned(std::lround(T::sampleRateHz / T::subcarrierHz));   // 6 samples ~ one subcarrier period
+  std::vector<double> line(spl);
+  // field 1 shows lines 23..310 (288), field 2 lines 336..623 (288): interlaced into 576 rows
+  for (unsigned row = 0; row < 576; ++row) {
+    const unsigned fieldIndex = row & 1, k = row / 2;
+    const unsigned lineNo = fieldIndex == 0 ? 23 + k : 336 + k;
+    const uint64_t lineStart = startSample + uint64_t(lineNo - 1) * spl;
+    for (unsigned x = 0; x < spl; ++x) line[x] = adc.volts(adc.code(src.voltsAt(lineStart + x)));
+    // blanking level from the back porch just before the burst, burst phase relative to the nominal reference
+    double sc = 0, cc = 0, bl = 0;
+    unsigned nb = 0;
+    for (unsigned x = burstA; x < burstB; ++x) {
+      const double t = double(lineStart + x) / T::sampleRateHz;
+      sc += line[x] * std::sin(w * t);
+      cc += line[x] * std::cos(w * t);
+      bl += line[x];
+      ++nb;
+    }
+    const double burstPhase = std::atan2(cc, sc);                 // burst = A sin(wt + phi): phi = atan2(cc, sc)
+    // swing: burst phase is +135 (V positive lines) or -135 degrees (V negative lines) relative to the U axis
+    const bool vNeg = std::fabs(burstPhase - (-135.0 * std::numbers::pi / 180.0)) < std::numbers::pi / 4 ||
+                      std::fabs(burstPhase - (225.0 * std::numbers::pi / 180.0)) < std::numbers::pi / 4;
+    (void)bl;
+    const double blank = adc.volts(adc.code(0.0));
+    std::vector<double> y(activeN), u(activeN), v(activeN);
+    std::vector<double> cU(spl, 0.0), cV(spl, 0.0), lum(spl, 0.0);
+    for (unsigned x = 0; x < spl; ++x) {
+      const double t = double(lineStart + x) / T::sampleRateHz;
+      cU[x] = line[x] * std::sin(w * t);
+      cV[x] = line[x] * std::cos(w * t);
+    }
+    auto box = [&](const std::vector<double>& in, unsigned x, unsigned n) {
+      double a = 0;
+      for (unsigned i = 0; i < n; ++i) { const unsigned xx = std::min(spl - 1, x + i - n / 2); a += in[xx]; }
+      return a / n;
+    };
+    for (unsigned i = 0; i < activeN; ++i) {
+      const unsigned x = activeA + i;
+      lum[x] = box(line, x, boxN);
+      // low-pass the demodulated chroma over two subcarrier periods
+      u[i] = 2.0 * box(cU, x, 2 * boxN) / 0.493;
+      v[i] = 2.0 * box(cV, x, 2 * boxN) / 0.877 * (vNeg ? -1.0 : 1.0) / 1.0;
+      y[i] = (lum[x] - blank) / 0.7;
+    }
+    for (unsigned px = 0; px < f.width; ++px) {
+      const unsigned i = std::min(activeN - 1, unsigned(uint64_t(px) * activeN / f.width));
+      const double Y = y[i];
+      const double Uv = u[i] * 0.493 / 0.7 * 1.0 / 1.0, Vv = v[i] * 0.877 / 0.7 * 1.0 / 1.0;
+      // colour difference scale: chroma amplitude was encoded as 0.7*U, 0.7*V of the same scale; u,v above divide by 0.493/0.877, undo and normalise by 0.7
+      double R = Y + 1.140 * Vv, G = Y - 0.395 * Uv - 0.581 * Vv, B = Y + 2.032 * Uv;
+      auto q = [](double d) { return uint32_t(d < 0 ? 0 : d > 1 ? 255 : d * 255.0 + 0.5); };
+      f.bgra[size_t(row) * f.width + px] = 0xff000000u | (q(R) << 16) | (q(G) << 8) | q(B);
+    }
+  }
+  return f;
+}
+
 }  // namespace manta::cvbs

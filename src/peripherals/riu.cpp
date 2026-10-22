@@ -167,6 +167,9 @@ std::optional<VdByte> Riu::atvSharedRead(uint32_t a)const{
   if(at(0x110b))return VdByte{uint8_t(lines>>8),255,0};
   if(at(0x113c))return VdByte{uint8_t(atvHTotal_),255,0};
   if(at(0x113d))return VdByte{uint8_t(atvHTotal_>>8),255,0};
+  // EXPLORATORY: the host/MCU mailbox block 11C0..11DF reads 0 for the MCU until written (reset content unknown on the TV); the MIPS view is untouched.
+  for(unsigned x=0x11c0;x<0x11e0;++x)
+    if(at(uint16_t(x))){if(knownBits(a,1)!=255)return VdByte{0,255,0};break;}
   return std::nullopt;
 }
 void Riu::advanceAvd(uint64_t tick){
@@ -493,7 +496,8 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   // fields keep their original invalid provenance.
   if(a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99){
     auto bit=0x40u<<(8*(0x1f206b99-a));v&=~bit;
-    if(exploratoryAvdNoHsync_ && analogDisconnected_)v|=bit;
+    // EXPLORATORY: a present PAL signal (--exploratory-atv-signal) defines the HSYNC-absent field too (value 0 below)
+    if((exploratoryAvdNoHsync_ && analogDisconnected_) || exploratoryAtvSignal_)v|=bit;
   }
   if(a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41){
     auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;
@@ -564,7 +568,11 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
   if(diagnosticVifCrLock_>=0 && a<=0x1f224471 && uint64_t(a)+n>0x1f224471){
     auto shift=8*(0x1f224471-a);v=(v&~(1u<<shift))|(uint32_t(diagnosticVifCrLock_)<<shift);
   }
-  if(exploratoryAvdNoHsync_ && analogDisconnected_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99)
+  // Status word BF206B98/99 bit 14 is the value the original getter 80501698 returns and the UI wrapper 80476D7C tests: 0 -> NO SIGNAL (status 11).
+  // So bit 14 = horizontal sync present. The absent-input hypothesis keeps it 0; a PAL signal (--exploratory-atv-signal) sets it to 1.
+  if(exploratoryAtvSignal_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99)
+    v|=0x40u<<(8*(0x1f206b99-a));
+  else if(exploratoryAvdNoHsync_ && analogDisconnected_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99)
     v&=~(0x40u<<(8*(0x1f206b99-a)));
   if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41)
     if(auto captured=irDma_.capturePresent()){
