@@ -151,6 +151,24 @@ void Riu::advanceVd(uint64_t tick){
     event("exploratory_vd_boundary_suspension",0,0,vdMcuCpu_.pc(),"scheduled original MCU stopped on unresolved hardware: "+vdMcuBoundaryReason_);
   }
 }
+void Riu::configureExploratoryAtvSignal(unsigned htotal,unsigned linesA,unsigned linesB,unsigned fieldSteps){
+  exploratoryAtvSignal_=true;atvHTotal_=htotal;atvFieldLines_[0]=linesA;atvFieldLines_[1]=linesB;atvFieldSteps_=fieldSteps;
+  avdMcuBus_.eventAckClearOnly=true;
+  // Zero fixtures: reset contents of AFEC/AVD bytes the AVD program reads and the signal model has no meaning for (unknown on the TV).
+  for(uint16_t x:{0x1103,0x1104,0x1105,0x1106,0x1121,0x1122,0x1123,0x1129,0x112a,0x112b,0x1135,0x1136,0x1137,0x1138,0x1139,0x113a,0x113b,
+       0x1159,0x115a,0x115b,0x115c,0x11a7,0x11a8,0x11a9,0x11aa,0x1183,0x1184,0x1185,0x11db,0x11dc,0x11dd})
+    if(auto p=AvdMcuBus::sharedAddress(x))put(*p,1,0);
+}
+std::optional<VdByte> Riu::atvSharedRead(uint32_t a)const{
+  auto at=[&](uint16_t x){return AvdMcuBus::sharedAddress(x).value_or(0)==a;};
+  if(at(0x11fc))return VdByte{atvEventByte_,255,0};
+  const auto lines=atvFieldLines_[(atvFieldIndex_&1)];
+  if(at(0x110a))return VdByte{uint8_t(lines),255,0};
+  if(at(0x110b))return VdByte{uint8_t(lines>>8),255,0};
+  if(at(0x113c))return VdByte{uint8_t(atvHTotal_),255,0};
+  if(at(0x113d))return VdByte{uint8_t(atvHTotal_>>8),255,0};
+  return std::nullopt;
+}
 void Riu::advanceAvd(uint64_t tick){
   if(!exploratoryAvdSharedRun || avdMcuSuspended_ || !avdMcuCpu_.running())return;
   if(tick<avdTick_)throw std::runtime_error("AVD virtual time moved backwards");
@@ -166,6 +184,7 @@ void Riu::advanceAvd(uint64_t tick){
       if(avdMcuCpu_.totalInstructions()>=avdInstructionBudget)
         throw VdHardwareBoundary("AVD original-instruction diagnostic budget reached; no hardware completion inferred");
       avdTick_+=avdDispatchDivider;avdMcuCpu_.step();
+      if(exploratoryAtvSignal_&&avdMcuCpu_.totalInstructions()>=uint64_t(atvFieldSteps_)*(atvFieldIndex_+1)){++atvFieldIndex_;atvEventByte_|=1;}
     }
   }catch(const VdHardwareBoundary& boundary){
     avdMcuBoundaryReason_=boundary.what();
@@ -1153,8 +1172,11 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         };
         if(exploratoryAvdSharedRun){
           if(!avdDispatchDivider || !avdInstructionBudget)throw std::runtime_error("invalid AVD diagnostic scheduler configuration");
-          avdMcuBus_.event=[this](const auto& k,auto a,auto n,auto v,const auto& d){event(k,a,n,v,d);};
+          avdMcuBus_.event=[this](const auto& k,auto a,auto n,auto v,const auto& d){
+            if(exploratoryAtvSignal_&&k=="avd_event_ack_clear_only")atvEventByte_&=uint8_t(v);
+            event(k,a,n,v,d);};
           avdMcuBus_.sharedRead=[this](uint32_t a){
+            if(exploratoryAtvSignal_)if(auto signal=atvSharedRead(a))return *signal;
             VdByte v{uint8_t(get(a,1)),uint8_t(knownBits(a,1)),0};
             if(exploratoryAvdNoSyncEvents_ && a==0x1f206bf8){v.value&=uint8_t(~0x05);v.known|=0x05;}
             if(diagnosticAvd11dbBit7_>=0 && a==0x1f206bb5){v.value=uint8_t((v.value&~0x80)|(diagnosticAvd11dbBit7_<<7));v.known|=0x80;}

@@ -1,4 +1,5 @@
 #include "board/machine.hpp"
+#include "video/pal_cvbs.hpp"
 #include "profile/sampler.hpp"
 #include "board/mmio_read_mask.hpp"
 #include "board/htotal_join.hpp"
@@ -154,6 +155,21 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.provenanceExtensions){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("provenance extensions require guarded exploration");
     preservedBits_.enableInsPropagation();
+  }
+  if(o.exploratoryAtvSignalPal){
+    if(!o.exploratoryAvdSharedRun || o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
+      throw std::runtime_error("ATV signal requires the AVD shared run, guarded exploration and no absent-HSYNC hypothesis");
+    // The PAL waveform is generated and measured by the separate signal-only front end; the register values come from those measurements.
+    cvbs::PalSource pal;
+    const uint64_t frameSamples=uint64_t(cvbs::PalTiming::samplesPerLine)*cvbs::PalTiming::linesPerFrame;
+    const auto measured=cvbs::measure(pal,0,2*frameSamples);
+    if(!measured.hsyncLocked || !measured.vsyncSeen || measured.linesPerFrame!=cvbs::PalTiming::linesPerFrame)
+      throw std::runtime_error("internal: PAL signal model did not lock");
+    // HTotal is published in 4xfsc clocks (original table 0x80627940: 1135 = PAL, 910 = NTSC): line period x 4 fsc.
+    const unsigned htotal=unsigned(std::lround(double(measured.lineClocks)*4.0*cvbs::PalTiming::subcarrierHz/cvbs::PalTiming::sampleRateHz));
+    const unsigned linesA=measured.linesPerFrame/2,linesB=measured.linesPerFrame-linesA;
+    riu_.configureExploratoryAtvSignal(htotal,linesA,linesB,20000);
+    atvMeasurement_=measured;
   }
   if(o.exploratoryAvdNoise>=0){
     if(!o.exploratoryAvdNoHsync || !o.symbolicInit || !o.deferDiagnosticReads)
@@ -2738,6 +2754,7 @@ std::string Msd309Machine::summary() const {
     }
     s<<", \"overall\": \""<<sha256(std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(all.data()),all.size()))<<"\"}";
   }
+  if(options_.exploratoryAtvSignalPal)s<<",\n  \"exploratory_atv_signal\": {\"standard\": \"PAL-B/G 625/50 (generated waveform, signal-only measurement)\", \"line_clocks_27mhz\": "<<atvMeasurement_.lineClocks<<", \"hsync_width_clocks\": "<<atvMeasurement_.hsyncWidthClocks<<", \"lines_per_frame\": "<<atvMeasurement_.linesPerFrame<<", \"burst_pp_mv\": "<<int(atvMeasurement_.burstPeakToPeakVolts*1000)<<", \"pal_switch\": "<<(atvMeasurement_.palSwitch?"true":"false")<<", \"field_events\": "<<riu_.atvFieldEvents()<<", \"note\": \"register values are labelled hypotheses; zero fixtures elsewhere\"}";
   if(options_.exploratoryBdmaCrcMiu)s<<",\n  \"exploratory_bdma_crc_miu\": true";
   if(options_.exploratoryGeYuvStretch)s<<",\n  \"exploratory_ge_yuv_stretch\": true,\n  \"ge_yuv_stretches_retired\": "<<riu_.geYuvStretches<<",\n  \"ge_yuv_stretch_pixels_written\": "<<riu_.geYuvStretchPixels;
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;

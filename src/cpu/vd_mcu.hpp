@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <optional>
 #include <span>
+#include <tuple>
 namespace manta {
 struct VdByte { uint8_t value=0xa5,known=0;uint16_t origin=0; };
 struct VdHardwareBoundary:std::runtime_error {
@@ -56,6 +57,7 @@ public:
   uint64_t instructions()const;
   uint64_t cycles()const;
   uint16_t pc()const;
+  std::tuple<uint8_t,uint8_t,uint16_t> iramInfo(unsigned address)const; // diagnostic: value, known mask, origin
   uint8_t stack()const;
   uint8_t accumulator()const;
   uint8_t status()const;

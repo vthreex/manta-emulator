@@ -177,6 +177,7 @@ void ioClass(Ar& a, Riu& r) {
   a(r.pm51_, r.pmPowerGood_, r.exploratoryPm51_, r.sar_, r.exploratorySarFullscale_, r.exploratoryScartIdGrounded_, r.scartIdSamples_, r.scart_,
     r.analogDisconnected_, r.exploratoryAvdNoHsync_, r.avdHsyncReads_, r.exploratoryUsbNoDevice_, r.diagnosticUsbUnpoweredDplus_, r.diagnosticVifCrLock_,
     r.guardedStretchDetail_, r.exploratoryAvdHtotal_, r.exploratoryAvdNoise_);
+  if (r.exploratoryAtvSignal_) a(r.atvEventByte_, r.atvFieldIndex_, r.atvFieldSteps_, r.atvHTotal_, r.atvFieldLines_[0], r.atvFieldLines_[1]);
   uint64_t nh = a.count(r.hypothesisBits_.size());
   auto configured = r.hypothesisBits_;   // hypotheses requested by THIS process (superset load adds some the snapshot never had)
   if (a.loading()) { r.hypothesisBits_.clear(); r.hypothesisBits_.resize(size_t(nh)); }

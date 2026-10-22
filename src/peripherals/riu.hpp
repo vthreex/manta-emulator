@@ -193,6 +193,11 @@ class Riu {
   std::string guardedStretchDetail_;
   int exploratoryAvdHtotal_=-1;
   int exploratoryAvdNoise_=-1;
+  // EXPLORATORY ATV signal (PAL): see docs/atv-signal-model.md. Dynamic AFEC inputs of the AVD MCU derived from the PAL timing model.
+  bool exploratoryAtvSignal_=false;
+  uint8_t atvEventByte_=0;
+  uint64_t atvFieldIndex_=0;
+  uint32_t atvFieldSteps_=20000,atvHTotal_=0x46f,atvFieldLines_[2]={312,313};
   struct HypothesisBits { uint32_t address; uint8_t mask, value; uint64_t reads; int scBank; bool rmw = false; bool init = false; bool ack = false; bool pending = false; };   // ack: peer-acknowledged mailbox byte (the next read after a guest write returns VALUE)   // rmw: guest-writable register, only MASK is hardware-owned; carried-back stores allowed
   std::vector<HypothesisBits> hypothesisBits_;   // EXPLORATORY: bit-scoped constants for hardware-owned status bytes
   int exploratoryAfecIndirect_=-1;   // -1 off, else initial 16-bit content of the indirectly addressed register 6A3C
@@ -651,6 +656,12 @@ public:
   void configureExploratoryAvdHtotal(unsigned value) { exploratoryAvdHtotal_ = int(value & 0xffff); }
   // HYPOTHESIS: the AFEC noise-magnitude byte (HAL_AVD_AFEC_GetNoiseMag, BF206A04) reads a constant; bracket it.
   void configureExploratoryAvdNoise(unsigned value) { exploratoryAvdNoise_ = int(value & 0xff); }
+  // EXPLORATORY: PAL input signal for the AVD MCU. htotal = published 4xfsc clocks per line, linesA/linesB = lines of the even/odd field,
+  // fieldSteps = AVD MCU instructions per field (ASSUMED MCU instruction rate). All other AFEC inputs read as zero fixtures (labelled).
+  void configureExploratoryAtvSignal(unsigned htotal, unsigned linesA, unsigned linesB, unsigned fieldSteps);
+  std::optional<VdByte> atvSharedRead(uint32_t a) const;
+  bool exploratoryAtvSignal() const { return exploratoryAtvSignal_; }
+  uint64_t atvFieldEvents() const { return atvFieldIndex_; }
   // HYPOTHESIS (protocol decoded from the original routine 80503CE0, content unknown): the AFEC address pair 11A1:11A0 (BF206B41:BF206B40) latches a
   // register address; with address 0x6A3C and bit 7 of the low byte set, the data pair 119D:119E (BF206B39:BF206B3C, high:low) reads and writes the
   // content of that indirectly addressed 16-bit register instead of the plain bytes. The content is a bracketed constant until written.

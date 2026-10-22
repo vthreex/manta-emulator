@@ -528,6 +528,10 @@ void VdMcuCpu::startup(VdMcuProgram& program,uint64_t budget){
 uint64_t VdMcuCpu::instructions()const{return impl_->executed;}
 uint64_t VdMcuCpu::cycles()const{return impl_->ticks;}
 uint16_t VdMcuCpu::pc()const{return impl_->context.cpu.mPC;}
+// Diagnostic read-only view of the tracked low IRAM (value, known mask, origin XDATA address of an invalid byte); used by tools/avd_signal_probe.
+std::tuple<uint8_t,uint8_t,uint16_t> VdMcuCpu::iramInfo(unsigned address)const{
+  address&=127;auto& m=*impl_;return {m.context.cpu.mLowerData[address],m.registerKnown[address],m.registerOrigin[address]};
+}
 uint8_t VdMcuCpu::stack()const{return impl_->context.cpu.mSFR[REG_SP];}
 uint8_t VdMcuCpu::accumulator()const{return impl_->context.cpu.mSFR[REG_ACC];}
 uint8_t VdMcuCpu::status()const{return impl_->context.cpu.mSFR[REG_PSW];}
