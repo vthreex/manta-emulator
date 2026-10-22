@@ -19,6 +19,7 @@
 #include "video/ge_uniform_stretch.hpp"
 #include "video/ge_i2_glyph.hpp"
 #include "video/ge_blend_copy.hpp"
+#include "video/pal_cvbs.hpp"
 #include <array>
 #include <thread>
 #include <algorithm>
@@ -1212,6 +1213,7 @@ void htotalBranchJoinTests(){
 }
 #include "spi_nor_program_tests.inc"
 #include "usb_host_tests.inc"
+#include "pal_cvbs_tests.inc"
 void geStretchRequestTests(){
   using Req=manta::GeStretchRequest;
   // Final 0x60=8040 request recorded from original OSD 3 instructions
@@ -2909,6 +2911,7 @@ int main() {
     utmiTests();
     virtualTimeTests();
     spiTests();
+    palCvbsTests();
     spiNorProgramTests();
     usbHostTests();
     usbNoDeviceTests();
