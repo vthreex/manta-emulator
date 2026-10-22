@@ -53,3 +53,10 @@ Method: scan the ZUI key-handler region `804A0000..80500000` for digit-only 16-b
 Other digit-looking constants in that region are timeouts (`0x1388`, `0x1770`, `0x7530`, `0x2710`, `0x5460`), not codes.
 Lock-password dialog: `0000`, `1234`, `2580`, `2588`, `8888`, `9999` were typed after OK on Lock System; none produced a different OSD. Whether one is accepted depends on the stored password (not located).
 `tools/try_launch_codes.py` drives these experiments (parallel headless runs from `no-signal-ready-v2.snap` / `factory-menu.snap`).
+
+## The Factory "USB" item (traced statically and with watches, session 12)
+* Row 11 of the factory root table (`0x8061DEB4`, 20-byte records) has target page 0 = the root itself, so **OK only rebuilds the root** (`804C0C00` -> `804BE020(0)`): the "goes back to the top" behaviour is by design.
+* The action is the value control: RIGHT opens the `< USB  Search >` popup, a second LEFT/RIGHT calls `804BE3E8(item 0xB)` -> `804C0298`: probes USB port 0/1 (`8054E3C0`/`80553ED0`), mounts (`8047E870`), searches for the update file (`8045A560`), reads it (`8045A278`).
+* With a stick the original prints `File size: 0x00080000; Flash size: 0x007E0000; Download Buffer Addr: 0x01890000 ...` and `Copying image from USB to DRAM`. It then programs BDMA `0x330` (MIU0 source -> CRC32, poly `04C11DB7`), which strict mode stops on.
+* `--exploratory-bdma-crc-miu` (opt-in, mode `0x330` inferred from the field layout of `0x335`/`0x3035`, not verified) models it; the run then continues 2.3B dispatches without a stop but never reaches the CRC verdict (still inside the image copy). Needs stick-side transfers checked next.
+* Reproduce: `work/usbtrace.py` (snapshot `factory-menu.snap`, 8 x DOWN, RIGHT, RIGHT, stick image via `--exploratory-usb-pendrive`, plus the `1f203d98/9d` and `1f203fe1/225dd8/225cbc` mmio-bit flags of the factory launcher).

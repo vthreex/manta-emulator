@@ -45,6 +45,7 @@ public:
     }
   }
   uint64_t blocks() const { return image_.size() / 512; }
+  const std::vector<uint8_t>& image() const { return image_; }   // current contents including guest writes (diagnostic export)
   uint8_t address() const { return address_; }
   void busReset() { address_ = 0; config_ = 0; ctl_.clear(); ctlStage_ = None; bot_ = BotIdle; inq_.clear(); }
 

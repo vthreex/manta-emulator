@@ -1773,6 +1773,27 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
             "original FLASH-to-MIU0 command 3035; bounded byte addresses; pending memory transfer, provisional 64-tick latency");
       return;
     }
+    if (exploratoryBdmaCrcMiu && mode == 0x330 && poly == 0x04c11db7 && dramRead && len && src < 0x08000000 && len <= 0x08000000 - src) {
+      // EXPLORATORY: the original update code programs device 0 (MIU0) as source and the CRC32 sink (the same
+      // destination code 3 as the stock flash CRC 0x335) with 0x330. Mode 0x330 is inferred from the field layout of
+      // the two original commands (0x335 flash->CRC, 0x3035 flash->MIU0); not hardware-verified.
+      // dramRead is the bounded (<=16 KiB) validity-checking reader of the TSP DMA; chunks keep its checks (unknown bits stop the run).
+      std::vector<uint8_t> source;
+      source.reserve(size_t(len));
+      for (uint64_t at = 0; at < len; at += 0x4000) {
+        auto part = dramRead(uint32_t(src + at), size_t(std::min<uint64_t>(0x4000, len - at)));
+        source.insert(source.end(), part.begin(), part.end());
+      }
+      auto crc = crcMsb(source, poly, seed);
+      put(0x1f201230, 2, crc & 65535);
+      put(0x1f201234, 2, crc >> 16);
+      put(0x1f201204, 1, 1);
+      bdmaPending_ = true;
+      bdmaComplete_ = tick + 64;
+      event("bdma_crc_miu", src, len, crc,
+            "EXPLORATORY MIU0-source CRC32 (mode 0x330 inferred from the original field layout); provisional 64-tick latency");
+      return;
+    }
     if (mode != 0x335 || poly != 0x04c11db7 || src > 0x7fffff || len > 0x800000 - src) {
       stopReason = "unsupported BDMA command or bounds";
       return;

@@ -19,7 +19,7 @@ static std::filesystem::path utf8Path(const std::string &s) {
 // snapshot can be resumed with a different summary path, budget or remote script, but never under different hardware assumptions.
 static std::string stateFingerprint(const std::vector<std::string> &args, std::string &canonicalOut) {
   static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--save-state-at",
-    "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--preview-capture",
+    "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--diagnostic-usb-save-image", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at"};
   static const std::set<std::string> flags = {"--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
@@ -105,9 +105,11 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-copro-capture")o.exploratoryCoproCapture=uint32_t(std::stoul(value(i),nullptr,0));
       else if (a == "--exploratory-copro-watch")o.exploratoryCoproWatch=uint32_t(std::stoul(value(i),nullptr,0));
       else if (a == "--exploratory-ge-yuv-stretch")o.exploratoryGeYuvStretch=true;
+      else if (a == "--exploratory-bdma-crc-miu")o.exploratoryBdmaCrcMiu=true;
       else if (a == "--diagnostic-dram-dump"){o.diagnosticDramDumpAddr=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpSize=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpFile=value(i);}
       else if (a == "--diagnostic-riu-peek")o.diagnosticRiuPeeks.push_back(uint32_t(std::stoul(value(i),nullptr,0)));
       else if (a == "--exploratory-mvop-plane")o.exploratoryMvopPlane=true;
+      else if (a == "--diagnostic-usb-save-image")o.diagnosticUsbSaveImage=value(i);
       else if (a == "--diagnostic-riu-write-log")o.diagnosticRiuWriteLogFrom=std::stoull(value(i),nullptr,0);
       else if (a == "--diagnostic-riu-zero-unknown-reads")o.exploratoryRiuZeroUnknown=true;
       else if (a == "--exploratory-copro-jpd")o.exploratoryCoproJpd=true;
@@ -403,6 +405,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-copro: EXPLORATORY run the original multimedia coprocessor image (OpenRISC) after the guest releases it; unknown registers stop it\n"
                "--exploratory-copro-mips-irq N: EXPLORATORY raise MIPS FIQ hardware interrupt N (32..63 or 96..127) when the coprocessor replies; needs the IRQ-capable engine\n"
                "--exploratory-ge-yuv-stretch: EXPLORATORY nearest stretch for packed YUV422 (format 0xE); needs --exploratory-ge-uniform-stretch\n"
+               "--exploratory-bdma-crc-miu: EXPLORATORY BDMA CRC32 over a DRAM source (mode 0x330 inferred from the original field layout, not verified)\n"
                "--exploratory-mvop-plane: EXPLORATORY preview only: show the MVOP-programmed framebuffer (packed YUV 4:2:2 assumed) behind the GOP layers\n"
                "--diagnostic-riu-zero-unknown-reads: LABELLED HYPOTHESIS, DIAGNOSTIC ONLY: any never-defined MIPS-visible register reads as 0 (addresses listed in the summary); invalidates strict evidence\n"
                "--exploratory-copro-jpd: EXPLORATORY model of the coprocessor JPEG decoder block (baseline 4:2:0, scale 1/1 and 1/2); unsupported configurations stop it\n"

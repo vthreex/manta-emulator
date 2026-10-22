@@ -517,13 +517,14 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     if (t == "--exploratory-provenance-extensions" || t == "--trace-instructions" || t == "--exploratory-ge-line") continue;
     // Coprocessor / JPD / FIQ / YUV-stretch / zero-unknown diagnostics: all read at run time, none has state in the snapshot (the coprocessor model refuses a snapshot taken
     // after the guest released the core).
-    if (t == "--exploratory-copro" || t == "--exploratory-copro-zero-unknown-reads" || t == "--exploratory-copro-jpd" || t == "--exploratory-ge-yuv-stretch" ||
+    if (t == "--exploratory-copro" || t == "--exploratory-copro-zero-unknown-reads" || t == "--exploratory-copro-jpd" || t == "--exploratory-ge-yuv-stretch" || t == "--exploratory-bdma-crc-miu" ||
         t == "--diagnostic-riu-zero-unknown-reads") continue;
     if (t == "--exploratory-copro-mips-irq" || t == "--exploratory-copro-jpd-dump" || t == "--exploratory-copro-capture" || t == "--exploratory-copro-watch" ||
         t == "--exploratory-copro-dump-start") { ++i; continue; }
     if (t == "--exploratory-copro-seq") { i += 2; continue; }
     if (t == "--diagnostic-riu-write-log" || t == "--diagnostic-riu-peek") { ++i; continue; }
     if (t == "--exploratory-mvop-plane") continue;
+    if (t == "--diagnostic-usb-save-image") { ++i; continue; }
     if (t == "--diagnostic-dram-dump") { i += 3; continue; }
     if (t == "--exploratory-usb-pendrive") { ++i; continue; }   // read at run time (device model is created after the restore)   // read from the options at run time
     if (t == "--exploratory-mmio-bits") { ++i; continue; }                                       // merged into the restored hypothesis list

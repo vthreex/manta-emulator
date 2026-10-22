@@ -438,6 +438,7 @@ public:
   // 1F203390/94 and 1F203398/9C words (bit set = masked); a mask the guest has not written counts as masked. Not a verified model of the real controller.
   // LABELLED HYPOTHESIS (diagnostic exploration only): a read of a register nothing has defined returns 0 instead of stopping; every such address is listed.
   bool exploratoryGeYuvStretch = false;   // EXPLORATORY packed-YUV422 (format 0xE) nearest stretch, requires the uniform-stretch option too
+  bool exploratoryBdmaCrcMiu = false;     // EXPLORATORY CRC32 over a MIU0 (DRAM) source, BDMA mode 0x330 (inferred, not verified)
   uint64_t geYuvStretches = 0, geYuvStretchPixels = 0;
   // diagnostic (observation only): distinct guest-written RIU addresses since a given cycle count
   uint64_t writeLogFrom = UINT64_MAX;

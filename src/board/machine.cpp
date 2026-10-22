@@ -435,6 +435,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.zeroUnknownReads=o.exploratoryRiuZeroUnknown;
   riu_.writeLogFrom=o.diagnosticRiuWriteLogFrom;
   riu_.exploratoryGeYuvStretch=o.exploratoryGeYuvStretch;
+  riu_.exploratoryBdmaCrcMiu=o.exploratoryBdmaCrcMiu;
   if(o.exploratoryCopro){
     copro_.zeroUnknownReads=o.exploratoryCoproZeroUnknown;
     copro_.mailRead=[this](uint32_t a,uint8_t& v){return riu_.coproPeekByte(a,v);};
@@ -2514,6 +2515,10 @@ void Msd309Machine::dumpGuestRanges() const {
   }
 }
 std::string Msd309Machine::summary() const {
+  if (!options_.diagnosticUsbSaveImage.empty()) if (auto* dev = riu_.usbHost.device()) {
+    std::ofstream f(options_.diagnosticUsbSaveImage, std::ios::binary);
+    f.write(reinterpret_cast<const char*>(dev->image().data()), std::streamsize(dev->image().size()));
+  }
   if (!options_.diagnosticDramDumpFile.empty() && uint64_t(options_.diagnosticDramDumpAddr) + options_.diagnosticDramDumpSize <= dramBacking_.size()) {
     std::ofstream d(options_.diagnosticDramDumpFile, std::ios::binary);
     d.write(reinterpret_cast<const char*>(dramBacking_.data()) + options_.diagnosticDramDumpAddr, std::streamsize(options_.diagnosticDramDumpSize));
@@ -2733,6 +2738,7 @@ std::string Msd309Machine::summary() const {
     }
     s<<", \"overall\": \""<<sha256(std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(all.data()),all.size()))<<"\"}";
   }
+  if(options_.exploratoryBdmaCrcMiu)s<<",\n  \"exploratory_bdma_crc_miu\": true";
   if(options_.exploratoryGeYuvStretch)s<<",\n  \"exploratory_ge_yuv_stretch\": true,\n  \"ge_yuv_stretches_retired\": "<<riu_.geYuvStretches<<",\n  \"ge_yuv_stretch_pixels_written\": "<<riu_.geYuvStretchPixels;
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;
