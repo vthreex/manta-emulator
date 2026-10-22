@@ -146,6 +146,7 @@ struct Options {
   bool videoPlaneBlackKey = false;   // EXPLORATORY HYPOTHESIS: opaque RGB-black guest pixels are see-through to the video plane (colour key); requires videoPlane
   std::string videoPlane;   // EXPLORATORY presentation: "" (neutral checker), black, blue, setting (guest Blue Screen setting); never changes guest state
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
+  unsigned gopHistoryLog2 = 14;           // DIAGNOSTIC: the frame-history sampler composes the preview every 2^N dispatches (default 14; each compose copies and blends every GOP layer)
   uint64_t gopTimelineFrom=0;   // DIAGNOSTIC: first tick of the GOP write/latch timeline printed in the summary
   std::vector<uint32_t> historyPcs;   // DIAGNOSTIC: also sample the GOP history when one of these original PCs executes
   // Virtual remote: host functions are mapped to raw IR bytes by an explicit table and delivered to the emulated PM IR FIFO.

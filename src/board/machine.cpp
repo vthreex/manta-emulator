@@ -798,7 +798,7 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
     entry.second.push_back(hit);
   }
   if(m.options_.previewStore && (m.dispatches_ & 0xfffff)==0)m.publishPreview();
-  else if(!m.options_.gopFrameHistory.empty() && (m.dispatches_ & 0x3fff)==0)m.publishPreview();   // finer sampling for the history timeline
+  else if(!m.options_.gopFrameHistory.empty() && (m.dispatches_ & ((uint64_t(1) << m.options_.gopHistoryLog2) - 1))==0)m.publishPreview();   // finer sampling for the history timeline
   if(m.options_.zuiFlowProbes && ZuiFlow::watches(uint32_t(a))){
     std::vector<uint8_t> initAndDispatch(0x1cc),queueCode(0x140);
     m.cpu_.read(0x004e0d48,initAndDispatch.data(),initAndDispatch.size());
@@ -1243,7 +1243,7 @@ void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
   if (m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff) == 0) m.copro_.run(0x4000);
   if ((m.dispatches_ & 0x3fff) == 0 && (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty())) m.serviceVirtualRemote();
   if (m.options_.previewStore && (m.dispatches_ & 0xfffff) == 0) m.publishPreview();
-  else if (!m.options_.gopFrameHistory.empty() && (m.dispatches_ & 0x3fff) == 0) m.publishPreview();
+  else if (!m.options_.gopFrameHistory.empty() && (m.dispatches_ & ((uint64_t(1) << m.options_.gopHistoryLog2) - 1)) == 0) m.publishPreview();
   m.recordPc(uint32_t(a));
   const uint32_t observedPhysical = uint32_t(a) & 0x1fffffff;
   const auto *bytes = m.dramBacking_.data() + observedPhysical;

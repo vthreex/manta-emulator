@@ -522,7 +522,7 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     if (t == "--exploratory-copro-mips-irq" || t == "--exploratory-copro-jpd-dump" || t == "--exploratory-copro-capture" || t == "--exploratory-copro-watch" ||
         t == "--exploratory-copro-dump-start") { ++i; continue; }
     if (t == "--exploratory-copro-seq") { i += 2; continue; }
-    if (t == "--diagnostic-riu-write-log" || t == "--diagnostic-riu-peek") { ++i; continue; }
+    if (t == "--diagnostic-riu-write-log" || t == "--diagnostic-riu-peek" || t == "--gop-history-interval-log2") { ++i; continue; }
     if (t == "--exploratory-mvop-plane") continue;
     if (t == "--diagnostic-usb-save-image") { ++i; continue; }
     if (t == "--diagnostic-dram-dump") { i += 3; continue; }

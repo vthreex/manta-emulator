@@ -71,3 +71,6 @@ Stick with `/MOVIE/*` clips (320x240, 3 s, ffmpeg test sources), media browser M
 * With watches on `MDrv_MVD_Init` (`8051145C`), `HAL_MVD_LoadCode` (`80513650`), `MDrv_MVD_SetCodecInfo` (`80512C10`) and "Enter Mvd Page" (`80461858`): **none runs** in any case, so the verdict is software only, before any decoder hardware. The mp4 mark also starts no decoder; the playback key (PLAY) is not identified, a second OK did nothing visible.
 * Unknown: why the other containers/audio are refused (candidates: the MP3/MP2 audio, the probe reading the stick). Next cheap test: the same clips with AAC or no audio; then find the PLAY key.
 * The firmware contains MVD (`MDrv_MVD_*`, own firmware via `HAL_MVD_LoadCode`) and HVD (H.264) drivers; neither decoder is modelled.
+
+## Run speed note (session 12)
+A profile of a 650M-dispatch headless run showed 97% of the time in the preview composer (`collectGopLayers` / `composeGopPreview` plus memcpy), because `--gop-frame-history` composes the full 1920x1080 preview every 2^14 dispatches. `--gop-history-interval-log2 N` (diagnostic, default 14 = unchanged output) makes it coarser; with N=20 the same run took 2.8 min instead of 32 min. Remaining top cost: `codeHook` 17%, preview 12%, OR1K core 6%, `pushRecent` 5%.
