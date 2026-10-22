@@ -169,6 +169,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     const unsigned htotal=unsigned(std::lround(double(measured.lineClocks)*4.0*cvbs::PalTiming::subcarrierHz/cvbs::PalTiming::sampleRateHz));
     const unsigned linesA=measured.linesPerFrame/2,linesB=measured.linesPerFrame-linesA;
     riu_.configureExploratoryAtvSignal(htotal,linesA,linesB,20000);
+    // The AFEC noise-magnitude byte (HAL_AVD_AFEC_GetNoiseMag, BF206A04) of a clean generated signal: 0 (unit/scale of the hardware byte unknown; noise-free = 0 is the only value the model can justify).
+    riu_.configureExploratoryAvdNoise(pal.noiseVolts==0?0u:0x10u);
     atvMeasurement_=measured;
     if(o.exploratoryAtvPicture)atvPicture_=cvbs::decodePalFrame(pal,0);
   }

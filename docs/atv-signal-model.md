@@ -46,3 +46,16 @@ With these the original AVD program runs its idle loop indefinitely (6M instruct
 ## Wired into the emulator
 `--exploratory-atv-signal pal` (needs the AVD shared run and no absent-HSYNC flags; state is part of the snapshot): the PAL generator is measured at start-up by the signal-only front end and the AVD MCU's reads of `113C/D`, `110A/B` and
 `11FC` are served from that model; the zero fixtures are installed for the other bytes. Summary key `exploratory_atv_signal`.
+
+## Results with the signal wired in (session 12)
+**SCART / default source (what the boot snapshots start in):** with `--exploratory-atv-signal pal` the AVD MCU runs indefinitely (57k field events in 2.6B dispatches), publishes HTotal 1135 and the host reads
+status bit 14 of `BF206B98/99` = 1 (HSYNC present; evidence: getter `80501698` returns that bit, the UI wrapper `80476D7C` turns 0 into status 11 = NO SIGNAL). The NO SIGNAL dialog disappears. The window with the
+decoded colour bars as the preview video plane (`--exploratory-atv-picture`) is `work/launch-WINDOW-atv.cmd`. This was on **SCART**, not ATV.
+
+**ATV (source id 1, raw `0x4B` from the SCART state):** needs more hardware inputs; found by the frontier loop (`work/atvloop.py`, each stop = one fixture) - all are labelled zero/reset fixtures, not measurements:
+`1F206BA8` (boot), VIF `1F224470/71` (lock bit from `--diagnostic-vif-cr-lock 1`, FOE 0), `1F22448C/D` (13-bit carrier offset readout, latched by bit 4 of `1F224404`: 0), `1F22440C/D` (+init), `1F224650/1`, `1F22482D`,
+scaler `1F205E30/34` (bank 0x10), `1F205E10/11` (bank 0x1A), `1F205F80/81` (bank 0x19), `1F205E4C/D`, `1F205E38`. With these the firmware switches to ATV and runs on (to 1.8B), but **still shows NO SIGNAL**.
+Why (static + watches): in ATV the status word `806B92C0` becomes 1 (`80470E60`) whenever `80475788()` returns 0; it returns the byte `806C0910` (only written by the signal tracker `80475A18..80475BD0`) when the system flag
+word bit 0 (`806BEDF0 & 1`, tested by `8040B5D8`) is set. The tracker never runs in the ATV window: its inputs are RAM state produced by the VIF/tuner handlers (`806E3FC4` bit 9/10, `806E3FCC` = 13-bit AFC reading,
+`0x1FFF` = invalid), none of which is touched in 300M dispatches. The setter of that flag word was not found by the static scan (only the `or 0` form at `804873F0`). Open: which code sets bit 0 and the VIF handler
+flags, probably tied to a tuner lock status (the board has `FRONTEND_TUNER_TYPE: UNKNOWN`, no tuner model exists).
