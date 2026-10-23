@@ -56,6 +56,7 @@ struct Options {
   bool candidatePm51Uart=false;
   bool explorePmNonresumeBranch=false;
   uint64_t exploratoryCpi=1;
+  bool exploratoryMenuNoAutoexit=false;   // EXPLORATORY, native CPU only: ignore the menu page handler's exit request (ZUI mode 5, 804F0724(0x17,5) called from 804CA098) so an open menu stays open
   bool exploratorySkipZuiTimers=false;   // EXPLORATORY, native CPU only: skip the original ZUI software-timer service 804A0770 (no ZUI timer ever expires: menus do not time out)
   uint64_t exploratoryCpiAfterLoad=0;   // EXPLORATORY time dilation applied right after --load-state (0 = off): cycles per instruction from then on
   bool coproProbes=false;

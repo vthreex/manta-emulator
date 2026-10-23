@@ -1,4 +1,5 @@
 #include "rt.hpp"
+#include <cstdio>
 #include <cstdlib>
 
 #ifdef RT_TRACE_STORES
@@ -105,6 +106,11 @@ uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks) {
     while (c.icount < limit && !c.halt) {
       uint32_t idx = (pc - GEN_BASE) >> 2;
       if (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx]) BADPC(&c, pc);
+      if (hooks && hooks->trace_pc[0]) for (int k = 0; k < 4; ++k) if (pc == hooks->trace_pc[k] && (!hooks->trace_reg[k] || c.r[hooks->trace_reg[k]] == hooks->trace_val[k]))
+        std::fprintf(stderr, "TRACE pc=%08x dispatch=%llu a0=%x a1=%x a2=%x a3=%x ra=%x sp=%x\n", pc, (unsigned long long)(hooks->trace_base + c.icount), c.r[4], c.r[5], c.r[6], c.r[7], c.r[31], c.r[29]);
+      if (hooks && hooks->redirect_pc && pc == hooks->redirect_pc && c.r[31] == hooks->redirect_ra && c.r[4] == hooks->redirect_a0 && c.r[5] == hooks->redirect_a1) {
+        c.r[2] = 1; pc = hooks->redirect_to; ++hooks->redirect_count; continue;
+      }
       if (hooks && pc == hooks->skip_pc) { c.r[2] = 0; pc = c.r[31]; ++hooks->skip_count; continue; }   // exploratory skipped function: return to the caller
       c.ring[c.ring_i++ & 63] = pc;
       pc = GEN_RUNS[GEN_INDEX[idx]](&c, pc);

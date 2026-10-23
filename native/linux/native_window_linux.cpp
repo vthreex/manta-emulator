@@ -93,12 +93,12 @@ void nativeWindow(const std::string&, bool smoke, std::shared_ptr<GopPreviewStor
         for (unsigned y = 0; y < fb.h; ++y) for (unsigned x = 0; x < fb.w; ++x) {
           if (x < lx || x >= lx + fw || y < ly || y >= ly + fh) { fb.put(x, y, 0x141414); continue; }
           unsigned sx = (x - lx) * f.width / fw, sy = (y - ly) * f.height / fh; size_t i = size_t(sy) * f.width + sx;
-          fb.put(x, y, f.covered[i] ? f.bgra[i] & 0xffffffu : !f.planeBgra.empty() ? f.planeBgra[i] & 0xffffffu : f.planeActive ? f.planeRgb : ((((sx >> 4) ^ (sy >> 4)) & 1) ? 0x505050u : 0x383838u));
+          fb.put(x, y, f.covered[i] ? f.bgra[i] & 0xffffffu : f.planeActive ? f.planeRgb : ((((sx >> 4) ^ (sy >> 4)) & 1) ? 0x505050u : 0x383838u));
         }
       } else {
         for (unsigned y = 0; y < dh; ++y) for (unsigned x = 0; x < dw; ++x) {
           unsigned sx = x / scale, sy = y / scale; size_t i = size_t(sy) * f.width + sx;
-          fb.put(ox + x, oy + y, f.covered[i] ? f.bgra[i] & 0xffffffu : !f.planeBgra.empty() ? f.planeBgra[i] & 0xffffffu : f.planeActive ? f.planeRgb : ((((sx >> 4) ^ (sy >> 4)) & 1) ? 0x505050u : 0x383838u));
+          fb.put(ox + x, oy + y, f.covered[i] ? f.bgra[i] & 0xffffffu : f.planeActive ? f.planeRgb : ((((sx >> 4) ^ (sy >> 4)) & 1) ? 0x505050u : 0x383838u));
         }
       }
     }

@@ -38,7 +38,13 @@ typedef uint32_t (*RunFn)(CPU*, uint32_t);
 struct RunHooks {
   void (*after_run)(CPU&, uint32_t pc, void* ctx) = nullptr;   // called after every run, before interrupt delivery (host services, time)
   void* ctx = nullptr;
+  // EXPLORATORY (opt-in) redirect: a dispatch to redirect_pc made with ra == redirect_ra, a0 == redirect_a0 and a1 == redirect_a1 continues at redirect_to with v0 = 1
+  // instead (0 = off). Used to ignore one specific original call site, never a whole function.
+  uint32_t redirect_pc = 0, redirect_ra = 0, redirect_a0 = 0, redirect_a1 = 0, redirect_to = 0;
+  uint64_t redirect_count = 0;
   uint64_t skip_count = 0;
+  uint32_t trace_pc[4] = {0, 0, 0, 0}, trace_reg[4] = {0, 0, 0, 0}, trace_val[4] = {0, 0, 0, 0};   // diagnostic: log entries of trace_pc[i] where r[trace_reg[i]] == trace_val[i] (trace_reg 0 = any)
+  uint64_t trace_base = 0;
   uint32_t skip_pc = 0;   // EXPLORATORY (opt-in): a call entering this guest function returns at once (v0 = 0) without running it; 0 = off
 };
 uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks = nullptr);

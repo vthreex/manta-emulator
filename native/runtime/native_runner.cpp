@@ -6,6 +6,7 @@
 // diagnostics (e.g. --diagnostic-riu-zero-unknown-reads) for runs that should continue past unknown registers.
 #include "board/machine.hpp"
 #include "rt.hpp"
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -174,9 +175,23 @@ int nativeRun(Msd309Machine& machine) {
   RunHooks hooks;
   hooks.after_run = after_run;
   hooks.ctx = &runner;
+  if (a.options.exploratoryMenuNoAutoexit) {
+    hooks.redirect_pc = 0x804F0724u; hooks.redirect_ra = 0x804CA098u; hooks.redirect_a0 = 0x17; hooks.redirect_a1 = 5; hooks.redirect_to = 0x804C8624u;
+    std::fprintf(stderr, "EXPLORATORY: --exploratory-menu-no-autoexit: the menu page handler's exit request (804F0724(0x17,5) from 804CA098) is ignored (not original behaviour)%c", 10);
+  }
   if (a.options.exploratorySkipZuiTimers) {
     hooks.skip_pc = 0x804A0770u;
     std::fprintf(stderr, "EXPLORATORY: --exploratory-skip-zui-timers: the original ZUI software-timer service 804A0770 is skipped (no ZUI timer expires; not original behaviour)\n");
+  }
+  if (const char* spec = std::getenv("MANTA_TRACE_ENTRY")) {   // diagnostic: "PC[:REG:VALUE],..." (hex)
+    int k = 0;
+    for (const char* p = spec; *p && k < 4; ++k) {
+      char* end = nullptr;
+      hooks.trace_pc[k] = uint32_t(std::strtoul(p, &end, 16));
+      if (*end == ':') { hooks.trace_reg[k] = uint32_t(std::strtoul(end + 1, &end, 16)); if (*end == ':') hooks.trace_val[k] = uint32_t(std::strtoul(end + 1, &end, 16)); }
+      p = *end == ',' ? end + 1 : end;
+    }
+    hooks.trace_base = a.dispatches;
   }
   uint64_t limit = a.options.limit ? a.options.limit : UINT64_MAX;
   uint64_t budget = limit > a.dispatches ? limit - a.dispatches : 1;
@@ -186,6 +201,7 @@ int nativeRun(Msd309Machine& machine) {
   a.cpu.reg(UC_MIPS_REG_HI, c.hi);
   a.cpu.reg(UC_MIPS_REG_LO, c.lo);
   if (hooks.skip_pc) std::fprintf(stderr, "EXPLORATORY: skipped calls to %08x: %llu\n", hooks.skip_pc, (unsigned long long)hooks.skip_count);
+  if (hooks.redirect_pc) std::fprintf(stderr, "EXPLORATORY: ignored menu exit requests: %llu%c", (unsigned long long)hooks.redirect_count, 10);
   a.finish(pc, c.fatal);
   std::fprintf(stderr, "native CPU: %llu guest instructions executed natively, %llu timer interrupts, %llu external, %llu exceptions\n", (unsigned long long)c.icount,
                (unsigned long long)c.timer_irqs, (unsigned long long)c.ext_irqs, (unsigned long long)c.exceptions);
