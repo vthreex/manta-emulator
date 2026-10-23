@@ -2399,7 +2399,7 @@ void Msd309Machine::publishPreview() const {
     options_.previewStore->publishOffscreen(std::move(off));
   }
   auto layers = collectGopLayers();
-  auto frame = composeGopPreview(layers,1920,1080,options_.videoPlaneBlackKey && !options_.videoPlane.empty());
+  auto frame = composeGopPreview(layers,1920,1080,options_.videoPlaneBlackKey && !options_.videoPlane.empty(), options_.videoPlaneBlackKeyEdge);
   if(options_.exploratoryGeHeight5Full)frame.label+=" | HYPOTHESIS: register 6F=height-5 copies full height";
   if(riu_.geBlendCopies)frame.label+=" | EXPLORATORY GE blend-copy model in use (not Titania4 behavior)";
   if(riu_.geI2Glyphs)frame.label+=" | EXPLORATORY GE I2-glyph model in use (not Titania4 behavior)";
@@ -2458,7 +2458,7 @@ void Msd309Machine::publishPreview() const {
     }
     frame.planeActive=true;frame.planeRgb=blue?0x000000ffu:0u;
     frame.label+=" | EXPLORATORY VIDEO PLANE (not emulated video; "+why+") behind the guest graphics";
-    if(options_.videoPlaneBlackKey)frame.label+=" | HYPOTHESIS: opaque black guest pixels are colour-keyed transparent (unverified)";
+    if(options_.videoPlaneBlackKey)frame.label+=options_.videoPlaneBlackKeyEdge ? " | HYPOTHESIS: opaque black guest pixels connected to the frame border are colour-keyed transparent (unverified)" : " | HYPOTHESIS: opaque black guest pixels are colour-keyed transparent (unverified)";
   }
   if (!options_.gopFrameHistory.empty() && !frame.empty() && frame.checksum != historyChecksum_ && historyFrames_ < 128) {
     // Every distinct GOP content state, in guest-time order (diagnostic timeline; the window itself only shows the latest).

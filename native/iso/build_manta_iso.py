@@ -31,7 +31,7 @@ def local(p):
     return None
 while i < len(args):
     t = args[i]
-    if t == "--exploratory-gop-black-colorkey" and not a.keep_colorkey: i += 1; continue
+    if t == "--exploratory-gop-black-colorkey" and not a.keep_colorkey: out_args.append("--exploratory-gop-black-colorkey-edge"); i += 1; continue
     if t in ("--summary", "--preview-capture", "--gop-frame-history", "--export-gop-frame"): i += 2; continue
     if t == "--load-state":
         snap = a.snapshot or args[i + 1]

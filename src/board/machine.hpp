@@ -152,6 +152,7 @@ struct Options {
   struct OffscreenSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; };
   std::vector<OffscreenSurface> offscreenInspector;   // DIAGNOSTIC read-only viewer of a guest surface that is NOT a GOP window (at most one)
   bool provenanceExtensions = false;   // opt-in: identity read-write-back RMW and INS bit-identity propagation (strict boot stays byte-identical when off)
+  bool videoPlaneBlackKeyEdge = false;   // EXPLORATORY HYPOTHESIS refinement of the black key: only black connected to the frame border is see-through
   bool videoPlaneBlackKey = false;   // EXPLORATORY HYPOTHESIS: opaque RGB-black guest pixels are see-through to the video plane (colour key); requires videoPlane
   std::string videoPlane;   // EXPLORATORY presentation: "" (neutral checker), black, blue, setting (guest Blue Screen setting); never changes guest state
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)

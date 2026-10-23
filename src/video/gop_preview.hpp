@@ -46,7 +46,7 @@ inline uint32_t argb1555ToBgra(uint16_t p) {
 // Opaque pixels (alpha bit set) replace what is below; clear-alpha pixels leave it unchanged.
 // blackKey: EXPLORATORY HYPOTHESIS (not Titania4-verified): an opaque pure-black pixel (RGB 0) is treated like a clear-alpha pixel, i.e. a GOP
 // transparent-colour key on black. The original ZUI clears its surfaces to alpha FF black; nothing in the firmware shows how the GOP treats that.
-inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t maxWidth = 1920, uint32_t maxHeight = 1080, bool blackKey = false) {
+inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t maxWidth = 1920, uint32_t maxHeight = 1080, bool blackKey = false, bool blackKeyEdgeOnly = false) {
   GopPreviewFrame f;
   f.label = "DIAGNOSTIC GOP PREVIEW - guest framebuffer pixels of enabled GOP windows; not verified panel scan-out";
   std::stable_sort(layers.begin(), layers.end(), [](const GopLayer& a, const GopLayer& b) {
@@ -77,10 +77,29 @@ inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t
       for (uint32_t xx = 0; xx < l.width && l.x + xx < w; ++xx) {
         size_t src = size_t(yy) * l.pitch + size_t(xx) * 2;
         uint16_t p = uint16_t(l.memory[src] | (l.memory[src + 1] << 8));
-        if (!(p & 0x8000) || (blackKey && !(p & 0x7fff))) continue;
+        if (!(p & 0x8000) || (blackKey && !blackKeyEdgeOnly && !(p & 0x7fff))) continue;
         size_t dst = size_t(l.y + yy) * w + l.x + xx;
         f.bgra[dst] = argb1555ToBgra(p); f.covered[dst] = 1;
       }
+  }
+  // blackKeyEdgeOnly (EXPLORATORY HYPOTHESIS): opaque pure-black pixels are see-through only where they connect (4-neighbourhood, through black or uncovered
+  // pixels) to the frame border, i.e. the cleared background around the OSD. Black that is enclosed by drawn pixels (menu panel interiors) stays opaque.
+  if (blackKey && blackKeyEdgeOnly && w && h) {
+    auto passable = [&](size_t i) { return !f.covered[i] || !(f.bgra[i] & 0x00ffffffu); };
+    std::vector<uint8_t> seen(size_t(w) * h, 0);
+    std::vector<uint32_t> stack;
+    auto push = [&](uint32_t x, uint32_t y) { size_t i = size_t(y) * w + x; if (!seen[i] && passable(i)) { seen[i] = 1; stack.push_back(uint32_t(i)); } };
+    for (uint32_t x = 0; x < w; ++x) { push(x, 0); push(x, h - 1); }
+    for (uint32_t y = 0; y < h; ++y) { push(0, y); push(w - 1, y); }
+    while (!stack.empty()) {
+      uint32_t i = stack.back(); stack.pop_back();
+      uint32_t x = i % w, y = i / w;
+      f.covered[i] = 0;
+      if (x > 0) push(x - 1, y);
+      if (x + 1 < w) push(x + 1, y);
+      if (y > 0) push(x, y - 1);
+      if (y + 1 < h) push(x, y + 1);
+    }
   }
   uint64_t hash = 1469598103934665603ull;
   for (auto v : f.bgra) { hash ^= v; hash *= 1099511628211ull; }

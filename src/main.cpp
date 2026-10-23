@@ -22,7 +22,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--diagnostic-usb-save-image", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load"};
-  static const std::set<std::string> flags = {"--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
+  static const std::set<std::string> flags = {"--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
     if (valued.count(args[i])) { ++i; continue; }
@@ -262,6 +262,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--load-state-allow-extra-options")o.loadAllowExtraOptions = true;
       else if (a == "--profile")o.profile = utf8Path(value(i));
       else if (a == "--exploratory-gop-black-colorkey")o.videoPlaneBlackKey = true;
+      else if (a == "--exploratory-gop-black-colorkey-edge") { o.videoPlaneBlackKey = true; o.videoPlaneBlackKeyEdge = true; }
       else if (a == "--exploratory-video-plane"){
         o.videoPlane = value(i);
         if(o.videoPlane!="black" && o.videoPlane!="blue" && o.videoPlane!="setting")throw std::runtime_error("--exploratory-video-plane needs black, blue or setting");

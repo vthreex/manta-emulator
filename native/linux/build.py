@@ -16,9 +16,10 @@ sources = [S("src/main.cpp"), S("src/cpu/engine.cpp"), S("src/cpu/openrisc.cpp")
 sources += sorted(glob.glob(S("native/gen/*.cpp")))
 inc = ["-I", S("src"), "-I", S("native/runtime"), "-I", os.path.join(work, "unicorn-irq", "include")]
 tgt = ["-target", "x86_64-linux-musl"]
+hdr_mtime = max(os.path.getmtime(h) for h in glob.glob(S("src/**/*.hpp"), recursive=True) + glob.glob(S("native/runtime/*.hpp")))   # headers are shared by every object: any change rebuilds all
 def compile_one(src):
     o = os.path.join(obj, os.path.relpath(src, repo).replace(os.sep, "_").replace("/", "_") + ".o")
-    if os.path.exists(o) and os.path.getmtime(o) > max(os.path.getmtime(src), 0) and "--force" not in sys.argv: return o, None
+    if os.path.exists(o) and os.path.getmtime(o) > max(os.path.getmtime(src), hdr_mtime) and "--force" not in sys.argv: return o, None
     gen = "native" + os.sep + "gen" in src
     flags = ["-O1", "-fno-strict-aliasing", "-w"] if gen else ["-O2", "-w"]
     r = subprocess.run([zig, "c++"] + tgt + ["-std=c++20", "-x", "c++", "-DMANTA_NATIVE_RUNNER", "-c", src, "-o", o] + inc + flags, capture_output=True, text=True)
