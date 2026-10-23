@@ -7,6 +7,17 @@
 #include <vector>
 
 #ifdef __linux__
+#if defined(MANTA_TLS)
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/error.h"
+#include "mbedtls/net_sockets.h"
+#include "mbedtls/ssl.h"
+#include "mbedtls/x509_crt.h"
+#include "psa/crypto.h"
+#include <mutex>
+#endif
+#include <memory>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -150,7 +161,7 @@ bool sendAll(int fd, const std::string& s, int timeoutMs) {
 }
 
 // Reads everything until the peer closes (Connection: close) or the size limit is hit.
-std::string readAll(int fd, size_t maxBytes, int timeoutMs, std::string& err) {
+std::string readAllFdImpl(int fd, size_t maxBytes, int timeoutMs, std::string& err) {
   std::string data;
   char buf[16384];
   for (;;) {
@@ -180,6 +191,117 @@ std::string dechunk(const std::string& in) {
   return out;
 }
 
+// A connection the request goes over: plain TCP or TLS.
+struct Transport {
+  virtual ~Transport() {}
+  virtual bool send(const std::string& data, int timeoutMs) = 0;
+  virtual std::string readAll(size_t maxBytes, int timeoutMs, std::string& err) = 0;
+};
+
+struct PlainTransport : Transport {
+  Conn& c;
+  explicit PlainTransport(Conn& conn) : c(conn) {}
+  bool send(const std::string& data, int timeoutMs) override { return sendAll(c.fd, data, timeoutMs); }
+  std::string readAll(size_t maxBytes, int timeoutMs, std::string& err) override { return readAllFdImpl(c.fd, maxBytes, timeoutMs, err); }
+};
+
+#if defined(MANTA_TLS)
+std::mutex g_tlsMutex;
+mbedtls_x509_crt g_ca;
+bool g_tlsInit = false, g_caOk = false;
+int g_caCerts = 0;
+
+std::string tlsError(int rc) { char b[160]; mbedtls_strerror(rc, b, sizeof b); return b; }
+
+struct TlsTransport : Transport {
+  Conn& c;
+  mbedtls_net_context net;
+  mbedtls_ssl_context ssl;
+  mbedtls_ssl_config conf;
+  mbedtls_ctr_drbg_context drbg;
+  mbedtls_entropy_context entropy;
+  bool up = false;
+
+  explicit TlsTransport(Conn& conn) : c(conn) {
+    mbedtls_net_init(&net); mbedtls_ssl_init(&ssl); mbedtls_ssl_config_init(&conf); mbedtls_ctr_drbg_init(&drbg); mbedtls_entropy_init(&entropy);
+    net.fd = c.fd;
+  }
+  ~TlsTransport() override {
+    if (up) mbedtls_ssl_close_notify(&ssl);
+    net.fd = -1;   // the socket belongs to Conn
+    mbedtls_ssl_free(&ssl); mbedtls_ssl_config_free(&conf); mbedtls_ctr_drbg_free(&drbg); mbedtls_entropy_free(&entropy);
+  }
+  // returns an error text, empty on success
+  std::string handshake(const std::string& host, int timeoutMs) {
+    {
+      std::lock_guard<std::mutex> lk(g_tlsMutex);
+      if (!g_tlsInit) {
+        g_tlsInit = true;
+        psa_crypto_init();
+        mbedtls_x509_crt_init(&g_ca);
+        int n = mbedtls_x509_crt_parse_file(&g_ca, "/etc/ssl/cacert.pem");
+        g_caOk = n >= 0;
+        g_caCerts = 0;
+        for (const mbedtls_x509_crt* p = &g_ca; p && p->raw.p; p = p->next) ++g_caCerts;
+      }
+      if (!g_caOk || g_caCerts == 0) return "no certificate authorities installed (/etc/ssl/cacert.pem)";
+    }
+    int rc = mbedtls_ctr_drbg_seed(&drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
+    if (rc) return "random generator: " + tlsError(rc);
+    rc = mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT, MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
+    if (rc) return "tls config: " + tlsError(rc);
+    mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+    mbedtls_ssl_conf_ca_chain(&conf, &g_ca, nullptr);
+    mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &drbg);
+    mbedtls_ssl_conf_read_timeout(&conf, uint32_t(timeoutMs));
+    if ((rc = mbedtls_ssl_setup(&ssl, &conf)) != 0) return "tls setup: " + tlsError(rc);
+    if ((rc = mbedtls_ssl_set_hostname(&ssl, host.c_str())) != 0) return "tls hostname: " + tlsError(rc);
+    mbedtls_ssl_set_bio(&ssl, &net, mbedtls_net_send, nullptr, mbedtls_net_recv_timeout);
+    for (;;) {
+      rc = mbedtls_ssl_handshake(&ssl);
+      if (rc == 0) break;
+      if (rc == MBEDTLS_ERR_SSL_WANT_READ || rc == MBEDTLS_ERR_SSL_WANT_WRITE) continue;
+      if (rc == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
+        char info[300];
+        uint32_t flags = mbedtls_ssl_get_verify_result(&ssl);
+        mbedtls_x509_crt_verify_info(info, sizeof info, "", flags);
+        std::string t = info;
+        while (!t.empty() && (t.back() == char(10) || t.back() == ' ')) t.pop_back();
+        for (char& ch : t) if (ch == char(10)) ch = ';';
+        return "certificate not trusted: " + t;
+      }
+      return "secure connection failed: " + tlsError(rc);
+    }
+    up = true;
+    return std::string();
+  }
+  bool send(const std::string& data, int) override {
+    size_t off = 0;
+    while (off < data.size()) {
+      int n = mbedtls_ssl_write(&ssl, reinterpret_cast<const unsigned char*>(data.data()) + off, data.size() - off);
+      if (n == MBEDTLS_ERR_SSL_WANT_READ || n == MBEDTLS_ERR_SSL_WANT_WRITE) continue;
+      if (n <= 0) return false;
+      off += size_t(n);
+    }
+    return true;
+  }
+  std::string readAll(size_t maxBytes, int, std::string& err) override {
+    std::string data;
+    unsigned char buf[16384];
+    for (;;) {
+      int n = mbedtls_ssl_read(&ssl, buf, sizeof buf);
+      if (n > 0) { data.append(reinterpret_cast<char*>(buf), size_t(n)); if (data.size() > maxBytes + 65536) { err = "page too large"; break; } continue; }
+      if (n == 0 || n == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) break;
+      if (n == MBEDTLS_ERR_SSL_WANT_READ || n == MBEDTLS_ERR_SSL_WANT_WRITE || n == MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) continue;
+      if (n == MBEDTLS_ERR_SSL_TIMEOUT) { err = "timed out"; break; }
+      if (data.empty()) err = "secure read failed: " + tlsError(n);
+      break;   // abrupt close after some data: use what we got
+    }
+    return data;
+  }
+};
+#endif
+
 }  // namespace
 
 Response get(const std::string& url0, int maxRedirects, size_t maxBody, int timeoutMs) {
@@ -189,15 +311,26 @@ Response get(const std::string& url0, int maxRedirects, size_t maxBody, int time
     Url u;
     if (!parseUrl(url, u)) { r.error = "bad address: " + url; return r; }
     r.finalUrl = u.str();
-    if (u.scheme == "https") { r.error = "HTTPS is not supported yet"; return r; }
     Conn c;
     std::string e = connectTo(c, u, timeoutMs);
     if (!e.empty()) { r.error = e; return r; }
+    std::unique_ptr<Transport> t;
+    if (u.scheme == "https") {
+#if defined(MANTA_TLS)
+      auto tls = std::make_unique<TlsTransport>(c);
+      std::string he = tls->handshake(u.host, timeoutMs);
+      if (!he.empty()) { r.error = he; return r; }
+      t = std::move(tls);
+#else
+      r.error = "HTTPS is not available in this build";
+      return r;
+#endif
+    } else t = std::make_unique<PlainTransport>(c);
     std::string req = "GET " + u.path + " HTTP/1.1\r\nHost: " + u.host + (u.port != "80" ? ":" + u.port : std::string()) +
                       "\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) MantaTV/1.0\r\nAccept: text/html,text/plain;q=0.9,*/*;q=0.5\r\nAccept-Language: en\r\nAccept-Encoding: identity\r\nConnection: close\r\n\r\n";
-    if (!sendAll(c.fd, req, timeoutMs)) { r.error = "send failed"; return r; }
+    if (!t->send(req, timeoutMs)) { r.error = "send failed"; return r; }
     std::string err;
-    std::string raw = readAll(c.fd, maxBody, timeoutMs, err);
+    std::string raw = t->readAll(maxBody, timeoutMs, err);
     size_t hdrEnd = raw.find("\r\n\r\n");
     if (hdrEnd == std::string::npos) { r.error = err.empty() ? "no response" : err; return r; }
     std::string head = raw.substr(0, hdrEnd);

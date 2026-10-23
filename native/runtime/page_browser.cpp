@@ -28,15 +28,16 @@ std::u16string widen(const std::string& s) { std::u16string o; for (char ch : s)
 
 const char* kHomeHtml =
     "<html><head><title>Home</title></head><body><h1>TV browser</h1>"
-    "<p>Move the highlight with the arrow keys, OK follows the selected link (LEFT/RIGHT chooses between several links on a line), Back goes back, "
-    "select the address bar and press OK to type an address.</p>"
-    "<h2>Plain text pages to try</h2><ul>"
-    "<li><a href=\"http://example.com/\">example.com</a> - the classic example page</li>"
-    "<li><a href=\"http://neverssl.com/\">neverssl.com</a> - a page that never uses HTTPS</li>"
-    "<li><a href=\"http://info.cern.ch/\">info.cern.ch</a> - the first web site</li>"
-    "<li><a href=\"http://httpforever.com/\">httpforever.com</a> - plain HTTP test page</li>"
+    "<p>Arrow keys move the highlight, OK follows the selected link (LEFT/RIGHT chooses between several links on a line), Back goes back. "
+    "Select the address bar and press OK to type an address.</p>"
+    "<h2>Pages to try</h2><ul>"
+    "<li><a href=\"http://info.cern.ch/\">info.cern.ch</a> - the first web site (plain HTTP)</li>"
+    "<li><a href=\"https://example.com/\">example.com</a> - the classic example page (HTTPS)</li>"
+    "<li><a href=\"https://en.wikipedia.org/wiki/Special:Random\">Wikipedia</a> - a random article</li>"
+    "<li><a href=\"https://text.npr.org/\">text.npr.org</a> - news as text</li>"
+    "<li><a href=\"https://lite.cnn.com/\">lite.cnn.com</a> - news as text</li>"
     "<li><a href=\"http://textfiles.com/\">textfiles.com</a> - old text files</li>"
-    "</ul><p>HTTPS sites (most of the web) need TLS, which is not in this build yet.</p></body></html>";
+    "</ul></body></html>";
 
 struct Fetch {
 #ifdef __linux__
@@ -109,7 +110,7 @@ void applyPage(Host& host, Browser& b, PageDef& pg, web::Rendered page, const st
   b.scroll = 0; b.loading = false;
   host.setLabel(b.addressHwnd, widen(url));
   showLines(host, b);
-  host.setFocus(kToolbarItems);   // first content line
+  if (b.history.size() > 1 || b.url != "about:home") host.setFocus(kToolbarItems);   // first content line (the very first page leaves the focus on the address bar)
   b.lastFocus = ~0u;
   selectFirstLink(b, pg);
   updateStatus(host, b, pg);

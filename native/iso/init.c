@@ -18,6 +18,9 @@ int main() {
   mknod("/dev/console", S_IFCHR | 0600, makedev(5, 1));
   mknod("/dev/tty0", S_IFCHR | 0600, makedev(4, 0));
   mknod("/dev/fb0", S_IFCHR | 0600, makedev(29, 0));
+  mknod("/dev/urandom", S_IFCHR | 0666, makedev(1, 9));   // entropy for TLS
+  mknod("/dev/random", S_IFCHR | 0666, makedev(1, 8));
+  mknod("/dev/null", S_IFCHR | 0666, makedev(1, 3));
   for (int i = 0; i < 8; ++i) { char p[32]; snprintf(p, sizeof p, "/dev/input/event%d", i); mknod(p, S_IFCHR | 0600, makedev(13, 64 + i)); }
   int c = open("/dev/console", O_RDWR);
   if (c >= 0) { dup2(c, 0); dup2(c, 1); dup2(c, 2); }

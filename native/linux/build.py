@@ -14,15 +14,26 @@ sources = [S("src/main.cpp"), S("src/cpu/engine.cpp"), S("src/cpu/openrisc.cpp")
            S("src/cpu/third_party/emu8051/core.c"), S("src/cpu/third_party/emu8051/opcodes.c"), S("src/cpu/third_party/emu8051/disasm.c"),
            S("native/runtime/runtime.cpp"), S("native/runtime/native_runner.cpp"), S("native/runtime/pages.cpp"), S("native/runtime/page_osk.cpp"), S("native/runtime/page_net.cpp"), S("native/runtime/page_browser.cpp"), S("native/runtime/http.cpp"), S("native/runtime/html_text.cpp"), S("native/linux/uclite.cpp"), S("native/linux/native_window_linux.cpp")]
 sources += sorted(glob.glob(S("native/gen/*.cpp")))
-inc = ["-I", S("src"), "-I", S("native/runtime"), "-I", os.path.join(work, "unicorn-irq", "include")]
+# TLS for the browser: mbedTLS 3.6 (downloaded to work/dl/tls, see docs/browser.md); built as C, linked into the same program
+mbed = os.path.join(work, "dl", "tls", "mbedtls-3.6.2")
+if os.path.isdir(os.path.join(mbed, "library")):
+    sources += sorted(glob.glob(os.path.join(mbed, "library", "*.c")))
+    HAVE_TLS = True
+else:
+    HAVE_TLS = False
+inc = ["-I", S("src"), "-I", S("native/runtime"), "-I", os.path.join(work, "unicorn-irq", "include")] + (["-I", os.path.join(mbed, "include"), "-I", os.path.join(mbed, "library")] if HAVE_TLS else [])
 tgt = ["-target", "x86_64-linux-musl"]
 hdr_mtime = max(os.path.getmtime(h) for h in glob.glob(S("src/**/*.hpp"), recursive=True) + glob.glob(S("native/runtime/*.hpp")))   # headers are shared by every object: any change rebuilds all
 def compile_one(src):
     o = os.path.join(obj, os.path.relpath(src, repo).replace(os.sep, "_").replace("/", "_") + ".o")
-    if os.path.exists(o) and os.path.getmtime(o) > max(os.path.getmtime(src), hdr_mtime) and "--force" not in sys.argv: return o, None
+    if os.path.exists(o) and os.path.getmtime(o) > (os.path.getmtime(src) if src.startswith(mbed) else max(os.path.getmtime(src), hdr_mtime)) and "--force" not in sys.argv: return o, None
     gen = "native" + os.sep + "gen" in src
     flags = ["-O1", "-fno-strict-aliasing", "-w"] if gen else ["-O2", "-w"]
-    r = subprocess.run([zig, "c++"] + tgt + ["-std=c++20", "-x", "c++", "-DMANTA_NATIVE_RUNNER", "-c", src, "-o", o] + inc + flags, capture_output=True, text=True)
+    if src.startswith(mbed):
+        r = subprocess.run([zig, "cc"] + tgt + ["-std=c99", "-x", "c", "-O2", "-w", "-c", src, "-o", o] + inc, capture_output=True, text=True)
+    else:
+        extra = ["-DMANTA_TLS"] if HAVE_TLS else []
+        r = subprocess.run([zig, "c++"] + tgt + ["-std=c++20", "-x", "c++", "-DMANTA_NATIVE_RUNNER"] + extra + ["-c", src, "-o", o] + inc + flags, capture_output=True, text=True)
     return o, (r.stderr if r.returncode else None)
 objs, failed = [], False
 with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as ex:

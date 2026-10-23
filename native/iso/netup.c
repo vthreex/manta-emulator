@@ -145,6 +145,39 @@ static void applyLease(int s, const char* ifname, const struct Lease* l) {
   }
 }
 
+// Sets the system clock from an NTP server (certificate validity checks need the right date; the PC's clock may be wrong or in local time).
+static int sntpSync() {
+  static const char* hosts[] = {"time.cloudflare.com", "time.google.com", "pool.ntp.org", 0};
+  for (int h = 0; hosts[h]; ++h) {
+    struct addrinfo hints, *res = 0;
+    memset(&hints, 0, sizeof hints); hints.ai_family = AF_INET; hints.ai_socktype = SOCK_DGRAM;
+    if (getaddrinfo(hosts[h], "123", &hints, &res) != 0 || !res) continue;
+    int s = socket(AF_INET, SOCK_DGRAM, 0);
+    if (s < 0) { freeaddrinfo(res); continue; }
+    uint8_t pkt[48]; memset(pkt, 0, sizeof pkt); pkt[0] = 0x23;   // LI 0, version 4, client
+    int ok = 0;
+    for (int attempt = 0; attempt < 3 && !ok; ++attempt) {
+      sendto(s, pkt, sizeof pkt, 0, res->ai_addr, res->ai_addrlen);
+      struct pollfd p = {s, POLLIN, 0};
+      if (poll(&p, 1, 1500) > 0) {
+        uint8_t rx[128];
+        int n = recv(s, rx, sizeof rx, 0);
+        if (n >= 48) {
+          uint32_t secs; memcpy(&secs, rx + 40, 4); secs = ntohl(secs);
+          if (secs > 2208988800u) {
+            struct timespec ts; ts.tv_sec = (time_t)(secs - 2208988800u); ts.tv_nsec = 0;
+            if (clock_settime(CLOCK_REALTIME, &ts) == 0) ok = 1;
+          }
+        }
+      }
+    }
+    close(s); freeaddrinfo(res);
+    if (ok) { printf("net: clock set from %s%c", hosts[h], 10); return 1; }
+  }
+  printf("net: could not reach an NTP server%c", 10);
+  return 0;
+}
+
 int main(int argc, char** argv) {
   int selftest = argc > 1 && strcmp(argv[1], "--selftest") == 0;
   setvbuf(stdout, 0, _IONBF, 0);
@@ -181,6 +214,7 @@ int main(int argc, char** argv) {
     snprintf(g_status, sizeof g_status, "state=up\niface=%s\nmac=%02x:%02x:%02x:%02x:%02x:%02x\nip=%s\nmask=%s\ngateway=%s\ndns=%s\nlease=%u\n", ifname, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ip, mk, gw, dns, ack.lease);
     writeStatus();
     printf("net: %s up, ip %s gateway %s dns %s\n", ifname, ip, gw, dns);
+    sntpSync();
     if (selftest) {
       struct ping_result pr; struct in_addr g = {ack.router};
       for (int i = 1; i <= 3; ++i) { ping_once(g, 0x4d41, i, 1500, &pr); printf("net: ping %s seq %d: %s %.1f ms ttl %d\n", pr.address, i, pr.ok ? "reply" : "timeout", pr.ms, pr.ttl); }

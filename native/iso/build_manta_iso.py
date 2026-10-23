@@ -61,6 +61,8 @@ if not os.path.exists(os.path.join(moddir, "modules.list")):
     subprocess.check_call([sys.executable, "-I", os.path.join(here, "stage_modules.py"), corepure, moddir])
 netfiles = [(netup, "/netup", 0o755), (os.path.join(moddir, "modules.list"), "/modules.list", 0o644)]
 netfiles += [(os.path.join(moddir, m), "/lib/modules/" + m, 0o644) for m in sorted(os.listdir(moddir)) if m.endswith(".ko")]
+cacert = os.path.join(work, "dl", "tls", "cacert.pem")   # Mozilla root certificates (curl.se/ca/cacert.pem) for HTTPS
+if os.path.exists(cacert): netfiles.append((cacert, "/etc/ssl/cacert.pem", 0o644))
 spec = ["%s@/init@755" % init, "%s@/manta@755" % a.binary, "%s@/manta.args" % argfile] + ["%s@%s@%o" % (s, d, m) for s, d, m in files + netfiles]
 initrd = os.path.join(work, "iso", "initrd-manta.gz")
 subprocess.check_call([sys.executable, os.path.join(here, "mkinitrd.py"), initrd] + spec)
