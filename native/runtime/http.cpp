@@ -18,6 +18,7 @@
 #include <mutex>
 #endif
 #include <memory>
+#include <mutex>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -304,9 +305,78 @@ struct TlsTransport : Transport {
 
 }  // namespace
 
-Response get(const std::string& url0, int maxRedirects, size_t maxBody, int timeoutMs) {
+// ---- cookies (in memory, whole session) ----
+struct Cookie { std::string name, value, domain, path = "/"; bool hostOnly = true, secure = false; };
+std::vector<Cookie> g_cookies;
+std::mutex g_cookieMutex;
+
+static bool hostMatches(const Cookie& c, const std::string& host) {
+  if (c.hostOnly) return c.domain == host;
+  return host == c.domain || (host.size() > c.domain.size() && host.compare(host.size() - c.domain.size(), c.domain.size(), c.domain) == 0 && host[host.size() - c.domain.size() - 1] == '.');
+}
+
+static void storeCookie(const std::string& setCookie, const std::string& host) {
+  std::vector<std::string> parts;
+  size_t i = 0;
+  while (i <= setCookie.size()) {
+    size_t j = setCookie.find(';', i);
+    std::string part = setCookie.substr(i, j == std::string::npos ? std::string::npos : j - i);
+    size_t b = part.find_first_not_of(" \t");
+    parts.push_back(b == std::string::npos ? std::string() : part.substr(b));
+    if (j == std::string::npos) break;
+    i = j + 1;
+  }
+  if (parts.empty()) return;
+  size_t eq = parts[0].find('=');
+  if (eq == std::string::npos || eq == 0) return;
+  Cookie c;
+  c.name = parts[0].substr(0, eq); c.value = parts[0].substr(eq + 1); c.domain = host;
+  bool remove = false;
+  for (size_t k = 1; k < parts.size(); ++k) {
+    std::string a = lower(parts[k]);
+    size_t e = a.find('=');
+    std::string key = a.substr(0, e), val = e == std::string::npos ? std::string() : parts[k].substr(e + 1);
+    if (key == "domain" && !val.empty()) { c.domain = lower(val[0] == '.' ? val.substr(1) : val); c.hostOnly = false; }
+    else if (key == "path" && !val.empty() && val[0] == '/') c.path = val;
+    else if (key == "secure") c.secure = true;
+    else if (key == "max-age" && std::atol(val.c_str()) <= 0) remove = true;
+  }
+  if (!c.hostOnly && !hostMatches(c, host)) return;   // a cookie may only be set for the host's own domain
+  std::lock_guard<std::mutex> lk(g_cookieMutex);
+  for (size_t k = 0; k < g_cookies.size();) {
+    if (g_cookies[k].name == c.name && g_cookies[k].domain == c.domain && g_cookies[k].path == c.path) g_cookies.erase(g_cookies.begin() + long(k)); else ++k;
+  }
+  if (!remove && !c.value.empty() && g_cookies.size() < 400) g_cookies.push_back(c);
+}
+
+static std::string cookieHeader(const Url& u) {
+  std::string out;
+  std::lock_guard<std::mutex> lk(g_cookieMutex);
+  std::string path = u.path.substr(0, u.path.find('?'));
+  for (const Cookie& c : g_cookies) {
+    if (!hostMatches(c, u.host)) continue;
+    if (c.secure && u.scheme != "https") continue;
+    if (path.compare(0, c.path.size(), c.path) != 0) continue;
+    if (!out.empty()) out += "; ";
+    out += c.name + "=" + c.value;
+  }
+  return out;
+}
+
+std::string urlEncode(const std::string& s) {
+  static const char* hex = "0123456789ABCDEF";
+  std::string o;
+  for (unsigned char ch : s) {
+    if (std::isalnum(ch) || ch == '-' || ch == '_' || ch == '.' || ch == '~') o.push_back(char(ch));
+    else if (ch == ' ') o.push_back('+');
+    else { o.push_back('%'); o.push_back(hex[ch >> 4]); o.push_back(hex[ch & 15]); }
+  }
+  return o;
+}
+
+Response fetch(const Request& request, int maxRedirects, size_t maxBody, int timeoutMs) {
   Response r;
-  std::string url = url0;
+  std::string url = request.url, method = request.method, body = request.body;
   for (int hop = 0;; ++hop) {
     Url u;
     if (!parseUrl(url, u)) { r.error = "bad address: " + url; return r; }
@@ -326,15 +396,20 @@ Response get(const std::string& url0, int maxRedirects, size_t maxBody, int time
       return r;
 #endif
     } else t = std::make_unique<PlainTransport>(c);
-    std::string req = "GET " + u.path + " HTTP/1.1\r\nHost: " + u.host + (u.port != "80" ? ":" + u.port : std::string()) +
-                      "\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) MantaTV/1.0\r\nAccept: text/html,text/plain;q=0.9,*/*;q=0.5\r\nAccept-Language: en\r\nAccept-Encoding: identity\r\nConnection: close\r\n\r\n";
+    std::string req = method + " " + u.path + " HTTP/1.1\r\nHost: " + u.host + (u.port != "80" && u.port != "443" ? ":" + u.port : std::string()) +
+                      "\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) MantaTV/1.0\r\nAccept: text/html,text/plain;q=0.9,*/*;q=0.5\r\nAccept-Language: en\r\nAccept-Encoding: identity\r\nConnection: close\r\n";
+    std::string ck = cookieHeader(u);
+    if (!ck.empty()) req += "Cookie: " + ck + "\r\n";
+    if (method == "POST") req += "Content-Type: " + request.contentType + "\r\nContent-Length: " + std::to_string(body.size()) + "\r\n";
+    req += "\r\n";
+    if (method == "POST") req += body;
     if (!t->send(req, timeoutMs)) { r.error = "send failed"; return r; }
     std::string err;
     std::string raw = t->readAll(maxBody, timeoutMs, err);
     size_t hdrEnd = raw.find("\r\n\r\n");
     if (hdrEnd == std::string::npos) { r.error = err.empty() ? "no response" : err; return r; }
     std::string head = raw.substr(0, hdrEnd);
-    std::string body = raw.substr(hdrEnd + 4);
+    std::string rbody = raw.substr(hdrEnd + 4);
     r.headers.clear();
     size_t eol = head.find("\r\n");
     std::string statusLine = head.substr(0, eol);
@@ -347,26 +422,38 @@ Response get(const std::string& url0, int maxRedirects, size_t maxBody, int time
       if (colon != std::string::npos) {
         std::string v = line.substr(colon + 1);
         size_t vb = v.find_first_not_of(" \t");
-        r.headers[lower(line.substr(0, colon))] = vb == std::string::npos ? std::string() : v.substr(vb);
+        std::string name = lower(line.substr(0, colon)), value = vb == std::string::npos ? std::string() : v.substr(vb);
+        if (name == "set-cookie") storeCookie(value, u.host); else r.headers[name] = value;
       }
       eol = next;
     }
-    if (lower(r.headers["transfer-encoding"]).find("chunked") != std::string::npos) body = dechunk(body);
-    else if (r.headers.count("content-length")) { size_t n = std::strtoul(r.headers["content-length"].c_str(), nullptr, 10); if (n < body.size()) body.resize(n); }
+    if (lower(r.headers["transfer-encoding"]).find("chunked") != std::string::npos) rbody = dechunk(rbody);
+    else if (r.headers.count("content-length")) { size_t n = std::strtoul(r.headers["content-length"].c_str(), nullptr, 10); if (n < rbody.size()) rbody.resize(n); }
     if (r.status >= 300 && r.status < 400 && r.headers.count("location") && hop < maxRedirects) {
       std::string next = resolveUrl(r.finalUrl, r.headers["location"]);
-      if (!next.empty()) { url = next; continue; }
+      if (!next.empty()) {
+        url = next;
+        if (r.status == 301 || r.status == 302 || r.status == 303) { method = "GET"; body.clear(); }
+        continue;
+      }
     }
-    if (body.size() > maxBody) body.resize(maxBody);
-    r.body = std::move(body);
+    std::string ct = lower(r.headers.count("content-type") ? r.headers["content-type"] : std::string());
+    size_t cs = ct.find("charset=");
+    if (cs != std::string::npos) { r.charset = ct.substr(cs + 8); size_t semi = r.charset.find(';'); if (semi != std::string::npos) r.charset.resize(semi); while (!r.charset.empty() && (r.charset.front() == '"' || r.charset.front() == ' ')) r.charset.erase(0, 1); while (!r.charset.empty() && (r.charset.back() == '"' || r.charset.back() == ' ')) r.charset.pop_back(); }
+    if (rbody.size() > maxBody) rbody.resize(maxBody);
+    r.body = std::move(rbody);
     if (!err.empty() && r.body.empty()) r.error = err;
     return r;
   }
 }
 
+Response get(const std::string& url, int maxRedirects, size_t maxBody, int timeoutMs) { Request q; q.url = url; return fetch(q, maxRedirects, maxBody, timeoutMs); }
+
 #else
 
 Response get(const std::string& url, int, size_t, int) { Response r; r.finalUrl = url; r.error = "networking is only available in the Linux build"; return r; }
+Response fetch(const Request& q, int, size_t, int) { Response r; r.finalUrl = q.url; r.error = "networking is only available in the Linux build"; return r; }
+std::string urlEncode(const std::string& v) { return v; }
 
 #endif
 
