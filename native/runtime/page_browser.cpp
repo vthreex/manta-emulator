@@ -30,6 +30,7 @@ const char* kHomeHtml =
     "<html><head><title>Home</title></head><body><h1>TV browser</h1>"
     "<p>Arrow keys move the highlight, OK follows the selected link (LEFT/RIGHT chooses between several links on a line), Back goes back. "
     "Select the address bar and press OK to type an address.</p>"
+    "<h2>Search</h2><form action=\"https://html.duckduckgo.com/html/\" method=\"get\"><input type=\"text\" name=\"q\" placeholder=\"Search the web (DuckDuckGo)\"> <input type=\"submit\" value=\"Search\"></form>"
     "<h2>Pages to try</h2><ul>"
     "<li><a href=\"http://info.cern.ch/\">info.cern.ch</a> - the first web site (plain HTTP)</li>"
     "<li><a href=\"https://example.com/\">example.com</a> - the classic example page (HTTPS)</li>"
