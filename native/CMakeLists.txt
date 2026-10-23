@@ -13,22 +13,11 @@ if(MINGW)
   target_link_options(manta_native PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
-# Differential test against the Unicorn interpreter, two programs (needs -DUNICORN_ROOT=...):
-#   diff_runs  : native side, links the recompiled firmware (store tracing on) and writes test vectors
-#   diff_check : replays the vectors in Unicorn (separate small executable: the Unicorn JIT buffer crashes inside the huge static executable)
-set(UNICORN_ROOT "" CACHE PATH "Directory containing Unicorn include/ and lib/")
+# Differential test, native side (the reference side is native/tools/diff_check.py): writes test vectors with the recompiled firmware, store tracing on
 add_executable(diff_runs tools/diff_runs.cpp runtime/runtime.cpp ${GEN_SOURCES})
 target_include_directories(diff_runs PRIVATE runtime)
 target_compile_definitions(diff_runs PRIVATE RT_TRACE_STORES)
 target_compile_options(diff_runs PRIVATE -O1 -fno-strict-aliasing -w)
 if(MINGW)
   target_link_options(diff_runs PRIVATE -static-libgcc -static-libstdc++)
-endif()
-if(UNICORN_ROOT)
-  add_executable(diff_check tools/diff_check.cpp)
-  target_include_directories(diff_check PRIVATE "${UNICORN_ROOT}/include")
-  target_link_libraries(diff_check PRIVATE "${UNICORN_ROOT}/lib/libunicorn.dll.a")
-  if(MINGW)
-    target_link_options(diff_check PRIVATE -static-libgcc -static-libstdc++)
-  endif()
 endif()
