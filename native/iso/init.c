@@ -23,6 +23,12 @@ int main() {
   if (c >= 0) { dup2(c, 0); dup2(c, 1); dup2(c, 2); }
   setvbuf(stdout, 0, _IONBF, 0);
   printf("\nMANTA LCD4214 - original firmware, native build\n");
+  mkdir("/run", 0755); mkdir("/etc", 0755);
+  if (access("/netup", X_OK) == 0 && fork() == 0) {   // network bring-up runs in the background: modules, interface, DHCP -> /run/net.txt
+    if (access("/netup.selftest", F_OK) == 0) execl("/netup", "/netup", "--selftest", (char*)0);
+    execl("/netup", "/netup", (char*)0);
+    _exit(127);
+  }
   static char buf[65536]; int n = 0;
   int fd = open("/manta.args", O_RDONLY);
   if (fd >= 0) { n = read(fd, buf, sizeof buf - 1); close(fd); }
