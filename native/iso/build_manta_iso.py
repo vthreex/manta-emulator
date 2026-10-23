@@ -13,6 +13,8 @@ work = os.path.abspath(os.path.join(repo, "..", "..", "work"))
 ap = argparse.ArgumentParser()
 ap.add_argument("out"); ap.add_argument("--launcher", required=True); ap.add_argument("--snapshot"); ap.add_argument("--binary", default=os.path.join(work, "linux", "manta_native_linux"))
 ap.add_argument("--vga", default="0x318")
+ap.add_argument("--cpi-after-load", type=int, default=2, help="EXPLORATORY time dilation after the snapshot loads (2/4/8/16 cycles per instruction)")
+ap.add_argument("--keep-colorkey", action="store_true", help="keep --exploratory-gop-black-colorkey (opaque black OSD pixels become transparent: the video plane shows through menus)")
 a = ap.parse_args()
 text = open(a.launcher).read()
 cmd = [l for l in text.splitlines() if "--firmware" in l][0]
@@ -29,6 +31,7 @@ def local(p):
     return None
 while i < len(args):
     t = args[i]
+    if t == "--exploratory-gop-black-colorkey" and not a.keep_colorkey: i += 1; continue
     if t in ("--summary", "--preview-capture", "--gop-frame-history", "--export-gop-frame"): i += 2; continue
     if t == "--load-state":
         snap = a.snapshot or args[i + 1]
@@ -41,6 +44,7 @@ while i < len(args):
         files.append((src, "/" + rel.lstrip("/") if not os.path.isabs(rel) and ":" not in rel else dest, 0o644))
         out_args.append(rel if not os.path.isabs(rel) and ":" not in rel else dest); i += 2; continue
     i += 1
+if a.cpi_after_load: out_args += ["--exploratory-cpi-after-load", str(a.cpi_after_load)]
 ir = os.path.join(repo, "configs", "input", "ir-keymap.tsv")
 files.append((ir, "/outputs/manta-emulator/configs/input/ir-keymap.tsv", 0o644))
 files.append((ir, "/configs/input/ir-keymap.tsv", 0o644))

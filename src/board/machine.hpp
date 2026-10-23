@@ -56,6 +56,8 @@ struct Options {
   bool candidatePm51Uart=false;
   bool explorePmNonresumeBranch=false;
   uint64_t exploratoryCpi=1;
+  bool exploratorySkipZuiTimers=false;   // EXPLORATORY, native CPU only: skip the original ZUI software-timer service 804A0770 (no ZUI timer ever expires: menus do not time out)
+  uint64_t exploratoryCpiAfterLoad=0;   // EXPLORATORY time dilation applied right after --load-state (0 = off): cycles per instruction from then on
   bool coproProbes=false;
   bool noOrQmemTrace=false;
   bool orIdlePollChanges=false;

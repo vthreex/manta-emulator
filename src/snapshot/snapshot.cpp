@@ -547,6 +547,7 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   importStats();
   resumePc_ = pc;
   resumed_ = true;
+  if (options_.exploratoryCpiAfterLoad) virtualTime_.switchCpi(uint32_t(options_.exploratoryCpiAfterLoad), dispatches_);   // EXPLORATORY: time runs slower per instruction from the restored state on
   if (options_.exploratoryCopro && copro_.started && irqLinesApplied_) cpu_.setIrqLines(irqLinesApplied_);
 }
 }  // namespace manta

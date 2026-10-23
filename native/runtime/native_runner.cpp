@@ -174,6 +174,10 @@ int nativeRun(Msd309Machine& machine) {
   RunHooks hooks;
   hooks.after_run = after_run;
   hooks.ctx = &runner;
+  if (a.options.exploratorySkipZuiTimers) {
+    hooks.skip_pc = 0x804A0770u;
+    std::fprintf(stderr, "EXPLORATORY: --exploratory-skip-zui-timers: the original ZUI software-timer service 804A0770 is skipped (no ZUI timer expires; not original behaviour)\n");
+  }
   uint64_t limit = a.options.limit ? a.options.limit : UINT64_MAX;
   uint64_t budget = limit > a.dispatches ? limit - a.dispatches : 1;
   run_guest(c, pc, budget, &hooks);
@@ -181,6 +185,7 @@ int nativeRun(Msd309Machine& machine) {
   bus.sync(c, pc);   // hand the final state back to the machine object so the summary shows it
   a.cpu.reg(UC_MIPS_REG_HI, c.hi);
   a.cpu.reg(UC_MIPS_REG_LO, c.lo);
+  if (hooks.skip_pc) std::fprintf(stderr, "EXPLORATORY: skipped calls to %08x: %llu\n", hooks.skip_pc, (unsigned long long)hooks.skip_count);
   a.finish(pc, c.fatal);
   std::fprintf(stderr, "native CPU: %llu guest instructions executed natively, %llu timer interrupts, %llu external, %llu exceptions\n", (unsigned long long)c.icount,
                (unsigned long long)c.timer_irqs, (unsigned long long)c.ext_irqs, (unsigned long long)c.exceptions);

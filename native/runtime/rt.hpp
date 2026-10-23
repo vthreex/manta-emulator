@@ -38,6 +38,8 @@ typedef uint32_t (*RunFn)(CPU*, uint32_t);
 struct RunHooks {
   void (*after_run)(CPU&, uint32_t pc, void* ctx) = nullptr;   // called after every run, before interrupt delivery (host services, time)
   void* ctx = nullptr;
+  uint64_t skip_count = 0;
+  uint32_t skip_pc = 0;   // EXPLORATORY (opt-in): a call entering this guest function returns at once (v0 = 0) without running it; 0 = off
 };
 uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks = nullptr);
 extern const uint32_t GEN_BASE, GEN_WORDS;

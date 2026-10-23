@@ -105,6 +105,7 @@ uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks) {
     while (c.icount < limit && !c.halt) {
       uint32_t idx = (pc - GEN_BASE) >> 2;
       if (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx]) BADPC(&c, pc);
+      if (hooks && pc == hooks->skip_pc) { c.r[2] = 0; pc = c.r[31]; ++hooks->skip_count; continue; }   // exploratory skipped function: return to the caller
       c.ring[c.ring_i++ & 63] = pc;
       pc = GEN_RUNS[GEN_INDEX[idx]](&c, pc);
       if (hooks && hooks->after_run) hooks->after_run(c, pc, hooks->ctx);
