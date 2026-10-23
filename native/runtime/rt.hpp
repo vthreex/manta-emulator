@@ -32,9 +32,18 @@ struct CPU {
   uint64_t timer_irqs = 0, ext_irqs = 0, exceptions = 0;
   uint32_t ring[64] = {};         // recently dispatched run starts, for diagnostics
   unsigned ring_i = 0;
+  void* hooks = nullptr;          // the RunHooks of the active run_guest (for nested guest calls)
+  // Asynchronous call injection (EXPLORATORY features): the host asks for a guest function to be called at the next run boundary. The registers are saved in a
+  // frame on the guest stack; when the function returns to the trampoline address the registers are restored and the interrupted code resumes. The function
+  // runs in the normal loop (interrupts, host services and time all keep working).
+  struct { bool pending = false; uint32_t target = 0, a0 = 0, a1 = 0; } inject;
+  bool injecting = false;
 };
 
 typedef uint32_t (*RunFn)(CPU*, uint32_t);
+// Host extension point (EXPLORATORY features): when a dispatch reaches `pc`, fn(c, ctx) runs first. If it returns true the original guest function is NOT
+// executed: the host has set v0 and the call returns to ra at once. If it returns false the original runs unchanged.
+struct EntryHook { uint32_t pc = 0; bool (*fn)(CPU&, void*) = nullptr; void* ctx = nullptr; };
 struct RunHooks {
   void (*after_run)(CPU&, uint32_t pc, void* ctx) = nullptr;   // called after every run, before interrupt delivery (host services, time)
   void* ctx = nullptr;
@@ -42,12 +51,17 @@ struct RunHooks {
   // instead (0 = off). Used to ignore one specific original call site, never a whole function.
   uint32_t redirect_pc = 0, redirect_ra = 0, redirect_a0 = 0, redirect_a1 = 0, redirect_to = 0;
   uint64_t redirect_count = 0;
+  EntryHook entry[16];
+  unsigned entry_n = 0;
   uint64_t skip_count = 0;
   uint32_t trace_pc[4] = {0, 0, 0, 0}, trace_reg[4] = {0, 0, 0, 0}, trace_val[4] = {0, 0, 0, 0};   // diagnostic: log entries of trace_pc[i] where r[trace_reg[i]] == trace_val[i] (trace_reg 0 = any)
   uint64_t trace_base = 0;
   uint32_t skip_pc = 0;   // EXPLORATORY (opt-in): a call entering this guest function returns at once (v0 = 0) without running it; 0 = off
 };
 uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks = nullptr);
+constexpr uint32_t kInjectReturn = 0xbfffff10u;   // trampoline address a function called through CPU::inject returns to
+// Calls a guest function from host code at a run boundary (registers are saved and restored; no interrupts are delivered meanwhile). Returns v0.
+uint32_t call_guest(CPU& c, uint32_t pc, uint32_t a0 = 0, uint32_t a1 = 0, uint32_t a2 = 0, uint32_t a3 = 0, uint64_t budget = 200000000);
 extern const uint32_t GEN_BASE, GEN_WORDS;
 extern const uint32_t GEN_INDEX[];
 extern const RunFn GEN_RUNS[];

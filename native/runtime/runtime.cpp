@@ -101,20 +101,68 @@ static void idle(CPU* c) {
   if (!c->ip7 && d && d < 0x80000000u) c->icount += d / c->count_per_insn + 1;
 }
 
+static bool entry_hooked(CPU& c, RunHooks* hooks, uint32_t pc) {
+  for (unsigned k = 0; k < hooks->entry_n; ++k)
+    if (hooks->entry[k].pc == pc && hooks->entry[k].fn(c, hooks->entry[k].ctx)) return true;
+  return false;
+}
+uint32_t call_guest(CPU& c, uint32_t pc, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3, uint64_t budget) {
+  constexpr uint32_t kSentinel = 0xbfffff00u;
+  RunHooks* hooks = static_cast<RunHooks*>(c.hooks);
+  uint32_t saved[32], hi = c.hi, lo = c.lo;
+  for (int i = 0; i < 32; ++i) saved[i] = c.r[i];
+  c.r[4] = a0; c.r[5] = a1; c.r[6] = a2; c.r[7] = a3;
+  c.r[29] = (c.r[29] - 0x400u) & ~7u;
+  c.r[31] = kSentinel;
+  const uint64_t end = c.icount + budget;
+  try {
+    while (pc != kSentinel && c.icount < end && !c.halt) {
+      uint32_t idx = (pc - GEN_BASE) >> 2;
+      if (hooks && hooks->entry_n && entry_hooked(c, hooks, pc)) { pc = c.r[31]; continue; }
+      if (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx]) BADPC(&c, pc);
+      pc = GEN_RUNS[GEN_INDEX[idx]](&c, pc);
+    }
+  } catch (int) {
+  }
+  if (pc != kSentinel) std::fprintf(stderr, "call_guest: did not return (pc %08x)%c", pc, 10);
+  uint32_t v0 = c.r[2];
+  for (int i = 0; i < 32; ++i) c.r[i] = saved[i];
+  c.hi = hi; c.lo = lo;
+  return v0;
+}
 uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks) {
+  c.hooks = hooks;
   try {
     while (c.icount < limit && !c.halt) {
       uint32_t idx = (pc - GEN_BASE) >> 2;
-      if (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx]) BADPC(&c, pc);
+      if (pc != kInjectReturn && (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx])) BADPC(&c, pc);
       if (hooks && hooks->trace_pc[0]) for (int k = 0; k < 4; ++k) if (pc == hooks->trace_pc[k] && (!hooks->trace_reg[k] || c.r[hooks->trace_reg[k]] == hooks->trace_val[k]))
-        std::fprintf(stderr, "TRACE pc=%08x dispatch=%llu a0=%x a1=%x a2=%x a3=%x ra=%x sp=%x\n", pc, (unsigned long long)(hooks->trace_base + c.icount), c.r[4], c.r[5], c.r[6], c.r[7], c.r[31], c.r[29]);
+        std::fprintf(stderr, "TRACE pc=%08x dispatch=%llu a0=%x a1=%x a2=%x a3=%x ra=%x sp=%x prev=%x,%x,%x,%x,%x,%x\n", pc, (unsigned long long)(hooks->trace_base + c.icount), c.r[4], c.r[5], c.r[6], c.r[7], c.r[31], c.r[29], c.ring[(c.ring_i - 2) & 63], c.ring[(c.ring_i - 3) & 63], c.ring[(c.ring_i - 4) & 63], c.ring[(c.ring_i - 5) & 63], c.ring[(c.ring_i - 6) & 63], c.ring[(c.ring_i - 7) & 63]);
       if (hooks && hooks->redirect_pc && pc == hooks->redirect_pc && c.r[31] == hooks->redirect_ra && c.r[4] == hooks->redirect_a0 && c.r[5] == hooks->redirect_a1) {
         c.r[2] = 1; pc = hooks->redirect_to; ++hooks->redirect_count; continue;
       }
+      if (hooks && hooks->entry_n && entry_hooked(c, hooks, pc)) { pc = c.r[31]; continue; }
       if (hooks && pc == hooks->skip_pc) { c.r[2] = 0; pc = c.r[31]; ++hooks->skip_count; continue; }   // exploratory skipped function: return to the caller
       c.ring[c.ring_i++ & 63] = pc;
+      if (pc == kInjectReturn) {   // the injected function returned: restore the interrupted context
+        const uint32_t* f = reinterpret_cast<const uint32_t*>(c.ram + (c.r[29] & 0x1fffffffu));
+        for (int i = 0; i < 32; ++i) c.r[i] = f[i];
+        c.hi = f[32]; c.lo = f[33]; pc = f[34];
+        c.injecting = false;
+        continue;
+      }
       pc = GEN_RUNS[GEN_INDEX[idx]](&c, pc);
       if (hooks && hooks->after_run) hooks->after_run(c, pc, hooks->ctx);
+      if (c.inject.pending && !c.injecting && pc != kInjectReturn) {   // save the interrupted context on the guest stack and call the requested function
+        c.inject.pending = false;
+        uint32_t sp = (c.r[29] - 0x140u) & ~7u;
+        uint32_t* f = reinterpret_cast<uint32_t*>(c.ram + (sp & 0x1fffffffu));
+        for (int i = 0; i < 32; ++i) f[i] = c.r[i];
+        f[32] = c.hi; f[33] = c.lo; f[34] = pc;
+        c.r[29] = sp; c.r[31] = kInjectReturn; c.r[4] = c.inject.a0; c.r[5] = c.inject.a1;
+        pc = c.inject.target;
+        c.injecting = true;
+      }
       if (c.wait) { c.wait = 0; idle(&c); }
       check_interrupts(&c, pc);
     }

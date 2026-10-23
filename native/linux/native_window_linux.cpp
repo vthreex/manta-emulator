@@ -50,6 +50,17 @@ const char* functionFor(unsigned code) {
     default: return nullptr;
   }
 }
+// Character typed by a PC key while the on-screen keyboard is open (US layout); 0 = none.
+char charFor(unsigned code, bool shift) {
+  static const struct { unsigned code; char lo, up; } map[] = {
+    {16,'q','Q'},{17,'w','W'},{18,'e','E'},{19,'r','R'},{20,'t','T'},{21,'y','Y'},{22,'u','U'},{23,'i','I'},{24,'o','O'},{25,'p','P'},
+    {30,'a','A'},{31,'s','S'},{32,'d','D'},{33,'f','F'},{34,'g','G'},{35,'h','H'},{36,'j','J'},{37,'k','K'},{38,'l','L'},
+    {44,'z','Z'},{45,'x','X'},{46,'c','C'},{47,'v','V'},{48,'b','B'},{49,'n','N'},{50,'m','M'},
+    {2,'1','!'},{3,'2','@'},{4,'3','#'},{5,'4','$'},{6,'5','%'},{7,'6','^'},{8,'7','&'},{9,'8','*'},{10,'9','('},{11,'0',')'},
+    {12,'-','_'},{13,'=','+'},{39,';',':'},{40,'\'','"'},{51,',','<'},{52,'.','>'},{53,'/','?'},{57,' ',' '}};
+  for (const auto& m : map) if (m.code == code) return shift ? m.up : m.lo;
+  return 0;
+}
 int digitFor(unsigned code) {
   static const int top[] = {11, 2, 3, 4, 5, 6, 7, 8, 9, 10};                    // KEY_0 .. KEY_9
   static const int pad[] = {82, 79, 80, 81, 75, 76, 77, 71, 72, 73};            // KEY_KP0 .. KEY_KP9
@@ -71,11 +82,27 @@ void nativeWindow(const std::string&, bool smoke, std::shared_ptr<GopPreviewStor
   }
   for (unsigned y = 0; y < fb.h; ++y) for (unsigned x = 0; x < fb.w; ++x) fb.put(x, y, 0x141414);
   uint64_t shown = 0;
+  bool shiftDown = false;
   for (;;) {
     for (int fd : keys) {
       input_event ev;
       while (read(fd, &ev, sizeof ev) == sizeof ev)
-        if (ev.type == EV_KEY && ev.value == 1 && store) {
+        if (ev.type == EV_KEY && (ev.code == KEY_LEFTSHIFT || ev.code == KEY_RIGHTSHIFT)) shiftDown = ev.value != 0;
+        else if (ev.type == EV_KEY && ev.value == 1 && ev.code == KEY_K && store && !store->remote->oskActive.load()) {   // K opens the on-screen keyboard
+          store->remote->push("OSK"); std::cout << "[key OSK]" << std::endl;
+        } else if (ev.type == EV_KEY && ev.value >= 1 && store && store->remote->oskActive.load()) {
+          // keyboard open: navigation keys and characters go to it (key repeat only for the keys where it is useful)
+          std::string fn;
+          switch (ev.code) {
+            case KEY_UP: fn = "UP"; break;  case KEY_DOWN: fn = "DOWN"; break;  case KEY_LEFT: fn = "LEFT"; break;  case KEY_RIGHT: fn = "RIGHT"; break;
+            case KEY_BACKSPACE: fn = "OSK_BACKSPACE"; break;
+            case KEY_ENTER: case KEY_KPENTER: if (ev.value == 1) fn = "OK"; break;
+            case KEY_ESC: if (ev.value == 1) fn = "EXIT"; break;
+            case KEY_TAB: if (ev.value == 1) fn = "MENU"; break;   // toggles shift on the keyboard
+            default: if (ev.value == 1) if (char ch = charFor(ev.code, shiftDown)) fn = std::string("OSK_CHAR:") + ch;
+          }
+          if (!fn.empty()) { store->remote->push(fn); std::cout << "[osk " << fn << "]" << std::endl; }
+        } else if (ev.type == EV_KEY && ev.value == 1 && store) {
           if (const char* fn = functionFor(ev.code)) { store->remote->push(fn); std::cout << "[key " << fn << "]" << std::endl; }
           else if (int d = digitFor(ev.code); d >= 0) { char name[] = "DIGIT_0"; name[6] = char('0' + d); store->remote->push(name); std::cout << "[key " << name << "]" << std::endl; }
         }

@@ -21,7 +21,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
   static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--exploratory-atv-signal", "--gop-history-interval-log2", "--save-state-at",
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--diagnostic-usb-save-image", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
-    "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load"};
+    "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at"};
   static const std::set<std::string> flags = {"--exploratory-menu-no-autoexit", "--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
@@ -101,6 +101,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-cpi")o.exploratoryCpi=std::stoull(value(i),nullptr,0);
       else if (a == "--exploratory-skip-zui-timers") o.exploratorySkipZuiTimers = true;
       else if (a == "--exploratory-menu-no-autoexit") o.exploratoryMenuNoAutoexit = true;
+      else if (a == "--exploratory-osk-test-at") o.exploratoryOskTestAt = std::stoull(value(i), nullptr, 0);
       else if (a == "--exploratory-cpi-after-load")o.exploratoryCpiAfterLoad=std::stoull(value(i),nullptr,0);
       else if (a == "--copro-probes")o.coproProbes=true;
       else if (a == "--exploratory-copro")o.exploratoryCopro=true;

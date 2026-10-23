@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include "video/pal_cvbs.hpp"
 #include <array>
 #include "snapshot/archive.hpp"
@@ -56,6 +57,8 @@ struct Options {
   bool candidatePm51Uart=false;
   bool explorePmNonresumeBranch=false;
   uint64_t exploratoryCpi=1;
+  uint64_t exploratoryOskTestAt=0;   // EXPLORATORY, native CPU only: open the on-screen keyboard page once at this dispatch (diagnostic)
+  std::function<bool(const std::string&)> remoteFilter;   // native build: sees every virtual-remote function first; true = consumed (on-screen keyboard)
   bool exploratoryMenuNoAutoexit=false;   // EXPLORATORY, native CPU only: ignore the menu page handler's exit request (ZUI mode 5, 804F0724(0x17,5) called from 804CA098) so an open menu stays open
   bool exploratorySkipZuiTimers=false;   // EXPLORATORY, native CPU only: skip the original ZUI software-timer service 804A0770 (no ZUI timer ever expires: menus do not time out)
   uint64_t exploratoryCpiAfterLoad=0;   // EXPLORATORY time dilation applied right after --load-state (0 = off): cycles per instruction from then on

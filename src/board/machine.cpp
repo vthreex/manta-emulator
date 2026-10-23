@@ -2367,13 +2367,14 @@ void Msd309Machine::serviceVirtualRemote() {
   auto waiting = std::move(irWaiting_);
   irWaiting_.clear();
   for (auto& [function, at] : waiting) deliverIrFunction(function, at);
+  auto consumed = [&](const std::string& f) { return options_.remoteFilter && options_.remoteFilter(f); };
   while (!options_.irScript.empty() && options_.irScript.front().dispatch <= dispatches_) {
     auto item = options_.irScript.front();
     options_.irScript.erase(options_.irScript.begin());
-    deliverIrFunction(item.function, item.dispatch);
+    if (!consumed(item.function)) deliverIrFunction(item.function, item.dispatch);
   }
   if (options_.remoteQueue && options_.remoteQueue->pending())
-    for (auto& function : options_.remoteQueue->drain()) deliverIrFunction(function, dispatches_);
+    for (auto& function : options_.remoteQueue->drain()) if (!consumed(function)) deliverIrFunction(function, dispatches_);
 }
 void Msd309Machine::publishPreview() const {
   if (!options_.previewStore && options_.gopFrameHistory.empty()) return;

@@ -128,7 +128,7 @@ LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM a, LPARAM b) {
   if (msg == WM_KEYDOWN && st->store && !(b & (1 << 30))) {   // ignore Windows auto-repeat: one press = one emulated IR frame
     const char *function = nullptr;
     switch (a) {
-      case 'M': function = "MENU"; break;   case 'S': function = "SOURCE"; break;  case VK_ESCAPE: function = "EXIT"; break;
+      case 'K': function = "OSK"; break;   case 'M': function = "MENU"; break;   case 'S': function = "SOURCE"; break;  case VK_ESCAPE: function = "EXIT"; break;
       case VK_RETURN: function = "OK"; break;  case VK_UP: function = "UP"; break;  case VK_DOWN: function = "DOWN"; break;
       case VK_LEFT: function = "LEFT"; break;  case VK_RIGHT: function = "RIGHT"; break;  case 'P': function = "POWER"; break;  case 'I': function = "INFO"; break;
       case VK_F1: function = "SOURCE_AV1"; break;  case VK_F2: function = "SOURCE_SVIDEO"; break;  case VK_F3: function = "SOURCE_YPBPR"; break;

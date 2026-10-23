@@ -20,6 +20,7 @@ public:
     pending_ = true;
   }
   bool pending() const { return pending_; }
+  std::atomic<bool> oskActive{false};   // native build: the on-screen keyboard is open (the presenter then sends characters instead of remote functions)
   std::vector<std::string> drain() {
     std::lock_guard<std::mutex> lock(mutex_);
     std::vector<std::string> out(events_.begin(), events_.end());

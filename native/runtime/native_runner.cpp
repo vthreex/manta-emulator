@@ -6,6 +6,7 @@
 // diagnostics (e.g. --diagnostic-riu-zero-unknown-reads) for runs that should continue past unknown registers.
 #include "board/machine.hpp"
 #include "rt.hpp"
+#include "osk.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -103,6 +104,7 @@ struct MachineBus : Bus {
 struct Runner {
   NativeAccess& a;
   uint64_t lastIcount = 0;
+  osk::Osk keyboard;
 };
 
 static void after_run(CPU& c, uint32_t pc, void* ctx) {
@@ -114,6 +116,7 @@ static void after_run(CPU& c, uint32_t pc, void* ctx) {
   a.dispatches = cur;
   c.last_pc = pc;
   if (a.stopped) { c.halt = true; return; }
+  r.keyboard.service(c, cur);
   // the interpreter's hook runs these on exact multiples of 0x4000 dispatches; here on the first run boundary after crossing
   const uint64_t blocks = (cur >> 14) - (prev >> 14);
   if (blocks) {
@@ -175,6 +178,10 @@ int nativeRun(Msd309Machine& machine) {
   RunHooks hooks;
   hooks.after_run = after_run;
   hooks.ctx = &runner;
+  runner.keyboard.testAt = a.options.exploratoryOskTestAt;
+  runner.keyboard.attach(hooks);
+  if (a.options.previewStore) runner.keyboard.activeFlag = &a.options.previewStore->remote->oskActive;
+  a.options.remoteFilter = [&runner](const std::string& f) { return runner.keyboard.onFunction(f); };
   if (a.options.exploratoryMenuNoAutoexit) {
     hooks.redirect_pc = 0x804F0724u; hooks.redirect_ra = 0x804CA098u; hooks.redirect_a0 = 0x17; hooks.redirect_a1 = 5; hooks.redirect_to = 0x804C8624u;
     std::fprintf(stderr, "EXPLORATORY: --exploratory-menu-no-autoexit: the menu page handler's exit request (804F0724(0x17,5) from 804CA098) is ignored (not original behaviour)%c", 10);
@@ -202,6 +209,7 @@ int nativeRun(Msd309Machine& machine) {
   a.cpu.reg(UC_MIPS_REG_LO, c.lo);
   if (hooks.skip_pc) std::fprintf(stderr, "EXPLORATORY: skipped calls to %08x: %llu\n", hooks.skip_pc, (unsigned long long)hooks.skip_count);
   if (hooks.redirect_pc) std::fprintf(stderr, "EXPLORATORY: ignored menu exit requests: %llu%c", (unsigned long long)hooks.redirect_count, 10);
+  if (std::getenv("MANTA_RING")) { std::fprintf(stderr, "RING (most recent run entries, oldest first):"); for (unsigned i = 0; i < 64; ++i) std::fprintf(stderr, " %08x", c.ring[(c.ring_i + i) & 63]); std::fprintf(stderr, "%c", 10); }
   a.finish(pc, c.fatal);
   std::fprintf(stderr, "native CPU: %llu guest instructions executed natively, %llu timer interrupts, %llu external, %llu exceptions\n", (unsigned long long)c.icount,
                (unsigned long long)c.timer_irqs, (unsigned long long)c.ext_irqs, (unsigned long long)c.exceptions);
