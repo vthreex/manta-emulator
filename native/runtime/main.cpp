@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit);
 
 // Minimal lenient bus: UART capture, flash window, everything else reads 0 (counted). The interpreter-based emulator models the real peripherals.
 struct SimpleBus : Bus {

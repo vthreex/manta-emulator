@@ -100,13 +100,14 @@ static void idle(CPU* c) {
   if (!c->ip7 && d && d < 0x80000000u) c->icount += d / c->count_per_insn + 1;
 }
 
-uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit) {
+uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks) {
   try {
-    while (c.icount < limit) {
+    while (c.icount < limit && !c.halt) {
       uint32_t idx = (pc - GEN_BASE) >> 2;
       if (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx]) BADPC(&c, pc);
       c.ring[c.ring_i++ & 63] = pc;
       pc = GEN_RUNS[GEN_INDEX[idx]](&c, pc);
+      if (hooks && hooks->after_run) hooks->after_run(c, pc, hooks->ctx);
       if (c.wait) { c.wait = 0; idle(&c); }
       check_interrupts(&c, pc);
     }

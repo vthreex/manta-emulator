@@ -23,3 +23,16 @@ it is not a translation problem.) CP0/exception paths and MMIO are not covered b
 ## State
 Milestone 1 (CPU) works: the recompiled image runs from the runtime entry. With the stub bus it stops in a hardware wait loop (`pc 80547C90`, UART status). Next: attach the real peripheral models
 (`manta::Riu`: GE, GOP, UART, timers, ...) as the `Bus`, with the tuner/decoder paths (AVD/VIF/AFEC) answering benignly, then the GOP preview window.
+
+## Milestone 2: the native CPU inside the real machine (`manta_native_full`)
+`native/runtime/native_runner.cpp` + `--native-cpu` (native build only; root target `manta_native_full`, built when `native/gen` exists): the machine object (peripherals, GE/GOP/OSD models, ATV signal, preview window,
+virtual remote, snapshots) is unchanged, but its CPU is the recompiled firmware. It takes over from a saved state (`--load-state`): registers/CP0 are read from the interpreter engine, guest RAM is the machine's own
+backing store, MMIO and the flash windows go through the machine's `mmioRead/mmioWrite`, MIU1 through the kseg2 alias, periodic services (coprocessor, IR remote, preview) run at run boundaries.
+Tuner paths are kept but harmless: `--diagnostic-riu-zero-unknown-reads` makes never-defined registers read 0 instead of stopping the run (the AVD/VIF/AFEC models and the PAL signal still apply).
+* Example: `manta_native_full.exe <the usual options> --load-state work/checkpoints/atv-840M.snap --native-cpu --diagnostic-riu-zero-unknown-reads --max-instructions 3000000000` runs the SCART state to 3.0B dispatches (2.16B of them native) in
+  3.7 min (about 10 M guest instructions/s including all peripheral models; about 4x the interpreter; the CPU alone does ~585 M/s, the rest is the MMIO models); the real OSD ("SCART" source bar) is drawn by the original code through the GE/GOP models.
+  `work/launch-WINDOW-native.cmd` opens the same state in the window.
+* **Not carried over**: the interpreter's per-instruction hook (unknown-bit provenance, `preserved_control_write` events, loop skipping, coverage/traces). With provenance-dependent hypotheses the event streams diverge
+  (first difference at event 350: the interpreter logs an extra `preserved_control_write` before a GOP selector write) and the native run later stops on registers the interpreter tolerates; use the lenient diagnostics.
+  Also not equal yet: the SCART banner is not dismissed in the native run (guest stays in its idle loop), cause not found.
+* Boot: the native CPU needs a snapshot (or the interpreter run up to the runtime entry); a standalone native boot would need the boot ROM/stub run natively or high-level-emulated.

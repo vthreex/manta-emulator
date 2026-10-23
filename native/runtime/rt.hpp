@@ -28,12 +28,18 @@ struct CPU {
   uint32_t ext_irq = 0;           // external interrupt lines IP2..IP6 (bit0 = IP2)
   uint32_t last_pc = 0;
   bool fatal = false;
+  bool halt = false;              // set by the bus/hooks to end the run loop
   uint64_t timer_irqs = 0, ext_irqs = 0, exceptions = 0;
   uint32_t ring[64] = {};         // recently dispatched run starts, for diagnostics
   unsigned ring_i = 0;
 };
 
 typedef uint32_t (*RunFn)(CPU*, uint32_t);
+struct RunHooks {
+  void (*after_run)(CPU&, uint32_t pc, void* ctx) = nullptr;   // called after every run, before interrupt delivery (host services, time)
+  void* ctx = nullptr;
+};
+uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks = nullptr);
 extern const uint32_t GEN_BASE, GEN_WORDS;
 extern const uint32_t GEN_INDEX[];
 extern const RunFn GEN_RUNS[];

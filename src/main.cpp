@@ -107,6 +107,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-ge-yuv-stretch")o.exploratoryGeYuvStretch=true;
       else if (a == "--exploratory-bdma-crc-miu")o.exploratoryBdmaCrcMiu=true;
       else if (a == "--exploratory-atv-picture")o.exploratoryAtvPicture=true;
+      else if (a == "--native-cpu")o.nativeCpu=true;
       else if (a == "--exploratory-atv-signal"){auto kind=value(i);if(kind!="pal")throw std::runtime_error("--exploratory-atv-signal supports only: pal");o.exploratoryAtvSignalPal=true;}
       else if (a == "--gop-history-interval-log2")o.gopHistoryLog2=unsigned(std::min<unsigned long>(40,std::stoul(value(i),nullptr,0)));
       else if (a == "--diagnostic-dram-dump"){o.diagnosticDramDumpAddr=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpSize=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpFile=value(i);}
@@ -411,6 +412,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-bdma-crc-miu: EXPLORATORY BDMA CRC32 over a DRAM source (mode 0x330 inferred from the original field layout, not verified)\n"
                "--exploratory-atv-signal pal: EXPLORATORY PAL (625/50) analog input for the AVD MCU: field events, line counter and HTotal derived from the PAL timing model; other AFEC bytes read as labelled zero fixtures; needs the AVD shared run, no absent-input flags\n"
                "--exploratory-atv-picture: EXPLORATORY preview only: show the generated PAL colour bars, decoded by a host-side decoder model, as the video plane (needs --exploratory-atv-signal pal)\n"
+               "--native-cpu: native build (manta_native_full) only: execute the statically recompiled firmware natively instead of the interpreter; needs --load-state\n"
                "--gop-history-interval-log2 N: DIAGNOSTIC: with --gop-frame-history compose the preview every 2^N dispatches (default 14; larger = much faster, coarser timeline)\n"
                "--exploratory-mvop-plane: EXPLORATORY preview only: show the MVOP-programmed framebuffer (packed YUV 4:2:2 assumed) behind the GOP layers\n"
                "--diagnostic-riu-zero-unknown-reads: LABELLED HYPOTHESIS, DIAGNOSTIC ONLY: any never-defined MIPS-visible register reads as 0 (addresses listed in the summary); invalidates strict evidence\n"
@@ -611,12 +613,21 @@ static int appMain(const std::vector<std::string> &args) {
     o.stateFingerprint = stateFingerprint(args, o.stateCanonical);
     auto previewStore = o.previewStore;
     manta::Msd309Machine machine(std::move(flash), o);
+#ifdef MANTA_NATIVE_RUNNER
+    if (o.nativeCpu) { if (headless) return nativeRun(machine); }
+#endif
     if (headless) return machine.run();
     // Create the native display immediately. Guest initialization may run for
     // many seconds; the OS message loop must remain responsive throughout.
-    auto guest = std::async(std::launch::async, [&machine, previewStore] {
+    auto guest = std::async(std::launch::async, [&machine, previewStore, &o] {
       int rc;
-      try { rc = machine.run(); } catch (...) { previewStore->setFinished(); throw; }
+      try {
+#ifdef MANTA_NATIVE_RUNNER
+        rc = o.nativeCpu ? nativeRun(machine) : machine.run();
+#else
+        rc = machine.run();
+#endif
+      } catch (...) { previewStore->setFinished(); throw; }
       previewStore->setFinished();
       return rc;
     });

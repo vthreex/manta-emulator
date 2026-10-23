@@ -21,6 +21,9 @@
 #include <fstream>
 #include <set>
 #include <unordered_map>
+namespace manta { class Msd309Machine; }
+struct NativeAccess;   // native port helper with access to the machine's internals (native/runtime/native_runner.cpp)
+int nativeRun(manta::Msd309Machine&);   // defined only in the native port (native/runtime/native_runner.cpp)
 namespace manta {
 struct Options {
   std::string opaqueReadPolicy;
@@ -90,6 +93,7 @@ struct Options {
   int exploratoryCoproMipsIrq=-1;       // EXPLORATORY: hardware interrupt index (FIQ bank 1/3: 32..63, 96..127) raised toward the MIPS when the coprocessor fires its reply mailbox; -1 = none
   bool exploratoryGeYuvStretch=false;   // EXPLORATORY: nearest stretch for packed YUV422 (GE format 0xE -> 0xE); needs --exploratory-ge-uniform-stretch
   bool exploratoryBdmaCrcMiu=false;     // EXPLORATORY: BDMA CRC32 with a DRAM source (mode 0x330, inferred)
+  bool nativeCpu=false;   // native build only (manta_native_full): run the statically recompiled firmware instead of the interpreter (needs --load-state)
   bool exploratoryAtvPicture=false;     // EXPLORATORY preview only: decoded PAL test picture as the video plane (needs --exploratory-atv-signal pal)
   bool exploratoryAtvSignalPal=false;   // EXPLORATORY: PAL input signal for the AVD MCU (see docs/atv-signal-model.md); needs the AVD shared run and no absent-input hypotheses
   uint64_t diagnosticRiuWriteLogFrom=UINT64_MAX;   // diagnostic: list guest-written RIU addresses since this cycle count
@@ -175,6 +179,8 @@ struct Options {
 };
 class Msd309Machine {
   friend void ioClass(snap::Ar&, Msd309Machine&);
+  friend int ::nativeRun(Msd309Machine&);
+  friend struct ::NativeAccess;
   struct Poll;
   struct Instruction;
   friend void ioClass(snap::Ar&, Poll&);
