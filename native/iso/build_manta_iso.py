@@ -53,7 +53,15 @@ argfile = os.path.join(work, "iso", "manta.args"); open(argfile, "w", newline="\
 init = os.path.join(work, "iso", "init")
 zig = os.path.join(work, "dl", "zig", "zig-windows-x86_64-0.13.0", "zig.exe")
 subprocess.check_call([zig, "cc", "-target", "x86_64-linux-musl", "-O2", "-static", os.path.join(here, "init.c"), "-o", init])
-spec = ["%s@/init@755" % init, "%s@/manta@755" % a.binary, "%s@/manta.args" % argfile] + ["%s@%s@%o" % (s, d, m) for s, d, m in files]
+netup = os.path.join(work, "iso", "netup")
+subprocess.check_call([zig, "cc", "-target", "x86_64-linux-musl", "-O2", "-static", os.path.join(here, "netup.c"), "-o", netup])
+moddir = os.path.join(work, "iso", "modules")
+corepure = os.path.join(work, "dl", "core", "corepure64.gz")
+if not os.path.exists(os.path.join(moddir, "modules.list")):
+    subprocess.check_call([sys.executable, "-I", os.path.join(here, "stage_modules.py"), corepure, moddir])
+netfiles = [(netup, "/netup", 0o755), (os.path.join(moddir, "modules.list"), "/modules.list", 0o644)]
+netfiles += [(os.path.join(moddir, m), "/lib/modules/" + m, 0o644) for m in sorted(os.listdir(moddir)) if m.endswith(".ko")]
+spec = ["%s@/init@755" % init, "%s@/manta@755" % a.binary, "%s@/manta.args" % argfile] + ["%s@%s@%o" % (s, d, m) for s, d, m in files + netfiles]
 initrd = os.path.join(work, "iso", "initrd-manta.gz")
 subprocess.check_call([sys.executable, os.path.join(here, "mkinitrd.py"), initrd] + spec)
 subprocess.check_call([sys.executable, os.path.join(here, "mkiso.py"), a.out, "--kernel", os.path.join(work, "dl", "kernel", "vmlinuz64"), "--initrd", initrd,

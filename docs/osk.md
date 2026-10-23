@@ -47,3 +47,15 @@ hide (`804C3574`), select (`804C3684`).
 
 ## Browser preparation
 `Osk::result` / `Osk::accepted` hold the entered text; a later browser page only has to request the keyboard (`onFunction("OSK")`) and read the result.
+
+## Page engine and the network page (native/runtime/pages.cpp, page_osk.cpp, page_net.cpp)
+The keyboard code was turned into a small page engine: a page is a `PageDef` (windows, labels, focusable items, callbacks); `Host` opens one page at a time through the
+mechanism above, moves focus between items (nearest in the pressed direction), hands keys to the page, and can switch pages (the keyboard returns to the page that asked for
+it). Text windows must be at least one font line (~36 px) high or the original renderer draws nothing.
+
+* **N** opens the **Network** page: interface, address, mask, gateway, DNS and MAC (from `/run/net.txt`, written by `/netup`), a result box and four buttons:
+  *Ping host...* (opens the keyboard prefilled with the last host, then pings it), *Ping gateway*, *Refresh*, *Close*.
+* Ping = 4 ICMP echoes over a raw socket on a worker thread (`native/runtime/net_ping.h`), name resolution through the system resolver.
+* `/netup` (native/iso/netup.c, started by `/init` in the background): loads the NIC driver modules matching the kernel (native/iso/stage_modules.py takes them from Tiny Core's
+  `corepure64.gz`: e1000, e1000e, igb, r8169, 8139, virtio_net, vmxnet3, tg3, several USB NICs), waits for an interface, DHCP, `/etc/resolv.conf`.
+* Verified in QEMU only (user-mode networking, e1000): DHCP lease, gateway ping, DNS, external ping. Real NICs and Wi-Fi are untested / unsupported (no Wi-Fi drivers or firmware).

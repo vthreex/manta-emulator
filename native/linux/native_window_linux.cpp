@@ -88,15 +88,17 @@ void nativeWindow(const std::string&, bool smoke, std::shared_ptr<GopPreviewStor
       input_event ev;
       while (read(fd, &ev, sizeof ev) == sizeof ev)
         if (ev.type == EV_KEY && (ev.code == KEY_LEFTSHIFT || ev.code == KEY_RIGHTSHIFT)) shiftDown = ev.value != 0;
-        else if (ev.type == EV_KEY && ev.value == 1 && ev.code == KEY_K && store && !store->remote->oskActive.load()) {   // K opens the on-screen keyboard
-          store->remote->push("OSK"); std::cout << "[key OSK]" << std::endl;
+        else if (ev.type == EV_KEY && ev.value == 1 && (ev.code == KEY_K || ev.code == KEY_N) && store && !store->remote->oskActive.load()) {   // K: on-screen keyboard, N: network page
+          const char* fn = ev.code == KEY_K ? "OSK" : "NET";
+          store->remote->push(fn); std::cout << "[key " << fn << "]" << std::endl;
         } else if (ev.type == EV_KEY && ev.value >= 1 && store && store->remote->oskActive.load()) {
           // keyboard open: navigation keys and characters go to it (key repeat only for the keys where it is useful)
           std::string fn;
           switch (ev.code) {
             case KEY_UP: fn = "UP"; break;  case KEY_DOWN: fn = "DOWN"; break;  case KEY_LEFT: fn = "LEFT"; break;  case KEY_RIGHT: fn = "RIGHT"; break;
             case KEY_BACKSPACE: fn = "OSK_BACKSPACE"; break;
-            case KEY_ENTER: case KEY_KPENTER: if (ev.value == 1) fn = "OK"; break;
+            case KEY_ENTER: if (ev.value == 1) fn = "OK"; break;
+            case KEY_KPENTER: case KEY_F10: if (ev.value == 1) fn = "OSK_ENTER"; break;   // accept the entered text
             case KEY_ESC: if (ev.value == 1) fn = "EXIT"; break;
             case KEY_TAB: if (ev.value == 1) fn = "MENU"; break;   // toggles shift on the keyboard
             default: if (ev.value == 1) if (char ch = charFor(ev.code, shiftDown)) fn = std::string("OSK_CHAR:") + ch;
