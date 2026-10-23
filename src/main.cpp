@@ -627,7 +627,8 @@ static int appMain(const std::vector<std::string> &args) {
 #else
         rc = machine.run();
 #endif
-      } catch (...) { previewStore->setFinished(); throw; }
+      } catch (const std::exception &e) { std::cerr << "GUEST THREAD ERROR: " << e.what() << std::endl; previewStore->setFinished(); throw; }
+      catch (...) { previewStore->setFinished(); throw; }
       previewStore->setFinished();
       return rc;
     });

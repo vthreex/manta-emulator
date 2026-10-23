@@ -154,6 +154,7 @@ int nativeRun(Msd309Machine& machine) {
   c.ram = a.dram.data();
   c.ram_size = uint32_t(a.dram.size());
   for (int i = 0; i < 32; ++i) c.r[i] = a.cpu.reg(UC_MIPS_REG_0 + i);
+  std::fprintf(stderr, "native: takeover pc=%08x sp=%08x ra=%08x resumed=%d\n", a.resumed() ? a.resumePc() : a.cpu.reg(UC_MIPS_REG_PC), c.r[29], c.r[31], int(a.resumed()));
   c.hi = a.cpu.reg(UC_MIPS_REG_HI);
   c.lo = a.cpu.reg(UC_MIPS_REG_LO);
   uint32_t pc = a.resumed() ? a.resumePc() : a.cpu.reg(UC_MIPS_REG_PC);
