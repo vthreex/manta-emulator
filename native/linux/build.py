@@ -12,7 +12,7 @@ S = lambda *p: os.path.join(repo, *p)
 sources = [S("src/main.cpp"), S("src/cpu/engine.cpp"), S("src/cpu/openrisc.cpp"), S("src/cpu/vd_mcu.cpp"), S("src/board/machine.cpp"), S("src/peripherals/riu.cpp"),
            S("src/peripherals/gpio_i2c.cpp"), S("src/storage/flash.cpp"), S("src/storage/sha256.cpp"), S("src/snapshot/snapshot.cpp"), S("src/profile/sampler.cpp"),
            S("src/cpu/third_party/emu8051/core.c"), S("src/cpu/third_party/emu8051/opcodes.c"), S("src/cpu/third_party/emu8051/disasm.c"),
-           S("native/runtime/runtime.cpp"), S("native/runtime/native_runner.cpp"), S("native/runtime/pages.cpp"), S("native/runtime/page_osk.cpp"), S("native/runtime/page_net.cpp"), S("native/linux/uclite.cpp"), S("native/linux/native_window_linux.cpp")]
+           S("native/runtime/runtime.cpp"), S("native/runtime/native_runner.cpp"), S("native/runtime/pages.cpp"), S("native/runtime/page_osk.cpp"), S("native/runtime/page_net.cpp"), S("native/runtime/page_browser.cpp"), S("native/runtime/http.cpp"), S("native/runtime/html_text.cpp"), S("native/linux/uclite.cpp"), S("native/linux/native_window_linux.cpp")]
 sources += sorted(glob.glob(S("native/gen/*.cpp")))
 inc = ["-I", S("src"), "-I", S("native/runtime"), "-I", os.path.join(work, "unicorn-irq", "include")]
 tgt = ["-target", "x86_64-linux-musl"]

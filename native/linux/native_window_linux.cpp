@@ -88,8 +88,8 @@ void nativeWindow(const std::string&, bool smoke, std::shared_ptr<GopPreviewStor
       input_event ev;
       while (read(fd, &ev, sizeof ev) == sizeof ev)
         if (ev.type == EV_KEY && (ev.code == KEY_LEFTSHIFT || ev.code == KEY_RIGHTSHIFT)) shiftDown = ev.value != 0;
-        else if (ev.type == EV_KEY && ev.value == 1 && (ev.code == KEY_K || ev.code == KEY_N) && store && !store->remote->oskActive.load()) {   // K: on-screen keyboard, N: network page
-          const char* fn = ev.code == KEY_K ? "OSK" : "NET";
+        else if (ev.type == EV_KEY && ev.value == 1 && (ev.code == KEY_K || ev.code == KEY_N || ev.code == KEY_B) && store && !store->remote->oskActive.load()) {   // K: on-screen keyboard, N: network page, B: browser
+          const char* fn = ev.code == KEY_K ? "OSK" : ev.code == KEY_N ? "NET" : "BROWSER";
           store->remote->push(fn); std::cout << "[key " << fn << "]" << std::endl;
         } else if (ev.type == EV_KEY && ev.value >= 1 && store && store->remote->oskActive.load()) {
           // keyboard open: navigation keys and characters go to it (key repeat only for the keys where it is useful)
@@ -97,6 +97,7 @@ void nativeWindow(const std::string&, bool smoke, std::shared_ptr<GopPreviewStor
           switch (ev.code) {
             case KEY_UP: fn = "UP"; break;  case KEY_DOWN: fn = "DOWN"; break;  case KEY_LEFT: fn = "LEFT"; break;  case KEY_RIGHT: fn = "RIGHT"; break;
             case KEY_BACKSPACE: fn = "OSK_BACKSPACE"; break;
+            case KEY_PAGEUP: fn = "PAGEUP"; break;  case KEY_PAGEDOWN: fn = "PAGEDOWN"; break;
             case KEY_ENTER: if (ev.value == 1) fn = "OK"; break;
             case KEY_KPENTER: case KEY_F10: if (ev.value == 1) fn = "OSK_ENTER"; break;   // accept the entered text
             case KEY_ESC: if (ev.value == 1) fn = "EXIT"; break;

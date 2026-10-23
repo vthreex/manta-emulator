@@ -85,5 +85,6 @@ private:
 // the page factories (page_osk.cpp, page_net.cpp)
 void requestKeyboard(Host& host, const std::string& initial, std::function<void(bool accepted, const std::string& text)> done, PagePtr returnTo = nullptr);
 void requestNetworkPage(Host& host);
+void requestBrowserPage(Host& host);
 
 }  // namespace pages

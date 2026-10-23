@@ -193,6 +193,7 @@ bool Host::onFunction(const std::string& f) {
       return true;
     }
     if (f == "NET") { requestNetworkPage(*this); return true; }
+    if (f == "BROWSER") { requestBrowserPage(*this); return true; }
     return false;
   }
   if (state_ != kOpen || !current_) return true;       // pending / opening / closing: swallow keys
