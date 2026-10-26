@@ -101,6 +101,7 @@ public:
 
   void word(const std::string& w, int link, int input = -1) { if (!w.empty()) para_.push_back(Word{w, link, input}); }
   void forceBreak() { flush(); }
+  int pos() const { return int(out_.lines.size()); }
   void blank() { flush(); if (!out_.lines.empty() && !out_.lines.back().text.empty()) out_.lines.push_back(Line()); }
   void preLine(const std::string& text, const std::vector<int>& links) {   // a line that is kept as is (hard wrapped if too wide)
     flush();
@@ -254,6 +255,7 @@ Rendered renderHtml(const std::string& html, const std::string& baseUrl, int wid
     size_t ns = closing ? 1 : 0, ne = ns;
     while (ne < tag.size() && (std::isalnum((unsigned char)tag[ne]) || tag[ne] == '-')) ++ne;
     std::string name = lowerStr(tag.substr(ns, ne - ns));
+    if (!closing) { std::string id = attr(tag, "id"); if (id.empty()) id = attr(tag, "name"); if (!id.empty() && r.anchors.size() < 2000) r.anchors.emplace_back(decodeEntities(id), lay.pos()); }
     if (name == "script" || name == "style" || name == "template" || name == "svg") {
       if (!closing) { std::string endTag = "</" + name; size_t k = lowerStr(html).find(endTag, i); size_t k2 = k == std::string::npos ? html.size() : html.find('>', k); i = k2 == std::string::npos ? html.size() : k2 + 1; }
       continue;
@@ -267,7 +269,7 @@ Rendered renderHtml(const std::string& html, const std::string& baseUrl, int wid
         link = -1;
       } else {
         std::string href = attr(tag, "href");
-        std::string url = href.empty() ? std::string() : resolveUrl(baseUrl, decodeEntities(href));
+        std::string url = href.empty() ? std::string() : href[0] == '#' ? (href.size() > 1 ? decodeEntities(href) : std::string()) : resolveUrl(baseUrl, decodeEntities(href));
         if (!url.empty()) { r.links.push_back(url); link = int(r.links.size()) - 1; if (inPre) preLinks.push_back(link); } else link = -1;
       }
       continue;

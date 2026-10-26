@@ -36,6 +36,7 @@ struct Rendered {
   std::vector<std::string> links;   // absolute URLs, link n is shown as "[n+1]"
   std::vector<Form> forms;
   std::vector<Input> inputs;
+  std::vector<std::pair<std::string, int>> anchors;   // element id -> line index (for #fragment links)
   std::string refreshUrl;           // <meta http-equiv="refresh" content="N; url=..."> with a short delay
 };
 

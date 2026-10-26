@@ -360,6 +360,15 @@ void requestBrowserPage(Host& host) {
     else if (item == 1) {
       requestKeyboard(host, b->url == "about:home" ? std::string() : b->url, [b](bool accepted, const std::string& t) { if (accepted && !t.empty()) b->pendingNavigate = t; }, b->self);
     } else if (item == 2) host.closeAll();
+    else if (b->curLink >= 0 && b->curLink < int(b->page.links.size()) && b->page.links[size_t(b->curLink)][0] == '#') {
+      const std::string frag = b->page.links[size_t(b->curLink)].substr(1);
+      for (const auto& a : b->page.anchors) if (a.first == frag) {
+        size_t maxScroll = b->page.lines.size() > kVisible ? b->page.lines.size() - kVisible : 0;
+        b->scroll = std::min<size_t>(size_t(a.second), maxScroll);
+        showLines(host, *b); host.setFocus(kToolbarItems); b->lastFocus = ~0u; selectFirstLink(*b, p); updateStatus(host, *b, p);
+        break;
+      }
+    }
     else if (b->curLink >= 0 && b->curLink < int(b->page.links.size())) { b->refreshCount = 0; navigate(host, *b, p, b->page.links[size_t(b->curLink)]); }
     else if (b->curInput >= 0) pressInput(host, *b, p);
   };
