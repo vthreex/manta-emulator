@@ -13,3 +13,9 @@ Keys: arrows move the cursor line, LEFT/RIGHT choose between links on one line, 
 
 Not there yet: forms (search boxes), cookies, POST, `<meta refresh>`, gzip, images, JavaScript. Sites that need JavaScript (including Google's search results) cannot work without those.
 Mozilla's root bundle and mbedTLS are build inputs downloaded to `work/dl/tls` (not committed).
+
+## Forms, cookies, search (stage 3)
+- Form fields render as text (`[value]`, `[x]`, `(o)`, `[Option v]`, `[Button]`); LEFT/RIGHT picks between a line's links and fields, OK edits (text → on-screen keyboard, F10 accepts), toggles or submits. A one-text-field form is sent as soon as the text is accepted.
+- GET and POST (urlencoded), in-memory cookie jar, short `<meta refresh>` redirects (max 3), `<noscript>` text, Latin-1 pages.
+- Verified in QEMU: home-page search box -> keyboard -> GET submit -> Wikipedia result page.
+- Limits: no JavaScript. Google results pages redirect to "enable JS"; DuckDuckGo's HTML endpoint served a bot challenge to this client. Wikipedia search works.
