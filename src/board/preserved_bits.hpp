@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include "snapshot/archive.hpp"
 #include <array>
 #include <cstdio>
@@ -65,8 +66,20 @@ public:
     return out;
   }
   bool memoryUnknown(uint32_t address) const { return maybeUnknown(backingAddress(address)) && memory_.contains(backingAddress(address)); }
+  bool mayHoldAny(uint32_t address,size_t size) const {
+    for(size_t i=0;i<size;){
+      auto k=backingAddress(address+uint32_t(i));size_t span=std::min<size_t>(0x1000-(k&0xfff),size-i);
+      if(maybeUnknown(k))return true;
+      i+=span;
+    }
+    return false;
+  }
   void overwriteKnownMemory(uint32_t address,size_t size) {
-    for(size_t i=0;i<size;++i){auto k=backingAddress(address+uint32_t(i));if(maybeUnknown(k))memory_.erase(k);}
+    for(size_t i=0;i<size;){
+      auto k=backingAddress(address+uint32_t(i));size_t span=std::min<size_t>(0x1000-(k&0xfff),size-i);
+      if(maybeUnknown(k)){auto end=k+uint32_t(span);memory_.erase(memory_.lower_bound(k),end>k?memory_.lower_bound(end):memory_.end());}
+      i+=span;
+    }
   }
   bool exactByteOrigin(unsigned rt,uint32_t byte)const {
     if(mask(rt)!=255)return false;

@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include "snapshot/archive.hpp"
 #include <array>
 #include <cstring>
@@ -46,8 +47,22 @@ public:
   }
   void restored() { pageMaybe_.reset(); for (auto& kv : bytes_) noteByte(kv.first); unknownMask_ = 0; for (unsigned r = 0; r < 32; ++r) if (registers_[r]) unknownMask_ |= 1u << r; }   // after the snapshot loader rewrote bytes_
   void markRegisterKnown(unsigned reg){ registers_.at(reg)=false; unknownMask_ &= ~(1u << reg); timingRegisters_[reg]=false; clockOrigins_[reg]=0; }
+  // False proves no byte of the range is tracked (page filter); true means some page may hold one.
+  bool mayHoldAny(uint32_t address,size_t size) const {
+    for(size_t i=0;i<size;){
+      auto k=(address+uint32_t(i))&0x1fffffff;size_t span=std::min<size_t>(0x1000-(k&0xfff),size-i);
+      if(maybeByte(k))return true;
+      i+=span;
+    }
+    return false;
+  }
   void overwriteKnownMemory(uint32_t address,size_t size) {
-    for(size_t i=0;i<size;++i){auto k=(address+uint32_t(i))&0x1fffffff;if(maybeByte(k))bytes_.erase(k);}
+    // Whole 4 KB chunks: a page the filter clears holds nothing; otherwise erase the key range (same result as byte by byte).
+    for(size_t i=0;i<size;){
+      auto k=(address+uint32_t(i))&0x1fffffff;size_t span=std::min<size_t>(0x1000-(k&0xfff),size-i);
+      if(maybeByte(k))bytes_.erase(bytes_.lower_bound(k),bytes_.lower_bound(k+uint32_t(span)));
+      i+=span;
+    }
   }
   bool registerUnknown(unsigned reg) const { return registers_.at(reg); }
   std::string observe(uint32_t pc, uint32_t w, const std::function<uint32_t(unsigned)> &reg) {

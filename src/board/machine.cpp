@@ -2353,10 +2353,11 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
       } else {
         l.physical = *physical;
         l.memory.assign(dramBacking_.begin() + *physical, dramBacking_.begin() + *physical + size);
-        for (uint64_t i = 0; i < size; ++i) {
-          auto address = *physical + uint32_t(i);
-          l.invalidBytes += preservedBits_.memoryUnknown(address) || unknownObservations_.bytes().contains(address);
-        }
+        if (preservedBits_.mayHoldAny(*physical, size) || unknownObservations_.mayHoldAny(*physical, size))
+          for (uint64_t i = 0; i < size; ++i) {
+            auto address = *physical + uint32_t(i);
+            l.invalidBytes += preservedBits_.memoryUnknown(address) || unknownObservations_.bytes().contains(address);
+          }
       }
       layers.push_back(std::move(l));
     }
