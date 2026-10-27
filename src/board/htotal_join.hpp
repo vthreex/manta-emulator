@@ -72,7 +72,7 @@ struct HtotalBranchJoin {
       case 41: {                                                            // SH
         unsigned width = op == 40 ? 1 : 2;
         uint32_t a = (regs[rs] + uint32_t(sim)) & 0x1fffffff, v = regs[rt];
-        if (a >= 0x10000000 || (width == 2 && (a & 1)))
+        if (a >= 0x1f000000 || (width == 2 && (a & 1)))
           throw std::runtime_error("HTotal join: store outside aligned guest RAM");
         for (unsigned i = 0; i < width; ++i) overlay[a + i] = uint8_t(v >> (8 * i));
         out.stores.push_back({a, width, width == 1 ? (v & 0xff) : (v & 0xffff)});

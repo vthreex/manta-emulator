@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <functional>
 #include "video/pal_cvbs.hpp"
 #include <array>
@@ -160,6 +161,9 @@ struct Options {
   bool videoPlaneBlackKey = false;   // EXPLORATORY HYPOTHESIS: opaque RGB-black guest pixels are see-through to the video plane (colour key); requires videoPlane
   std::string videoPlane;   // EXPLORATORY presentation: "" (neutral checker), black, blue, setting (guest Blue Screen setting); never changes guest state
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
+  uint32_t miu1Bytes = 0x08000000;        // size of the second DRAM bank (MIU1, bus 40000000..); MIU0 is fixed at 128 MB. Default = the stock board
+  unsigned previewMinMs = 0;              // live preview: when non-zero, at most one frame every N ms of wall time (the check runs every previewMask+1 dispatches)
+  uint64_t previewMask = 0xfffff;         // the live preview is published when (dispatches & previewMask) == 0 (frontend: finer, for a smooth picture); observation only
   unsigned gopHistoryLog2 = 14;           // DIAGNOSTIC: the frame-history sampler composes the preview every 2^N dispatches (default 14; each compose copies and blends every GOP layer)
   uint64_t gopTimelineFrom=0;   // DIAGNOSTIC: first tick of the GOP write/latch timeline printed in the summary
   std::vector<uint32_t> historyPcs;   // DIAGNOSTIC: also sample the GOP history when one of these original PCs executes
@@ -350,6 +354,16 @@ public:
   std::map<uint64_t, DataAccess> dataAccess_;   // (pc<<1 | isStore) -> counters; observation only
   std::vector<GopLayer> collectGopLayers() const;
   void publishPreview() const;
+  void publishPreviewLive() const;   // live window/front end: composes only when the GOP memory (or a plane input) changed since the last frame
+  mutable uint64_t liveSignature_ = 0;
+  bool previewDue() const {   // live-preview throttle (observation only)
+    if (!options_.previewMinMs) return true;
+    auto now = std::chrono::steady_clock::now();
+    if (now - lastPreview_ < std::chrono::milliseconds(options_.previewMinMs)) return false;
+    lastPreview_ = now;
+    return true;
+  }
+  mutable std::chrono::steady_clock::time_point lastPreview_{};
   struct IrLogEntry { uint64_t dispatch; std::string function; int raw; bool accepted; std::string note; };
   std::vector<IrLogEntry> irLog_;
   std::deque<std::pair<std::string,uint64_t>> irWaiting_;   // accepted host events not yet deliverable (receiver not enabled yet)

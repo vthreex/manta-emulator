@@ -29,3 +29,7 @@ SOURCE_YPBPR	0xEF	BEHAVIOURAL: app 0x5f; direct source key, original 8048710C(id
 SOURCE_VGA	0xF5	BEHAVIOURAL: app 0x60; direct source key, original 8048710C(id 4) shows the source banner "VGA" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
 SOURCE_HDMI1	0xF7	BEHAVIOURAL: app 0x61; direct source key, original 8048710C(id 5) shows the source banner "HDMI1" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
 SOURCE	0x41	BEHAVIOURAL: opens the original Input Source list (DTV, ATV, AV 1, AV 2, S-Video, SCART, YPBPR, HDMI1, HDMI2, VGA, USB; OK: ENTER) with the current source highlighted; handler 8046AE40 stores code 0x20 when bit 3 of 0x806C0868 is set; UP/DOWN move the highlight and OK calls 8048710C(id) (docs/source-switching.md)
+POWER	0x0A	CANDIDATE: app 0x08; 804A4368 re-injects app 8 and hides the OSD, ~37M dispatches later the original reaches the reset/standby routine 8040468C (docs/ir-key-semantics.md, runs m2/m3)
+WIDE	0x0C	CANDIDATE: app 0x82; shows OSD 14 with an overlapped-windows icon (aspect/zoom style banner), kb3/u0c; the remote's 16:9/WIDE key
+SMART_S	0x1A	CANDIDATE: app 0x04; shows OSD 14 with a music-note icon (sound mode banner), kb3/u1a; the remote's SMART S key
+SMART_P	0x42	CANDIDATE: app 0x21; shows OSD 14 with a monitor icon (picture mode banner), kb3/u42; the remote's SMART P key

@@ -31,7 +31,7 @@ class PreservedBits {
 public:
   void enableInsPropagation(){insPropagation_=true;}
   static uint32_t backingAddress(uint32_t a) {
-    if(a>=0x40000000 && a<0x48000000)return 0x08000000+a-0x40000000;
+    if(a>=0x40000000 && a<0x58000000)return 0x08000000+a-0x40000000;
     if(a>=0x80000000 && a<0xc0000000)return a&0x1fffffff;
     return a;
   }
@@ -189,7 +189,7 @@ public:
             if(registers_[rt][i]!=Bit{deviceKey(a+i/8),uint8_t(i%8)}) return reject();
           }
           preserveWrite(a,width,m);
-        } else if(a<0x10000000) {
+        } else if(a<0x1f000000) {
           for(unsigned byte=0;byte<width;++byte) {
             std::array<Bit,8> v{};
             for(unsigned bit=0;bit<8;++bit) v[bit]=registers_[rt][byte*8+bit];

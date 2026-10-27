@@ -36,7 +36,8 @@ struct NativeAccess {
   uint64_t mmioRead(uint32_t off, unsigned n) { return Msd309Machine::mmioRead(nullptr, off, n, &m); }
   void mmioWrite(uint32_t off, unsigned n, uint32_t v) { Msd309Machine::mmioWrite(nullptr, off, n, v, &m); }
   void serviceRemote() { m.serviceVirtualRemote(); }
-  void preview() { m.publishPreview(); }
+  void preview() { m.publishPreviewLive(); }
+  bool previewDue() { return m.previewDue(); }
   void finish(uint32_t pc, bool fatal);
 };
 
@@ -62,7 +63,7 @@ struct MachineBus : Bus {
   uint32_t read(CPU& c, uint32_t addr, unsigned n, uint32_t pc) override {
     uint32_t p = addr & 0x1fffffffu;
     if (addr >= 0xC0000000u) {   // kseg2: MsOS_PA2Uncached maps MIU1 at D0000000..D7FFFFFF (bus 40000000..47FFFFFF) = DRAM backing + 128 MB
-      if (addr >= 0xD0000000u && addr < 0xD8000000u) {
+      if (addr >= 0xD0000000u && addr < 0xE8000000u) {
         uint64_t off = 0x08000000ull + (addr - 0xD0000000u);
         if (off + n <= a.dram.size()) { uint32_t v = 0; std::memcpy(&v, a.dram.data() + off, n); return v; }
       }
@@ -84,7 +85,7 @@ struct MachineBus : Bus {
   void write(CPU& c, uint32_t addr, unsigned n, uint32_t v, uint32_t pc) override {
     uint32_t p = addr & 0x1fffffffu;
     if (addr >= 0xC0000000u) {
-      if (addr >= 0xD0000000u && addr < 0xD8000000u) {
+      if (addr >= 0xD0000000u && addr < 0xE8000000u) {
         uint64_t off = 0x08000000ull + (addr - 0xD0000000u);
         if (off + n <= a.dram.size()) { std::memcpy(a.dram.data() + off, &v, n); return; }
       }
@@ -124,7 +125,7 @@ static void after_run(CPU& c, uint32_t pc, void* ctx) {
     if (a.remoteWork()) a.serviceRemote();
     c.ext_irq = a.irqLines();
   }
-  if (a.options.previewStore && ((cur >> 20) != (prev >> 20))) a.preview();
+  if (a.options.previewStore && ((cur / (a.options.previewMask + 1)) != (prev / (a.options.previewMask + 1))) && a.previewDue()) a.preview();
   else if (!a.options.gopFrameHistory.empty() && ((cur >> a.options.gopHistoryLog2) != (prev >> a.options.gopHistoryLog2))) a.preview();
   if (a.stopped) c.halt = true;
 }

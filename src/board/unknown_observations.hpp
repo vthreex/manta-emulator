@@ -172,7 +172,7 @@ public:
     bool restore = address == 0x1f205e00 &&
                    ((pc == 0x805e5d44 && w == 0xa06a5e00 && timingSnapshotUnknown(10)) ||
                     (pc == 0x805e5eb4 && w == 0xa0465e00 && timingSnapshotUnknown(6)));
-    bool clockCopy = op == 43 && address < 0x10000000 && clockOrigins_[rt];
+    bool clockCopy = op == 43 && address < 0x1f000000 && clockOrigins_[rt];
     if ((useRs && registers_[rs]) || (useRt && registers_[rt] && !((cache && op == 41) || spiCache || restore || clockCopy)))
       return "unknown diagnostic observation consumed by guest instruction";
     uint32_t reloadedClock = 0;
@@ -188,7 +188,7 @@ public:
           reloadedClock = origin; // transparent interrupt/save-frame copy only
         }
     }
-    if (writeWidth && address < 0x10000000) {
+    if (writeWidth && address < 0x1f000000) {
       if (op == 42 || op == 46)
         address &= ~3u; // conservative full-word invalidation
       // Partial SWL/SWR must not falsely clear bytes they do not overwrite.

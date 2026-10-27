@@ -1,5 +1,6 @@
 #include "board/machine.hpp"
 #include "ui/native_window.hpp"
+#include "ui/frontend_host.hpp"
 #include <filesystem>
 #include "storage/sha256.hpp"
 #include <set>
@@ -21,7 +22,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
   static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--exploratory-atv-signal", "--gop-history-interval-log2", "--save-state-at",
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--diagnostic-usb-save-image", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
-    "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at"};
+    "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at", "--frontend-shm", "--preview-interval-log2", "--preview-max-fps"};
   static const std::set<std::string> flags = {"--exploratory-menu-no-autoexit", "--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
@@ -39,7 +40,7 @@ static int appMain(const std::vector<std::string> &args) {
     std::filesystem::path firmware, nvram;
     bool headless = false, windowSmoke = false;
     manta::PreviewWindowOptions previewOptions;
-    std::string previewSelftest;
+    std::string previewSelftest, frontendShm;
     auto value = [&](size_t &i) {
       if (++i >= args.size())
         throw std::runtime_error("Missing argument value");
@@ -387,6 +388,10 @@ static int appMain(const std::vector<std::string> &args) {
         o.gopTimelineFrom = std::stoull(value(i));
       else if (a == "--gop-frame-history")
         o.gopFrameHistory = utf8Path(value(i));
+      else if (a == "--frontend-shm") frontendShm = value(i);
+      else if (a == "--miu1-mb") { auto n = std::stoul(value(i)); if (n > 352 || n % 16) throw std::runtime_error("--miu1-mb must be a multiple of 16 up to 352 (default 128)"); o.miu1Bytes = uint32_t(n << 20); }
+      else if (a == "--preview-max-fps") { auto n = std::stoul(value(i)); if (n < 1 || n > 120) throw std::runtime_error("--preview-max-fps must be 1..120"); o.previewMinMs = unsigned(1000 / n); }
+      else if (a == "--preview-interval-log2") { auto n = std::stoul(value(i)); if (n < 10 || n > 24) throw std::runtime_error("--preview-interval-log2 must be 10..24"); o.previewMask = (uint64_t(1) << n) - 1; }
       else if (a == "--preview-capture")
         previewOptions.capturePath = value(i);
       else if (a == "--preview-close-after-ms")
@@ -637,6 +642,13 @@ static int appMain(const std::vector<std::string> &args) {
       previewStore->setFinished();
       return rc;
     });
+    if (!frontendShm.empty()) {
+      // external front end: it owns the window; stdin carries remote keys, "QUIT" ends the run
+      manta::frontendHost(frontendShm, previewStore);
+      std::cout.flush();
+      if (guest.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) std::_Exit(0);
+      return guest.get();
+    }
     manta::nativeWindow("", false, previewStore, previewOptions);
     return guest.get();
   } catch (const std::exception &e) {

@@ -229,7 +229,18 @@ struct VdMcuCpu::Impl {
   static void boundary(em8051* cpu){
     auto& m=self(cpu);auto pc=cpu->mPC;
     if(!m.byteKnown(pc))throw VdHardwareBoundary("VD MCU instruction fetch from unwritten program memory");
-    char text[128];auto size=decode(cpu,pc,text);
+    char text[128];
+    // The disassembly text is only needed by the instruction trace callback; the instruction length comes from a table built once from the same
+    // decoders (decode() formats text with sprintf for every instruction, which dominated the run time). Idle/power-down keep the original path.
+    static uint8_t lengths[256];static bool lengthsReady=false;
+    if(!lengthsReady){
+      em8051 scratch=*cpu;unsigned char code[4]{};scratch.mCodeMem=code;scratch.mCodeMemMaxIdx=3;
+      for(unsigned op=0;op<256;++op){code[0]=uint8_t(op);code[1]=code[2]=code[3]=0;lengths[op]=cpu->dec[op](&scratch,0,text);}
+      lengthsReady=true;
+    }
+    uint8_t size;
+    if(m.outer->instruction || (cpu->mSFR[REG_PCON]&3))size=decode(cpu,pc,text);
+    else{size=lengths[cpu->mCodeMem[pc&cpu->mCodeMemMaxIdx]];text[0]=0;}
     if(!size)throw VdHardwareBoundary("VD MCU invalid instruction decode");
     for(unsigned i=0;i<size;++i)if(!m.byteKnown(uint16_t(pc+i)))
       throw VdHardwareBoundary("VD MCU operand outside uploaded program");

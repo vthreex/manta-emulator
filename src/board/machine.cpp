@@ -504,13 +504,13 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
       throw std::runtime_error("Cannot open replay");
   }
   if (o.candidateMiu) {
-    dramBacking_.resize(0x10000000);
+    dramBacking_.resize(size_t(0x08000000) + o.miu1Bytes);
     cpu_.mapShared(0, dramBacking_.size(), dramBacking_.data());
     cpu_.setBacking(dramBacking_.data(), dramBacking_.size());
     // Firmware MsOS_PA2Uncached (805CB940) translates logical MIU1
     // 08000000..0FFFFFFF to D0000000..D7FFFFFF. Guest MMU translates this
     // to bus 40000000..47FFFFFF. It aliases the existing MIU1 backing.
-    cpu_.mapShared(0x40000000, 0x08000000, dramBacking_.data() + 0x08000000);
+    if (o.miu1Bytes) cpu_.mapShared(0x40000000, o.miu1Bytes, dramBacking_.data() + 0x08000000);
   } else cpu_.map(0, 0x08000000);
   cpu_.map(0x1fc00000, 0x400000, UC_PROT_READ | UC_PROT_EXEC);
   auto aperture = riu_.flashRead(0, 0x400000);
@@ -816,7 +816,7 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
     if(entry.second.size()>=24)entry.second.erase(entry.second.begin()+6);
     entry.second.push_back(hit);
   }
-  if(m.options_.previewStore && (m.dispatches_ & 0xfffff)==0)m.publishPreview();
+  if(m.options_.previewStore && (m.dispatches_ & m.options_.previewMask)==0 && m.previewDue())m.publishPreviewLive();
   else if(!m.options_.gopFrameHistory.empty() && (m.dispatches_ & ((uint64_t(1) << m.options_.gopHistoryLog2) - 1))==0)m.publishPreview();   // finer sampling for the history timeline
   if(m.options_.zuiFlowProbes && ZuiFlow::watches(uint32_t(a))){
     std::vector<uint8_t> initAndDispatch(0x1cc),queueCode(0x140);
@@ -1261,7 +1261,7 @@ void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
   ++m.dispatches_;
   if (m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff) == 0) m.copro_.run(0x4000);
   if ((m.dispatches_ & 0x3fff) == 0 && (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty())) m.serviceVirtualRemote();
-  if (m.options_.previewStore && (m.dispatches_ & 0xfffff) == 0) m.publishPreview();
+  if (m.options_.previewStore && (m.dispatches_ & m.options_.previewMask) == 0 && m.previewDue()) m.publishPreviewLive();
   else if (!m.options_.gopFrameHistory.empty() && (m.dispatches_ & ((uint64_t(1) << m.options_.gopHistoryLog2) - 1)) == 0) m.publishPreview();
   m.recordPc(uint32_t(a));
   const uint32_t observedPhysical = uint32_t(a) & 0x1fffffff;
@@ -2375,6 +2375,34 @@ void Msd309Machine::serviceVirtualRemote() {
   }
   if (options_.remoteQueue && options_.remoteQueue->pending())
     for (auto& function : options_.remoteQueue->drain()) if (!consumed(function)) deliverIrFunction(function, dispatches_);
+}
+void Msd309Machine::publishPreviewLive() const {
+  if (!options_.previewStore) return;
+  // Cheap change detector: FNV-1a over the geometry and guest bytes of every enabled GOP window plus the inputs of the exploratory planes. Pure
+  // observation (reads guest RAM, writes nothing); an unchanged signature means the composed frame would be identical, so it is not recomposed.
+  if (options_.gopFrameHistory.empty() && !options_.exploratoryMvopPlane && !options_.offscreenInspector.size()) {
+    uint64_t h = 1469598103934665603ull;
+    auto mix = [&](uint64_t v) { h = (h ^ v) * 1099511628211ull; };
+    for (auto bank : {1u, 4u})
+      for (unsigned window = 0; window < (bank == 1 ? 4u : 2u); ++window) {
+        auto d = readGopWindow(riu_, bank, window, true);
+        if (!d) { mix(0xdead0000u + bank * 8 + window); continue; }
+        mix(d->x); mix(d->y); mix(d->width); mix(d->height); mix(d->pitch); mix(d->format);
+        auto physical = gopPhysicalAddress(riu_, bank, window, d->miuRelativeAddress);
+        uint64_t size = uint64_t(d->pitch) * d->height;
+        if (!physical || !size || size > 16 * 1024 * 1024 || uint64_t(*physical) + size > dramBacking_.size()) { mix(1); continue; }
+        mix(*physical);
+        const uint8_t* p = dramBacking_.data() + *physical;
+        uint64_t i = 0;
+        for (; i + 8 <= size; i += 8) { uint64_t w; std::memcpy(&w, p + i, 8); mix(w); }
+        for (; i < size; ++i) mix(p[i]);
+      }
+    if (!options_.videoPlane.empty() && dramBacking_.size() > 0x006fbd85) mix(dramBacking_[0x006fbd85]);
+    mix(riu_.geBlendCopies); mix(riu_.geI2Glyphs); mix(riu_.geUniformStretches);
+    if (h == liveSignature_) return;
+    liveSignature_ = h;
+  }
+  publishPreview();
 }
 void Msd309Machine::publishPreview() const {
   if (!options_.previewStore && options_.gopFrameHistory.empty()) return;
