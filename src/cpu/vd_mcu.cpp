@@ -240,7 +240,7 @@ struct VdMcuCpu::Impl {
       lengthsReady=true;
     }
     uint8_t size;
-    if(m.outer->instruction || (cpu->mSFR[REG_PCON]&3))size=decode(cpu,pc,text);
+    if((m.outer->instruction && m.outer->instructionText) || (cpu->mSFR[REG_PCON]&3))size=decode(cpu,pc,text);
     else{size=lengths[cpu->mCodeMem[pc&cpu->mCodeMemMaxIdx]];text[0]=0;}
     if(!size)throw VdHardwareBoundary("VD MCU invalid instruction decode");
     for(unsigned i=0;i<size;++i)if(!m.byteKnown(uint16_t(pc+i)))
@@ -537,7 +537,7 @@ void VdMcuCpu::step(){
 // enabled the only effect of each iteration is one clock tick and one executed instruction.
 uint64_t VdMcuCpu::skipIdleLoop(uint64_t maxTicks,uint64_t maxInstructions){
   auto& m=*impl_;auto& c=m.context.cpu;
-  if(!m.running || !m.selfLoop || instruction || (c.mSFR[REG_PCON]&3) || c.mTickDelay!=1)return 0;
+  if(!m.running || !m.selfLoop || (instruction && instructionText) || (c.mSFR[REG_PCON]&3) || c.mTickDelay!=1)return 0;
   if(c.mCodeMem[c.mPC]!=0x80 || c.mCodeMem[uint16_t(c.mPC+1)]!=0xfe)return 0;
   auto tmod=c.mSFR[REG_TMOD];
   // Timer 1 (and timer 0 mode 3 with its second counter) would feed the serial port / TF1: not folded.

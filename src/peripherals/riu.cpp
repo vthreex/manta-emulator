@@ -198,7 +198,11 @@ void Riu::advanceAvd(uint64_t tick){
           auto next=uint64_t(atvFieldSteps_)*(atvFieldIndex_+1);
           room=std::min<uint64_t>(room,next>done+1?next-done-1:0);
         }
-        if(auto ticks=avdMcuCpu_.skipIdleLoop((tick-avdTick_)/avdDispatchDivider,room)){avdTick_+=ticks*avdDispatchDivider;continue;}
+        if(auto ticks=avdMcuCpu_.skipIdleLoop((tick-avdTick_)/avdDispatchDivider,room)){
+          avdTick_+=ticks*avdDispatchDivider;
+          if(avdMcuCpu_.instruction && orSideEffects)orSideEffects(ticks);   // every skipped instruction would have fired its (text-less) event
+          continue;
+        }
       }
       avdTick_+=avdDispatchDivider;avdMcuCpu_.step();
       if(exploratoryAtvSignal_&&avdMcuCpu_.totalInstructions()>=uint64_t(atvFieldSteps_)*(atvFieldIndex_+1)){++atvFieldIndex_;atvEventByte_|=1;}
@@ -384,9 +388,14 @@ OrWord Riu::tspCpuReadImpl(uint32_t a,unsigned n,bool fetch,uint8_t* kindOut){
   auto baseValue=tspBurstMappingActive_?cached.base:combine(base),maskValue=tspBurstMappingActive_?cached.mask:combine(mask);
   if((a&maskValue)==baseValue){
     auto offset=a&0x3fff;if(offset+n>0x4000)throw std::runtime_error("OpenRISC QMEM boundary crossing");
-    uint32_t value=0;for(unsigned i=0;i<n;++i)value|=uint32_t(tspDownload_.byte(offset+i))<<(i*8);
-    if(fetch&&!orPeek_){bool original=true;for(unsigned i=0;i<n;++i){auto b=tspDownload_.originalByte(offset+i);if(!b||*b!=uint8_t(value>>(i*8)))original=false;}
-      if(original)++orOriginalWords_;else ++orModifiedWords_;}
+    uint32_t value=0;bool original4=false;
+    if(n==4 && tspDownload_.word(offset,value,original4)){
+      if(fetch&&!orPeek_){if(original4)++orOriginalWords_;else ++orModifiedWords_;}
+    }else{
+      for(unsigned i=0;i<n;++i)value|=uint32_t(tspDownload_.byte(offset+i))<<(i*8);
+      if(fetch&&!orPeek_){bool original=true;for(unsigned i=0;i<n;++i){auto b=tspDownload_.originalByte(offset+i);if(!b||*b!=uint8_t(value>>(i*8)))original=false;}
+        if(original)++orOriginalWords_;else ++orModifiedWords_;}
+    }
     if(!fetch&&!orPeek_)++tspCpuReads_;
     if(kindOut)*kindOut=0;
     return {value,0xffffffffu,{}};
@@ -1392,7 +1401,10 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         "original guest releases program execution; auxiliary AVD CPU/hardware not yet executing, no ready/ack/status response inferred");
       if(exploratoryAvdMcuStartup){
         avdMcuSuspended_=false;avdMcuBoundaryReason_.clear();
+        avdMcuCpu_.instructionText=avdInstructionText;
         avdMcuCpu_.instruction=[this](uint16_t pc,uint8_t opcode,const std::string& text){
+          // Without a trace/replay the event has no observable effect except the side-effect generation counter: skip the string work.
+          if(!avdInstructionText){if(orSideEffects)orSideEffects(1);return;}
           event("avd_mcu_instruction",pc,1,opcode,"original AVD uploaded code: "+text);
         };
         avdMcuCpu_.external=[this](uint16_t address,bool write,uint8_t value){

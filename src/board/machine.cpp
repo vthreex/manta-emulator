@@ -514,6 +514,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.orObserveCredit = [this](const OrObs& d, uint64_t n) {
     suppressedOrQmemTrace_ += d.qmem * n; suppressedOrIdlePolls_ += d.idle * n; suppressedOrStoredReads_ += d.stored * n;
   };
+  riu_.avdInstructionText = trace_.is_open() || replay_.is_open();
   riu_.avdIdleSkip = !trace_.is_open() && !replay_.is_open() && !o.pauseMmio && !std::getenv("MANTA_NO_AVD_SKIP");
   riu_.orIdleSkip = !trace_.is_open() && !replay_.is_open() && !o.pauseMmio && !std::getenv("MANTA_NO_OR_SKIP");
   if (o.candidateMiu) {

@@ -1,6 +1,7 @@
 #pragma once
 #include "snapshot/archive.hpp"
 #include <cstdint>
+#include <cstring>
 #include <deque>
 #include <optional>
 #include <stdexcept>
@@ -98,6 +99,14 @@ public:
   void byte(size_t offset,uint8_t value) {
     if(offset>=qmem_.size())throw std::runtime_error("TSP QMEM store outside bounds");
     qmem_[offset]=value;valid_[offset]=true;
+  }
+  // Little-endian word at `offset` when all four bytes were initialized (the byte-wise accessors report the error otherwise); `original` is true
+  // when the four bytes equal the downloaded payload (same predicate as comparing originalByte() byte by byte).
+  bool word(size_t offset,uint32_t& value,bool& original)const{
+    if(offset+4>qmem_.size() || !(valid_[offset]&&valid_[offset+1]&&valid_[offset+2]&&valid_[offset+3]))return false;
+    std::memcpy(&value,&qmem_[offset],4);
+    original=offset+4<=payload_.size() && std::memcmp(&payload_[offset],&value,4)==0;
+    return true;
   }
   std::optional<uint8_t> originalByte(size_t offset)const{
     if(offset>=payload_.size())return {};

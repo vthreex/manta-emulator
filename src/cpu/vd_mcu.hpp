@@ -27,6 +27,7 @@ public:
   ~VdMcuCpu();
   VdMcuCpu(const VdMcuCpu&)=delete;
   std::function<void(uint16_t,uint8_t,const std::string&)> instruction;
+  bool instructionText=true;   // false: the callback only needs to be told an instruction retired (no disassembly text is built)
   std::function<void(uint16_t,bool,uint8_t)> external;
   std::function<void(uint8_t,bool,uint8_t)> specialRegister;
   std::function<void(int)> coreDiagnostic;
