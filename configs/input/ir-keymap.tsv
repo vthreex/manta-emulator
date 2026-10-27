@@ -33,3 +33,9 @@ POWER	0x0A	CANDIDATE: app 0x08; 804A4368 re-injects app 8 and hides the OSD, ~37
 WIDE	0x0C	CANDIDATE: app 0x82; shows OSD 14 with an overlapped-windows icon (aspect/zoom style banner), kb3/u0c; the remote's 16:9/WIDE key
 SMART_S	0x1A	CANDIDATE: app 0x04; shows OSD 14 with a music-note icon (sound mode banner), kb3/u1a; the remote's SMART S key
 SMART_P	0x42	CANDIDATE: app 0x21; shows OSD 14 with a monitor icon (picture mode banner), kb3/u42; the remote's SMART P key
+LANGUAGE	0x19	BEHAVIOURAL (DTV channel-banner state): app 0x1e; the original firmware opens its "Audio Languages" popup (OSD 0xA, rows = audio tracks, "OK: ENTER") - evidence/key-sweep-dtv, sheet_01
+LIST	0x1D	BEHAVIOURAL (DTV state): app 0x37; the original firmware opens the "Channel List" popup (OSD 9: TVP1, TVP2, ...) - evidence/key-sweep-dtv, sheet_01
+FAV	0x57	BEHAVIOURAL (DTV state): app 0x2f; opens the "Favorite List" popup (OSD 9) - evidence/key-sweep-dtv, sheet_02
+EPG	0x4A	CANDIDATE (DTV state): app 0x26 opens the "PROGRAMME GUIDE" (OSD 0x10); raw 0x54 (app 0x30) opens the same screen, so one of the two is the EPG key - evidence/key-sweep-dtv, sheet_02
+SUBTITLE	0x5B	CANDIDATE (DTV state): app 0x1d opens the "Subtitle Languages" popup (OSD 0xB); raw 0x71 has the same app code and raw 0xF4 (app 0x1f) opens the same popup - evidence/key-sweep-dtv, sheet_03
+TTX	0x12	BEHAVIOURAL (DTV state): app 0x31; the original firmware shows its "No Teletext" notice (OSD 0xF) - evidence/key-sweep-dtv, sheet_01

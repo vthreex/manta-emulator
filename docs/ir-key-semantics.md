@@ -40,3 +40,26 @@ Notes: `0x0C` (app 0x82), `0x17` (0x25), `0x1A` (4) and `0x42` (0x21) open OSD 1
 open OSD 3 when no menu is open. Their user functions are not named.
 
 In-menu sweep coverage: every raw byte with a decoded stub (74) was injected with the menu open: kb3 (16), kb4, kb5 (32) and kb6 (8) single-key runs plus m4/m5/m6. Besides MENU/UP/DOWN/LEFT/RIGHT/OK, only the closers and banner keys above changed the screen; 0x1E and 0x1F changed nothing.
+
+## Session 10: single-key sweep in the DTV channel-banner state (native tooling)
+State: the machine of `tests/dtv_regression.py` after the original DTV channel banner (`tools/make_dtv_state.py`, ~1.6 G dispatches; interpreter), one raw IR byte injected 8 M dispatches after resuming, 40 M dispatches
+observed (`tools/key_sweep_native.py --connected --sheet`; ~20 s per key, 6 in parallel). Frames and OSD ids: `evidence/key-sweep-dtv/` (index.json, contact sheets). In this state the early key chain forwards keys to the ZUI, so the
+sources of the DTV remote functions show up:
+
+| raw (app) | what the original firmware draws | remote key |
+|---|---|---|
+| 0x19 (0x1E) | "Audio Languages" popup (OSD 0xA) | LANGUAGE |
+| 0x1D (0x37) | "Channel List" popup (OSD 9) | LIST |
+| 0x57 (0x2F) | "Favorite List" popup (OSD 9) | FAV |
+| 0x4A (0x26), 0x54 (0x30) | "PROGRAMME GUIDE" (OSD 0x10) | EPG (two raws, one is the key) |
+| 0x5B/0x71 (0x1D), 0xF4 (0x1F) | "Subtitle Languages" popup (OSD 0xB) | SUBTITLE (three raws) |
+| 0x12 (0x31) | "No Teletext" notice (OSD 0xF) | TTX |
+| 0xFB (-2) | a four-cell box on OSD 0xF (looks like a PIN/lock entry) | not named |
+| 0x43 (0x23), 0x47 (0x34), 0x53/0x72 (0x1C), 0x5A (0x54), 0xC1 (0x52) | "Disk not ready." message (OSD 0x14, PVR/media function without a disk) | five distinct app codes: REC, play, pause, stop and one more of the glyph keys; which raw is which is NOT decidable from this state |
+| 0x0C, 0x17, 0x1A, 0x42 | small OSD 0xE banners (aspect / sleep / sound / picture icons, see above) | WIDE, clock, SMART S, SMART P |
+| digits, 0x45 | channel-number banner "CH n" (OSD 0x11) | digits |
+| 0xFC | the channel menu (OSD 1) | MENU |
+
+No visible response in this state (no audio path, no channel data): arrows 0x0B/0x0E/0x10/0x11, 0x13, 0x14, 0x16, 0x18, 0x1B, 0x20..0x22, 0x44, 0x46, 0x4B, 0x4E..0x51, 0x58, 0x59, 0x5C, 0x5F, 0xBD..0xCE,
+0xD2, 0xD4, 0xEF..0xF8 (the source keys act only when they change the source). VOL+/-, CH+/- and the remaining glyph keys (INDEX, ZOOM, REVEAL, HOLD, RADIO), 3D, L/R, REPEAT and the list-icon key therefore remain
+without a proven raw byte; the remote model draws them dotted and `configs/input/ir-keymap.tsv` stays free of guesses.
