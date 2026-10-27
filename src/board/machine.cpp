@@ -1028,7 +1028,7 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
   }
   // Runtime history is bounded; retain thousands of instructions without a
   // 90-million-line trace. RA/SP are call context observations, not an unwind.
-  if (a >= kFastBase && a < kFastEnd) m.pushRecent(uint32_t(a), w); else m.shadowValid_ = false;
+  if (inFast1(uint32_t(a))) m.pushRecent(uint32_t(a), w); else m.shadowValid_ = false;
   if (!m.options_.fastJit && observeBlock(m, a, w)) return;
   auto op = w >> 26;
   if ((op >= 32 && op <= 38) || (op >= 40 && op <= 43) || (op == 46)) {
@@ -1071,8 +1071,8 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
     m.stop("PC breakpoint");
 }
 void Msd309Machine::recordPc(uint32_t a) {
-  if (a >= kFastBase && a < kFastEnd) {
-    auto &c = pcHitsFast_[(a - kFastBase) >> 2];
+  if (inFast1(uint32_t(a)) || inFast2(uint32_t(a))) {
+    auto &c = pcHitsFast_[fastIndex(uint32_t(a))];
     if (++c == 1) coverage_.insert(a);   // idempotent: after a restore the canonical map may already hold this PC
   } else {
     auto &v = pcHits_[a];
@@ -1100,7 +1100,7 @@ void Msd309Machine::pushRecent(uint32_t a, uint32_t w) {
 }
 void Msd309Machine::flushStats() const {
   for (size_t i = 0; i < pcHitsFast_.size(); ++i)
-    if (pcHitsFast_[i]) { pcHits_[kFastBase + uint32_t(i * 4)] += pcHitsFast_[i]; pcHitsFast_[i] = 0; }
+    if (pcHitsFast_[i]) { pcHits_[i < kFastWords1 ? kFastBase + uint32_t(i * 4) : kFast2Base + uint32_t((i - kFastWords1) * 4)] += pcHitsFast_[i]; pcHitsFast_[i] = 0; }
   history_.clear();
   uint64_t n = std::min<uint64_t>(histPushes_, 64);
   for (uint64_t k = histPushes_ - n; k < histPushes_; ++k) history_.push_back(histRing_[k & 63]);
@@ -1118,7 +1118,7 @@ void Msd309Machine::flushStats() const {
   while (recentMmio_.size() > 256) recentMmio_.pop_front();
 }
 void Msd309Machine::importStats() {
-  pcHitsFast_.assign((kFastEnd - kFastBase) / 4, 0);
+  pcHitsFast_.assign(kFastWords1 + (kFast2End - kFast2Base) / 4, 0);
   histPushes_ = 0;
   for (auto pc : history_) { histRing_[histPushes_ & 63] = pc; ++histPushes_; }
   recentRing_.resize(4096);
@@ -1130,9 +1130,9 @@ void Msd309Machine::importStats() {
   shadowValid_ = false;
 }
 void Msd309Machine::buildSpecialPcs() {
-  specialPc_.assign(((kFastEnd - kFastBase) / 4 + 7) / 8, 0);
+  specialPc_.assign(((kFastWords1 + (kFast2End - kFast2Base) / 4) + 7) / 8, 0);
   auto mark = [&](uint32_t pc) {
-    if (pc >= kFastBase && pc < kFastEnd && !(pc & 3)) { size_t i = (pc - kFastBase) >> 2; specialPc_[i >> 3] |= uint8_t(1u << (i & 7)); }
+    if ((inFast1(pc) || inFast2(pc)) && !(pc & 3)) { size_t i = fastIndex(pc); specialPc_[i >> 3] |= uint8_t(1u << (i & 7)); }
   };
   // Every instruction address the full hook compares against a constant (superset: option-guarded ones are marked regardless of options).
   static constexpr uint32_t fixed[] = {
@@ -1144,6 +1144,7 @@ void Msd309Machine::buildSpecialPcs() {
       0x805f4b18, 0x805f4b44, 0x80538944, 0x8053a43c, 0x803c8250, 0x803c8424, 0x805d819c, 0x80545a40, 0x805f2518,
       0x80503828, 0x805f883c, 0x8053cb80, 0x8053cba4,                                                       // comb / restore-by-identity diagnostics
       0x80404bfc, 0x80404c04, 0x8046a198,                                                                   // PM non-resume scenario
+      0x81000000, 0x81000480, 0x81004f08,                                                                   // stage markers
       HtotalBranchJoin::branch};
   for (auto pc : fixed) mark(pc);
   for (auto pc : ZuiFlow::watchAddresses) mark(pc);
@@ -1276,14 +1277,16 @@ bool Msd309Machine::loopSkipVisit(uint32_t a) {
 void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   if (m.replayingTlb_) return;
-  uint32_t idx = (uint32_t(a) - kFastBase) >> 2;
-  if (m.allSlow_ || uint32_t(a) < kFastBase || uint32_t(a) >= kFastEnd || (m.specialPc_[idx >> 3] >> (idx & 7) & 1) ||
+  const bool in1 = inFast1(uint32_t(a)), in2 = inFast2(uint32_t(a));
+  const uint32_t idx = (in1 || in2) ? fastIndex(uint32_t(a)) : 0;
+  if (m.allSlow_ || !(in1 || in2) || (m.specialPc_[idx >> 3] >> (idx & 7) & 1) ||
       (!m.options_.saveState.empty() && !m.snapshotWritten_)) {
     codeHookFull(uc, a, sz, p);
     return;
   }
   if (m.dispatches_ >= m.hookLimit_) { m.budgetStop_ = true; uc_emu_stop(m.cpu_.handle); return; }
-  if (uint32_t(a) <= m.prevPc_ && !m.options_.noLoopSkip) m.loopSkipVisit(uint32_t(a));   // backward transfer: possible busy-wait loop head
+  if (in2) ++m.sideEffectGen_;   // the full hook bumps it for every instruction outside the firmware image
+  else if (uint32_t(a) <= m.prevPc_ && !m.options_.noLoopSkip) m.loopSkipVisit(uint32_t(a));   // backward transfer: possible busy-wait loop head
   m.prevPc_ = uint32_t(a);
   ++m.dispatches_;
   if (m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff) == 0) m.copro_.run(0x4000);
@@ -1308,7 +1311,7 @@ void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
     if (w == 0x42000006 && std::getenv("MANTA_DBG_TLB")) std::fprintf(stderr, "TLBWR mask=%08x hi=%08x lo0=%08x lo1=%08x pc=%08x\n", m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3], uint32_t(a)); if (w == 0x42000006) m.tlbwrSeen_ = true;
     if (w == 0x42000002 || w == 0x42000006) m.event("guest_tlb_write", uint32_t(a), 4, w, "original architectural TLB entry installation");
   }
-  m.pushRecent(uint32_t(a), w);
+  if (in1) m.pushRecent(uint32_t(a), w); else m.shadowValid_ = false;
   const bool mem = (op >= 32 && op <= 38) || (op >= 40 && op <= 43) || op == 46;
   uint32_t address = 0, ea = 0;
   if (mem) {
@@ -1375,8 +1378,8 @@ void Msd309Machine::pcHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
     else if (rs == 4 && (rd == 9 || rd == 11 || rd == 13)) { m.flushTicks(); m.tickSynced_ = false; }
   } else if (op == 31 && (w & 63) == 59 && ((w >> 11) & 31) == 2) m.flushTicks();
   // One hook only (Unicorn walks every registered code hook per instruction): the address-specific probes are dispatched from here.
-  if (uint32_t(a) >= kFastBase && uint32_t(a) < kFastEnd) {
-    const uint32_t idx = (uint32_t(a) - kFastBase) >> 2;
+  if (inFast1(uint32_t(a)) || inFast2(uint32_t(a))) {
+    const uint32_t idx = fastIndex(uint32_t(a));
     if (m.specialPc_[idx >> 3] >> (idx & 7) & 1) codeHookFull(uc, a, sz, p);
   } else if (a == 0x81000000 || a == 0x81000480 || a == 0x81004f08 || (m.options_.breakpoint && uint32_t(a) == m.options_.breakpoint)) {
     codeHookFull(uc, a, sz, p);   // stage markers outside the firmware image

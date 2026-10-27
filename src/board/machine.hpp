@@ -242,6 +242,11 @@ class Msd309Machine {
   mutable std::deque<Instruction> recentInstructions_;
   // ---- hot-path statistics (identical observable results; see flushStats/importStats) ----
   static constexpr uint32_t kFastBase = 0x803b0180u, kFastEnd = 0x806b8ce0u;
+  // Second lean region: the stage-2 loader / decompressor (kseg0 0x81000000..). Same bookkeeping as the full hook, without its constant-address probes.
+  static constexpr uint32_t kFast2Base = 0x81000000u, kFast2End = 0x81010000u, kFastWords1 = (kFastEnd - kFastBase) / 4;
+  static bool inFast1(uint32_t a) { return a >= kFastBase && a < kFastEnd; }
+  static bool inFast2(uint32_t a) { return a >= kFast2Base && a < kFast2End; }
+  static uint32_t fastIndex(uint32_t a) { return inFast1(a) ? (a - kFastBase) >> 2 : kFastWords1 + ((a - kFast2Base) >> 2); }
   mutable std::vector<uint64_t> pcHitsFast_;           // one counter per word of [kFastBase,kFastEnd)
   mutable std::array<uint32_t, 64> histRing_{};        // last 64 executed PCs
   mutable uint64_t histPushes_ = 0;                    // PCs pushed since the last import
