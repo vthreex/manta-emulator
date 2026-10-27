@@ -113,6 +113,7 @@ class MainWindow(QMainWindow):
         self.resize(1560, 900)
         self.settings = Settings.load(SETTINGS_FILE)
         self.session = Session()
+        self.run_cpi = 16
         self.keymap_fns = load_keymap_functions()
         self.last_fps_t = time.time()
         self.last_fps_frames = 0
@@ -135,7 +136,7 @@ class MainWindow(QMainWindow):
         self.status.addPermanentWidget(self.fps_label)
         self.speed_label = QLabel('')
         self.status.addPermanentWidget(self.speed_label)
-        self.session.speed.connect(lambda v: self.speed_label.setText('%.1f M instr/s   ' % v))
+        self.session.speed.connect(lambda v: self.speed_label.setText('%.1f M instr/s  (guest clock about %.0f MHz)   ' % (v, v * self.run_cpi)))
         self.session.log.connect(self.log_line)
         self.session.state.connect(self.on_state)
         self.session.frame.connect(self.on_frame)
@@ -544,6 +545,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, 'Machine state', 'State file not found:\n%s' % st.snapshot)
             return
         st.save(SETTINGS_FILE)
+        self.run_cpi = st.cpi
         self.display.set_image(None)
         self.display.set_message('Starting…' if st.start_mode == 'snapshot' else 'Cold boot: the original firmware starts from reset. This takes a long time.')
         self.session.start(st)
