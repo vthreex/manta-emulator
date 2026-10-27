@@ -296,6 +296,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     throw std::runtime_error("PM IR cold-empty hypothesis requires candidate FIFO and guarded exploration; reset occupancy unverified");
   if(o.candidatePmIrFifo)riu_.configurePmIrFifo(o.exploratoryPmIrResetEmpty);
   riu_.mstarTimerCyclesPerTick=o.exploratoryMstarTimer;
+  riu_.miu1DoneCycles=o.exploratoryMiu1Done;
+  riu_.setSpiStatusHypothesis(o.exploratorySpiStatus);
   riu_.zeroUnknownKeepsKnown=o.unverifiedFirmware;
   if(o.exploratoryPmIrRptLatch)riu_.configurePmIrRptLatch();
   riu_.configureOrTraceBudget(o.orFirstVisits,o.orBudget,o.orDivider);
@@ -985,8 +987,8 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
     m.event("cp0_mmu_write", (w >> 11) & 31, 4, m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31)),
             "original guest MTC0 MMU register; select " + std::to_string(w & 7));
   }
-  if (w == 0x42000002) m.tlbInstalls_.push_back({m.cp0Shadow_[0], m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3]});
-  if (w == 0x42000006) m.tlbwrSeen_ = true;
+  if (w == 0x42000002 && std::getenv("MANTA_DBG_TLB")) std::fprintf(stderr, "TLBWI idx=%u mask=%08x hi=%08x lo0=%08x lo1=%08x pc=%08x\n", m.cp0Shadow_[0], m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3], uint32_t(a)); if (w == 0x42000002) m.tlbInstalls_.push_back({m.cp0Shadow_[0], m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3]});
+  if (w == 0x42000006 && std::getenv("MANTA_DBG_TLB")) std::fprintf(stderr, "TLBWR mask=%08x hi=%08x lo0=%08x lo1=%08x pc=%08x\n", m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3], uint32_t(a)); if (w == 0x42000006) m.tlbwrSeen_ = true;
   if (w == 0x42000002 || w == 0x42000006)
     m.event("guest_tlb_write", uint32_t(a), 4, w, "original architectural TLB entry installation");
   if (a == 0x8053dbe0) {
@@ -1281,8 +1283,8 @@ void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
       m.event("cp0_mmu_write", (w >> 11) & 31, 4, m.cpu_.reg(UC_MIPS_REG_0 + int((w >> 16) & 31)),
               "original guest MTC0 MMU register; select " + std::to_string(w & 7));
     }
-    if (w == 0x42000002) m.tlbInstalls_.push_back({m.cp0Shadow_[0], m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3]});
-    if (w == 0x42000006) m.tlbwrSeen_ = true;
+    if (w == 0x42000002 && std::getenv("MANTA_DBG_TLB")) std::fprintf(stderr, "TLBWI idx=%u mask=%08x hi=%08x lo0=%08x lo1=%08x pc=%08x\n", m.cp0Shadow_[0], m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3], uint32_t(a)); if (w == 0x42000002) m.tlbInstalls_.push_back({m.cp0Shadow_[0], m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3]});
+    if (w == 0x42000006 && std::getenv("MANTA_DBG_TLB")) std::fprintf(stderr, "TLBWR mask=%08x hi=%08x lo0=%08x lo1=%08x pc=%08x\n", m.cp0Shadow_[5], m.cp0Shadow_[10], m.cp0Shadow_[2], m.cp0Shadow_[3], uint32_t(a)); if (w == 0x42000006) m.tlbwrSeen_ = true;
     if (w == 0x42000002 || w == 0x42000006) m.event("guest_tlb_write", uint32_t(a), 4, w, "original architectural TLB entry installation");
   }
   m.pushRecent(uint32_t(a), w);
@@ -1922,6 +1924,10 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       m.cpu_.read(pc & 0x1fffffff, instructions, sizeof(instructions));
       if ((instructions[0] & 0xfc1f0000) == 0x94020000 && instructions[1] == 0x30420001)
         mask = 1;
+      // unverified firmware: LHU rt,RDATA immediately followed by ANDI rd,rt,0xFF proves that only the low byte of the receive register is consumed (same static argument as the exact stock paths)
+      if (m.options_.unverifiedFirmware && a == 0x1f001014 && (instructions[0] >> 26) == 0x25 && (instructions[1] >> 26) == 0x0c && (instructions[1] & 0xffff) == 0xff &&
+          ((instructions[1] >> 21) & 31) == ((instructions[0] >> 16) & 31))
+        mask = 255;
       if (a == 0x1f001014 && (pc == 0x8053c710 || pc == 0x8053c8a0)) {
         uint32_t path[6]{};
         m.cpu_.read(pc & 0x1fffffff, path, sizeof(path));

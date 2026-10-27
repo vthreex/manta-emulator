@@ -645,6 +645,13 @@ RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
   return it==gopActive_.end()?RiuByte{}:it->second;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(miu1DoneCycles && a==0x1f203104u && (n==2 || n==4)){
+    uint32_t v=get(a,n)&knownBits(a,n);   // bits the guest wrote; never-written bits read 0 under the blanket hypothesis
+    bool done=miu1.armed && tick-miu1.start>=miu1DoneCycles;
+    if(done){v|=0xf00u;++miu1.dones;}else v&=~0xf00u;   // ASSUMPTION: all four done bits (8..11) rise together; the stub polls bit8 after op 0, the runtime bit10 after op 4
+    event("read",a,n,v,"EXPLORATORY MIU1 calibration/BIST done bits (assumed: bit4 starts, bits 8..11 rise after N cycles; not verified hardware)");
+    return v;
+  }
   if(mstarTimerCyclesPerTick && a>=0x1f006040u && a<0x1f006050u && (a&3)==0){
     if(n!=4)throw std::runtime_error("EXPLORATORY MStar timer: only 32-bit accesses are modelled");
     auto& t=mstarTimer;uint32_t v=0;
@@ -855,6 +862,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   }
   if (candidateSpi && n == 2 && a >= 0x1f001000 && a < 0x1f001100) {
     auto value = spi_.read(a - 0x1f001000, mask, tick);
+    if(std::getenv("MANTA_DBG_SPI") && a==0x1f001014)std::fprintf(stderr,"SPIDBG pc=%08x mask=%x pending=%d known=%x tick=%llu has=%d\n",pc,mask,int(spi_.pending()),spi_.dataKnown(),(unsigned long long)tick,int(value.has_value()));
     if (value) {
       event("read", a, n, *value,
             "SPI ISP command/read FIFO state; only statically proven consumed bits returned; "
@@ -1003,6 +1011,11 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(miu1DoneCycles && a==0x1f203104u && (n==2 || n==4)){
+    bool start=(v&0x10u)!=0;
+    if(start && !miu1.armed){miu1.armed=true;miu1.start=tick;++miu1.starts;}
+    if(!start)miu1.armed=false;
+  }
   if(mstarTimerCyclesPerTick && a>=0x1f006040u && a<0x1f006050u && (a&3)==0){
     if(n!=4)throw std::runtime_error("EXPLORATORY MStar timer: only 32-bit accesses are modelled");
     auto& t=mstarTimer;

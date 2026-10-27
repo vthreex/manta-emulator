@@ -80,7 +80,8 @@ class Settings:
     or1k_divider: int = 4
     scale_mode: str = 'fit'
     on_top: bool = False
-    show_plane: bool = False
+    show_plane: bool = True
+    bringup: bool = True                # other firmware images: apply the labelled bring-up hypotheses (docs/other-board-bringup.md)
     remote_mode: str = 'keys'
 
     def save(self, path):
@@ -114,7 +115,7 @@ def build_command(st: Settings, shm_name: str):
             args.append('--unverified-firmware')
             args += ['--stuck-poll-limit', '20000000']
             if st.bringup:
-                args += ['--exploratory-mstar-timer', '50', '--exploratory-mmio-bits', '1f203105:01:01+rmw']
+                args += ['--exploratory-mstar-timer', '50', '--exploratory-miu1-done', '2000', '--exploratory-spi-status', '0']
     except OSError:
         pass
     def override(flag, value):

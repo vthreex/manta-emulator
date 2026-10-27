@@ -100,6 +100,7 @@ class SpiNor {
 public:
   NorModel model = NorModel::W25Q64BV;
   SpiUnknownInput unknownInput = SpiUnknownInput::Stop;
+  int statusHypothesis = -1;   // --exploratory-spi-status 0xNN: HYPOTHETICAL value of the status bits the model cannot know (SRP/BP/QE); BUSY/WEL stay modelled
   std::function<uint8_t(uint32_t)> flashByte;
   // Program/erase effects are delegated to the owner (copy-on-write flash). programmed bytes can only
   // clear bits; the callback returns how many bytes asked for a 0->1 change.
@@ -153,6 +154,7 @@ public:
     if (cmd == 5 && packet_.size() == 1) {
       // Persistent protection/SRP/QE bits cannot be inferred from array bytes; only BUSY and WEL are known.
       out = {uint8_t(0xa4 | (wel_ ? 2 : 0) | (writeSupport && busy() ? 1 : 0)), 3};
+      if (statusHypothesis >= 0) out = {uint8_t((uint8_t(statusHypothesis) & ~3u) | (wel_ ? 2 : 0) | (writeSupport && busy() ? 1 : 0)), 255};
     } else if (cmd == 0x9f && packet_.size() == 1 && outputIndex_ < 3) {
       std::array<uint8_t, 3> id = {manufacturer(), uint8_t(model == NorModel::W25Q64BV ? 0x40 : 0x20), 0x17};
       out = {id[outputIndex_], 255};

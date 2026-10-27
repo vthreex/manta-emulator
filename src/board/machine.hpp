@@ -161,7 +161,9 @@ struct Options {
   bool videoPlaneBlackKey = false;   // EXPLORATORY HYPOTHESIS: opaque RGB-black guest pixels are see-through to the video plane (colour key); requires videoPlane
   std::string videoPlane;   // EXPLORATORY presentation: "" (neutral checker), black, blue, setting (guest Blue Screen setting); never changes guest state
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
+  uint32_t exploratoryMiu1Done = 0;        // --exploratory-miu1-done N: guest cycles until the assumed MIU1 done bit (1F203104 bit8) after bit4 starts (0 = off)
   uint32_t exploratoryMstarTimer = 0;      // --exploratory-mstar-timer N: guest cycles per tick of the assumed one-shot delay timer at 1F006040 (0 = off)
+  int exploratorySpiStatus = -1;           // --exploratory-spi-status V: assumed value of the NOR status bits the model cannot know (-1 = unknown)
   uint64_t stuckPollLimit = 0;             // --stuck-poll-limit N: stop when one read keeps returning the same value N times (0 = off)
   bool unverifiedFirmware = false;        // --unverified-firmware: relaxes the stock-image hash guards (labelled exploratory)
   uint32_t miu1Bytes = 0x08000000;        // size of the second DRAM bank (MIU1, bus 40000000..); MIU0 is fixed at 128 MB. Default = the stock board

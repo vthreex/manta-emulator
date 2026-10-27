@@ -390,6 +390,8 @@ static int appMain(const std::vector<std::string> &args) {
         o.gopFrameHistory = utf8Path(value(i));
       else if (a == "--frontend-shm") frontendShm = value(i);
       else if (a == "--exploratory-mstar-timer") { auto n = std::stoul(value(i)); if (!n || n > 100000) throw std::runtime_error("--exploratory-mstar-timer needs guest cycles per tick 1..100000"); o.exploratoryMstarTimer = uint32_t(n); }
+      else if (a == "--exploratory-spi-status") { auto n = std::stoul(value(i), nullptr, 0); if (n > 255) throw std::runtime_error("--exploratory-spi-status must be 0..255"); o.exploratorySpiStatus = int(n); }
+      else if (a == "--exploratory-miu1-done") { auto n = std::stoul(value(i)); if (!n || n > 1000000) throw std::runtime_error("--exploratory-miu1-done needs guest cycles 1..1000000"); o.exploratoryMiu1Done = uint32_t(n); }
       else if (a == "--stuck-poll-limit") o.stuckPollLimit = std::stoull(value(i));
       else if (a == "--unverified-firmware") { unverifiedFirmware = true; o.unverifiedFirmware = true; manta::VdMcuCpu::unverifiedPmImage = true; }
       else if (a == "--miu1-mb") { auto n = std::stoul(value(i)); if (n > 352 || n % 16) throw std::runtime_error("--miu1-mb must be a multiple of 16 up to 352 (default 128)"); o.miu1Bytes = uint32_t(n << 20); }

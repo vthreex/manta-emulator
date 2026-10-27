@@ -32,6 +32,7 @@ public:
   std::string error;
   std::function<uint8_t(uint32_t)> flashByte;
   unsigned dataKnown() const { return inputKnown_; }
+  bool pending() const { return readPending_; }
   bool dataReady(uint64_t tick) const { return readPending_ && tick >= readReady_; }
   void endTransaction() {
     if (nor.selected() && busEvent) busEvent("spi_cs", 1);
