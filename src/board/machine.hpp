@@ -219,6 +219,8 @@ class Msd309Machine {
   uint64_t suppressedOrQmemTrace_=0;
   uint64_t suppressedOrIdlePolls_=0;
   uint32_t lastOrIdlePollPc_=UINT32_MAX;
+  uint64_t orLogEpoch_=0;   // real changes of the OpenRISC log-filter memory (derived; lets the auxiliary-CPU idle skip prove an iteration side-effect free)
+  void setOrIdlePollPc(uint32_t v){if(lastOrIdlePollPc_!=v){++orLogEpoch_;lastOrIdlePollPc_=v;}}
   uint64_t suppressedOrStoredReads_=0;
   std::map<uint64_t,std::pair<uint32_t,uint32_t>> lastOrStoredRead_;
   std::ofstream trace_;

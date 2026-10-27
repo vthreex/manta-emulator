@@ -1,3 +1,6 @@
+#include <map>
+#include <cstdlib>
+#include <algorithm>
 #include "peripherals/riu.hpp"
 #include "video/ge_stretch_request.hpp"
 #include "video/ge_uniform_stretch.hpp"
@@ -245,16 +248,121 @@ void Riu::advanceTsp(uint64_t tick){
     map.base=get(base,2)|(get(base+4,2)<<16);map.mask=get(mask,2)|(get(mask+4,2)<<16);
   }
   tspBurstMappingActive_=true;
-  struct Scope{bool& active;~Scope(){active=false;}}scope{tspBurstMappingActive_};
+  struct Scope{Riu& r;~Scope(){r.tspBurstMappingActive_=false;r.orProbeStop();}}scope{*this};
   // One auxiliary dispatch per MIPS dispatch is provisional, not a measured
   // frequency. Scheduling uses the same monotonically increasing guest tick.
   while(tick-tspCpuTick_>=orDivider_){
     if(executionStopped && executionStopped())return;
     if(tspCpu_.instructions()>=orBudget_)throw std::runtime_error("OpenRISC diagnostic dispatch budget reached; no hardware timeout or successful boot inferred");
+    if(orIdleSkip){
+      if(orIdle_.valid){
+        if(tspCpu_.pc()==orIdle_.head && orTryFastForward(tick))continue;
+      }else if(!orProbe_.on){
+        if(orProbeCooldown_)--orProbeCooldown_;else orProbeStart();
+      }
+    }
     tspCpuTick_+=orDivider_;tspCpu_.step();
+    if(orProbe_.on)orProbeAfterStep();
   }
 }
+void Riu::orProbeWindow(){
+  orProbe_.state=tspCpu_.arch();orProbe_.deps.clear();orProbe_.written.clear();orProbe_.steps=0;orProbe_.dirty=false;
+  orProbe_.reads0=tspCpuReads_;orProbe_.writes0=tspCpuWrites_;orProbe_.original0=orOriginalWords_;orProbe_.modified0=orModifiedWords_;
+  orProbe_.obs0=orObserve?orObserve():OrObs{};
+  orEventCalls_=0;
+}
+void Riu::orProbeStart(){
+  if(!tspCpu_.running())return;
+  orProbe_.on=true;orProbe_.head=tspCpu_.pc();orProbe_.total=0;orProbe_.candidate.reset();
+  orProbeWindow();
+  // Count the events one iteration emits by interposing on the sink for the duration of the probe.
+  if(event){
+    orSavedEvent_=event;
+    event=[this](EvText k,uint32_t a,unsigned n,uint32_t v,EvText d){++orEventCalls_;orSavedEvent_(k,a,n,v,d);};
+  }
+}
+void Riu::orProbeStop(){
+  if(orSavedEvent_){event=std::move(orSavedEvent_);orSavedEvent_=nullptr;}
+  orProbe_.on=false;orProbe_.deps.clear();orProbe_.candidate.reset();
+}
+void Riu::orProbeAfterStep(){
+  ++orProbe_.steps;++orProbe_.total;
+  if(tspCpu_.pc()==orProbe_.head){
+    const bool sameState=tspCpu_.sameArch(orProbe_.state);
+    bool fixed=sameState&&!orProbe_.dirty;
+    if(fixed&&!orRestored(orProbe_.written)){fixed=false;}   // net memory effect of the iteration must be none
+    const OrObs now=orObserve?orObserve():OrObs{};
+    if(fixed&&now.epoch!=orProbe_.obs0.epoch){fixed=false;}   // the iteration changed log-filter memory
+    if(fixed){
+      std::vector<OrDep> unique;
+      for(const auto& d:orProbe_.deps){
+        bool seen=false;
+        for(const auto& u:unique)if(u.address==d.address&&u.width==d.width&&u.fetch==d.fetch&&u.kind==d.kind){seen=true;break;}
+        if(!seen)unique.push_back(d);
+      }
+      OrStats st;
+      st.period=orProbe_.steps;st.events=orEventCalls_;
+      st.dReads=tspCpuReads_-orProbe_.reads0;st.dWrites=tspCpuWrites_-orProbe_.writes0;
+      st.dOriginal=orOriginalWords_-orProbe_.original0;st.dModified=orModifiedWords_-orProbe_.modified0;
+      st.obs={now.qmem-orProbe_.obs0.qmem,now.idle-orProbe_.obs0.idle,now.stored-orProbe_.obs0.stored,0};st.deps=unique.size()|(orProbe_.written.size()<<20);
+      // Two consecutive iterations with identical effects: the steady state, not a transient.
+      if(orProbe_.candidate&&*orProbe_.candidate==st){
+        orIdle_.valid=true;orIdle_.head=orProbe_.head;orIdle_.stats=st;
+        orIdle_.state=std::move(orProbe_.state);orIdle_.deps=std::move(unique);orIdle_.written=std::move(orProbe_.written);
+        orProbeStop();return;
+      }
+      orProbe_.candidate=st;
+    }else{
+      orProbe_.candidate.reset();
+    }
+    orProbeWindow();
+  }
+  if(orProbe_.steps>2048 || orProbe_.total>8192){orProbeStop();orProbeCooldown_=8192;}
+}
+bool Riu::orDepHolds(const OrDep& d){
+  orPeek_=true;
+  struct Reset{bool& f;~Reset(){f=false;}}reset{orPeek_};
+  try{uint8_t kind=0xff;auto v=tspCpuReadImpl(d.address,d.width,d.fetch,&kind);return kind==d.kind&&v==d.value;}
+  catch(...){return false;}
+}
+bool Riu::orTryFastForward(uint64_t tick){
+  const auto& st=orIdle_.stats;
+  const uint64_t period=st.period,available=(tick-tspCpuTick_)/orDivider_;
+  if(available<period)return false;
+  uint64_t iterations=available/period;
+  const uint64_t retired=tspCpu_.instructions();
+  if(orBudget_>retired)iterations=std::min(iterations,(orBudget_-retired)/period);else iterations=0;
+  if(!iterations)return false;
+  bool ok=tspCpu_.sameArch(orIdle_.state);
+  for(size_t i=0;ok&&i<orIdle_.deps.size();++i)ok=orDepHolds(orIdle_.deps[i]);
+  if(ok)ok=orRestored(orIdle_.written);   // every byte the loop writes still holds its window-start value
+  if(!ok){orIdle_.valid=false;orIdle_.deps.clear();orIdle_.written.clear();orProbeCooldown_=64;return false;}
+  // The skipped iterations would have left every architectural and storage state unchanged; only the
+  // retired-instruction/tick/diagnostic counters and the emitted-event count advance.
+  tspCpu_.credit(iterations*period);tspCpuTick_+=iterations*period*orDivider_;
+  tspCpuReads_+=iterations*st.dReads;tspCpuWrites_+=iterations*st.dWrites;
+  orOriginalWords_+=iterations*st.dOriginal;orModifiedWords_+=iterations*st.dModified;
+  if(orSideEffects)orSideEffects(iterations*st.events);
+  if(orObserveCredit)orObserveCredit(st.obs,iterations);
+  return true;
+}
 OrWord Riu::tspCpuRead(uint32_t a,unsigned n,bool fetch){
+  uint8_t kind=0;
+  auto v=tspCpuReadImpl(a,n,fetch,&kind);
+  if(orProbe_.on){
+    // Bytes this window already wrote are produced inside the loop; everything else is an external input.
+    bool internal=false;
+    if(!orProbe_.written.empty()){
+      std::vector<OrTgt> t;orReadTargets(a,n,kind,t);
+      size_t hit=0;for(const auto& x:t)if(orHasTarget(orProbe_.written,x))++hit;
+      if(hit&&hit==t.size())internal=true;
+      else if(hit)orProbe_.dirty=true;   // partially self-produced: not provable
+    }
+    if(!internal)orProbe_.deps.push_back({a,n,fetch,kind,v});
+  }
+  return v;
+}
+OrWord Riu::tspCpuReadImpl(uint32_t a,unsigned n,bool fetch,uint8_t* kindOut){
   uint32_t base=fetch?0x1f202b88:0x1f202b98,mask=fetch?0x1f202b90:0x1f202ba0;
   const auto& cached=tspBurstMapping_[fetch?0:1];
   bool known=tspBurstMappingActive_?cached.known:
@@ -266,26 +374,29 @@ OrWord Riu::tspCpuRead(uint32_t a,unsigned n,bool fetch){
   if((a&maskValue)==baseValue){
     auto offset=a&0x3fff;if(offset+n>0x4000)throw std::runtime_error("OpenRISC QMEM boundary crossing");
     uint32_t value=0;for(unsigned i=0;i<n;++i)value|=uint32_t(tspDownload_.byte(offset+i))<<(i*8);
-    if(fetch){bool original=true;for(unsigned i=0;i<n;++i){auto b=tspDownload_.originalByte(offset+i);if(!b||*b!=uint8_t(value>>(i*8)))original=false;}
+    if(fetch&&!orPeek_){bool original=true;for(unsigned i=0;i<n;++i){auto b=tspDownload_.originalByte(offset+i);if(!b||*b!=uint8_t(value>>(i*8)))original=false;}
       if(original)++orOriginalWords_;else ++orModifiedWords_;}
-    if(!fetch)++tspCpuReads_;
+    if(!fetch&&!orPeek_)++tspCpuReads_;
+    if(kindOut)*kindOut=0;
     return {value,0xffffffffu,{}};
   }
   if(fetch)throw std::runtime_error("OpenRISC instruction fetch outside configured QMEM unsupported");
-  ++tspCpuReads_;
+  if(!orPeek_)++tspCpuReads_;
   // These aliases are corroborated by both original command handlers: MIPS
   // Alive issues 01000000 at B00; OR main sets global=210200, dispatches +130,
   // responds at +13c, and clears +130. MIPS reads response from C00.
   if((a==0x210330 || a==0x21033c) && n==4){
     uint32_t p=a==0x210330?0x1f202b00:0x1f202c00;
     OrWord v{get(p,2)|(get(p+4,2)<<16),knownBits(p,2)|(knownBits(p+4,2)<<16),a};
-    event("or1k_register_read",a,n,v.value,"shared TSP register storage; unknown reset bits retain origin");return v;
+    if(kindOut)*kindOut=1;
+    if(!orPeek_)event("or1k_register_read",a,n,v.value,"shared TSP register storage; unknown reset bits retain origin");return v;
   }
   if(a>=0x210000 && a<0x218000 && n==4 && !(a&3)){
     OrWord v{0,0,a};
     for(unsigned i=0;i<4;++i){auto it=bytes_.find(tspPayloadKey(a<<1,i));auto byte=it==bytes_.end()?RiuByte{}:it->second;
       v.value|=uint32_t(byte.value)<<(i*8);v.known|=uint32_t(byte.known)<<(i*8);}
-    event("or1k_internal_read",a,n,v.value,"internal register aperture shared with MIPS indirect address<<1 transport; undefined reset bits remain invalid");return v;
+    if(kindOut)*kindOut=2;
+    if(!orPeek_)event("or1k_internal_read",a,n,v.value,"internal register aperture shared with MIPS indirect address<<1 transport; undefined reset bits remain invalid");return v;
   }
   throw std::runtime_error("OpenRISC data bus address unsupported");
 }
@@ -303,7 +414,70 @@ uint32_t Riu::tspStoredWordKnownMask(uint32_t a)const{
   }
   return mask;
 }
+bool Riu::orCurrent(OrTgt& t) const {
+  if(t.space==0){
+    try{t.value=tspDownload_.byte(t.key);t.present=true;t.known=0xff;return true;}
+    catch(...){return false;}
+  }
+  auto it=bytes_.find(t.key);
+  if(it==bytes_.end()){t.present=false;t.value=0;t.known=0;}
+  else{t.present=true;t.value=it->second.value;t.known=it->second.known;}
+  return true;
+}
+bool Riu::orWriteTargets(uint32_t a,unsigned n,const OrWord& v,std::vector<OrTgt>& out) const {
+  // Byte targets of the three store paths of tspCpuWriteImpl. False for anything unexpected, so the
+  // idle-loop proof is never granted on a path this mirror does not understand.
+  try{
+    auto dbase=tspBurstMappingActive_?tspBurstMapping_[1].base:get(0x1f202b98,2)|(get(0x1f202b9c,2)<<16);
+    auto dmask=tspBurstMappingActive_?tspBurstMapping_[1].mask:get(0x1f202ba0,2)|(get(0x1f202ba4,2)<<16);
+    uint32_t wanted=n==4?0xffffffffu:(1u<<(n*8))-1;
+    if((a&dmask)==dbase){
+      if((v.known&wanted)!=wanted)return false;
+      for(unsigned i=0;i<n;++i)out.push_back({0,(a&0x3fff)+i});
+      return true;
+    }
+    if((a==0x210330 || a==0x21033c) && n==4){
+      if(v.known!=0xffffffffu && v.origin!=a)return false;
+      uint32_t p=a==0x210330?0x1f202b00:0x1f202c00;
+      for(unsigned i=0;i<4;++i)out.push_back({1,p+(i>=2?4:0)+(i&1)});
+      return true;
+    }
+    if(a>=0x210000 && a<0x218000 && n==4 && !(a&3)){
+      if(v.known!=0xffffffffu && v.origin!=a)return false;
+      for(unsigned i=0;i<4;++i)out.push_back({1,tspPayloadKey(a<<1,i)});
+      return true;
+    }
+  }catch(...){}
+  return false;
+}
+void Riu::orReadTargets(uint32_t a,unsigned n,uint8_t kind,std::vector<OrTgt>& out) const {
+  try{
+    if(kind==0){for(unsigned i=0;i<n;++i)out.push_back({0,(a&0x3fff)+i});}
+    else if(kind==1){uint32_t p=a==0x210330?0x1f202b00:0x1f202c00;for(unsigned i=0;i<4;++i)out.push_back({1,p+(i>=2?4:0)+(i&1)});}
+    else{for(unsigned i=0;i<4;++i)out.push_back({1,tspPayloadKey(a<<1,i)});}
+  }catch(...){}
+}
+bool Riu::orRestored(const std::vector<OrTgt>& written) const {
+  for(const auto& w:written){
+    OrTgt c{w.space,w.key};
+    if(!orCurrent(c))return false;
+    if(c.present!=w.present||c.value!=w.value||c.known!=w.known)return false;
+  }
+  return true;
+}
 void Riu::tspCpuWrite(uint32_t a,unsigned n,OrWord v){
+  if(orProbe_.on&&!orProbe_.dirty){
+    std::vector<OrTgt> t;
+    if(!orWriteTargets(a,n,v,t))orProbe_.dirty=true;
+    else for(auto& x:t){
+      if(orHasTarget(orProbe_.written,x))continue;
+      if(!orCurrent(x)){orProbe_.dirty=true;break;}
+      orProbe_.written.push_back(x);   // first write wins: the value the byte had when this window began
+    }
+  }
+  tspCpuWriteImpl(a,n,v);
+}
+void Riu::tspCpuWriteImpl(uint32_t a,unsigned n,OrWord v){
   ++tspCpuWrites_;
   auto dbase=tspBurstMappingActive_?tspBurstMapping_[1].base:get(0x1f202b98,2)|(get(0x1f202b9c,2)<<16);
   auto dmask=tspBurstMappingActive_?tspBurstMapping_[1].mask:get(0x1f202ba0,2)|(get(0x1f202ba4,2)<<16);

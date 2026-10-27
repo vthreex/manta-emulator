@@ -10,7 +10,7 @@
 namespace manta {
 // ORBIS32 subset interpreter, independent of the existing MIPS engine.
 // Unknown register/peripheral bits never become successful status values.
-struct OrWord {uint32_t value=0,known=0;std::optional<uint32_t> origin;};
+struct OrWord {uint32_t value=0,known=0;std::optional<uint32_t> origin;bool operator==(const OrWord&)const=default;};
 class OpenRisc {
   friend void ioClass(snap::Ar&, OpenRisc&);
   std::array<OrWord,32> r_{};
@@ -36,6 +36,17 @@ public:
   uint64_t instructions()const{return instructions_;}
   uint64_t exceptions()const{return exceptions_;}
   bool running()const{return running_;}
+  // Architectural state without the retired-instruction counter: two equal captures mean the core
+  // will behave identically given identical bus reads (used to prove an idle loop is a fixed point).
+  struct Arch {
+    std::array<OrWord,32> r;std::map<unsigned,uint32_t> spr;uint32_t pc=0,ppc=0,sr=0;
+    std::optional<uint32_t> branch;uint64_t exceptions=0;bool running=false;
+  };
+  Arch arch()const{return {r_,spr_,pc_,ppc_,sr_,branch_,exceptions_,running_};}
+  bool sameArch(const Arch& a)const{
+    return a.pc==pc_&&a.ppc==ppc_&&a.sr==sr_&&a.branch==branch_&&a.exceptions==exceptions_&&a.running==running_&&a.r==r_&&a.spr==spr_;
+  }
+  void credit(uint64_t n){instructions_+=n;}   // account for n instructions proven to leave the state unchanged
   std::vector<uint8_t> stateBytes()const;
 };
 }

@@ -507,6 +507,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     if (!replay_)
       throw std::runtime_error("Cannot open replay");
   }
+  // Exact idle-loop fast-forward of the auxiliary CPU: host speed only. It elides per-instruction OpenRISC events,
+  // so it is off whenever any event stream, change filter or MMIO breakpoint could observe them.
+  riu_.orSideEffects = [this](uint64_t n) { sideEffectGen_ += n; };
+  riu_.orObserve = [this] { return OrObs{suppressedOrQmemTrace_, suppressedOrIdlePolls_, suppressedOrStoredReads_, orLogEpoch_}; };
+  riu_.orObserveCredit = [this](const OrObs& d, uint64_t n) {
+    suppressedOrQmemTrace_ += d.qmem * n; suppressedOrIdlePolls_ += d.idle * n; suppressedOrStoredReads_ += d.stored * n;
+  };
+  riu_.orIdleSkip = !trace_.is_open() && !replay_.is_open() && !o.pauseMmio && !std::getenv("MANTA_NO_OR_SKIP");
   if (o.candidateMiu) {
     dramBacking_.resize(size_t(0x08000000) + o.miu1Bytes);
     cpu_.mapShared(0, dramBacking_.size(), dramBacking_.data());
@@ -621,21 +629,21 @@ void Msd309Machine::event(EvText kt, uint32_t a, unsigned n, uint32_t v, EvText 
     if(it!=lastOrStoredRead_.end() && it->second==sample && !(options_.pauseMmio && options_.pauseMmio==a)){
       ++suppressedOrStoredReads_;return;
     }
-    lastOrStoredRead_[key]=sample;
+    {bool changed=it==lastOrStoredRead_.end()||it->second!=sample;lastOrStoredRead_[key]=sample;if(changed)++orLogEpoch_;}
     knowledgeDetail=std::string(dt.view())+"; known-mask="+hex(mask)+"; identical value/mask repeats summarized; invalid bits stay invalid";
     dt=EvText(knowledgeDetail);
   }
   if(options_.orIdlePollChanges){
     if((k=="write" && a>=0x1f202b00 && a<=0x1f202b05) ||
-       (k=="or1k_register_write" && a==0x210330))lastOrIdlePollPc_=UINT32_MAX;
+       (k=="or1k_register_write" && a==0x210330))setOrIdlePollPc(UINT32_MAX);
     if(k=="or1k_register_read" && a==0x210330 && n==4){
       if(v==0 && riu_.knownBits(0x1f202b00,2)==0xffff && riu_.knownBits(0x1f202b04,2)==0xffff){
         auto pc=riu_.tspCpuPc();
         if(lastOrIdlePollPc_==pc && !(options_.pauseMmio && options_.pauseMmio==a)){
           ++suppressedOrIdlePolls_;return;
         }
-        lastOrIdlePollPc_=pc;
-      }else lastOrIdlePollPc_=UINT32_MAX;
+        setOrIdlePollPc(pc);
+      }else setOrIdlePollPc(UINT32_MAX);
     }
   }
   // Observation filter only: Riu has already performed the actual original

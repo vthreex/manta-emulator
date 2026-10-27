@@ -115,6 +115,9 @@ public:
     for (auto it = const_cast<std::map<uint32_t, RiuByte>&>(other_).lower_bound(kBase + kSize); it != other_.end(); ++it) f(it->first, it->second);
   }
 };
+// Machine-side observer state an OpenRISC event can touch (log-filter counters and their memory).
+// epoch counts real changes of that memory; an auxiliary-CPU iteration is skippable only if it changes none.
+struct OrObs {uint64_t qmem=0,idle=0,stored=0,epoch=0;bool operator==(const OrObs&)const=default;};
 class Riu {
   friend void ioClass(snap::Ar&, Riu&);
   GopUpdate gopUpdate_;
@@ -235,6 +238,43 @@ class Riu {
   void advanceTsp(uint64_t tick);
   OrWord tspCpuRead(uint32_t address,unsigned width,bool fetch);
   void tspCpuWrite(uint32_t address,unsigned width,OrWord value);
+  OrWord tspCpuReadImpl(uint32_t address,unsigned width,bool fetch,uint8_t* kind);
+  void tspCpuWriteImpl(uint32_t address,unsigned width,OrWord value);
+  // Exact idle-loop fast-forward for the auxiliary CPU (host speed only; see Riu::advanceTsp).
+  // A loop is accepted only when one full iteration starts and ends in an identical architectural state,
+  // every byte it wrote is back at its starting value (net memory effect none), and all of its external
+  // reads (bytes it did not write itself) are re-verified before each skip. Derived cache: never part of a snapshot, always re-proven before use.
+  struct OrDep {uint32_t address=0;unsigned width=0;bool fetch=false;uint8_t kind=0;OrWord value;};
+  // One byte of storage the auxiliary CPU can write: space 0 = downloaded QMEM, space 1 = the RIU byte map.
+  struct OrTgt {uint8_t space=0;uint32_t key=0;bool present=false;uint8_t value=0,known=0;};
+  struct OrStats {
+    uint64_t period=0,events=0,dReads=0,dWrites=0,dOriginal=0,dModified=0;OrObs obs;size_t deps=0;
+    bool operator==(const OrStats&)const=default;
+  };
+  struct OrIdle {
+    bool valid=false;uint32_t head=0;OrStats stats;OpenRisc::Arch state;std::vector<OrDep> deps;std::vector<OrTgt> written;
+  } orIdle_;
+  struct OrProbe {
+    bool on=false;uint32_t head=0;uint64_t steps=0,total=0,reads0=0,writes0=0,original0=0,modified0=0;bool dirty=false;
+    OrObs obs0;std::optional<OrStats> candidate;OpenRisc::Arch state;std::vector<OrDep> deps;std::vector<OrTgt> written;
+  } orProbe_;
+  uint64_t orProbeCooldown_=0,orEventCalls_=0;
+  bool orPeek_=false;
+  std::function<void(EvText,uint32_t,unsigned,uint32_t,EvText)> orSavedEvent_;
+  void orProbeWindow();
+  void orProbeStart();
+  void orProbeStop();
+  void orProbeAfterStep();
+  bool orTryFastForward(uint64_t tick);
+  bool orDepHolds(const OrDep& dep);
+  bool orWriteTargets(uint32_t address,unsigned width,const OrWord& value,std::vector<OrTgt>& out) const;
+  void orReadTargets(uint32_t address,unsigned width,uint8_t kind,std::vector<OrTgt>& out) const;
+  bool orCurrent(OrTgt& target) const;
+  bool orRestored(const std::vector<OrTgt>& written) const;
+  static bool orHasTarget(const std::vector<OrTgt>& list,const OrTgt& t){
+    for(const auto& x:list)if(x.space==t.space&&x.key==t.key)return true;
+    return false;
+  }
   uint32_t tspSelectedTarget() const;
   static uint32_t tspPayloadKey(uint32_t target,unsigned lane);
   std::optional<bool> lastOutputSync_;
@@ -629,6 +669,10 @@ public:
   }
   std::string stopReason, uart;
   std::function<void(EvText, uint32_t, unsigned, uint32_t, EvText)> event;
+  bool orIdleSkip=false;                          // host-speed idle-loop fast-forward of the auxiliary CPU (set by the machine only when no event stream is recorded)
+  std::function<void(uint64_t)> orSideEffects;    // credits the events a skipped loop would have emitted (keeps the machine's side-effect generation exact)
+  std::function<OrObs()> orObserve;               // machine log-filter counters (suppressed-record counts) + change epoch
+  std::function<void(const OrObs&,uint64_t)> orObserveCredit;   // adds per-iteration counter deltas times the skipped iteration count
   std::function<std::vector<uint8_t>(uint32_t, size_t)> flashRead;
   // Guest SPI NOR program/erase into the copy-on-write flash overlay (set by the machine).
   std::function<size_t(uint32_t, std::span<const uint8_t>)> flashProgram;
