@@ -2364,6 +2364,7 @@ void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requ
   }
 }
 void Msd309Machine::serviceVirtualRemote() {
+  if (options_.remoteQueue) while (options_.remoteQueue->paused.load()) std::this_thread::sleep_for(std::chrono::milliseconds(4));   // front-end pause: no guest state changes while waiting
   auto waiting = std::move(irWaiting_);
   irWaiting_.clear();
   for (auto& [function, at] : waiting) deliverIrFunction(function, at);
@@ -2399,7 +2400,7 @@ void Msd309Machine::publishPreviewLive() const {
       }
     if (!options_.videoPlane.empty() && dramBacking_.size() > 0x006fbd85) mix(dramBacking_[0x006fbd85]);
     mix(riu_.geBlendCopies); mix(riu_.geI2Glyphs); mix(riu_.geUniformStretches);
-    if (h == liveSignature_) return;
+    if (h == liveSignature_) { options_.previewStore->setGuestStatus("MIPS dispatches " + std::to_string(dispatches_)); return; }
     liveSignature_ = h;
   }
   publishPreview();

@@ -18,16 +18,19 @@ _HDR = struct.Struct('<IIIIIIIIQ')   # magic version seqBegin seqEnd width heigh
 MAGIC = 0x41544E4D
 
 
+FROZEN = getattr(sys, 'frozen', False)
+
+
 def find_repo_root():
-    here = Path(__file__).resolve()
+    here = Path(sys.executable).resolve() if FROZEN else Path(__file__).resolve()
     for p in [here.parent] + list(here.parents):
         if (p / 'work' / 'firmware-original.bin').exists():
             return p
-    return here.parents[3]
+    return here.parents[3] if len(here.parents) > 3 else here.parent
 
 
 REPO = find_repo_root()
-PKG = Path(__file__).resolve().parents[1]
+PKG = Path(getattr(sys, '_MEIPASS', '')) if FROZEN else Path(__file__).resolve().parents[1]
 ORIGINAL_SHA256 = None   # computed lazily from work/firmware-original.bin (the verified original image)
 
 
@@ -163,6 +166,7 @@ class Session(QObject):
     state = Signal(str)            # idle | starting | running | stopped
     frame = Signal(QImage)
     info = Signal(str, str, int)   # label, description, flags
+    speed = Signal(float)          # guest dispatches per second (millions)
 
     def __init__(self):
         super().__init__()
@@ -175,6 +179,8 @@ class Session(QObject):
         self.timer = QTimer(self)
         self.timer.setInterval(16)
         self.timer.timeout.connect(self._poll)
+        self.last_disp = (0, 0.0)
+        self.paused = False
 
     def running(self):
         return self.proc is not None and self.proc.state() != QProcess.NotRunning
@@ -211,6 +217,14 @@ class Session(QObject):
     def send_key(self, fn):
         if self.running():
             self.proc.write(('KEY %s\n' % fn).encode())
+
+    def send_command(self, text):
+        if self.running():
+            self.proc.write((text + '\n').encode())
+
+    def set_paused(self, on):
+        self.paused = on
+        self.send_command('PAUSE' if on else 'RESUME')
 
     def send_raw(self, value):
         if self.running():
@@ -251,6 +265,18 @@ class Session(QObject):
         if flags != self.flags:
             self.flags = flags
             self.info.emit('', '', flags)
+        st = bytes(m[776:776 + 64]).split(b'\0', 1)[0].decode('ascii', 'replace')
+        if st.startswith('MIPS dispatches '):
+            import time as _t
+            try:
+                n = int(st.split()[-1])
+                now = _t.time()
+                if now - self.last_disp[1] >= 1.0:
+                    if self.last_disp[1] and n >= self.last_disp[0] and not self.paused:
+                        self.speed.emit((n - self.last_disp[0]) / (now - self.last_disp[1]) / 1e6)
+                    self.last_disp = (n, now)
+            except ValueError:
+                pass
         if sb != se or se == self.seq or w == 0 or h == 0 or w * h > MAX_PIXELS:
             return
         data = bytes(m[HEADER:HEADER + w * h * 4])

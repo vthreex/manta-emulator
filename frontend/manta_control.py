@@ -22,6 +22,7 @@ from remote_widget import BINDINGS, KEYS, RemoteWidget  # noqa: E402
 VERSION = '1.0.0'
 ACCENT = '#f29a1d'
 SETTINGS_FILE = Path.home() / 'AppData' / 'Roaming' / 'MantaEmulator' / 'settings.json'
+APP_ICON = None
 
 STYLE = f"""
 QMainWindow, QDockWidget, QWidget {{ background: #1b1c20; color: #dcdde0; font-family: 'Segoe UI'; font-size: 13px; }}
@@ -57,6 +58,7 @@ class Display(QWidget):
         super().__init__()
         self.image = None
         self.smooth = True
+        self.scale_mode = 'fit'
         self.show_plane = False
         self._rgb = None
         self.message = 'Press Start to boot the original firmware'
@@ -90,9 +92,12 @@ class Display(QWidget):
             img = self.image
         iw, ih = img.width(), img.height()
         s = min(self.width() / iw, self.height() / ih)
-        if s > 1:
-            s = max(1.0, float(int(s))) if not self.smooth else s
-        w, h = iw * s, ih * s
+        if self.scale_mode == 'integer' and s >= 1:
+            s = float(int(s))
+        if self.scale_mode == 'stretch':
+            w, h = float(self.width()), float(self.height())
+        else:
+            w, h = iw * s, ih * s
         target = QRectF((self.width() - w) / 2, (self.height() - h) / 2, w, h)
         p.setRenderHint(QPainter.SmoothPixmapTransform, self.smooth)
         p.fillRect(target, QColor('#000000'))
@@ -128,6 +133,9 @@ class MainWindow(QMainWindow):
         self.status.addWidget(self.state_label)
         self.status.addWidget(self.frame_label, 1)
         self.status.addPermanentWidget(self.fps_label)
+        self.speed_label = QLabel('')
+        self.status.addPermanentWidget(self.speed_label)
+        self.session.speed.connect(lambda v: self.speed_label.setText('%.1f M instr/s   ' % v))
         self.session.log.connect(self.log_line)
         self.session.state.connect(self.on_state)
         self.session.frame.connect(self.on_frame)
@@ -150,15 +158,23 @@ class MainWindow(QMainWindow):
         self.btn_stop = QPushButton('■  Stop')
         self.btn_stop.setObjectName('stop')
         self.btn_stop.clicked.connect(self.session.stop)
+        self.btn_pause = QPushButton(chr(0x275A) + chr(0x275A) + '  Pause')
+        self.btn_pause.setCheckable(True)
+        self.btn_pause.toggled.connect(self.toggle_pause)
         self.btn_restart = QPushButton('↻  Restart')
         self.btn_restart.clicked.connect(self.restart)
-        for b in (self.btn_start, self.btn_stop, self.btn_restart):
+        for b in (self.btn_start, self.btn_stop, self.btn_pause, self.btn_restart):
             tb.addWidget(b)
         tb.addSeparator()
         self.chk_smooth = QCheckBox('Smooth scaling')
         self.chk_smooth.setChecked(True)
         self.chk_smooth.toggled.connect(self._smooth)
         tb.addWidget(self.chk_smooth)
+        self.cb_scale = QComboBox()
+        for label, v in (('Fit', 'fit'), ('Whole pixels', 'integer'), ('Stretch', 'stretch')):
+            self.cb_scale.addItem(label, v)
+        self.cb_scale.currentIndexChanged.connect(self._scale)
+        tb.addWidget(self.cb_scale)
         self.chk_plane = QCheckBox('ATV test picture')
         self.chk_plane.setToolTip('Exploratory: shows the PAL colour-bar test picture behind the on-screen display (not decoded video).')
         self.chk_plane.toggled.connect(self._plane)
@@ -233,8 +249,7 @@ class MainWindow(QMainWindow):
         self.cb_cpi = QComboBox()
         for n, speed in ((16, '~12 M instr/s'), (8, '~20 M instr/s'), (4, '~31 M instr/s'), (2, '~39 M instr/s'), (1, 'cold boot only')):
             self.cb_cpi.addItem('%d cycles / instruction  (%s)' % (n, speed), n)
-        self.cb_cpi.setToolTip('Uncalibrated time scale. Fewer cycles per instruction = less co-processor work per instruction = much faster emulation,
-but guest timers advance more slowly against the instruction count. 16 is the setting the saved states were made with.')
+        self.cb_cpi.setToolTip('Uncalibrated time scale. Fewer cycles per instruction = less co-processor work per instruction = much faster emulation,\nbut guest timers advance more slowly against the instruction count. 16 is the setting the saved states were made with.')
         f.addRow('Guest clock', self.cb_cpi)
         self.lbl_cpi = QLabel('Lower = faster emulation (about 3x at 2). Time scale only; not a measured clock.')
         self.lbl_cpi.setObjectName('dim')
@@ -361,17 +376,32 @@ but guest timers advance more slowly against the instruction count. 16 is the se
         a.triggered.connect(self.copy_picture)
         fm.addAction(a)
         fm.addSeparator()
+        a = QAction('Save machine profile...', self)
+        a.triggered.connect(self.save_profile)
+        fm.addAction(a)
+        a = QAction('Load machine profile...', self)
+        a.triggered.connect(self.load_profile)
+        fm.addAction(a)
+        fm.addSeparator()
         a = QAction('Quit', self)
         a.setShortcut('Ctrl+Q')
         a.triggered.connect(self.close)
         fm.addAction(a)
         mm = mb.addMenu('&Machine')
+        a = QAction('Pause / resume', self)
+        a.setShortcut('Ctrl+P')
+        a.triggered.connect(lambda: self.btn_pause.toggle())
+        mm.addAction(a)
         for text, fn, sc in (('Start', self.start, 'F5'), ('Stop', self.session.stop, 'Shift+F5'), ('Restart', self.restart, 'Ctrl+F5')):
             a = QAction(text, self)
             a.setShortcut(sc)
             a.triggered.connect(fn)
             mm.addAction(a)
         vm = mb.addMenu('&View')
+        a = QAction('Always on top', self)
+        a.setCheckable(True)
+        a.toggled.connect(self.toggle_on_top)
+        vm.addAction(a)
         a = QAction('Full screen', self)
         a.setShortcut('F11')
         a.triggered.connect(self.toggle_fullscreen)
@@ -411,6 +441,7 @@ but guest timers advance more slowly against the instruction count. 16 is the se
         self.ed_nv.setText(s.nvram)
         self.ed_extra.setText(s.extra_args)
         self.chk_smooth.setChecked(s.interpolate)
+        self._set_combo(self.cb_scale, s.scale_mode)
         self.chk_plane.setChecked(s.show_plane)
         self.set_remote_mode(s.remote_mode)
         self.firmware_changed()
@@ -441,6 +472,7 @@ but guest timers advance more slowly against the instruction count. 16 is the se
         s.nvram = self.ed_nv.text().strip()
         s.extra_args = self.ed_extra.text().strip()
         s.interpolate = self.chk_smooth.isChecked()
+        s.scale_mode = self.cb_scale.currentData()
         s.show_plane = self.chk_plane.isChecked()
         s.remote_mode = self.remote.mode
         return s
@@ -528,6 +560,9 @@ but guest timers advance more slowly against the instruction count. 16 is the se
         running = state in ('starting', 'running')
         self.btn_start.setEnabled(not running)
         self.btn_stop.setEnabled(running)
+        self.btn_pause.setEnabled(running)
+        if not running and self.btn_pause.isChecked():
+            self.btn_pause.setChecked(False)
         self.btn_restart.setEnabled(True)
         if state == 'stopped' and self.display.image is None:
             self.display.set_message('The emulator stopped before showing a picture. See View → Log.')
@@ -556,6 +591,32 @@ but guest timers advance more slowly against the instruction count. 16 is the se
     def _smooth(self, on):
         self.display.smooth = on
         self.display.update()
+
+    def toggle_pause(self, on):
+        self.session.set_paused(on)
+        self.btn_pause.setText(chr(0x25B6) + '  Resume' if on else chr(0x275A) + chr(0x275A) + '  Pause')
+        if on:
+            self.speed_label.setText('paused   ')
+
+    def _scale(self):
+        self.display.scale_mode = self.cb_scale.currentData()
+        self.display.update()
+
+    def toggle_on_top(self, on):
+        flags = self.windowFlags()
+        self.setWindowFlags(flags | Qt.WindowStaysOnTopHint if on else flags & ~Qt.WindowStaysOnTopHint)
+        self.show()
+
+    def save_profile(self):
+        p, _ = QFileDialog.getSaveFileName(self, 'Save machine profile', str(Path.home() / 'manta-profile.json'), 'Profiles (*.json)')
+        if p:
+            self.collect_settings().save(p)
+
+    def load_profile(self):
+        p, _ = QFileDialog.getOpenFileName(self, 'Load machine profile', str(Path.home()), 'Profiles (*.json)')
+        if p:
+            self.settings = Settings.load(p)
+            self.apply_settings_to_ui()
 
     def _plane(self, on):
         self.display.show_plane = on

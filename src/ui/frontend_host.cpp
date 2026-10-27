@@ -25,6 +25,7 @@ struct ShmHeader {
   uint64_t checksum;
   char label[256];
   char description[480];
+  char status[64];                             // e.g. "MIPS dispatches 1234567" (offset 776)
 };
 static_assert(sizeof(ShmHeader) <= kHeader);
 }  // namespace
@@ -47,6 +48,8 @@ void frontendHost(const std::string& shmName, std::shared_ptr<GopPreviewStore> s
       in >> cmd >> arg;
       if (cmd == "KEY" && !arg.empty()) store->remote->push(arg);
       else if (cmd == "RAW" && !arg.empty()) store->remote->push("raw=" + arg);
+      else if (cmd == "PAUSE") store->remote->paused = true;
+      else if (cmd == "RESUME") store->remote->paused = false;
       else if (cmd == "QUIT") break;
     }
     quit = true;
@@ -76,7 +79,8 @@ void frontendHost(const std::string& shmName, std::shared_ptr<GopPreviewStore> s
       MemoryBarrier();
       hdr->seqEnd = seq;
     }
-    hdr->flags = flags;
+    { auto st = store->status(); std::snprintf(hdr->status, sizeof hdr->status, "%s", st.c_str()); }
+    hdr->flags = flags | (store->remote->paused ? 4u : 0u);
     if ((flags & 1) && quit) break;
   }
   // the guest thread may still be running: leave the process through the normal path once the owner asked to stop

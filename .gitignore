@@ -9,3 +9,4 @@ bin/
 native/gen/
 native/runtime_image.bin
 native/build/
+dist/
