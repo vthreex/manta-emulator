@@ -25,3 +25,11 @@ All hypotheses above are labelled exploratory; nothing is a measurement. The GUI
    `805BF2A8` (MMIO table lookup via `805EAF4C`) and no guest TLB entry maps 0x60000000 (only the 16 start-up TLBWI entries were written). Open question: which hardware/chip-id value makes the firmware pick 0x60000000 instead
    of the RIU base (the zero-unknown fallback returns 0 for the chip-id registers it read, e.g. 1F203Cxx). Not modelled.
 Diagnostics: `MANTA_DBG_TLB=1` prints TLBWI/TLBWR writes, `MANTA_DBG_SPI=1` prints SPI receive-register reads (stderr).
+
+## Update (Blaupunkt = OKbin.bin)
+8. The stop at `805D7418` was NOT an IO-base problem. The firmware's very first TLB entry (TLBWI idx 0 at `805A8760`, pagemask 0x1FFFE000, EntryLo0 0x01800007, EntryLo1 0x01800017) maps
+   virtual 0x00000000.. (128 MB pages) to **physical 0x60000000**; the audio HAL write goes through the not-yet-initialised IO base word `[8081294C]` = 0, so the store hits virtual 0x00225A3D = physical
+   0x60225A3D. On the real chip that is plain DRAM (second bank), so the store is harmless; the board model had nothing there. `--exploratory-miu1-alias-at 60000000` (HYPOTHESIS: MIU1 bank is also visible at
+   physical 0x60000000) maps the existing MIU1 backing there; the GUI bring-up checkbox passes it. (The HAL setter 805D734C is only called from 805A9808 inside the audio-init path 805A96C4, which runs later.)
+9. Next stop (~461 M dispatches, both fast and strict): stuck poll at `805DCD90` reading halfword `1F001C48` until it equals 2 (after writing bytes 1,0,0x10 to `1F001CA5` and other PM registers). Same register stops the
+   BP85 MSD309 image at `805EFE08`. It is a PM51 (power-management 8051) handshake: PM XDATA 0x0E24 = RIU 0x1F001C48. The PM51 model stops earlier on an unsupported XDATA write (pm51 boundary at PC 0x4868, XDATA 0xE56 for OKbin).

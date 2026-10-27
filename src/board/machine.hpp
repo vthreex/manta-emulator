@@ -167,6 +167,7 @@ struct Options {
   int exploratorySpiStatus = -1;           // --exploratory-spi-status V: assumed value of the NOR status bits the model cannot know (-1 = unknown)
   uint64_t stuckPollLimit = 0;             // --stuck-poll-limit N: stop when one read keeps returning the same value N times (0 = off)
   bool unverifiedFirmware = false;        // --unverified-firmware: relaxes the stock-image hash guards (labelled exploratory)
+  uint32_t miu1AliasBase = 0;             // EXPLORATORY (--exploratory-miu1-alias-at): a second bus alias of the MIU1 bank (the other-board firmware maps virtual 0 to physical 0x60000000 with a 128 MB page)
   uint32_t miu1Bytes = 0x08000000;        // size of the second DRAM bank (MIU1, bus 40000000..); MIU0 is fixed at 128 MB. Default = the stock board
   unsigned previewMinMs = 0;              // live preview: when non-zero, at most one frame every N ms of wall time (the check runs every previewMask+1 dispatches)
   uint64_t previewMask = 0xfffff;         // the live preview is published when (dispatches & previewMask) == 0 (frontend: finer, for a smooth picture); observation only

@@ -395,6 +395,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-miu1-done") { auto n = std::stoul(value(i)); if (!n || n > 1000000) throw std::runtime_error("--exploratory-miu1-done needs guest cycles 1..1000000"); o.exploratoryMiu1Done = uint32_t(n); }
       else if (a == "--stuck-poll-limit") o.stuckPollLimit = std::stoull(value(i));
       else if (a == "--unverified-firmware") { unverifiedFirmware = true; o.unverifiedFirmware = true; manta::VdMcuCpu::unverifiedPmImage = true; }
+      else if (a == "--exploratory-miu1-alias-at") o.miu1AliasBase = uint32_t(std::stoul(value(i), nullptr, 16));
       else if (a == "--miu1-mb") { auto n = std::stoul(value(i)); if (n > 352 || n % 16) throw std::runtime_error("--miu1-mb must be a multiple of 16 up to 352 (default 128)"); o.miu1Bytes = uint32_t(n << 20); }
       else if (a == "--preview-max-fps") { auto n = std::stoul(value(i)); if (n < 1 || n > 120) throw std::runtime_error("--preview-max-fps must be 1..120"); o.previewMinMs = unsigned(1000 / n); }
       else if (a == "--preview-interval-log2") { auto n = std::stoul(value(i)); if (n < 10 || n > 24) throw std::runtime_error("--preview-interval-log2 must be 10..24"); o.previewMask = (uint64_t(1) << n) - 1; }

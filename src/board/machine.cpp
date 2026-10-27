@@ -525,6 +525,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     // 08000000..0FFFFFFF to D0000000..D7FFFFFF. Guest MMU translates this
     // to bus 40000000..47FFFFFF. It aliases the existing MIU1 backing.
     if (o.miu1Bytes) cpu_.mapShared(0x40000000, o.miu1Bytes, dramBacking_.data() + 0x08000000);
+    if (o.miu1Bytes && o.miu1AliasBase) cpu_.mapShared(o.miu1AliasBase, o.miu1Bytes, dramBacking_.data() + 0x08000000);
   } else cpu_.map(0, 0x08000000);
   cpu_.map(0x1fc00000, 0x400000, UC_PROT_READ | UC_PROT_EXEC);
   auto aperture = riu_.flashRead(0, 0x400000);
