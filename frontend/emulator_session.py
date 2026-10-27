@@ -109,6 +109,11 @@ def build_command(st: Settings, shm_name: str):
     args = list(prof['args'])
     fw = st.firmware or str(REPO / 'work' / 'firmware-original.bin')
     args = ['--firmware', fw] + args
+    try:
+        if sha256_file(fw) != original_sha():
+            args.append('--unverified-firmware')
+    except OSError:
+        pass
     def override(flag, value):
         if flag in args:
             args[args.index(flag) + 1] = str(value)

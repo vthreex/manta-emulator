@@ -161,6 +161,7 @@ struct Options {
   bool videoPlaneBlackKey = false;   // EXPLORATORY HYPOTHESIS: opaque RGB-black guest pixels are see-through to the video plane (colour key); requires videoPlane
   std::string videoPlane;   // EXPLORATORY presentation: "" (neutral checker), black, blue, setting (guest Blue Screen setting); never changes guest state
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
+  bool unverifiedFirmware = false;        // --unverified-firmware: relaxes the stock-image hash guards (labelled exploratory)
   uint32_t miu1Bytes = 0x08000000;        // size of the second DRAM bank (MIU1, bus 40000000..); MIU0 is fixed at 128 MB. Default = the stock board
   unsigned previewMinMs = 0;              // live preview: when non-zero, at most one frame every N ms of wall time (the check runs every previewMask+1 dispatches)
   uint64_t previewMask = 0xfffff;         // the live preview is published when (dispatches & previewMask) == 0 (frontend: finer, for a smooth picture); observation only

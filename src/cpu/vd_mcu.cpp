@@ -471,8 +471,8 @@ void VdMcuCpu::resetProgram(AvdMcuProgram& program){
   resetProgramStorage(program.codeStorage(),[&program](uint16_t a){return program.byteKnown(a);},program.writes);
 }
 void VdMcuCpu::resetPmCandidate(std::span<const uint8_t> code,std::function<bool(uint16_t)> sourceValid){
-  if(code.size()!=65536 || sha256(code)!=
-     "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c")
+  if(code.size()!=65536 || (!unverifiedPmImage && sha256(code)!=
+     "5f9d541120948f5067d162048c17f30fc704f871f9fdfbcc161181567f48fd3c"))
     throw VdHardwareBoundary("original PM51 candidate size/hash mismatch");
   impl_->name="PM51 candidate";
   resetProgramStorage(code,sourceValid?std::move(sourceValid):[](uint16_t){return true;},code.size());

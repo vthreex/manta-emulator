@@ -48,6 +48,7 @@ public:
   void resetProgram(AvdMcuProgram& program);
   // Isolated standard-reset experiment; not a board SPI fetch mapping.
   void resetPmCandidate(std::span<const uint8_t> code,std::function<bool(uint16_t)> sourceValid={});
+  static inline bool unverifiedPmImage=false;   // --unverified-firmware: the PM51 program is not the verified stock one (size still checked); unknown SFRs/XDATA still stop it
   void step();
   void requestInt0();
   bool running()const;

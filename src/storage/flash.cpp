@@ -29,6 +29,14 @@ Flash Flash::loadOriginal(const std::filesystem::path &p) {
   b.resize(0x800000);
   return Flash(std::move(b));
 }
+Flash Flash::loadUnverified(const std::filesystem::path &p) {
+  auto b = readFile(p);
+  if (b.size() == 0x800010) b.resize(0x800000);
+  if (b.size() > 0x800000 || b.size() < 0x1000)
+    throw std::runtime_error("Unverified firmware must be between 4 KiB and 8 MiB (or 8 MiB + 16 bytes)");
+  b.resize(0x800000, 0xff);
+  return Flash(std::move(b));
+}
 void Flash::bounds(uint32_t a, size_t n) const {
   if (a > stock_.size() || n > stock_.size() - a)
     throw std::out_of_range("Flash bounds");

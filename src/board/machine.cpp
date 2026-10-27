@@ -1034,7 +1034,7 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
     m.guestDecompressedSha_ = sha256(b);
     m.event("guest_inflate_hash", 0x003b3980, unsigned(b.size()), 0,
             "sha256=" + m.guestDecompressedSha_);
-    if (m.guestDecompressedSha_ !=
+    if (!m.options_.unverifiedFirmware && m.guestDecompressedSha_ !=
         "149c6d713a91017eff5352fe2227e9dc99603869683ac8a57b66c83bc63ef236")
       m.stop("guest decompression hash mismatch");
   }

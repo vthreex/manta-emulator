@@ -19,6 +19,9 @@ class Flash {
 public:
   explicit Flash(std::vector<uint8_t> stock);
   static Flash loadOriginal(const std::filesystem::path &path);
+  // EXPLORATORY (--unverified-firmware): any image up to 8 MiB (+16 byte trailer); shorter images are padded with 0xFF (erased flash) at the end. The bytes are never modified.
+  // Everything else in the board model was derived from the stock image, so another firmware may stop on hardware this model does not know (strict mode).
+  static Flash loadUnverified(const std::filesystem::path &path);
   uint8_t read(uint32_t address) const;
   const std::vector<uint8_t> &stock() const { return stock_; }
   void writeEnable() { wel_ = true; }
