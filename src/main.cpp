@@ -23,7 +23,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--diagnostic-usb-save-image", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at", "--frontend-shm", "--preview-interval-log2", "--preview-max-fps", "--stuck-poll-limit"};
-  static const std::set<std::string> flags = {"--exploratory-menu-no-autoexit", "--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
+  static const std::set<std::string> flags = {"--exploratory-menu-no-autoexit", "--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--exploratory-fast-jit", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
     if (valued.count(args[i])) { ++i; continue; }
@@ -211,6 +211,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--exploratory-ge-gradient-fill")o.exploratoryGeGradientFill=true;
       else if(a=="--exploratory-ge-line")o.exploratoryGeLine=true;
       else if(a=="--no-loop-skip")o.noLoopSkip=true;
+      else if(a=="--exploratory-fast-jit")o.fastJit=true;
       else if(a=="--exploratory-usb-pendrive")o.exploratoryUsbPendrive=value(i);
       else if(a=="--exploratory-ge-fill-ignore-reg00"){auto v=std::stoul(value(i),nullptr,0);if(v==0||v>6||(v&1))throw std::runtime_error("--exploratory-ge-fill-ignore-reg00 takes a mask within bits 1..2 of GE register 00");o.exploratoryGeFillIgnoredReg00=unsigned(v);}
       else if(a=="--exploratory-ge-height5-full-copy")o.exploratoryGeHeight5Full=true;

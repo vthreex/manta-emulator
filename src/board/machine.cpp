@@ -540,6 +540,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     cpu_.write(0x01000000, flash_.stock().data() + 0x2c60, 0x5960);
   uc_hook h;
   check(uc_hook_add(cpu_.handle, &h, UC_HOOK_CODE, reinterpret_cast<void *>(codeHook), this, 1, 0));
+  const uc_hook codeHookHandle = h;
   // Unicorn 2.1.4 memory-write hooks leak MIPS delay state when a store is
   // the delay slot of JR and its target is another branch. See engine
   // regression. MMIO remains fully observed through mmio_map; count DRAM stores
@@ -551,13 +552,23 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   check(uc_hook_add(cpu_.handle, &h, UC_HOOK_INTR, reinterpret_cast<void *>(interruptHook), this, 1,
                     0));
   buildSpecialPcs();
+  if (o.fastJit) {
+    // The per-instruction hook registered above is replaced by block-level time plus exact-PC probes.
+    if (!o.saveState.empty() || !o.trace.empty() || !o.replay.empty() || o.traceInstructions || !o.watchData.empty() || !o.historyPcs.empty())
+      throw std::runtime_error("--exploratory-fast-jit cannot be combined with save-state, trace/replay, instruction tracing or watches");
+    check(uc_hook_del(cpu_.handle, codeHookHandle));
+    uc_hook hb;
+    check(uc_hook_add(cpu_.handle, &hb, UC_HOOK_BLOCK, reinterpret_cast<void *>(blockHook), this, 1, 0));
+    uc_hook hp;
+    check(uc_hook_add(cpu_.handle, &hp, UC_HOOK_CODE, reinterpret_cast<void *>(pcHook), this, 1, 0));
+  }
   importStats();
 }
 void Msd309Machine::stop(std::string why, uint32_t a) {
   if (stopped_)
     return;
   stopped_ = true;
-  blockingPc_ = cpu_.reg(UC_MIPS_REG_PC);
+  blockingPc_ = guestPc();
   blockingAddress_ = a;
   reason_ = std::move(why);
   uc_emu_stop(cpu_.handle);
@@ -657,7 +668,7 @@ void Msd309Machine::event(EvText kt, uint32_t a, unsigned n, uint32_t v, EvText 
   const bool recorded = isRead || isWrite || k == "blocked_read" || k == "deferred_read";
   const bool needLine = trace_.is_open() || replay_.is_open();
   uint32_t pc = 0, ra = 0, sp = 0;
-  if (recorded || needLine) { pc = cpu_.reg(UC_MIPS_REG_PC); ra = cpu_.reg(UC_MIPS_REG_RA); sp = cpu_.reg(UC_MIPS_REG_SP); }
+  if (recorded || needLine) { pc = guestPc(); ra = cpu_.reg(UC_MIPS_REG_RA); sp = cpu_.reg(UC_MIPS_REG_SP); }
   if ((isRead || isWrite) && a >= 0x1f203e00 && a < 0x1f204000)
     ++gopEvents_;
   if ((isRead || isWrite) && a >= 0x1f205000 && a < 0x1f205200)
@@ -816,8 +827,9 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
       return;
     }
   }
-  ++m.dispatches_;
-  if(m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff)==0)m.copro_.run(0x4000);
+  m.fastPc_ = uint32_t(a);
+  if(!m.options_.fastJit)++m.dispatches_;   // fast mode: the block hook already counted this instruction
+  if(!m.options_.fastJit && m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff)==0)m.copro_.run(0x4000);
   if((!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty()) && (m.dispatches_ & 0x3fff)==0)m.serviceVirtualRemote();
   if(!m.options_.historyPcs.empty() && a>=0x80000000u && a<0x81000000u)
     for(auto pc:m.options_.historyPcs)if(pc==a){m.publishPreview();break;}
@@ -889,7 +901,7 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
   if(m.options_.exploratoryFetchRevisionByte>=0 && a==0x805f4b44)
     m.event("guest_fetch_parameter",uint32_t(a),0,m.cpu_.reg(UC_MIPS_REG_16),
       "original caller reached selected branch join; no PC change or parameter override");
-  if (m.options_.cp0Timer) {
+  if (m.options_.cp0Timer && !m.options_.fastJit) {
     uint32_t wt = 0;
     const uint32_t pp = uint32_t(a) & 0x1fffffff;
     if (uint64_t(pp) + 4 <= m.dramBacking_.size()) std::memcpy(&wt, m.dramBacking_.data() + pp, 4); else m.cpu_.read(pp, &wt, 4);
@@ -1017,7 +1029,7 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
   // Runtime history is bounded; retain thousands of instructions without a
   // 90-million-line trace. RA/SP are call context observations, not an unwind.
   if (a >= kFastBase && a < kFastEnd) m.pushRecent(uint32_t(a), w); else m.shadowValid_ = false;
-  if (observeBlock(m, a, w)) return;
+  if (!m.options_.fastJit && observeBlock(m, a, w)) return;
   auto op = w >> 26;
   if ((op >= 32 && op <= 38) || (op >= 40 && op <= 43) || (op == 46)) {
     auto rs = (w >> 21) & 31;
@@ -1316,6 +1328,60 @@ void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
     if (op >= 40 && address < 0x08000000) ++m.dramWrites_;
   }
 }
+// EXPLORATORY fast mode (--exploratory-fast-jit): Unicorn's translator runs whole blocks without a per-instruction callback. Time advances per block
+// (dispatch counter, CP0 Count ticks, 0x4000-dispatch service points), so a device sees the clock quantised to the block length; the address-specific
+// probes still run through codeHookFull hooks that are attached to those exact PCs only. No unknown-bit provenance, PC history or loop skipping.
+void Msd309Machine::blockHook(uc_engine *, uint64_t a, uint32_t size, void *p) {
+  auto &m = *static_cast<Msd309Machine *>(p);
+  if (m.replayingTlb_) return;
+  if (m.dispatches_ >= m.hookLimit_) { m.budgetStop_ = true; uc_emu_stop(m.cpu_.handle); return; }
+  const uint64_t n = size >= 4 ? size / 4 : 1, d = m.dispatches_;
+  m.dispatches_ += n;
+  m.prevPc_ = m.fastPc_ = uint32_t(a);
+  if (m.options_.cp0Timer) {
+    // Same accumulate-and-flush scheme as tickInstr (a Unicorn register write per block would dominate the run time).
+    const uint32_t cpi = m.virtualTime_.cpi();
+    const uint64_t delta = cpi == 1 ? (d + n) / 2 - d / 2 : n * (cpi / 2);
+    if (!m.tickSynced_) m.resyncTicks();
+    if (!m.tickOff_ && delta) {
+      if (m.tickRemaining_ <= delta || m.pendingTicks_ + delta >= (uint64_t(1) << 30)) {
+        const bool crossing = m.tickRemaining_ <= delta;
+        m.cpu_.tickCount(uint32_t(m.pendingTicks_ + delta));
+        m.pendingTicks_ = 0;
+        if (crossing) m.tickSynced_ = false; else m.tickRemaining_ -= delta;
+      } else {
+        m.tickRemaining_ -= delta;
+        m.pendingTicks_ += delta;
+      }
+    }
+  }
+  if (m.options_.previewStore && ((d & ~m.options_.previewMask) != (m.dispatches_ & ~m.options_.previewMask)) && m.previewDue()) m.publishPreviewLive();
+  if ((d >> 14) == (m.dispatches_ >> 14)) return;
+  if (m.options_.exploratoryCopro) m.copro_.run(0x4000);
+  if (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty()) m.serviceVirtualRemote();
+}
+// Fast mode, every instruction: remember the PC (exact only here) and make CP0 Count observable exactly like tickInstr does.
+void Msd309Machine::pcHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
+  auto &m = *static_cast<Msd309Machine *>(p);
+  m.fastPc_ = uint32_t(a);
+  const uint32_t physical = uint32_t(a) & 0x1fffffff;
+  if (uint64_t(physical) + 4 > m.dramBacking_.size()) { codeHookFull(uc, a, sz, p); return; }
+  uint32_t w;
+  std::memcpy(&w, m.dramBacking_.data() + physical, 4);
+  const unsigned op = w >> 26;
+  if (op == 16) {
+    const unsigned rs = (w >> 21) & 31, rd = (w >> 11) & 31;
+    if (rs == 0 && rd == 9) m.flushTicks();
+    else if (rs == 4 && (rd == 9 || rd == 11 || rd == 13)) { m.flushTicks(); m.tickSynced_ = false; }
+  } else if (op == 31 && (w & 63) == 59 && ((w >> 11) & 31) == 2) m.flushTicks();
+  // One hook only (Unicorn walks every registered code hook per instruction): the address-specific probes are dispatched from here.
+  if (uint32_t(a) >= kFastBase && uint32_t(a) < kFastEnd) {
+    const uint32_t idx = (uint32_t(a) - kFastBase) >> 2;
+    if (m.specialPc_[idx >> 3] >> (idx & 7) & 1) codeHookFull(uc, a, sz, p);
+  } else if (a == 0x81000000 || a == 0x81000480 || a == 0x81004f08 || (m.options_.breakpoint && uint32_t(a) == m.options_.breakpoint)) {
+    codeHookFull(uc, a, sz, p);   // stage markers outside the firmware image
+  }
+}
 void Msd309Machine::memoryHook(uc_engine *, uc_mem_type type, uint64_t a, int, int64_t, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   if (type == UC_MEM_READ && a >= 0x1fc00000 && a < 0x20000000)
@@ -1345,7 +1411,7 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
   auto &m = *static_cast<Msd309Machine *>(p);
   try {
     auto a = 0x1f000000 + uint32_t(off);
-    auto pc = m.cpu_.reg(UC_MIPS_REG_PC);
+    auto pc = m.guestPc();
     if(m.options_.explorePmNonresumeBranch && pc==0x80404bf4 && a==0x1f001cd1 && n==1){
       std::vector<uint8_t> helper(28);m.cpu_.read(0x00404bec,helper.data(),helper.size());
       if(sha256(helper)=="4405618c6483bb6fc54e12c7132b4713b570cea7f827f6452f0220338bef708c" &&
@@ -2163,7 +2229,7 @@ void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v,
   auto &m = *static_cast<Msd309Machine *>(p);
   try {
     auto a = 0x1f000000 + uint32_t(off);
-    auto pc = m.cpu_.reg(UC_MIPS_REG_PC);
+    auto pc = m.guestPc();
     if ((pc & 0x1fffffff) >= 0x1fc00000 && (pc & 0x1fffffff) < 0x1fc02c60)
       pc = (pc & 0x1fffffff) | 0xa0000000;
     if ((pc == 0x805e5d44 || pc == 0x805e5eb4) && a == 0x1f205e00 && n == 1 &&

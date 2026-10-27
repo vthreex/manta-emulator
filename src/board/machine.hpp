@@ -129,6 +129,7 @@ struct Options {
   int diagnosticUsbUnpoweredDplus=-1;   // BRACKETING: line-state D+ of a guest-powered-down USB PHY (run 0 and 1)
   bool exploratoryUsbNoDevice=false;   // HYPOTHESIS: powered USB PHY, no device attached (SE0 line state)
   bool candidateSpiNorWrite=false;   // opt-in guest SPI NOR program/erase/WRSR into the copy-on-write overlay
+  bool fastJit=false;                    // EXPLORATORY (--exploratory-fast-jit): no per-instruction hook; block-level time + the special-PC probes only; no unknown-bit provenance
   bool noLoopSkip=false;                 // disable exact busy-wait loop skipping (A/B testing; results are identical either way)
   bool diagnosticHtotalBranchJoin=false; // DIAGNOSTIC: conservative join of the HTotal comparison outcomes
   bool exploratoryPqSramIdle=false;
@@ -342,6 +343,10 @@ private:
   static void formatEventLine(std::string &out, uint64_t tick, uint32_t pc, std::string_view kind, uint32_t address, unsigned width, uint32_t value,
                               uint32_t ra, uint32_t sp, std::string_view detail, bool cycles, uint64_t cycleCount);
   static void codeHook(uc_engine *, uint64_t, uint32_t, void *);
+  static void blockHook(uc_engine *, uint64_t, uint32_t, void *);
+  static void pcHook(uc_engine *, uint64_t a, uint32_t, void *p);
+  uint32_t fastPc_ = 0;                                   // fast mode: PC of the instruction being executed (the engine register is only exact at block ends)
+  uint32_t guestPc() const { return options_.fastJit ? fastPc_ : cpu_.reg(UC_MIPS_REG_PC); }
   static void memoryHook(uc_engine *, uc_mem_type, uint64_t, int, int64_t, void *);
   static bool invalidHook(uc_engine *, uc_mem_type, uint64_t, int, int64_t, void *);
   static void interruptHook(uc_engine *, uint32_t, void *);

@@ -81,6 +81,7 @@ class Settings:
     scale_mode: str = 'fit'
     on_top: bool = False
     show_plane: bool = True
+    fast_jit: bool = False              # EXPLORATORY: Unicorn JIT without per-instruction provenance/bookkeeping (any image, much faster, not strict)
     bringup: bool = True                # other firmware images: apply the labelled bring-up hypotheses (docs/other-board-bringup.md)
     remote_mode: str = 'keys'
 
@@ -137,6 +138,8 @@ def build_command(st: Settings, shm_name: str):
         args += ['--load-state', st.snapshot, '--load-state-allow-extra-options']
         if st.cpi != 16:
             args += ['--exploratory-cpi-after-load', str(max(2, st.cpi))]
+    if st.fast_jit and st.engine != 'native':
+        args += ['--exploratory-fast-jit']
     if st.engine == 'native':
         args += ['--native-cpu']
     if st.video_plane != 'none':
