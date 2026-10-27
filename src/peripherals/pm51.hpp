@@ -44,8 +44,8 @@ class Pm51 {
         if(!written_[a-0x4000]){observeBus(a,{0xa5,0,a},false,false);throw VdHardwareBoundary("PM private RAM read before original initialization");}
         ++ramReads;auto v=ram_[a-0x4000];observeBus(a,v,false,true);return v;
       }
-      if(a>=0x0e00 && a<0x0f00){
-        if(cpu_.port2()!=0){observeBus(a,{0xa5,0,a},false,false);throw VdHardwareBoundary("PM RIU page other than zero unresolved");}
+      if((a>=0x0e00 && a<0x0f00) || (registerStorage && a>=0x0f00 && a<0x8000 && !(a>=0x4000 && a<0x4400))){
+        if(cpu_.port2()!=0 && !registerStorage){observeBus(a,{0xa5,0,a},false,false);throw VdHardwareBoundary("PM RIU page other than zero unresolved");}
         ++riuReads;auto v=sharedRead(a);observeBus(a,v,false,true);return v;
       }
       observeBus(a,{0xa5,0,a},false,false);return {};
@@ -74,7 +74,7 @@ class Pm51 {
           return true;
         }
       }
-      if((a==0x0e69 || a==0x0e6f || (cpu_.candidateR8051Uart && (a==0x0e13 || a==0x0e1e))) && cpu_.port2()==0 && sharedWrite(a,v)){
+      if((a==0x0e69 || a==0x0e6f || (cpu_.candidateR8051Uart && (a==0x0e13 || a==0x0e1e)) || (registerStorage && a>=0x0e00 && a<0x8000)) && (cpu_.port2()==0 || registerStorage) && sharedWrite(a,v)){
         ++riuWrites;if(a==0x0e69)++markerWrites;observeBus(a,v,true,true);return true;
       }
       if(extendedWrite && extendedWrite(cpu_.port2(),a,v)){
@@ -101,6 +101,7 @@ public:
   uint64_t divider=32,budget=1000000,ramReads=0,ramWrites=0,riuReads=0,riuWrites=0;
   uint64_t markerWrites=0,controlWrites=0;
   bool firstVisits=true;
+  bool registerStorage=false; // EXPLORATORY (--exploratory-pm51-register-storage): MOVX to the PM register banks XDATA 0x0E00..0x1FFF is routed to the shared RIU byte store
   bool captureHistory=false; // bounded diagnostics only; never part of hardware state
   bool probeDeferredStartupConfigurations=false; // probe-only; no hardware effects/readback
   std::function<VdByte(uint16_t)> sharedRead;
@@ -145,6 +146,7 @@ public:
     }
   }
   const VdMcuCpu& cpu()const{return cpu_;}
+  void enableStandardInterrupts(){cpu_.standardInterrupts=true;cpu_.allStandardSources=true;cpu_.sfrStorage=true;}
   void configureCandidateUart(bool enable){
     if(started_)throw std::runtime_error("PM UART configuration changed after reset");
     cpu_.candidateR8051Uart=enable;

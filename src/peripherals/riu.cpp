@@ -33,6 +33,14 @@ VdByte Riu::pmRead(uint16_t address){
       "EXPLORATORY aggregate external power-good input; related boot.S CheckPowerGood predicate, individual MSD309 detector wiring unverified; upper bits stay invalid");
   }
   if(address==0x0e6f && !pmPowerReasonWritten_ && pmBoot_.cause())v.value=*pmBoot_.cause();
+  if(pmXdataStorage)for(const auto& h:hypothesisBits_)   // explicit --exploratory-mmio-bits hypotheses also decide the bits they name for PM51 reads
+    if(h.address==physical && hypothesisApplies(h)){v.value=uint8_t((v.value&~h.mask)|h.value);v.known|=h.mask;}
+  if(pmXdataStorage && v.known!=255){
+    // EXPLORATORY zero-unknown hypothesis (same as the MIPS-side blanket rule for unverified images): never-defined PM register bits read as 0.
+    v.value=uint8_t(v.value&v.known);v.known=255;
+    event("pm51_zero_unknown_read",physical,1,v.value,"HYPOTHESIS (diagnostic): undefined PM register bits read as 0; not a measurement");
+    return v;
+  }
   event("pm51_riu_read",physical,1,v.value,"original PM XDATA="+std::to_string(address)+
     " PC="+std::to_string(pm51_.cpu().pc())+" shared MIPS RIU backing; known="+std::to_string(v.known)+"; invalid bits are not status responses");
   return v;
@@ -40,6 +48,12 @@ VdByte Riu::pmRead(uint16_t address){
 bool Riu::pmWrite(uint16_t address,VdByte value){
   if(value.known!=255 && value.origin!=address)
     throw VdHardwareBoundary("PM unknown observation stored to foreign RIU origin");
+  if(pmXdataStorage && address>=0x0e00 && address<0x8000 && address!=0x0e13 && address!=0x0e1e && address!=0x0e69 && address!=0x0e6f){
+    auto physical=0x1f000000u+(uint32_t(address&~1u)<<1)+(address&1u);
+    bytes_[physical]={value.value,value.known};
+    event("pm51_register_storage_write",physical,1,value.value,"EXPLORATORY: original PM MOVX PC="+std::to_string(pm51_.cpu().pc())+" stored as plain shared register byte (no device behaviour); known="+std::to_string(value.known));
+    return true;
+  }
   if(address!=0x0e13 && address!=0x0e1e && address!=0x0e69 && address!=0x0e6f)return false;
   if(address==0x0e6f)pmPowerReasonWritten_=true;
   auto physical=0x1f000000u+(uint32_t(address&~1u)<<1)+(address&1u);

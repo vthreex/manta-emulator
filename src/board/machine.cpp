@@ -298,6 +298,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.mstarTimerCyclesPerTick=o.exploratoryMstarTimer;
   riu_.miu1DoneCycles=o.exploratoryMiu1Done;
   riu_.setSpiStatusHypothesis(o.exploratorySpiStatus);
+  riu_.setPmXdataStorage(o.exploratoryPm51Storage);
+  riu_.setPmBudget(o.pm51Budget);
   riu_.zeroUnknownKeepsKnown=o.unverifiedFirmware;
   if(o.exploratoryPmIrRptLatch)riu_.configurePmIrRptLatch();
   riu_.configureOrTraceBudget(o.orFirstVisits,o.orBudget,o.orDivider);

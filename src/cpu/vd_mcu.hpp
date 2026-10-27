@@ -41,6 +41,8 @@ public:
   // It supplies no SFR read value and never marks a deferred effect known.
   std::function<bool(uint8_t,VdByte)> unsupportedSfrWrite;
   bool standardInterrupts=false;
+  bool sfrStorage=false;           // EXPLORATORY: nonstandard SFRs are plain storage (read back what was written, else 0) and UART transmit completes immediately; no device behaviour is implied
+  bool allStandardSources=false;   // EXPLORATORY: also admit the other plain-8051 sources the core implements (INT1, timer 1, serial); no MStar wiring is implied
   bool candidateR8051Uart=false; // configuration only; no guessed RX/TX completion
   // Conservative data-only ROM lookups, with no unknown XDATA address,
   // instruction target, branch outcome or device value supplied.

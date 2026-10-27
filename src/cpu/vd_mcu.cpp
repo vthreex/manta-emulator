@@ -29,8 +29,9 @@ struct VdMcuCpu::Impl {
   uint8_t dplKnown=255,dphKnown=255,bKnown=255,arithmeticFlagsKnown=0x44;
   std::array<VdByte,128> uartRegisters{};
   bool uartTxPending=false;
+  std::array<uint8_t,128> sfrShadow{};
   static bool uartRegister(uint8_t a){
-    return a==0xd8 || a==0xaa || a==0xba || a==0x9d || a==0xbb || a==0x9b || a==0x9c;
+    return a==0xd8 || a==0xaa || a==0xba || a==0x9d || a==0xbb || a==0x9b || a==0x9c || a==0x9a;
   }
   static Impl& self(em8051* cpu){return *reinterpret_cast<Context*>(cpu)->owner;}
   static uint8_t xread(em8051* cpu,uint16_t address){
@@ -71,12 +72,14 @@ struct VdMcuCpu::Impl {
       if(v.known==255 && address!=0x9b && address!=0x9c)return v.value;
       throw VdHardwareBoundary("R8051 UART uninitialized/configuration or unmodeled live status consumed");
     }
+    if(m.outer->sfrStorage){m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;return m.sfrShadow[address-128];}
     if(m.outer->specialRegister)m.outer->specialRegister(address,false,0);
     std::ostringstream s;s<<m.name<<" nonstandard SFR read unsupported at PC 0x"<<std::hex<<cpu->mPC<<", SFR 0x"<<unsigned(address);
     throw VdHardwareBoundary(s.str());
   }
   static void uart0Write(em8051* cpu,uint8_t address){
-    auto& m=self(cpu);m.uartTxPending=true;
+    auto& m=self(cpu);m.uartTxPending=!m.outer->sfrStorage;
+    if(m.outer->sfrStorage)cpu->mSFR[REG_SCON]|=2;   // exploratory: transmit completes at once (TI)
     // The upstream Timer1 UART path is not the R8051 dedicated generator.
     // Queue the actual guest byte, but stop on its completion consumer until
     // that generator's clock relationship has been established.
@@ -94,12 +97,19 @@ struct VdMcuCpu::Impl {
     if(m.outer->unsupportedSfrWrite && (opcode==0x75 || opcode==0xf5) &&
        m.outer->unsupportedSfrWrite(address,{value,opcode==0x75?uint8_t(255):m.aKnown,
          opcode==0x75?uint16_t(0):m.aOrigin}))return;
+    if(m.outer->sfrStorage && !(m.outer->candidateR8051Uart && uartRegister(address))){m.sfrShadow[address-128]=value;return;}
     if(m.outer->candidateR8051Uart && uartRegister(address)){
       auto op=cpu->mCodeMem[cpu->mPC];auto& v=m.uartRegisters[address-128];
       if(op==0x75){v={value,255,0};}
       else if((op==0x43 || op==0x53) && cpu->mCodeMem[uint16_t(cpu->mPC+1)]==address){
         auto bits=cpu->mCodeMem[uint16_t(cpu->mPC+2)];
         v.value=value;v.known|=op==0x43?bits:uint8_t(~bits);
+      }else if(op>=0x88 && op<=0x8f && cpu->mCodeMem[uint16_t(cpu->mPC+1)]==address){
+        // MOV SFR,Rn / MOV SFR,A copy the register's validity unchanged (no new information is created).
+        auto index=unsigned((cpu->mSFR[REG_PSW]&0x18)+(op&7));
+        v={value,m.registerKnown[index],m.registerOrigin[index]};
+      }else if(op==0xf5 && cpu->mCodeMem[uint16_t(cpu->mPC+1)]==address){
+        v={value,m.aKnown,m.aOrigin};
       }else throw VdHardwareBoundary("R8051 UART store form has no validity model");
       if(address==0xd8)v.known&=0x80; // only baud-generator selection established
       if(address==0xba || address==0xbb)v.known&=3; // ten-bit reload, reserved bits unknown
@@ -123,7 +133,7 @@ struct VdMcuCpu::Impl {
     // sources are disabled in this explicitly selected standard reset model.
     auto& m=self(cpu);
     if(m.outer->standardInterrupts){
-      if(cpu->mSFR[REG_IE]&0x7c)
+      if((cpu->mSFR[REG_IE]&0x7c) && !m.outer->allStandardSources)
         throw VdHardwareBoundary("VD MCU interrupt source other than INT0/Timer0 unsupported");
       return;
     }

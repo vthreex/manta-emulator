@@ -180,6 +180,7 @@ class Riu {
   PmPowerGood pmPowerGood_;
   std::span<const uint8_t> pmCode_;
   bool exploratoryPm51_=false;
+  bool pmXdataStorage=false;   // EXPLORATORY: PM51 MOVX writes to the PM register bank (XDATA 0x0E00..0x0FFF) behave as plain register storage shared with MIPS
   void advancePm(uint64_t tick);
   VdByte pmRead(uint16_t address);
   bool pmWrite(uint16_t address,VdByte value);
@@ -343,6 +344,9 @@ public:
     pm51_.probeDeferredStartupConfigurations=true;
   }
   void configureExploratoryPmPowerGood(bool good){pmPowerGood_.input(good);}
+  void setPmXdataStorage(bool v){pmXdataStorage=v;pm51_.registerStorage=v;if(v)pm51_.enableStandardInterrupts();}   // exploratory: plain 8051 INT0/timer-0 interrupts
+
+  void setPmBudget(uint64_t n){if(n)pm51_.budget=n;}
   const PmPowerGood& pmPowerGood()const{return pmPowerGood_;}
   void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}
   void configureExploratoryScartIdGrounded(){exploratoryScartIdGrounded_=true;sar_.input(2,0);sar_.input(3,0);}

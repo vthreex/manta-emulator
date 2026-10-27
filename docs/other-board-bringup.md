@@ -33,3 +33,10 @@ Diagnostics: `MANTA_DBG_TLB=1` prints TLBWI/TLBWR writes, `MANTA_DBG_SPI=1` prin
    physical 0x60000000) maps the existing MIU1 backing there; the GUI bring-up checkbox passes it. (The HAL setter 805D734C is only called from 805A9808 inside the audio-init path 805A96C4, which runs later.)
 9. Next stop (~461 M dispatches, both fast and strict): stuck poll at `805DCD90` reading halfword `1F001C48` until it equals 2 (after writing bytes 1,0,0x10 to `1F001CA5` and other PM registers). Same register stops the
    BP85 MSD309 image at `805EFE08`. It is a PM51 (power-management 8051) handshake: PM XDATA 0x0E24 = RIU 0x1F001C48. The PM51 model stops earlier on an unsupported XDATA write (pm51 boundary at PC 0x4868, XDATA 0xE56 for OKbin).
+
+10. PM51 of this image (flash 0x10000, 8051 code) needs, in order: MOVX to the PM register banks with P2 = 0xFF at reset (XDATA 0x0E56 first); reads of undefined PM bits; PM reg 0x0EC2 bit 3 (RIU 1F001D84) set; plain
+   8051 interrupt sources; SFR 0x9A/0xA9 and other nonstandard SFRs; UART transmit completion. All are EXPLORATORY, labelled hypotheses, enabled by `--exploratory-pm51-register-storage`
+   (XDATA 0x0E00..0x7FFF = shared RIU byte store, undefined reads 0, INT0/T0/INT1/T1/serial admitted, nonstandard SFRs = plain storage, TX completes at once), `--pm51-instruction-budget N`, and
+   `--exploratory-mmio-bits 1f001d84:08:08` (also applied to PM51 reads). With them OKbin passes the 805DCD90 handshake, runs the whole init and prints
+   "AC on, should go to standby!!!!! Wait for PM51 standby... PM51 run ok..." then idles at 806BF1xx: the AC-boot path chose standby and waits for a power key. Next: send the board's POWER IR code / find the
+   power-on-mode predicate. The PM51 is emulated at 1/32 of the dispatch clock (1.5 G PM51 instructions per 3 G dispatches), so these runs are slow (900 M dispatches = 4 min).
