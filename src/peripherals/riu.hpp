@@ -669,6 +669,7 @@ public:
   }
   std::string stopReason, uart;
   std::function<void(EvText, uint32_t, unsigned, uint32_t, EvText)> event;
+  bool avdIdleSkip=false;                         // exact fast-forward of the AVD 8051 idle SJMP $ (host speed only)
   bool orIdleSkip=false;                          // host-speed idle-loop fast-forward of the auxiliary CPU (set by the machine only when no event stream is recorded)
   std::function<void(uint64_t)> orSideEffects;    // credits the events a skipped loop would have emitted (keeps the machine's side-effect generation exact)
   std::function<OrObs()> orObserve;               // machine log-filter counters (suppressed-record counts) + change epoch

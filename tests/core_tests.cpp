@@ -1535,6 +1535,34 @@ void vdSharedExecutionTests(){
     for(unsigned i=0;i<20;++i)c.step();
     require(c.instructions()==1,"8051 idle ticks are not counted as original instruction execution");
   }
+  {
+    // The idle `SJMP $` fast-forward must equal stepping, for every timer 0 mode, gating and count-in alignment.
+    unsigned folded=0;
+    for(uint8_t tmod:{0x00,0x01,0x02,0x04,0x08,0x09}){
+      for(uint8_t th:{0x00,0x01,0x7f,0xfe,0xff})for(uint8_t tl:{0x00,0x03,0x1f,0xfd,0xff}){
+        for(uint64_t n:{1ull,2ull,31ull,300ull,8200ull,66000ull}){
+          auto p=program({0x75,0x89,tmod,0x75,0x8a,tl,0x75,0x8c,th,0x75,0x88,0x10,0x80,0xfe});
+          manta::VdMcuCpu stepped,jumped;stepped.resetProgram(p);jumped.resetProgram(p);
+          for(unsigned i=0;i<12;++i){stepped.step();jumped.step();}
+          auto ticks=jumped.skipIdleLoop(n,~0ull);
+          if(ticks){folded++;require(ticks==n,"idle fast-forward consumes exactly the offered ticks");}
+          for(uint64_t i=0;i<(ticks?ticks:0);++i)stepped.step();
+          if(ticks)require(stepped.stateBytes()==jumped.stateBytes() && stepped.instructions()==jumped.instructions() &&
+            stepped.cycles()==jumped.cycles() && stepped.totalInstructions()==jumped.totalInstructions(),
+            "idle SJMP fast-forward is bit-identical to stepping (timer 0 closed form)");
+        }
+      }
+    }
+    require(folded>0,"idle SJMP fast-forward engages");
+    // Unproven or non-inert states are never folded.
+    auto p=program({0x75,0x88,0x40,0x80,0xfe});manta::VdMcuCpu c;c.resetProgram(p);
+    for(unsigned i=0;i<10;++i)c.step();
+    require(c.skipIdleLoop(1000,~0ull)==0,"timer 1 running: not folded");
+    auto q=program({0x80,0xfe});manta::VdMcuCpu d;d.resetProgram(q);
+    require(d.skipIdleLoop(1000,~0ull)==0,"no iteration observed yet: not folded");
+    d.step();d.step();d.step();
+    require(d.skipIdleLoop(1000,~0ull)==1000 && d.skipIdleLoop(1000,5)==5,"counts honour tick and instruction caps");
+  }
   for(bool badBranch:{false,true}){
     auto p=program({0x90,0x1b,0,0xe0,0x54,0xfb,0xf0,uint8_t(badBranch?0x60:0x90),0x40,0,0xe0});
     manta::VdMcuCpu c;unsigned restores=0;c.busRead=[](uint16_t a)->std::optional<manta::VdByte>{

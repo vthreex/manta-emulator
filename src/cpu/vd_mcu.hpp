@@ -50,6 +50,7 @@ public:
   void resetPmCandidate(std::span<const uint8_t> code,std::function<bool(uint16_t)> sourceValid={});
   static inline bool unverifiedPmImage=false;   // --unverified-firmware: the PM51 program is not the verified stock one (size still checked); unknown SFRs/XDATA still stop it
   void step();
+  uint64_t skipIdleLoop(uint64_t maxTicks,uint64_t maxInstructions);   // ticks fast-forwarded (0 if not provably idle)
   void requestInt0();
   bool running()const;
   uint64_t totalInstructions()const;

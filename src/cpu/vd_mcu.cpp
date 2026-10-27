@@ -18,6 +18,7 @@ struct VdMcuCpu::Impl {
   std::function<bool(uint16_t)> byteKnown;
   const char* name="VD MCU";
   bool running=false;
+  bool selfLoop=false;   // the last executed instruction was SJMP $ and left every tracked bit unchanged (host-speed fast-forward, see skipIdleLoop)
   uint64_t total=0,interrupts=0;
   uint8_t aKnown=255;
   uint16_t aOrigin=0;
@@ -511,7 +512,15 @@ void VdMcuCpu::step(){
   auto dpl=m.dplKnown,dph=m.dphKnown,b=m.bKnown,flags=m.arithmeticFlagsKnown;
   try{
     auto previousInterrupt=m.context.cpu.mInterruptActive;
-    if(tick(&m.context.cpu)){++m.executed;++m.total;}++m.ticks;
+    auto& c=m.context.cpu;auto pc0=c.mPC;
+    if(tick(&c)){
+      ++m.executed;++m.total;
+      // A self-jump that changed no architectural or provenance state proves every further iteration identical.
+      m.selfLoop=c.mPC==pc0 && c.mCodeMem[pc0]==0x80 && c.mCodeMem[uint16_t(pc0+1)]==0xfe &&
+        known==m.registerKnown && origins==m.registerOrigin && accumulatorKnown==m.aKnown && accumulatorOrigin==m.aOrigin &&
+        parity==m.parityUnknown && carry==m.carryKnown && dpl==m.dplKnown && dph==m.dphKnown && b==m.bKnown && flags==m.arithmeticFlagsKnown;
+    }
+    ++m.ticks;
     if(m.context.cpu.mInterruptActive & ~previousInterrupt){
       auto sp=m.context.cpu.mSFR[REG_SP];
       for(auto address:{sp,uint8_t(sp-1)}){m.registerKnown[address]=255;m.registerOrigin[address]=0;}
@@ -523,6 +532,40 @@ void VdMcuCpu::step(){
     m.dplKnown=dpl;m.dphKnown=dph;m.bKnown=b;m.arithmeticFlagsKnown=flags;
     m.running=false;throw;
   }
+}
+// Exact fast-forward of an idle `SJMP $`: it reads and writes nothing, so with both timers stopped and no interrupt source
+// enabled the only effect of each iteration is one clock tick and one executed instruction.
+uint64_t VdMcuCpu::skipIdleLoop(uint64_t maxTicks,uint64_t maxInstructions){
+  auto& m=*impl_;auto& c=m.context.cpu;
+  if(!m.running || !m.selfLoop || instruction || (c.mSFR[REG_PCON]&3) || c.mTickDelay!=1)return 0;
+  if(c.mCodeMem[c.mPC]!=0x80 || c.mCodeMem[uint16_t(c.mPC+1)]!=0xfe)return 0;
+  auto tmod=c.mSFR[REG_TMOD];
+  // Timer 1 (and timer 0 mode 3 with its second counter) would feed the serial port / TF1: not folded.
+  if((c.mSFR[REG_TCON]&TCONMASK_TR1) || (tmod&(TMODMASK_M0_0|TMODMASK_M1_0))==(TMODMASK_M0_0|TMODMASK_M1_0))return 0;
+  if((c.mSFR[REG_IE]&0x80) && (c.mSFR[REG_IE]&0x3f))return 0;
+  uint64_t n=std::min(maxTicks,maxInstructions);   // SJMP takes one tick here: every tick is one executed instruction
+  if(!n)return 0;
+  // Timer 0 counts one per tick exactly as timer_tick does, so its evolution over n ticks is closed-form.
+  if(!(tmod&TMODMASK_GATE_0) && !(tmod&TMODMASK_CT_0) && (c.mSFR[REG_TCON]&TCONMASK_TR0)){
+    uint8_t& tl=c.mSFR[REG_TL0];uint8_t& th=c.mSFR[REG_TH0];
+    bool overflow=false;
+    switch(tmod&(TMODMASK_M0_0|TMODMASK_M1_0)){
+    case 0:{   // 13-bit: TH0 and the low five bits of TL0
+      uint64_t v=(uint64_t(th)<<5|(tl&0x1f))+n;overflow=v>=8192;v&=8191;
+      th=uint8_t(v>>5);tl=uint8_t((tl&~0x1f)|(v&0x1f));break;}
+    case TMODMASK_M0_0:{   // 16-bit
+      uint64_t v=(uint64_t(th)<<8|tl)+n;overflow=v>=65536;v&=65535;
+      th=uint8_t(v>>8);tl=uint8_t(v);break;}
+    default:{   // 8-bit auto-reload from TH0
+      uint64_t untilOverflow=256-tl;
+      if(n<untilOverflow)tl=uint8_t(tl+n);
+      else{overflow=true;tl=uint8_t(th+(n-untilOverflow)%(256-th));}
+      break;}
+    }
+    if(overflow)c.mSFR[REG_TCON]|=TCONMASK_TF0;
+  }
+  m.ticks+=n;m.executed+=n;m.total+=n;
+  return n;
 }
 void VdMcuCpu::requestInt0(){
   if(!standardInterrupts)throw VdHardwareBoundary("VD MCU INT0 input unavailable");

@@ -1,4 +1,4 @@
-"""Exactness of the auxiliary-CPU idle-loop fast-forward (host speed only).
+"""Exactness of the auxiliary-CPU idle-loop fast-forwards (host speed only): TSP OpenRISC loop and AVD 8051 `SJMP $`.
 
 The TSP OpenRISC core spends most of a connected boot in one idle dispatcher loop. Riu::advanceTsp fast-forwards whole
 iterations of such a loop when it can prove them side-effect free (identical architectural state, net memory effect none,
@@ -33,9 +33,10 @@ exe = str(Path(a.emulator).resolve())
 
 def run(summary, skip):
     env = dict(os.environ)
-    env.pop('MANTA_NO_OR_SKIP', None)
-    if not skip:
-        env['MANTA_NO_OR_SKIP'] = '1'
+    for name in ('MANTA_NO_OR_SKIP', 'MANTA_NO_AVD_SKIP'):
+        env.pop(name, None)
+        if not skip:
+            env[name] = '1'
     cmd = [exe] + base + ['--max-instructions', str(a.limit), '--headless', '--state-digest', '--summary', str(summary)]
     t0 = time.time()
     r = subprocess.run(cmd, cwd=repo, capture_output=True, text=True, env=env, timeout=3600)

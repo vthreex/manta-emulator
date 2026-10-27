@@ -189,6 +189,17 @@ void Riu::advanceAvd(uint64_t tick){
       if(executionStopped && executionStopped())return;
       if(avdMcuCpu_.totalInstructions()>=avdInstructionBudget)
         throw VdHardwareBoundary("AVD original-instruction diagnostic budget reached; no hardware completion inferred");
+      if(avdIdleSkip){
+        // Exact fast-forward of an idle `SJMP $` (see VdMcuCpu::skipIdleLoop). Leave the diagnostic budget and the next field
+        // boundary to ordinary stepping so every observable moment is reached exactly as without the skip.
+        auto done=avdMcuCpu_.totalInstructions();
+        auto room=avdInstructionBudget-done;
+        if(exploratoryAtvSignal_){
+          auto next=uint64_t(atvFieldSteps_)*(atvFieldIndex_+1);
+          room=std::min<uint64_t>(room,next>done+1?next-done-1:0);
+        }
+        if(auto ticks=avdMcuCpu_.skipIdleLoop((tick-avdTick_)/avdDispatchDivider,room)){avdTick_+=ticks*avdDispatchDivider;continue;}
+      }
       avdTick_+=avdDispatchDivider;avdMcuCpu_.step();
       if(exploratoryAtvSignal_&&avdMcuCpu_.totalInstructions()>=uint64_t(atvFieldSteps_)*(atvFieldIndex_+1)){++atvFieldIndex_;atvEventByte_|=1;}
     }
