@@ -645,6 +645,19 @@ RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
   return it==gopActive_.end()?RiuByte{}:it->second;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(mstarTimerCyclesPerTick && a>=0x1f006040u && a<0x1f006050u && (a&3)==0){
+    if(n!=4)throw std::runtime_error("EXPLORATORY MStar timer: only 32-bit accesses are modelled");
+    auto& t=mstarTimer;uint32_t v=0;
+    if(a==0x1f006040u)v=t.ctrl;
+    else if(a==0x1f006048u)v=t.maxLo;
+    else if(a==0x1f00604cu)v=t.maxHi;
+    else if(a==0x1f006044u){
+      uint64_t ticks=uint64_t(t.maxLo|(t.maxHi<<16));
+      if(t.armed && !t.hit && tick-t.start>=ticks*mstarTimerCyclesPerTick){t.hit=true;++t.hits;event("exploratory_mstar_timer_hit",a,n,1,"EXPLORATORY one-shot delay timer elapsed (assumed bit0 = hit, tick = N guest cycles; not verified hardware)");}
+      ++t.waits;v=t.hit?1u:0u;
+    }else throw std::runtime_error("EXPLORATORY MStar timer: register 1F006050.. not modelled");
+    return v;
+  }
   if(fiqModel && a>=0x1f2033b0u && a+n<=0x1f2033c0u){
     uint32_t v=0;
     for(unsigned i=0;i<n;++i){
@@ -974,7 +987,10 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     ++zeroUnknownTotal;
     if (zeroUnknownLog.size() < 4000 || zeroUnknownLog.count(a)) ++zeroUnknownLog[a];
     uint32_t zv = 0, lineValue = 0;
+    if (zeroUnknownKeepsKnown) zv = v & knownBits(a, n);   // unverified firmware: bytes the guest itself wrote keep their value inside a partly unknown word read
     if (auto reg = usbLineStateRegister(a, n, &lineValue)) { zv &= ~(0xc0u << (8 * (reg - a))); zv |= lineValue << (8 * (reg - a)); }   // the guest-powered-PHY line-state hypotheses still apply
+    if(zeroUnknownKeepsKnown)for(const auto& h:hypothesisBits_)   // unverified firmware: explicit --exploratory-mmio-bits hypotheses still decide the bits they name (the rest of the word stays the blanket zero)
+      if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h)){auto sh=8*(h.address-a);zv=(zv&~(uint32_t(h.mask)<<sh))|(uint32_t(h.value)<<sh);}
     event("read", a, n, zv, "HYPOTHESIS (diagnostic): unknown register read returns 0 (USB line-state bits from their own hypothesis); not a measurement");
     return zv;
   }
@@ -987,6 +1003,16 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(mstarTimerCyclesPerTick && a>=0x1f006040u && a<0x1f006050u && (a&3)==0){
+    if(n!=4)throw std::runtime_error("EXPLORATORY MStar timer: only 32-bit accesses are modelled");
+    auto& t=mstarTimer;
+    if(a==0x1f006040u){t.ctrl=v;if(v&2){t.armed=true;t.hit=false;t.start=tick;}}
+    else if(a==0x1f006048u)t.maxLo=v&0xffffu;
+    else if(a==0x1f00604cu)t.maxHi=v&0xffffu;
+    else throw std::runtime_error("EXPLORATORY MStar timer: the status register is read-only here");
+    event("exploratory_mstar_timer_write",a,n,v,"EXPLORATORY one-shot delay timer register write (assumed layout, not verified hardware)");
+    return;
+  }
   if (tick >= writeLogFrom && (writeLog.size() < 6000 || writeLog.count(a))) { auto& s = writeLog[a]; if (!s.count) s.firstPc = pc; ++s.count; s.last = v; s.width = n; }
   if(fiqModel && a>=0x1f2033b0u && a+n<=0x1f2033c0u){
     for(unsigned i=0;i<n;++i){

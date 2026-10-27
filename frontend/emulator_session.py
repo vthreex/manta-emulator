@@ -112,6 +112,9 @@ def build_command(st: Settings, shm_name: str):
     try:
         if sha256_file(fw) != original_sha():
             args.append('--unverified-firmware')
+            args += ['--stuck-poll-limit', '20000000']
+            if st.bringup:
+                args += ['--exploratory-mstar-timer', '50', '--exploratory-mmio-bits', '1f203105:01:01+rmw']
     except OSError:
         pass
     def override(flag, value):

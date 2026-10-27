@@ -452,6 +452,12 @@ public:
   bool zeroUnknownReads = false;
   std::map<uint32_t, uint64_t> zeroUnknownLog;
   uint64_t zeroUnknownTotal = 0;
+  // EXPLORATORY (--exploratory-mstar-timer N): the one-shot delay timer used by another board's boot stub at 1F006040..4C (CTRL, STATUS, MAX lo, MAX hi).
+  // ASSUMPTIONS (MStar delay idiom, not verified on this chip): CTRL bit1 starts a run, STATUS bit0 reads 1 once MAX ticks elapsed, one tick = N guest cycles
+  // (a 12 MHz crystal against an unknown core clock), values read back as written, CTRL/MAX reset to 0.
+  uint32_t mstarTimerCyclesPerTick = 0;
+  struct { uint32_t ctrl = 0, maxLo = 0, maxHi = 0; uint64_t start = 0; bool armed = false, hit = false; uint64_t waits = 0, hits = 0; } mstarTimer;
+  bool zeroUnknownKeepsKnown = false;   // --unverified-firmware: the blanket zero-unknown hypothesis no longer discards bytes the guest wrote (stock image keeps the old behaviour byte-for-byte)
   bool fiqModel = false;
   std::array<uint32_t, 4> fiqPending{};
   uint64_t fiqRaises = 0, fiqStatusReads = 0, fiqStatusWrites = 0, fiqLineChanges = 0;

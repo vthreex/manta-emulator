@@ -295,6 +295,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryPmIrResetEmpty && (!o.candidatePmIrFifo || !o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("PM IR cold-empty hypothesis requires candidate FIFO and guarded exploration; reset occupancy unverified");
   if(o.candidatePmIrFifo)riu_.configurePmIrFifo(o.exploratoryPmIrResetEmpty);
+  riu_.mstarTimerCyclesPerTick=o.exploratoryMstarTimer;
+  riu_.zeroUnknownKeepsKnown=o.unverifiedFirmware;
   if(o.exploratoryPmIrRptLatch)riu_.configurePmIrRptLatch();
   riu_.configureOrTraceBudget(o.orFirstVisits,o.orBudget,o.orDivider);
   if(o.exploratorySarFullscale){
@@ -683,6 +685,8 @@ void Msd309Machine::event(EvText kt, uint32_t a, unsigned n, uint32_t v, EvText 
     poll.value = v;
     ++poll.count;
     maxPoll_ = std::max(maxPoll_, poll.count);
+    if (options_.stuckPollLimit && poll.count >= options_.stuckPollLimit && !stopped_)
+      stop("stuck polling loop: the same register read returned the same value " + std::to_string(poll.count) + " times", a);
     if (poll.count >= 1024 && (poll.count & (poll.count - 1)) == 0)
       event("poll_warning", a, n, v,
             "unchanged peripheral reads without intervening guest MMIO write: " +

@@ -105,8 +105,17 @@ def main():
     secs, top = float(sys.argv[1]), int(sys.argv[2])
     cmd = sys.argv[sys.argv.index('--') + 1:]
     exe = cmd[0]
-    p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.PIPE)
-    time.sleep(2.5)
+    attach = None
+    if cmd and cmd[0] == 'attach':   # attach to a running emulator: host_profile.py SECS TOP -- attach PID EXE
+        attach = int(cmd[1]); exe = cmd[2]
+        class _P:
+            pid = attach
+            stdin = None
+            def kill(self): pass
+        p = _P()
+    else:
+        p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.PIPE)
+        time.sleep(2.5)
     handles = {}
     image_base = module_base(p.pid)
     for tid in threads(p.pid):

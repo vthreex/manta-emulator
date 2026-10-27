@@ -22,7 +22,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
   static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--exploratory-atv-signal", "--gop-history-interval-log2", "--save-state-at",
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--diagnostic-usb-save-image", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
-    "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at", "--frontend-shm", "--preview-interval-log2", "--preview-max-fps"};
+    "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at", "--frontend-shm", "--preview-interval-log2", "--preview-max-fps", "--stuck-poll-limit"};
   static const std::set<std::string> flags = {"--exploratory-menu-no-autoexit", "--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
@@ -389,6 +389,8 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--gop-frame-history")
         o.gopFrameHistory = utf8Path(value(i));
       else if (a == "--frontend-shm") frontendShm = value(i);
+      else if (a == "--exploratory-mstar-timer") { auto n = std::stoul(value(i)); if (!n || n > 100000) throw std::runtime_error("--exploratory-mstar-timer needs guest cycles per tick 1..100000"); o.exploratoryMstarTimer = uint32_t(n); }
+      else if (a == "--stuck-poll-limit") o.stuckPollLimit = std::stoull(value(i));
       else if (a == "--unverified-firmware") { unverifiedFirmware = true; o.unverifiedFirmware = true; manta::VdMcuCpu::unverifiedPmImage = true; }
       else if (a == "--miu1-mb") { auto n = std::stoul(value(i)); if (n > 352 || n % 16) throw std::runtime_error("--miu1-mb must be a multiple of 16 up to 352 (default 128)"); o.miu1Bytes = uint32_t(n << 20); }
       else if (a == "--preview-max-fps") { auto n = std::stoul(value(i)); if (n < 1 || n > 120) throw std::runtime_error("--preview-max-fps must be 1..120"); o.previewMinMs = unsigned(1000 / n); }
