@@ -681,6 +681,13 @@ public:
   std::function<void(EvText, uint32_t, unsigned, uint32_t, EvText)> event;
   struct BdmaLogEntry{uint32_t src,len,dst;uint64_t tick;};
   std::vector<BdmaLogEntry> bdmaLog;                // every flash-to-MIU0 copy the guest requested (observation only)
+  // GE register as seen by the GE decoders. EXPLORATORY: when --exploratory-ge-fill-ignore-reg00 includes bit 15, bit 15 of register 00 (0x1F205000)
+  // is treated as having no effect on any decoded command (the other-board firmware sets it; its meaning is not established).
+  std::pair<uint16_t,uint16_t> geRegPair(uint32_t address) const {
+    auto value=uint16_t(get(address,2));auto known=uint16_t(knownBits(address,2));
+    if(address==0x1f205000 && (exploratoryGeFillIgnoredReg00&0x8000))value&=uint16_t(~0x8000);
+    return {value,known};
+  }
   bool exploratoryBdmaMemCopy=false;              // --exploratory-bdma-mem-copy
   unsigned tspDmaShift=6;                         // TSP firmware DMA source = reg[15:0] << shift (6 on the stock Titania4 image; the other-board image logs 0x918A00 for register 0x918A: shift 8)
   bool avdInstructionText=true;                   // true only while an event trace/replay needs the AVD 8051 disassembly in every instruction event (set by the machine)

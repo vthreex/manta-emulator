@@ -1609,7 +1609,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     if(candidateGeBitBlt && exploratoryGeI2Glyph && a==0x1f205180 && v==0x0040 && knownBits(a,2)==0xffff){
       try{
         glyph=GeI2Glyph::decode(0x0040,[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead,exploratoryGeHeight5Full);
+          return geRegPair(address);},dramRead,exploratoryGeHeight5Full);
       }catch(const std::exception&){glyph.reset();}   // not this request class: the ordinary guarded path decides
     }
     if(glyph){
@@ -1624,7 +1624,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }else if(candidateGeBitBlt && exploratoryGeBlendCopy && a==0x1f205180 && v==0x0040 && knownBits(a,2)==0xffff && [&]{
         try{
           copyPlan=GeBlendCopy::decode(0x0040,[&](unsigned index){auto address=0x1f205000+4*index;
-            return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},dramRead,exploratoryGeHeight5Full,exploratoryGeCopySnapshot);
+            return geRegPair(address);},dramRead,exploratoryGeHeight5Full,exploratoryGeCopySnapshot);
           return true;
         }catch(const std::exception& error){copyRefusal_=error.what();return false;}
       }()){
@@ -1668,7 +1668,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }else if(candidateGeBitBlt && exploratoryGeUniformStretch>=0 && a==0x1f205180 && (v==0x8040 || v==0xc040)){
       if(knownBits(a,2)!=0xffff)throw std::runtime_error("GE command contains unknown bits");
       auto registers=[&](unsigned index){auto address=0x1f205000+4*index;
-        return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};};
+        return geRegPair(address);};
       GeStretchRequest request;
       try{request=GeStretchRequest::decode(uint16_t(v),registers);}
       catch(const std::exception&){throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");}
@@ -1714,7 +1714,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         std::string detail;
         try{
           detail=GeStretchRequest::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-            return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};}).describe();
+            return geRegPair(address);}).describe();
         }catch(const std::exception& error){
           detail=std::string("stretch decode refused: ")+error.what()+"; GE registers (index=value, known mask if partial):";
           char buffer[48];
@@ -1734,7 +1734,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeBitBlt plan;
       try{
         plan=GeBitBlt::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeYuvStretch);
+          return geRegPair(address);},exploratoryGeYuvStretch);
       }catch(const std::exception& error){
         // Observation only: the exact exception text is a tested contract; the register file travels in the summary.
         guardedStretchDetail_=std::string("plain-BitBlt decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+(copyRefusal_.empty()?"":"; exploratory blend-copy refused: "+copyRefusal_)+"; GE registers (index=value):";
@@ -1760,7 +1760,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeLine plan;
       try{
         plan=GeLine::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeFillIgnoredReg00);
+          return geRegPair(address);},exploratoryGeFillIgnoredReg00);
       }catch(const std::exception& error){
         guardedStretchDetail_=std::string("line decode refused (cmd 16): ")+error.what()+"; GE registers (index=value):"+geRegisterFile()+geReg0History();
         throw;
@@ -1778,7 +1778,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeRectFill plan;
       try{
         plan=GeRectFill::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-          return std::pair{uint16_t(get(address,2)),uint16_t(knownBits(address,2))};},exploratoryGeI8Fill,exploratoryGeFillIgnoredReg00,exploratoryGeGradientFill);
+          return geRegPair(address);},exploratoryGeI8Fill,exploratoryGeFillIgnoredReg00,exploratoryGeGradientFill);
       }catch(const std::exception& error){
         guardedStretchDetail_=std::string("rect-fill decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+"; GE registers (index=value):"+geRegisterFile()+geReg0History();
         throw;

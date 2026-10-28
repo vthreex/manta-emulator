@@ -116,7 +116,7 @@ def build_command(st: Settings, shm_name: str):
             args.append('--unverified-firmware')
             args += ['--stuck-poll-limit', '20000000']
             if st.bringup:
-                args += ['--exploratory-mstar-timer', '50', '--exploratory-miu1-done', '2000', '--exploratory-spi-status', '0', '--exploratory-miu1-alias-at', '60000000', '--exploratory-pm51-register-storage', '--pm51-instruction-budget', '100000000000', '--exploratory-mmio-bits', '1f001d84:08:08', '--exploratory-mmio-bits', '1f006008:01:01', '--exploratory-self-clearing-bit', '1f260d85:01', '--exploratory-self-clearing-bit', '1f2631e9:01', '--exploratory-self-clearing-bit', '1f2631f9:01', '--exploratory-self-clearing-bit', '1f264705:01', '--exploratory-tsp-dma-shift', '8', '--exploratory-bdma-mem-copy', '--max-or1k-instructions', '100000000000']
+                args += ['--exploratory-mstar-timer', '50', '--exploratory-miu1-done', '2000', '--exploratory-spi-status', '0', '--exploratory-miu1-alias-at', '60000000', '--exploratory-pm51-register-storage', '--pm51-instruction-budget', '100000000000', '--exploratory-mmio-bits', '1f001d84:08:08', '--exploratory-mmio-bits', '1f006008:01:01', '--exploratory-self-clearing-bit', '1f260d85:01', '--exploratory-self-clearing-bit', '1f2631e9:01', '--exploratory-self-clearing-bit', '1f2631f9:01', '--exploratory-self-clearing-bit', '1f264705:01', '--exploratory-tsp-dma-shift', '8', '--exploratory-bdma-mem-copy', '--max-or1k-instructions', '100000000000', '--exploratory-ge-fill-ignore-reg00', '0x8006']
     except OSError:
         pass
     def override(flag, value):

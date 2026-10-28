@@ -213,7 +213,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--no-loop-skip")o.noLoopSkip=true;
       else if(a=="--exploratory-fast-jit")o.fastJit=true;
       else if(a=="--exploratory-usb-pendrive")o.exploratoryUsbPendrive=value(i);
-      else if(a=="--exploratory-ge-fill-ignore-reg00"){auto v=std::stoul(value(i),nullptr,0);if(v==0||v>6||(v&1))throw std::runtime_error("--exploratory-ge-fill-ignore-reg00 takes a mask within bits 1..2 of GE register 00");o.exploratoryGeFillIgnoredReg00=unsigned(v);}
+      else if(a=="--exploratory-ge-fill-ignore-reg00"){auto v=std::stoul(value(i),nullptr,0);if(v==0||(v&1)||(v&~0x8006ul))throw std::runtime_error("--exploratory-ge-fill-ignore-reg00 takes a mask within bits 1, 2 and 15 of GE register 00");o.exploratoryGeFillIgnoredReg00=unsigned(v);}
       else if(a=="--exploratory-ge-height5-full-copy")o.exploratoryGeHeight5Full=true;
       else if(a=="--exploratory-ge-copy-snapshot")o.exploratoryGeCopySnapshot=true;
       else if(a=="--exploratory-ge-uniform-stretch"){
