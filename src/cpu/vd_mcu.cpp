@@ -239,6 +239,7 @@ struct VdMcuCpu::Impl {
   }
   static void boundary(em8051* cpu){
     auto& m=self(cpu);auto pc=cpu->mPC;
+    if(m.outer->fastMode && !(cpu->mSFR[REG_PCON]&3))return;   // nothing to validate or record in fast mode
     if(!m.byteKnown(pc))throw VdHardwareBoundary("VD MCU instruction fetch from unwritten program memory");
     char text[128];
     // The disassembly text is only needed by the instruction trace callback; the instruction length comes from a table built once from the same
@@ -517,6 +518,11 @@ void VdMcuCpu::resetProgramStorage(std::span<const uint8_t> code,
 void VdMcuCpu::step(){
   auto& m=*impl_;
   if(!m.running)throw VdHardwareBoundary("VD MCU dispatch while stopped");
+  if(fastMode){
+    try{if(tick(&m.context.cpu)){++m.executed;++m.total;}++m.ticks;}
+    catch(...){m.running=false;throw;}
+    return;
+  }
   auto known=m.registerKnown;auto origins=m.registerOrigin;
   auto accumulatorKnown=m.aKnown;auto accumulatorOrigin=m.aOrigin;auto parity=m.parityUnknown;auto carry=m.carryKnown;
   auto dpl=m.dplKnown,dph=m.dphKnown,b=m.bKnown,flags=m.arithmeticFlagsKnown;

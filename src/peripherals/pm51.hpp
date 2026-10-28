@@ -146,7 +146,7 @@ public:
     }
   }
   const VdMcuCpu& cpu()const{return cpu_;}
-  void enableStandardInterrupts(){cpu_.standardInterrupts=true;cpu_.allStandardSources=true;cpu_.sfrStorage=true;}
+  void enableStandardInterrupts(){cpu_.standardInterrupts=true;cpu_.allStandardSources=true;cpu_.sfrStorage=true;cpu_.fastMode=true;}
   void configureCandidateUart(bool enable){
     if(started_)throw std::runtime_error("PM UART configuration changed after reset");
     cpu_.candidateR8051Uart=enable;

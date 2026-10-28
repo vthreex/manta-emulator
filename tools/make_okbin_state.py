@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from emulator_session import Settings, build_command, REPO
 img = sys.argv[1] if len(sys.argv) > 1 else r'<downloads>/OKbin.bin'
 out = sys.argv[2] if len(sys.argv) > 2 else str(REPO / 'work' / 'checkpoints' / 'okbin-app-up.snap')
-st = Settings(); st.emulator = str(REPO / 'work/build-irq/manta_c4.exe'); st.firmware = img; st.start_mode = 'cold'; st.engine = 'interpreter'
+st = Settings(); st.emulator = str(REPO / 'work/build-irq/manta_d1.exe'); st.firmware = img; st.start_mode = 'cold'; st.engine = 'interpreter'
 prog, args = build_command(st, 'mk')
 j = args.index('--frontend-shm'); del args[j:j + 2]
 j = args.index('--max-instructions'); args[j + 1] = '5100000000'
