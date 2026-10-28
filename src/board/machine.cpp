@@ -71,7 +71,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     throw std::runtime_error("VD SFR write-effect deferral requires the explicit bounded startup experiment");
   riu_.deferVdSfr8eWrite=o.deferVdSfr8eWrite;
   riu_.candidateAvdMcuProgram=o.candidateAvdMcuProgram;
-  riu_.candidateAudioIdma=o.candidateAudioIdma;
+  // The IDMA interface of the stock Manta audio DSP (804FF690/804FF49C layout) is not assumed for other images: their audio bank 0x1F225A00.. is plain register storage here.
+  riu_.candidateAudioIdma=o.candidateAudioIdma && !o.unverifiedFirmware;
   if(o.explorePmNonresumeBranch && (!o.symbolicInit || !o.deferDiagnosticReads || !o.exploratoryPm51SpiStartup))
     throw std::runtime_error("PM symbolic branch requires guarded original execution and connected PM; not a power/reset model");
   if(o.exploratoryAudioNoAck && (!o.candidateAudioIdma || !o.symbolicInit || !o.deferDiagnosticReads))
@@ -300,6 +301,9 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.setSpiStatusHypothesis(o.exploratorySpiStatus);
   riu_.setPmXdataStorage(o.exploratoryPm51Storage);
   riu_.setPmBudget(o.pm51Budget);
+  riu_.tspDmaShift = o.tspDmaShift;
+  riu_.exploratoryBdmaMemCopy = o.exploratoryBdmaMemCopy;
+  for (auto& [address, mask] : o.selfClearBits) riu_.selfClearBits.push_back({address, mask});
   riu_.zeroUnknownKeepsKnown=o.unverifiedFirmware;
   if(o.exploratoryPmIrRptLatch)riu_.configurePmIrRptLatch();
   riu_.configureOrTraceBudget(o.orFirstVisits,o.orBudget,o.orDivider);
@@ -2246,6 +2250,7 @@ void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v,
       return;
     }
     m.riu_.write(a, n, uint32_t(v), pc, m.cpu_.reg(UC_MIPS_REG_3), m.virtualTime_.cycles(m.dispatches_));
+    if (!m.riu_.selfClearBits.empty()) m.riu_.applySelfClearing(a, n);
     if (a >= 0x1f203e00 && a < 0x1f203ffc && m.riu_.gopBankKnown()) {
       auto bank = m.riu_.gopBank();
       for (unsigned window = 0; window < (bank == 1 ? 4u : 2u); ++window) {
@@ -2895,6 +2900,11 @@ std::string Msd309Machine::summary() const {
   }
   if(options_.exploratoryAtvSignalPal)s<<",\n  \"exploratory_atv_signal\": {\"standard\": \"PAL-B/G 625/50 (generated waveform, signal-only measurement)\", \"line_clocks_27mhz\": "<<atvMeasurement_.lineClocks<<", \"hsync_width_clocks\": "<<atvMeasurement_.hsyncWidthClocks<<", \"lines_per_frame\": "<<atvMeasurement_.linesPerFrame<<", \"burst_pp_mv\": "<<int(atvMeasurement_.burstPeakToPeakVolts*1000)<<", \"pal_switch\": "<<(atvMeasurement_.palSwitch?"true":"false")<<", \"field_events\": "<<riu_.atvFieldEvents()<<", \"note\": \"register values are labelled hypotheses; zero fixtures elsewhere\"}";
   if(options_.exploratoryBdmaCrcMiu)s<<",\n  \"exploratory_bdma_crc_miu\": true";
+  if(!riu_.bdmaLog.empty()){
+    s<<",\n  \"bdma_flash_copies\": [";
+    for(size_t i=0;i<riu_.bdmaLog.size();++i){auto& e=riu_.bdmaLog[i];s<<(i?",":"")<<"{\"flash\":\""<<hex(e.src)<<"\",\"length\":"<<e.len<<",\"dram\":\""<<hex(e.dst)<<"\",\"tick\":"<<e.tick<<"}";}
+    s<<"]";
+  }
   if(options_.exploratoryGeYuvStretch)s<<",\n  \"exploratory_ge_yuv_stretch\": true,\n  \"ge_yuv_stretches_retired\": "<<riu_.geYuvStretches<<",\n  \"ge_yuv_stretch_pixels_written\": "<<riu_.geYuvStretchPixels;
   if(options_.exploratoryGeNearestStretch)s<<",\n  \"exploratory_ge_nearest_stretch\": true,\n  \"ge_nearest_stretches_retired\": "<<riu_.geNearestStretches;
   if(options_.exploratoryGeUniformStretch>=0)s<<",\n  \"exploratory_ge_uniform_stretch\": \""<<(options_.exploratoryGeUniformStretch==0?"opaque-source":"alpha-bit")<<"\",\n  \"ge_uniform_stretches_retired\": "<<riu_.geUniformStretches<<",\n  \"ge_uniform_stretch_pixels_written\": "<<riu_.geUniformStretchPixels;

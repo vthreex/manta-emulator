@@ -391,6 +391,13 @@ static int appMain(const std::vector<std::string> &args) {
         o.gopFrameHistory = utf8Path(value(i));
       else if (a == "--frontend-shm") frontendShm = value(i);
       else if (a == "--exploratory-mstar-timer") { auto n = std::stoul(value(i)); if (!n || n > 100000) throw std::runtime_error("--exploratory-mstar-timer needs guest cycles per tick 1..100000"); o.exploratoryMstarTimer = uint32_t(n); }
+      else if (a == "--exploratory-self-clearing-bit") {
+        auto spec = value(i); auto at = spec.find(':');
+        if (at == std::string::npos) throw std::runtime_error("--exploratory-self-clearing-bit needs HEXADDR:HEXMASK");
+        o.selfClearBits.push_back({uint32_t(std::stoul(spec.substr(0, at), nullptr, 16)), uint8_t(std::stoul(spec.substr(at + 1), nullptr, 16))});
+      }
+      else if (a == "--exploratory-tsp-dma-shift") { auto n = std::stoul(value(i)); if (n < 6 || n > 8) throw std::runtime_error("--exploratory-tsp-dma-shift must be 6..8"); o.tspDmaShift = unsigned(n); }
+      else if (a == "--exploratory-bdma-mem-copy") o.exploratoryBdmaMemCopy = true;
       else if (a == "--exploratory-pm51-register-storage") o.exploratoryPm51Storage = true;
       else if (a == "--pm51-instruction-budget") o.pm51Budget = std::stoull(value(i), nullptr, 0);
       else if (a == "--exploratory-spi-status") { auto n = std::stoul(value(i), nullptr, 0); if (n > 255) throw std::runtime_error("--exploratory-spi-status must be 0..255"); o.exploratorySpiStatus = int(n); }

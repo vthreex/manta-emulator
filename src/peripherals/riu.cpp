@@ -1544,7 +1544,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       if(knownBits(0x1f202be0,2)!=0xffff || knownBits(0x1f202be4,2)!=0xffff ||
          (knownBits(0x1f202c1c,2)&15)!=15 || !dramRead)
         throw std::runtime_error("TSP firmware DMA descriptor/address high bits or DRAM backend unknown");
-      tspDownloadSource_=(get(0x1f202be0,2)<<6)|((get(0x1f202c1c,2)&15)<<22);
+      tspDownloadSource_=(get(0x1f202be0,2)<<tspDmaShift)|((get(0x1f202c1c,2)&15)<<(tspDmaShift+16));
       auto length=get(0x1f202be4,2)<<2;
       auto payload=dramRead(tspDownloadSource_,length);
       if(payload.size()!=length)throw std::runtime_error("TSP firmware DMA source unavailable");
@@ -2048,9 +2048,35 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       bdmaCopyBytes_=flashRead(src,len);
       if(bdmaCopyBytes_.size()!=len) {bdmaCopyBytes_.clear();stopReason="incomplete BDMA flash source";return;}
       bdmaCopyDestination_=destination;
+      if(bdmaLog.size()<512)bdmaLog.push_back({uint32_t(src),uint32_t(len),destination,tick});
       put(0x1f201204,1,1);bdmaPending_=true;bdmaComplete_=tick+64;
       event("bdma_flash_copy",src,len,destination,
             "original FLASH-to-MIU0 command 3035; bounded byte addresses; pending memory transfer, provisional 64-tick latency");
+      return;
+    }
+    if (exploratoryBdmaMemCopy && mode == 0x4040 && dramRead && dramWrite) {
+      // EXPLORATORY (other-board firmware): device code 0x40 in both fields = MIU0 -> MIU0 byte copy, framed like the original flash copy 0x3035
+      // (destination repeated in the poly field, seed 0). Inferred from that layout only; not hardware-verified.
+      auto destination = get(0x1f201218, 2) | (get(0x1f20121c, 2) << 16);
+      if (bdmaPending_ || !len || src >= 0x08000000 || len > 0x08000000 - src || destination >= 0x08000000 || len > 0x08000000 - destination ||
+          poly != destination || seed != 0) {
+        stopReason = "unsupported BDMA memory-copy framing or bounds";
+        return;
+      }
+      std::vector<uint8_t> source;
+      source.reserve(size_t(len));
+      for (uint64_t at = 0; at < len; at += 0x4000) {
+        auto part = dramRead(uint32_t(src + at), size_t(std::min<uint64_t>(0x4000, len - at)));
+        source.insert(source.end(), part.begin(), part.end());
+      }
+      if (source.size() != len) {stopReason = "incomplete BDMA memory-copy source"; return;}
+      bdmaCopyBytes_ = std::move(source);
+      bdmaCopyDestination_ = destination;
+      put(0x1f201204, 1, 1);
+      bdmaPending_ = true;
+      bdmaComplete_ = tick + 64;
+      event("bdma_mem_copy", src, len, destination,
+            "EXPLORATORY MIU0-to-MIU0 copy (mode 0x4040 inferred from the original 0x3035 field layout); provisional 64-tick latency");
       return;
     }
     if (exploratoryBdmaCrcMiu && mode == 0x330 && poly == 0x04c11db7 && dramRead && len && src < 0x08000000 && len <= 0x08000000 - src) {

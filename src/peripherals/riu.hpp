@@ -344,6 +344,12 @@ public:
     pm51_.probeDeferredStartupConfigurations=true;
   }
   void configureExploratoryPmPowerGood(bool good){pmPowerGood_.input(good);}
+  // EXPLORATORY: write-to-start bits that complete at once (the guest sets them, the stored bit reads back 0). No device behaviour is implied.
+  struct SelfClearBit{uint32_t address;uint8_t mask;};
+  std::vector<SelfClearBit> selfClearBits;
+  void applySelfClearing(uint32_t a,unsigned n){
+    for(const auto& s:selfClearBits)if(s.address>=a && s.address<a+n){auto it=bytes_.find(s.address);if(it!=bytes_.end())it->second.value&=uint8_t(~s.mask);}
+  }
   void setPmXdataStorage(bool v){pmXdataStorage=v;pm51_.registerStorage=v;if(v)pm51_.enableStandardInterrupts();}   // exploratory: plain 8051 INT0/timer-0 interrupts
 
   void setPmBudget(uint64_t n){if(n)pm51_.budget=n;}
@@ -673,6 +679,10 @@ public:
   }
   std::string stopReason, uart;
   std::function<void(EvText, uint32_t, unsigned, uint32_t, EvText)> event;
+  struct BdmaLogEntry{uint32_t src,len,dst;uint64_t tick;};
+  std::vector<BdmaLogEntry> bdmaLog;                // every flash-to-MIU0 copy the guest requested (observation only)
+  bool exploratoryBdmaMemCopy=false;              // --exploratory-bdma-mem-copy
+  unsigned tspDmaShift=6;                         // TSP firmware DMA source = reg[15:0] << shift (6 on the stock Titania4 image; the other-board image logs 0x918A00 for register 0x918A: shift 8)
   bool avdInstructionText=true;                   // true only while an event trace/replay needs the AVD 8051 disassembly in every instruction event (set by the machine)
   bool avdIdleSkip=false;                         // exact fast-forward of the AVD 8051 idle SJMP $ (host speed only)
   bool orIdleSkip=false;                          // host-speed idle-loop fast-forward of the auxiliary CPU (set by the machine only when no event stream is recorded)

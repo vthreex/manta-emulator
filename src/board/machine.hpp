@@ -164,6 +164,9 @@ struct Options {
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
   uint32_t exploratoryMiu1Done = 0;        // --exploratory-miu1-done N: guest cycles until the assumed MIU1 done bit (1F203104 bit8) after bit4 starts (0 = off)
   uint32_t exploratoryMstarTimer = 0;      // --exploratory-mstar-timer N: guest cycles per tick of the assumed one-shot delay timer at 1F006040 (0 = off)
+  std::vector<std::pair<uint32_t,uint8_t>> selfClearBits;   // --exploratory-self-clearing-bit ADDR:MASK (hex)
+  bool exploratoryBdmaMemCopy = false;     // --exploratory-bdma-mem-copy
+  unsigned tspDmaShift = 6;                // --exploratory-tsp-dma-shift N
   uint64_t pm51Budget = 0;                 // --pm51-instruction-budget N (0 = the built-in diagnostic default of 1,000,000)
   bool exploratoryPm51Storage = false;     // --exploratory-pm51-register-storage
   int exploratorySpiStatus = -1;           // --exploratory-spi-status V: assumed value of the NOR status bits the model cannot know (-1 = unknown)
