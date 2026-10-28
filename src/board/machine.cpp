@@ -562,8 +562,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   buildSpecialPcs();
   if (o.fastJit) {
     // The per-instruction hook registered above is replaced by block-level time plus exact-PC probes.
-    if (!o.saveState.empty() || !o.trace.empty() || !o.replay.empty() || o.traceInstructions || !o.watchData.empty() || !o.historyPcs.empty())
-      throw std::runtime_error("--exploratory-fast-jit cannot be combined with save-state, trace/replay, instruction tracing or watches");
+    if (!o.trace.empty() || !o.replay.empty() || o.traceInstructions || !o.watchData.empty() || !o.historyPcs.empty())
+      throw std::runtime_error("--exploratory-fast-jit cannot be combined with trace/replay, instruction tracing or watches");
     check(uc_hook_del(cpu_.handle, codeHookHandle));
     uc_hook hb;
     check(uc_hook_add(cpu_.handle, &hb, UC_HOOK_BLOCK, reinterpret_cast<void *>(blockHook), this, 1, 0));
@@ -1288,7 +1288,7 @@ void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
   const bool in1 = inFast1(uint32_t(a)), in2 = inFast2(uint32_t(a));
   const uint32_t idx = (in1 || in2) ? fastIndex(uint32_t(a)) : 0;
   if (m.allSlow_ || !(in1 || in2) || (m.specialPc_[idx >> 3] >> (idx & 7) & 1) ||
-      (!m.options_.saveState.empty() && !m.snapshotWritten_)) {
+      (!m.options_.saveState.empty() && !m.snapshotWritten_ && m.dispatches_ >= m.options_.saveStateAt)) {
     codeHookFull(uc, a, sz, p);
     return;
   }
@@ -1385,6 +1385,8 @@ void Msd309Machine::pcHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
     if (rs == 0 && rd == 9) m.flushTicks();
     else if (rs == 4 && (rd == 9 || rd == 11 || rd == 13)) { m.flushTicks(); m.tickSynced_ = false; }
   } else if (op == 31 && (w & 63) == 59 && ((w >> 11) & 31) == 2) m.flushTicks();
+  // Save state: from the requested dispatch count on, the full hook captures the snapshot at the first safe instruction boundary.
+  if (!m.options_.saveState.empty() && !m.snapshotWritten_ && m.dispatches_ >= m.options_.saveStateAt) { codeHookFull(uc, a, sz, p); return; }
   // One hook only (Unicorn walks every registered code hook per instruction): the address-specific probes are dispatched from here.
   if (inFast1(uint32_t(a)) || inFast2(uint32_t(a))) {
     const uint32_t idx = fastIndex(uint32_t(a));

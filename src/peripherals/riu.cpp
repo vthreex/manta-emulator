@@ -67,7 +67,8 @@ bool Riu::pmWrite(uint16_t address,VdByte value){
 }
 void Riu::advancePm(uint64_t tick){
   if(!exploratoryPm51_)return;
-  if(!pm51_.started()){
+  if(!pmCallbacksInstalled_){
+    pmCallbacksInstalled_=true;   // also after a save-state restore of a started PM51 (the callbacks are not part of the saved state)
     pm51_.event=[this](const auto& k,auto a,auto n,auto v,const auto& d){event(k,a,n,v,d);};
     pm51_.sharedRead=[this](uint16_t a){return pmRead(a);};
     pm51_.sharedWrite=[this](uint16_t a,VdByte v){return pmWrite(a,v);};
@@ -86,8 +87,8 @@ void Riu::advancePm(uint64_t tick){
       if(!flashRead)throw VdHardwareBoundary("PM CODE view has no shared SPI backing");
       auto bytes=flashRead(0x10000u+a,1);return bytes.size()==1 && bytes[0]==v;
     };
-    pm51_.start(pmCode_);
   }
+  if(!pm51_.started())pm51_.start(pmCode_);
   pm51_.advance(tick);
 }
 std::optional<VdByte> Riu::vdRead(uint16_t address){

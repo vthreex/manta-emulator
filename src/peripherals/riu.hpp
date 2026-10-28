@@ -179,6 +179,7 @@ class Riu {
   Pm51 pm51_;
   PmPowerGood pmPowerGood_;
   std::span<const uint8_t> pmCode_;
+  bool pmCallbacksInstalled_=false;
   bool exploratoryPm51_=false;
   bool pmXdataStorage=false;   // EXPLORATORY: PM51 MOVX writes to the PM register bank (XDATA 0x0E00..0x0FFF) behave as plain register storage shared with MIPS
   void advancePm(uint64_t tick);
