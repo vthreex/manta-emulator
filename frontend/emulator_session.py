@@ -84,6 +84,8 @@ class Settings:
     fast_jit: bool = False              # EXPLORATORY: Unicorn JIT without per-instruction provenance/bookkeeping (any image, much faster, not strict)
     bringup: bool = True                # other firmware images: apply the labelled bring-up hypotheses (docs/other-board-bringup.md)
     remote_mode: str = 'keys'
+    board: str = 'manta'                # manta | blaupunkt (see BOARDS)
+    board_state: dict = field(default_factory=dict)   # last used machine settings per board, restored when switching back
 
     def save(self, path):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -96,6 +98,10 @@ class Settings:
             d = json.loads(Path(path).read_text())
             for k, v in d.items():
                 if hasattr(s, k):
+                    setattr(s, k, v)
+            if 'board' not in d and 'okbin' in (s.firmware or '').lower():
+                s.board = 'blaupunkt'     # settings saved before the board switch existed: take the board's preset, not the old mix
+                for k, v in board_preset('blaupunkt').items():
                     setattr(s, k, v)
         except Exception:
             pass
@@ -163,9 +169,55 @@ def build_command(st: Settings, shm_name: str):
     return st.emulator, args
 
 
-def load_keymap_functions():
+# Board presets: what "switch board" changes. The firmware image, how the machine starts, the engine and every hypothesis flag follow from the image
+# (build_command adds the labelled bring-up profile for any non-stock image); the remote's mapped keys follow from the board's key source.
+BOARDS = {
+    'manta': {
+        'label': 'Manta LCD4214 (stock firmware)',
+        'keymap': 'ir-keymap.tsv',
+        'preset': {'firmware': '', 'start_mode': 'snapshot', 'snapshot': '', 'engine': 'native', 'cpi': 16, 'miu1_mb': 128, 'pm51_divider': 32,
+                   'or1k_divider': 4, 'budget_billions': 8.0, 'bringup': True, 'fast_jit': False},
+        'remote_hint': 'IR remote (original firmware key path). Dotted outline = no verified IR code yet.',
+    },
+    'blaupunkt': {
+        'label': 'Blaupunkt TP.MSD309.BP85 (OKbin, exploratory)',
+        'keymap': 'sar-keymap.tsv',
+        'image_candidates': ['work/firmware-okbin.bin', '<downloads>/OKbin.bin'],
+        'preset': {'start_mode': 'snapshot', 'snapshot': 'work/checkpoints/okbin-app-up.snap', 'engine': 'interpreter', 'cpi': 16, 'miu1_mb': 128,
+                   'pm51_divider': 32, 'or1k_divider': 4, 'budget_billions': 0.0, 'bringup': True, 'fast_jit': True},
+        'remote_hint': 'Local keypad (ADC) keys: arrows, VOL+/-, CH+/-, MENU. Each press is held ~20 M dispatches, so expect a short delay. Dotted outline = not mapped.',
+    },
+}
+
+
+def board_image(board):
+    """Firmware image path for a board preset ('' = the stock default). The Blaupunkt dump is copied into work/ the first time it is found."""
+    b = BOARDS.get(board, {})
+    for c in b.get('image_candidates', []):
+        p = Path(c) if os.path.isabs(c) else REPO / c
+        if p.exists():
+            dest = REPO / 'work' / 'firmware-okbin.bin'
+            if not dest.exists() and p != dest:
+                try:
+                    dest.write_bytes(p.read_bytes())
+                except OSError:
+                    return str(p)
+            return str(dest if dest.exists() else p)
+    return ''
+
+
+def board_preset(board):
+    p = dict(BOARDS[board]['preset'])
+    if 'firmware' not in p:
+        p['firmware'] = board_image(board)
+    if p.get('snapshot') and not os.path.isabs(p['snapshot']):
+        p['snapshot'] = str(REPO / p['snapshot'])
+    return p
+
+
+def load_keymap_functions(board='manta'):
     fns = set()
-    p = PKG / 'configs' / 'input' / 'ir-keymap.tsv'
+    p = PKG / 'configs' / 'input' / BOARDS.get(board, BOARDS['manta'])['keymap']
     try:
         for line in p.read_text().splitlines():
             line = line.strip()

@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QCombo
                                QToolBar, QVBoxLayout, QWidget)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from emulator_session import (REPO, Session, Settings, emulator_candidates, load_keymap_functions, original_sha, sha256_file)  # noqa: E402
+from emulator_session import (BOARDS, REPO, Session, Settings, board_preset, emulator_candidates, load_keymap_functions, original_sha, sha256_file)  # noqa: E402
 from remote_widget import BINDINGS, KEYS, RemoteWidget  # noqa: E402
 
 VERSION = '1.0.0'
@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
         self.settings = Settings.load(SETTINGS_FILE)
         self.session = Session()
         self.run_cpi = 16
-        self.keymap_fns = load_keymap_functions()
+        self.keymap_fns = load_keymap_functions(self.settings.board)
         self.last_fps_t = time.time()
         self.last_fps_frames = 0
         self.fps = 0.0
@@ -202,6 +202,16 @@ class MainWindow(QMainWindow):
         host = QWidget()
         lay = QVBoxLayout(host)
         lay.setContentsMargins(10, 8, 10, 8)
+
+        g = QGroupBox('Board')
+        f = QFormLayout(g)
+        self.cb_board = QComboBox()
+        for key, b in BOARDS.items():
+            self.cb_board.addItem(b['label'], key)
+        self.cb_board.setToolTip('Switches the firmware image, start-up mode, engine, hypothesis flags and the remote together. Your own tweaks per board are remembered.')
+        self.cb_board.currentIndexChanged.connect(self.board_changed)
+        f.addRow(self.cb_board)
+        lay.addWidget(g)
 
         g = QGroupBox('Firmware')
         f = QFormLayout(g)
@@ -424,8 +434,38 @@ class MainWindow(QMainWindow):
         hm.addAction(a)
 
     # ------------------------------------------------------------------ settings <-> UI
+    BOARD_KEYS = ('firmware', 'start_mode', 'snapshot', 'engine', 'cpi', 'miu1_mb', 'pm51_divider', 'or1k_divider', 'budget_billions', 'bringup', 'fast_jit')
+
+    def board_changed(self, _index=None):
+        new = self.cb_board.currentData()
+        s = self.settings
+        if new is None or new == s.board:
+            return
+        old = s.board
+        s.board = old                                 # collect_settings() would otherwise already see the new combo value
+        self.cb_board.blockSignals(True)
+        self._set_combo(self.cb_board, old)
+        self.collect_settings()                       # the UI as it is for the board being left
+        self.cb_board.blockSignals(False)
+        s.board_state[old] = {k: getattr(s, k) for k in self.BOARD_KEYS}
+        s.board = new
+        values = s.board_state.get(new) or board_preset(new)
+        for k, v in values.items():
+            setattr(s, k, v)
+        if not s.firmware and new != 'manta':
+            self.log_line('The Blaupunkt image (OKbin.bin) was not found in work/ or Downloads: use Browse to pick it.')
+        self.keymap_fns = load_keymap_functions(new)
+        self.remote.set_mapped(self.keymap_fns)
+        self.apply_settings_to_ui()
+        self._update_remote_label()
+        self.setWindowTitle('Manta LCD4214 Emulator %s - %s' % (VERSION, BOARDS[new]['label']))
+        self.log_line('Board: %s' % BOARDS[new]['label'])
+
     def apply_settings_to_ui(self):
         s = self.settings
+        self.cb_board.blockSignals(True)
+        self._set_combo(self.cb_board, s.board)
+        self.cb_board.blockSignals(False)
         self.ed_fw.setText(s.firmware)
         self._set_combo(self.cb_mode, s.start_mode)
         snap = s.snapshot or str(REPO / 'work' / 'checkpoints' / 'atv-boot.snap')
@@ -522,17 +562,23 @@ class MainWindow(QMainWindow):
 
     def refresh_enabled(self):
         orig = self.is_original()
+        board_image = self.settings.board != 'manta'   # a known other board keeps its own saved states
+        can_resume = orig or board_image
         if not orig:
-            self._set_combo(self.cb_mode, 'cold')
+            if not board_image:
+                self._set_combo(self.cb_mode, 'cold')
             self._set_combo(self.cb_engine, 'interpreter')
-        self.cb_mode.setEnabled(orig)
+        self.cb_mode.setEnabled(can_resume)
         self.cb_engine.setEnabled(orig)
         stock = self.cb_ram.currentData() == 128 and self.sp_pm.value() == 32 and self.sp_or.value() == 4
         snapshot = self.cb_mode.currentData() == 'snapshot'
-        self.lbl_stock.setText('' if stock else 'Non-stock RAM or clock dividers: saved machine states do not apply, the machine cold-boots.')
-        if snapshot and not stock:
-            self.lbl_stock.setText(self.lbl_stock.text() + ' (Start will ignore the state file.)')
-        self.cb_snap.setEnabled(snapshot and orig)
+        if board_image:
+            self.lbl_stock.setText('')
+        else:
+            self.lbl_stock.setText('' if stock else 'Non-stock RAM or clock dividers: saved machine states do not apply, the machine cold-boots.')
+            if snapshot and not stock:
+                self.lbl_stock.setText(self.lbl_stock.text() + ' (Start will ignore the state file.)')
+        self.cb_snap.setEnabled(snapshot and can_resume)
         self.cb_cpi.model().item(4).setEnabled(not snapshot or not stock)
 
     def browse_firmware(self):
@@ -555,7 +601,10 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, 'Emulator', 'Emulator executable not found. Build manta_native_full (see docs/native-port.md) or set it under Advanced.')
             return
         if st.start_mode == 'snapshot' and not Path(st.snapshot).exists():
-            QMessageBox.warning(self, 'Machine state', 'State file not found:\n%s' % st.snapshot)
+            extra = ''
+            if st.board == 'blaupunkt':
+                extra = '\n\nCreate it with:  python outputs/manta-emulator/tools/make_okbin_state.py  (about 8 minutes), or switch Mode to Cold boot.'
+            QMessageBox.warning(self, 'Machine state', 'State file not found:\n%s%s' % (st.snapshot, extra))
             return
         st.save(SETTINGS_FILE)
         self.run_cpi = st.cpi
@@ -659,7 +708,9 @@ class MainWindow(QMainWindow):
         self._update_remote_label()
 
     def _update_remote_label(self):
-        if self.remote.mode == 'mouse':
+        if self.settings.board != 'manta':
+            t = BOARDS[self.settings.board]['remote_hint']
+        elif self.remote.mode == 'mouse':
             t = 'Mouse mode: click the keys on the remote. Dotted outline = no verified IR code for the original firmware yet.'
         elif self.osk_flag:
             t = 'Keyboard mode, text entry: type; Enter = OK, F10 = accept, Esc = cancel, Tab = shift.'
