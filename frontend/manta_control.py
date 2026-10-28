@@ -278,8 +278,8 @@ class MainWindow(QMainWindow):
         self.sp_pm.valueChanged.connect(self.refresh_enabled)
         self.sp_or.valueChanged.connect(self.refresh_enabled)
         self.sp_budget = QComboBox()
-        for g in (1, 2, 4, 8, 16, 32, 64, 128):
-            self.sp_budget.addItem('%d G instructions' % g, float(g))
+        for gig in (1, 2, 4, 8, 16, 32, 64, 128):
+            self.sp_budget.addItem('%d G instructions' % gig, float(gig))
         self.sp_budget.addItem('Unlimited (until stopped)', 0.0)
         f.addRow('Run length', self.sp_budget)
         lay.addWidget(g)
