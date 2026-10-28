@@ -442,7 +442,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   };
   riu_.event = [this](EvText k, uint32_t a, unsigned n, uint32_t v, EvText d) { event(k, a, n, v, d); };
   riu_.dramWrite=[this](uint32_t address,std::span<const uint8_t> bytes) {
-    if(!options_.candidateMiu || bytes.empty() || uint64_t(address)+bytes.size()>0x08000000 ||
+    if(!options_.candidateMiu || bytes.empty() || uint64_t(address)+bytes.size()>options_.miu0Bytes ||
        uint64_t(address)+bytes.size()>dramBacking_.size())
       throw std::runtime_error("BDMA MIU0 destination outside mapped bounds");
     cpu_.write(address,bytes.data(),bytes.size());
@@ -450,7 +450,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     unknownObservations_.overwriteKnownMemory(address,bytes.size());
   };
   riu_.dramWritable=[this](uint32_t address,size_t size){
-    return options_.candidateMiu && size>0 && uint64_t(address)+size<=0x08000000 &&
+    return options_.candidateMiu && size>0 && uint64_t(address)+size<=options_.miu0Bytes &&
       uint64_t(address)+size<=dramBacking_.size();
   };
   if(o.exploratoryCoproMipsIrq>=0){
@@ -525,7 +525,12 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.orIdleSkip = !trace_.is_open() && !replay_.is_open() && !o.pauseMmio && !std::getenv("MANTA_NO_OR_SKIP");
   if (o.candidateMiu) {
     dramBacking_.resize(size_t(0x08000000) + o.miu1Bytes);
-    cpu_.mapShared(0, dramBacking_.size(), dramBacking_.data());
+    if (o.miu0Bytes < 0x08000000) {
+      // EXPERIMENT: less first-bank DRAM than the board has. Only [0, miu0) is mapped, so any access above it stops the run as an unmapped access.
+      cpu_.mapShared(0, o.miu0Bytes, dramBacking_.data());
+      if (o.miu1Bytes) cpu_.mapShared(0x08000000, o.miu1Bytes, dramBacking_.data() + 0x08000000);
+    } else
+      cpu_.mapShared(0, dramBacking_.size(), dramBacking_.data());
     cpu_.setBacking(dramBacking_.data(), dramBacking_.size());
     // Firmware MsOS_PA2Uncached (805CB940) translates logical MIU1
     // 08000000..0FFFFFFF to D0000000..D7FFFFFF. Guest MMU translates this
@@ -2448,7 +2453,7 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
     auto s = s0;
     if (s.addrReg) s.address = riu_.registerPairAddress16(s.addrReg);
     uint64_t size = uint64_t(s.pitch) * s.height;
-    if (uint64_t(s.address) + size <= dramBacking_.size()) {
+    if (s.address && uint64_t(s.address) + size <= dramBacking_.size()) {
       GopLayer l;
       l.bank = 98; l.window = 0; l.width = s.width; l.height = s.height; l.pitch = s.pitch; l.format = 6;
       l.x = s.width < 1920 ? (1920 - s.width) / 2 : 0; l.y = s.height < 1080 ? (1080 - s.height) / 2 : 0;

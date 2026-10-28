@@ -5,6 +5,7 @@
 The emulator itself is a separate process (manta_native_full.exe / manta.exe); this program only builds its command line, shows the
 GOP preview frames it publishes in shared memory and sends remote-key events to it. Nothing here touches guest state.
 """
+import os
 import sys
 import time
 from pathlib import Path
@@ -21,7 +22,7 @@ from remote_widget import BINDINGS, KEYS, RemoteWidget  # noqa: E402
 
 VERSION = '1.0.0'
 ACCENT = '#f29a1d'
-SETTINGS_FILE = Path.home() / 'AppData' / 'Roaming' / 'MantaEmulator' / 'settings.json'
+SETTINGS_FILE = Path(os.environ['MANTA_SETTINGS_FILE']) if os.environ.get('MANTA_SETTINGS_FILE') else Path.home() / 'AppData' / 'Roaming' / 'MantaEmulator' / 'settings.json'   # a second window can use its own file
 APP_ICON = None
 
 STYLE = f"""
@@ -272,6 +273,12 @@ class MainWindow(QMainWindow):
             self.cb_ram.addItem('%d MB%s' % (128 + mb, '  (stock board)' if mb == 128 else ''), mb)
         self.cb_ram.setToolTip('Total DRAM = MIU0 (fixed 128 MB) + MIU1. Other firmware images may expect a different amount.\nA non-stock size needs a cold boot (saved states are bound to the stock size).')
         f.addRow('RAM', self.cb_ram)
+        self.cb_ram0 = QComboBox()
+        for mb in (2, 4, 8, 16, 32, 48, 64, 96, 128):
+            self.cb_ram0.addItem('%d MB%s' % (mb, '  (stock board)' if mb == 128 else '  (experiment)'), mb)
+        self.cb_ram0.setToolTip('First DRAM bank (MIU0) mapped into the guest. The Manta firmware expects 128 MB: with less, the run stops at the first access above the mapped size (that tells you the minimum it needs).\nA non-stock size needs a cold boot.')
+        self.cb_ram0.currentIndexChanged.connect(self.refresh_enabled)
+        f.addRow('First bank (MIU0)', self.cb_ram0)
         self.sp_pm = QSpinBox()
         self.sp_pm.setRange(1, 4096)
         self.sp_pm.setToolTip('MIPS dispatches per PM51 (standby MCU) tick. Hypothetical, not a measured clock.')
@@ -434,7 +441,7 @@ class MainWindow(QMainWindow):
         hm.addAction(a)
 
     # ------------------------------------------------------------------ settings <-> UI
-    BOARD_KEYS = ('firmware', 'start_mode', 'snapshot', 'engine', 'cpi', 'miu1_mb', 'pm51_divider', 'or1k_divider', 'budget_billions', 'bringup', 'fast_jit')
+    BOARD_KEYS = ('firmware', 'start_mode', 'snapshot', 'engine', 'cpi', 'miu1_mb', 'miu0_mb', 'pm51_divider', 'or1k_divider', 'budget_billions', 'bringup', 'fast_jit')
 
     def board_changed(self, _index=None):
         new = self.cb_board.currentData()
@@ -477,6 +484,7 @@ class MainWindow(QMainWindow):
         self._set_combo(self.cb_engine, s.engine)
         self._set_combo(self.cb_cpi, s.cpi)
         self._set_combo(self.cb_ram, s.miu1_mb)
+        self._set_combo(self.cb_ram0, s.miu0_mb)
         self.sp_pm.setValue(s.pm51_divider)
         self.sp_or.setValue(s.or1k_divider)
         # saved value -> nearest preset (0 = unlimited)
@@ -513,6 +521,7 @@ class MainWindow(QMainWindow):
         s.engine = self.cb_engine.currentData()
         s.cpi = self.cb_cpi.currentData()
         s.miu1_mb = self.cb_ram.currentData()
+        s.miu0_mb = self.cb_ram0.currentData()
         s.pm51_divider = self.sp_pm.value()
         s.or1k_divider = self.sp_or.value()
         s.budget_billions = float(self.sp_budget.currentData())
@@ -570,7 +579,7 @@ class MainWindow(QMainWindow):
             self._set_combo(self.cb_engine, 'interpreter')
         self.cb_mode.setEnabled(can_resume)
         self.cb_engine.setEnabled(orig)
-        stock = self.cb_ram.currentData() == 128 and self.sp_pm.value() == 32 and self.sp_or.value() == 4
+        stock = self.cb_ram.currentData() == 128 and self.cb_ram0.currentData() == 128 and self.sp_pm.value() == 32 and self.sp_or.value() == 4
         snapshot = self.cb_mode.currentData() == 'snapshot'
         if board_image:
             self.lbl_stock.setText('')
