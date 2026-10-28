@@ -2441,6 +2441,20 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
       }
       layers.push_back(std::move(l));
     }
+  if (options_.gopSurface.on) {
+    // EXPLORATORY: the other-board firmware programs a GOP register block this model does not decode; present its drawn OSD surface as a layer
+    // (ARGB1555 assumed, centred on the 1920x1080 canvas). Not a verified display window.
+    const auto& s = options_.gopSurface;
+    uint64_t size = uint64_t(s.pitch) * s.height;
+    if (uint64_t(s.address) + size <= dramBacking_.size()) {
+      GopLayer l;
+      l.bank = 98; l.window = 0; l.width = s.width; l.height = s.height; l.pitch = s.pitch; l.format = 6;
+      l.x = s.width < 1920 ? (1920 - s.width) / 2 : 0; l.y = s.height < 1080 ? (1080 - s.height) / 2 : 0;
+      l.physical = s.address;
+      l.memory.assign(dramBacking_.begin() + s.address, dramBacking_.begin() + s.address + size);
+      layers.push_back(std::move(l));
+    }
+  }
   return layers;
 }
 // Virtual remote delivery (emulator thread only). A host function becomes a decoded IR frame in the emulated PM IR FIFO; the original
@@ -2498,6 +2512,15 @@ void Msd309Machine::publishPreviewLive() const {
         for (; i + 8 <= size; i += 8) { uint64_t w; std::memcpy(&w, p + i, 8); mix(w); }
         for (; i < size; ++i) mix(p[i]);
       }
+    if (options_.gopSurface.on) {
+      const auto& s = options_.gopSurface;
+      uint64_t size = uint64_t(s.pitch) * s.height;
+      if (uint64_t(s.address) + size <= dramBacking_.size()) {
+        const uint8_t* p = dramBacking_.data() + s.address;
+        uint64_t i = 0;
+        for (; i + 8 <= size; i += 8) { uint64_t w; std::memcpy(&w, p + i, 8); mix(w); }
+      }
+    }
     if (!options_.videoPlane.empty() && dramBacking_.size() > 0x006fbd85) mix(dramBacking_[0x006fbd85]);
     mix(riu_.geBlendCopies); mix(riu_.geI2Glyphs); mix(riu_.geUniformStretches);
     if (h == liveSignature_) { options_.previewStore->setGuestStatus("MIPS dispatches " + std::to_string(dispatches_)); return; }

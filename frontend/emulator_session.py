@@ -116,7 +116,9 @@ def build_command(st: Settings, shm_name: str):
             args.append('--unverified-firmware')
             args += ['--stuck-poll-limit', '20000000']
             if st.bringup:
-                args += ['--exploratory-mstar-timer', '50', '--exploratory-miu1-done', '2000', '--exploratory-spi-status', '0', '--exploratory-miu1-alias-at', '60000000', '--exploratory-pm51-register-storage', '--pm51-instruction-budget', '100000000000', '--exploratory-mmio-bits', '1f001d84:08:08', '--exploratory-mmio-bits', '1f006008:01:01', '--exploratory-self-clearing-bit', '1f260d85:01', '--exploratory-self-clearing-bit', '1f2631e9:01', '--exploratory-self-clearing-bit', '1f2631f9:01', '--exploratory-self-clearing-bit', '1f264705:01', '--exploratory-tsp-dma-shift', '8', '--exploratory-bdma-mem-copy', '--max-or1k-instructions', '100000000000', '--exploratory-ge-fill-ignore-reg00', '0x8006']
+                args += ['--exploratory-mstar-timer', '50', '--exploratory-miu1-done', '2000', '--exploratory-spi-status', '0', '--exploratory-miu1-alias-at', '60000000', '--exploratory-pm51-register-storage', '--pm51-instruction-budget', '100000000000', '--exploratory-mmio-bits', '1f001d84:08:08', '--exploratory-mmio-bits', '1f006008:01:01', '--exploratory-self-clearing-bit', '1f260d85:01', '--exploratory-self-clearing-bit', '1f2631e9:01', '--exploratory-self-clearing-bit', '1f2631f9:01', '--exploratory-self-clearing-bit', '1f264705:01', '--exploratory-tsp-dma-shift', '8', '--exploratory-bdma-mem-copy', '--max-or1k-instructions', '100000000000', '--exploratory-ge-fill-ignore-reg00', '0x8006',
+                         '--pm51-dispatch-divider', '256', '--exploratory-self-clearing-bit', '1f206728:ff', '--exploratory-self-clearing-bit', '1f206729:ff',
+                         '--exploratory-gop-surface', '1211100:952x700:1904', '--exploratory-fast-jit']
     except OSError:
         pass
     def override(flag, value):
@@ -134,11 +136,12 @@ def build_command(st: Settings, shm_name: str):
         override('--pm51-dispatch-divider', st.pm51_divider)
     if st.or1k_divider != 4:
         override('--or1k-dispatch-divider', st.or1k_divider)
-    if st.start_mode == 'snapshot' and st.snapshot and stock:
+    unverified_image = '--unverified-firmware' in args
+    if st.start_mode == 'snapshot' and st.snapshot and (stock or unverified_image):
         args += ['--load-state', st.snapshot, '--load-state-allow-extra-options']
         if st.cpi != 16:
             args += ['--exploratory-cpi-after-load', str(max(2, st.cpi))]
-    if st.fast_jit and st.engine != 'native':
+    if st.fast_jit and st.engine != 'native' and '--exploratory-fast-jit' not in args:
         args += ['--exploratory-fast-jit']
     if st.engine == 'native':
         args += ['--native-cpu']

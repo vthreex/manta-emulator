@@ -22,7 +22,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
   static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--exploratory-atv-signal", "--gop-history-interval-log2", "--save-state-at",
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--diagnostic-usb-save-image", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
-    "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at", "--frontend-shm", "--preview-interval-log2", "--preview-max-fps", "--stuck-poll-limit"};
+    "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at", "--frontend-shm", "--exploratory-gop-surface", "--preview-interval-log2", "--preview-max-fps", "--stuck-poll-limit"};
   static const std::set<std::string> flags = {"--exploratory-menu-no-autoexit", "--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--exploratory-fast-jit", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
@@ -398,6 +398,13 @@ static int appMain(const std::vector<std::string> &args) {
       }
       else if (a == "--exploratory-tsp-dma-shift") { auto n = std::stoul(value(i)); if (n < 6 || n > 8) throw std::runtime_error("--exploratory-tsp-dma-shift must be 6..8"); o.tspDmaShift = unsigned(n); }
       else if (a == "--exploratory-bdma-mem-copy") o.exploratoryBdmaMemCopy = true;
+      else if (a == "--exploratory-gop-surface") {
+        auto spec = value(i); unsigned w = 0, h = 0, p = 0; char* end = nullptr;
+        auto address = std::strtoul(spec.c_str(), &end, 16);
+        if (!end || *end != ':' || std::sscanf(end + 1, "%ux%u:%u", &w, &h, &p) != 3 || !w || !h || p < w * 2 || (p & 1))
+          throw std::runtime_error("--exploratory-gop-surface needs HEXADDR:WIDTHxHEIGHT:PITCHBYTES (ARGB1555)");
+        o.gopSurface = {uint32_t(address), w, h, p, true};
+      }
       else if (a == "--exploratory-pm51-register-storage") o.exploratoryPm51Storage = true;
       else if (a == "--pm51-instruction-budget") o.pm51Budget = std::stoull(value(i), nullptr, 0);
       else if (a == "--exploratory-spi-status") { auto n = std::stoul(value(i), nullptr, 0); if (n > 255) throw std::runtime_error("--exploratory-spi-status must be 0..255"); o.exploratorySpiStatus = int(n); }
