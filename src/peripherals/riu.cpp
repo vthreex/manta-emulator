@@ -854,6 +854,7 @@ RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
   return it==gopActive_.end()?RiuByte{}:it->second;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if (tick >= writeLogFrom && (readLog.size() < 6000 || readLog.count(a))) { auto& s = readLog[a]; if (!s.count) s.firstPc = pc; ++s.count; s.width = n; }
   if(miu1DoneCycles && a==0x1f203104u && (n==2 || n==4)){
     uint32_t v=get(a,n)&knownBits(a,n);   // bits the guest wrote; never-written bits read 0 under the blanket hypothesis
     bool done=miu1.armed && tick-miu1.start>=miu1DoneCycles;

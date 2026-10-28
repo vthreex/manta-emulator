@@ -40,3 +40,15 @@ Diagnostics: `MANTA_DBG_TLB=1` prints TLBWI/TLBWR writes, `MANTA_DBG_SPI=1` prin
    `--exploratory-mmio-bits 1f001d84:08:08` (also applied to PM51 reads). With them OKbin passes the 805DCD90 handshake, runs the whole init and prints
    "AC on, should go to standby!!!!! Wait for PM51 standby... PM51 run ok..." then idles at 806BF1xx: the AC-boot path chose standby and waits for a power key. Next: send the board's POWER IR code / find the
    power-on-mode predicate. The PM51 is emulated at 1/32 of the dispatch clock (1.5 G PM51 instructions per 3 G dispatches), so these runs are slow (900 M dispatches = 4 min).
+
+11. **Boot to UI (OKbin = Blaupunkt, German market).** With items 1-10 plus: `--exploratory-tsp-dma-shift 8` (the firmware logs 0x918A00 for DMA register 0x918A), `--exploratory-bdma-mem-copy` (mode 0x4040 MIU0->MIU0),
+    `--exploratory-self-clearing-bit` (write-to-start bits that read 0 afterwards: 1F260D85, 1F2631E9, 1F2631F9, 1F264705 - found by scanning the runtime for "poll bit 8 until clear" loops; plus the VD mailbox ack bytes 1F206728/9),
+    `--exploratory-ge-fill-ignore-reg00 0x8006` (bit 15 of GE reg 00 treated as no effect for every GE decoder), the stock audio IDMA model switched off for other images and `--max-or1k-instructions`,
+    the firmware reaches its application banner (board T.MSD309.B81X, 1920x1080, MMAP_128MB, NXP TDA18273 tuner) and draws the first-install page ("Erstinstallation") with the original GE fills/glyphs.
+    No logo: no JPEG/PNG/BMP/zlib/raw-deflate image data in any of the four 4 MB flash dumps, no logo strings in the inflated runtime (the stock runtime has "[DISPLAY_LOGO]"); the bootloader that draws it, if any, is not in the dump.
+12. **Display.** This chip's GOP registers are NOT the stock 0x1F203E00 block: the firmware programs windows at 0x1F240400..0x1F240C3F (window address = (hi<<16|lo)<<4 at 1F240684/88, height 1F2406A0, pitch/16 at 1F2406A4). It double-buffers
+    (surfaces 0x01211100 and 0x01356740, 952x700 ARGB1555, pitch 1904). `--exploratory-gop-surface r1F240684:952x700:1904` presents the CURRENT surface as an OSD layer centred on the 1920x1080 canvas (EXPLORATORY; the window block is not decoded).
+13. **Keys.** The MIPS side never touches the IR path of the stock board (the PM IR FIFO stays disabled; the PM51 handles IR and posts through mailbox registers 1F0067A0..BD). It polls the keypad SAR ADC instead: channels 0/1 at 1F002834/35,
+    30 samples, thresholds 32/94/156/212 (805759D8, 80575AF4). `sar=CH.BIN[.HOLD]` (ir-script / key queue) drives the channel into a bin; `configs/input/sar-keymap.tsv` maps host keys:
+    0.0 RIGHT(VOL+), 0.1 LEFT(VOL-), 1.1 UP(CH+), 1.2 DOWN(CH-), 1.3 MENU (closes the page); 0.2, 0.3, 1.0 show no effect on this page (unmapped). 20 M-dispatch hold = one step.
+14. **Saved state.** `tools/make_okbin_state.py` writes work/checkpoints/okbin-app-up.snap (5 B dispatches, ~11 min, fast mode); the control centre's "Resume saved machine state" loads it in about a second.

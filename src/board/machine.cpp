@@ -838,7 +838,7 @@ void Msd309Machine::codeHookFull(uc_engine *, uint64_t a, uint32_t, void *p) {
   m.fastPc_ = uint32_t(a);
   if(!m.options_.fastJit)++m.dispatches_;   // fast mode: the block hook already counted this instruction
   if(!m.options_.fastJit && m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff)==0)m.copro_.run(0x4000);
-  if((!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty()) && (m.dispatches_ & 0x3fff)==0)m.serviceVirtualRemote();
+  if((!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty() || !m.sarReleases_.empty()) && (m.dispatches_ & 0x3fff)==0)m.serviceVirtualRemote();
   if(!m.options_.historyPcs.empty() && a>=0x80000000u && a<0x81000000u)
     for(auto pc:m.options_.historyPcs)if(pc==a){m.publishPreview();break;}
   if(!m.watchSet_.empty() && a>=0x80000000u && a<0x81000000u && ((a>>2)&0x3fffff)<m.watchSet_.size()*8 && (m.watchSet_[((a>>2)&0x3fffff)>>3]>>(((a>>2)&0x3fffff)&7)&1)){
@@ -1298,7 +1298,7 @@ void Msd309Machine::codeHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
   m.prevPc_ = uint32_t(a);
   ++m.dispatches_;
   if (m.options_.exploratoryCopro && (m.dispatches_ & 0x3fff) == 0) m.copro_.run(0x4000);
-  if ((m.dispatches_ & 0x3fff) == 0 && (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty())) m.serviceVirtualRemote();
+  if ((m.dispatches_ & 0x3fff) == 0 && (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty() || !m.sarReleases_.empty())) m.serviceVirtualRemote();
   if (m.options_.previewStore && (m.dispatches_ & m.options_.previewMask) == 0 && m.previewDue()) m.publishPreviewLive();
   else if (!m.options_.gopFrameHistory.empty() && (m.dispatches_ & ((uint64_t(1) << m.options_.gopHistoryLog2) - 1)) == 0) m.publishPreview();
   m.recordPc(uint32_t(a));
@@ -1369,7 +1369,7 @@ void Msd309Machine::blockHook(uc_engine *, uint64_t a, uint32_t size, void *p) {
   if (m.options_.previewStore && ((d & ~m.options_.previewMask) != (m.dispatches_ & ~m.options_.previewMask)) && m.previewDue()) m.publishPreviewLive();
   if ((d >> 14) == (m.dispatches_ >> 14)) return;
   if (m.options_.exploratoryCopro) m.copro_.run(0x4000);
-  if (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty()) m.serviceVirtualRemote();
+  if (!m.options_.irScript.empty() || m.options_.remoteQueue || !m.irWaiting_.empty() || !m.sarReleases_.empty()) m.serviceVirtualRemote();
 }
 // Fast mode, every instruction: remember the PC (exact only here) and make CP0 Count observable exactly like tickInstr does.
 void Msd309Machine::pcHook(uc_engine *uc, uint64_t a, uint32_t sz, void *p) {
@@ -2444,7 +2444,9 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
   if (options_.gopSurface.on) {
     // EXPLORATORY: the other-board firmware programs a GOP register block this model does not decode; present its drawn OSD surface as a layer
     // (ARGB1555 assumed, centred on the 1920x1080 canvas). Not a verified display window.
-    const auto& s = options_.gopSurface;
+    const auto& s0 = options_.gopSurface;
+    auto s = s0;
+    if (s.addrReg) s.address = riu_.registerPairAddress16(s.addrReg);
     uint64_t size = uint64_t(s.pitch) * s.height;
     if (uint64_t(s.address) + size <= dramBacking_.size()) {
       GopLayer l;
@@ -2460,6 +2462,24 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
 // Virtual remote delivery (emulator thread only). A host function becomes a decoded IR frame in the emulated PM IR FIFO; the original
 // firmware then polls the FIFO itself. Events the receiver cannot take yet (firmware has not enabled it) wait, they are never dropped silently.
 void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requestedAt) {
+  // EXPLORATORY local-keypad press (other-board firmware): "sar=CHANNEL.BIN[.HOLD]" drives SAR ADC channel CHANNEL (0/1) into key bin BIN (0..3: the
+  // original scan code compares 30 samples against thresholds 32/94/156/212) for HOLD dispatches (default 8 M), then returns it to full scale (no key).
+  {
+    std::string f = function;
+    if (auto it = options_.sarKeyMap.find(function); it != options_.sarKeyMap.end()) f = "sar=" + it->second;
+    if (f.rfind("sar=", 0) == 0) {
+      unsigned ch = 0, bin = 0; unsigned long hold = 8000000;
+      if (std::sscanf(f.c_str() + 4, "%u.%u.%lu", &ch, &bin, &hold) < 2 || ch > 7 || bin > 3) {
+        irLog_.push_back({dispatches_, function, -1, false, "sar key needs CHANNEL.BIN[.HOLD] with BIN 0..3"});
+        return;
+      }
+      static const unsigned centreMv[4] = {207, 815, 1618, 2381};   // ADC result 16 / 63 / 125 / 184 of 255
+      riu_.setSarInput(ch, centreMv[bin]);
+      sarReleases_.push_back({dispatches_ + hold, ch});
+      irLog_.push_back({dispatches_, function, int(ch * 10 + bin), true, "SAR keypad channel " + std::to_string(ch) + " held in bin " + std::to_string(bin) + " (EXPLORATORY local-key injection)"});
+      return;
+    }
+  }
   int raw = -1;
   bool rawLiteral = function.rfind("raw=", 0) == 0;
   if (rawLiteral) raw = int(std::stoul(function.substr(4), nullptr, 0) & 255);
@@ -2478,6 +2498,8 @@ void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requ
   }
 }
 void Msd309Machine::serviceVirtualRemote() {
+  for (size_t i = 0; i < sarReleases_.size();)
+    if (sarReleases_[i].first <= dispatches_) { riu_.setSarInput(sarReleases_[i].second, 3300); sarReleases_.erase(sarReleases_.begin() + i); } else ++i;
   if (options_.remoteQueue) while (options_.remoteQueue->paused.load()) std::this_thread::sleep_for(std::chrono::milliseconds(4));   // front-end pause: no guest state changes while waiting
   auto waiting = std::move(irWaiting_);
   irWaiting_.clear();
@@ -2513,7 +2535,9 @@ void Msd309Machine::publishPreviewLive() const {
         for (; i < size; ++i) mix(p[i]);
       }
     if (options_.gopSurface.on) {
-      const auto& s = options_.gopSurface;
+      auto s = options_.gopSurface;
+      if (s.addrReg) s.address = riu_.registerPairAddress16(s.addrReg);
+      mix(s.address);
       uint64_t size = uint64_t(s.pitch) * s.height;
       if (uint64_t(s.address) + size <= dramBacking_.size()) {
         const uint8_t* p = dramBacking_.data() + s.address;
@@ -2925,6 +2949,10 @@ std::string Msd309Machine::summary() const {
   }
   if(options_.exploratoryAtvSignalPal)s<<",\n  \"exploratory_atv_signal\": {\"standard\": \"PAL-B/G 625/50 (generated waveform, signal-only measurement)\", \"line_clocks_27mhz\": "<<atvMeasurement_.lineClocks<<", \"hsync_width_clocks\": "<<atvMeasurement_.hsyncWidthClocks<<", \"lines_per_frame\": "<<atvMeasurement_.linesPerFrame<<", \"burst_pp_mv\": "<<int(atvMeasurement_.burstPeakToPeakVolts*1000)<<", \"pal_switch\": "<<(atvMeasurement_.palSwitch?"true":"false")<<", \"field_events\": "<<riu_.atvFieldEvents()<<", \"note\": \"register values are labelled hypotheses; zero fixtures elsewhere\"}";
   if(options_.exploratoryBdmaCrcMiu)s<<",\n  \"exploratory_bdma_crc_miu\": true";
+  if(options_.gopSurface.on){
+    auto a=options_.gopSurface.addrReg?riu_.registerPairAddress16(options_.gopSurface.addrReg):options_.gopSurface.address;
+    s<<",\n  \"gop_surface_address\": \""<<hex(a)<<"\"";
+  }
   if(!riu_.bdmaLog.empty()){
     s<<",\n  \"bdma_flash_copies\": [";
     for(size_t i=0;i<riu_.bdmaLog.size();++i){auto& e=riu_.bdmaLog[i];s<<(i?",":"")<<"{\"flash\":\""<<hex(e.src)<<"\",\"length\":"<<e.len<<",\"dram\":\""<<hex(e.dst)<<"\",\"tick\":"<<e.tick<<"}";}
@@ -2941,6 +2969,9 @@ std::string Msd309Machine::summary() const {
   if(options_.diagnosticRiuWriteLogFrom!=UINT64_MAX){
     s<<",\n  \"diagnostic_riu_write_log\": [";
     bool f=true;for(auto& kv:riu_.writeLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second.count<<", \""<<hex(kv.second.firstPc)<<"\", \""<<hex(kv.second.last)<<"\"]";f=false;}
+    s<<"]";
+    s<<",\n  \"diagnostic_riu_read_log\": [";
+    f=true;for(auto& kv:riu_.readLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second.count<<", \""<<hex(kv.second.firstPc)<<"\"]";f=false;}
     s<<"]";
   }
   if(options_.exploratoryRiuZeroUnknown){

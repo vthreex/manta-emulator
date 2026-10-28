@@ -118,7 +118,7 @@ def build_command(st: Settings, shm_name: str):
             if st.bringup:
                 args += ['--exploratory-mstar-timer', '50', '--exploratory-miu1-done', '2000', '--exploratory-spi-status', '0', '--exploratory-miu1-alias-at', '60000000', '--exploratory-pm51-register-storage', '--pm51-instruction-budget', '100000000000', '--exploratory-mmio-bits', '1f001d84:08:08', '--exploratory-mmio-bits', '1f006008:01:01', '--exploratory-self-clearing-bit', '1f260d85:01', '--exploratory-self-clearing-bit', '1f2631e9:01', '--exploratory-self-clearing-bit', '1f2631f9:01', '--exploratory-self-clearing-bit', '1f264705:01', '--exploratory-tsp-dma-shift', '8', '--exploratory-bdma-mem-copy', '--max-or1k-instructions', '100000000000', '--exploratory-ge-fill-ignore-reg00', '0x8006',
                          '--pm51-dispatch-divider', '256', '--exploratory-self-clearing-bit', '1f206728:ff', '--exploratory-self-clearing-bit', '1f206729:ff',
-                         '--exploratory-gop-surface', '1211100:952x700:1904', '--exploratory-fast-jit']
+                         '--exploratory-gop-surface', 'r1f240684:952x700:1904', '--exploratory-fast-jit']
     except OSError:
         pass
     def override(flag, value):

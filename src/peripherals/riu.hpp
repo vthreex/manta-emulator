@@ -355,6 +355,8 @@ public:
 
   void setPmBudget(uint64_t n){if(n)pm51_.budget=n;}
   const PmPowerGood& pmPowerGood()const{return pmPowerGood_;}
+  void setSarInput(unsigned channel,unsigned millivolts){sar_.input(channel,millivolts);}
+  uint32_t registerPairAddress16(uint32_t reg)const{return uint32_t((uint64_t(get(reg,2))|(uint64_t(get(reg+4,2))<<16))<<4);}   // low/high halfwords at reg, reg+4, in 16-byte units
   void configureExploratorySarFullscale(){exploratorySarFullscale_=true;sar_.input(0,3300);sar_.input(1,3300);}
   void configureExploratoryScartIdGrounded(){exploratoryScartIdGrounded_=true;sar_.input(2,0);sar_.input(3,0);}
   uint64_t scartIdSamples()const{return scartIdSamples_;}
@@ -500,6 +502,7 @@ public:
   uint64_t writeLogFrom = UINT64_MAX;
   struct WriteStat { uint64_t count = 0; uint32_t firstPc = 0, last = 0; unsigned width = 0; };
   std::map<uint32_t, WriteStat> writeLog;
+  std::map<uint32_t, WriteStat> readLog;   // diagnostic (same switch as writeLog): guest reads per RIU address (count, first PC, width)
   bool zeroUnknownReads = false;
   std::map<uint32_t, uint64_t> zeroUnknownLog;
   uint64_t zeroUnknownTotal = 0;

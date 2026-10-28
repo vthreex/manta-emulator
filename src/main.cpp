@@ -400,10 +400,11 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-bdma-mem-copy") o.exploratoryBdmaMemCopy = true;
       else if (a == "--exploratory-gop-surface") {
         auto spec = value(i); unsigned w = 0, h = 0, p = 0; char* end = nullptr;
-        auto address = std::strtoul(spec.c_str(), &end, 16);
+        bool reg = !spec.empty() && spec[0] == 'r';
+        auto address = std::strtoul(spec.c_str() + (reg ? 1 : 0), &end, 16);
         if (!end || *end != ':' || std::sscanf(end + 1, "%ux%u:%u", &w, &h, &p) != 3 || !w || !h || p < w * 2 || (p & 1))
-          throw std::runtime_error("--exploratory-gop-surface needs HEXADDR:WIDTHxHEIGHT:PITCHBYTES (ARGB1555)");
-        o.gopSurface = {uint32_t(address), w, h, p, true};
+          throw std::runtime_error("--exploratory-gop-surface needs [r]HEXADDR:WIDTHxHEIGHT:PITCHBYTES (ARGB1555); with r the hex value is a RIU register holding the 16-byte-unit address");
+        o.gopSurface = {reg ? 0u : uint32_t(address), w, h, p, true, reg ? uint32_t(address) : 0u};
       }
       else if (a == "--exploratory-pm51-register-storage") o.exploratoryPm51Storage = true;
       else if (a == "--pm51-instruction-budget") o.pm51Budget = std::stoull(value(i), nullptr, 0);
@@ -642,6 +643,19 @@ static int appMain(const std::vector<std::string> &args) {
         std::stringstream ss; ss << f.rdbuf();
         auto map = manta::IrKeyMap::parse(ss.str());
         o.irKeyMap = map;
+        break;
+      }
+    // EXPLORATORY local-keypad map for other-board firmware (function -> SAR channel.bin[.hold]); only loaded together with --unverified-firmware.
+    if (o.unverifiedFirmware && o.sarKeyMap.empty())
+      for (const char* candidate : {"configs/input/sar-keymap.tsv", "outputs/manta-emulator/configs/input/sar-keymap.tsv"}) {
+        std::ifstream f(candidate);
+        if (!f) continue;
+        std::string line;
+        while (std::getline(f, line)) {
+          if (line.empty() || line[0] == '#') continue;
+          std::istringstream ls(line); std::string fn, spec; ls >> fn >> spec;
+          if (!fn.empty() && !spec.empty()) o.sarKeyMap[fn] = spec;
+        }
         break;
       }
     o.stateFingerprint = stateFingerprint(args, o.stateCanonical);

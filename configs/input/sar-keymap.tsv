@@ -1,0 +1,14 @@
+# EXPLORATORY local-keypad (SAR ADC) map for the other-board firmware (OKbin / Blaupunkt): FUNCTION  CHANNEL.BIN.HOLD_DISPATCHES
+# Evidence: tools in docs/other-board-bringup.md ("Keys"): the original scan routine (805759D8/80575AF4) takes 30 ADC samples per channel and compares them with
+# thresholds 32/94/156/212; each press below was injected as a held voltage and its effect on the first-install page (surface 0x01211100/0x01356740) observed.
+# A 20 M-dispatch hold gives exactly one step per press (a shorter hold is not registered by the debounce, 14 M is not enough for channel 1).
+# Not mapped (no visible effect on the first-install page): channel 0 bins 2 and 3, channel 1 bin 0 (probably SOURCE / POWER / OK; unverified).
+RIGHT	0.0.20000000	language Deutsch -> Italiano (one step right)
+VOL+	0.0.20000000	same key position as RIGHT (local VOL+/VOL- act as left/right in the menu)
+LEFT	0.1.20000000	language Deutsch -> Francais (one step left)
+VOL-	0.1.20000000	same key position as LEFT
+UP	1.1.20000000	highlight OSD Sprache -> Energiemodus (previous row, wraps; LCN is greyed out)
+CH+	1.1.20000000	same key position as UP
+DOWN	1.2.20000000	highlight OSD Sprache -> Land (next row)
+CH-	1.2.20000000	same key position as DOWN
+MENU	1.3.20000000	closes the first-install page (window address becomes 0)

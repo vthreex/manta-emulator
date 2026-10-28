@@ -167,7 +167,8 @@ struct Options {
   std::vector<std::pair<uint32_t,uint8_t>> selfClearBits;   // --exploratory-self-clearing-bit ADDR:MASK (hex)
   bool exploratoryBdmaMemCopy = false;     // --exploratory-bdma-mem-copy
   unsigned tspDmaShift = 6;                // --exploratory-tsp-dma-shift N
-  struct GopSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; bool on = false; } gopSurface;   // --exploratory-gop-surface ADDR:WxH:PITCH
+  struct GopSurface { uint32_t address = 0, width = 0, height = 0, pitch = 0; bool on = false; uint32_t addrReg = 0; } gopSurface;   // addrReg != 0: address = ((reg+4 << 16) | reg) << 4 from the RIU (follows the firmware's framebuffer flips)   // --exploratory-gop-surface ADDR:WxH:PITCH
+  std::map<std::string, std::string> sarKeyMap;   // host function -> "CHANNEL.BIN[.HOLD]" (configs/input/sar-keymap.tsv); EXPLORATORY local-keypad injection
   uint64_t pm51Budget = 0;                 // --pm51-instruction-budget N (0 = the built-in diagnostic default of 1,000,000)
   bool exploratoryPm51Storage = false;     // --exploratory-pm51-register-storage
   int exploratorySpiStatus = -1;           // --exploratory-spi-status V: assumed value of the NOR status bits the model cannot know (-1 = unknown)
@@ -378,6 +379,7 @@ public:
   std::map<uint64_t, DataAccess> dataAccess_;   // (pc<<1 | isStore) -> counters; observation only
   std::vector<GopLayer> collectGopLayers() const;
   void publishPreview() const;
+  std::vector<std::pair<uint64_t, unsigned>> sarReleases_;   // pending SAR key releases (dispatch, channel)
   void publishPreviewLive() const;   // live window/front end: composes only when the GOP memory (or a plane input) changed since the last frame
   mutable uint64_t liveSignature_ = 0;
   bool previewDue() const {   // live-preview throttle (observation only)
