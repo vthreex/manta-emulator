@@ -74,3 +74,21 @@ over the air via DSM-CC or stored in `/mnt/flash` (JFFS2, not in this dump), whi
   bottom-left and two light bars the menu text sits on; the radio still adds a microphone.
 - `certificates/` two Java keystores (`box_b-cert.jks`, `cacert_keystore.jks`), not opened.
 The stills and PNGs are displayed by hardware planes (STILL driver for the MPEG-2 background, OSDHID/framebuffer for the PNG overlays), consistent with `/dev/...` strings in `main.elf`.
+
+# `47CA_Dump.bin` — SPI/parallel NOR dump of a BSKA2 box (2026-10-30)
+Static analysis only. 4 MiB, 52.8% 0xFF. It is the **boot NOR flash** of an SH-4 (STx7100-family) set-top box; the tag `BSKA2` appears in a header, so it is the sibling of the
+BSKA NAND dump above, but not the same image (the 64 KB NOR sector `A01E0000` of the earlier drop is not in it).
+
+| Offset | What |
+|---|---|
+| 0x00000 | SH-4 reset vector (`mov.l @(..),r0; jmp @r0; nop; nop`, target `0xA0000124` in the P2 uncached window) |
+| 0x00020..0x000BF | the same 16 bytes (`9c42 1234 5678 9111 1236 9852 1747 4156`) repeated ten times; role unknown (not a key for AES/3DES/DES/RC4 — tried ECB/CBC/CTR/RC4 on the body) |
+| 0x00124..0x1FFFF | plain SH-4 boot code, 5.4–7.6 bits/byte per 4 KB; few readable strings. Contains CRC32 tables (0x27A4, 0xF1C4) and a SHA-1 init constant (0x14C84); no AES S-box |
+| 0x20000 | 0x23-byte header (TLV-like), then 0xFF to 0x20200 |
+| 0x20200 | package header (0x41 B): `02 b2 b0 45 | 47 ca | 00 1a 64 46 | ...` then ASCII `BSKA2xxxxxxxxxxxxx` (placeholder), a short trailer |
+| 0x20241..0x1C7182 | **1.7 MB body, uniformly random (7.99 bits/byte)**: no zlib/gzip/lzma stream at any 0x100-aligned offset. Encrypted/signed application image (kernel+rootfs), same blocker as the NAND kernel area |
+| 0x200000, 0x340000 | `FL03` key/value stores. 0x340000 holds 11 gzip-compressed `REG\x03` records with keys `p.ver`, `type`, `VL`, `SB`, `LS0`, `S0`, `SSL` (volume, language/subtitle-style user settings) |
+| 0x1DF000, 0x1F0000, 0x3D0000 | small structured/random blocks (0x3D0000 is 28 KB high-entropy, probably key or certificate material) |
+
+Result: the dump contains the bootloader (analysable) and user-settings records, but the OS and application are encrypted/signed. Combined with the NAND dump:
+the NAND dump gives a readable userland, this NOR dump gives the boot stage, and neither gives a readable kernel.
