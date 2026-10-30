@@ -49,3 +49,28 @@ the ADB "Xion" UI, a **DVB-MHP** stack (`MHP_SystemInit`, `[OK] PIL_INIT OK, sta
 
 Status: analysis only. Nothing in the emulator changed. Reproduce the filesystem with
 `python -I tools/cramfs_extract.py dump_nand_bska_v35.bin 0xe4000 OUTDIR`.
+
+## UI structure (static)
+The UI is not drawn by native code in `main.elf`; it is **Java, ahead-of-time compiled** into the ELF (4,343 classes, found via `<package>_<Class>_mt` symbols;
+`tools/aot_class_survey.py`). The layers, top to bottom:
+- **Xion**: ADB's own XHTML/CSS toolkit (`com.adb.xion.{dom,css,renderer,net,ui,event,platform,util}`, ~480 classes; `dvbhtml` adds DVB-HTML DOM/renderer, ~140).
+  `xion.ui` holds the widget layer: dialogs (`BaseDialogBox`, `LoginBox`, `PromptBox`, `InputEntry`), `ScrollPane`/`ScrollBar`, progress bars, border looks
+  (solid/dashed/dotted/carved/embedded lines). Look-and-feel is skinned (`*Look` classes), so the menu/guide appearance is data plus PNG assets, not hard-coded layout.
+- **HAVi UI** (`org.havi.ui`, `com.adb.havi.ui`) widgets and `HScreenDevice` (the MHP graphics model), with `org.dvb.ui.FontFactory`.
+- **MHP/OCAP middleware**: `org.dvb.*` (application, si, dsmcc, event, net, media, pvr, tvanytime), `org.davic.*` (mpeg sections, net tuning, CA), `javax.tv.*`
+  (service selection/navigation/guide), `org.ocap.*` (DVR, shared media), `com.adb.tv.*` (services/protocols), `com.adb.dvb.si` (SI database, NIT).
+  Entry points seen as strings: `MHP_SystemInit`, `MHP_DriversInit`, `PIL_INIT OK, starting MHP client`.
+- **Security/CA**: `com.adb.security.*` (certificate chains, digest checks, root-certificate manager), `org.davic.net.ca` (43 classes), Conax drivers (`ConaxDrv%d`).
+- **Platform**: `com.sun.cdc.io`, `com.sun.net.ssl`, `sun.net.www.protocol` (CVM/CDC class library), JavaScript-free XHTML via `com.adb.xion.net`.
+The nBox-specific application (channel list, EPG, menus, settings) is **not** among these classes: no `pl.*`/nBox package appears. It is most likely an MHP Xlet delivered
+over the air via DSM-CC or stored in `/mnt/flash` (JFFS2, not in this dump), which fits the `PersistentManager` and application-storage classes. Hence the dump alone cannot show the real menus.
+
+### Assets (`/opt/uapp01/app/res`)
+- `images_new/` 380 PNG, each in three tiers: `pal_*`, `hd_720_*`, `hd_1080_*` (so the UI is built for 720x576, 1280x720 and 1920x1080 outputs).
+  Folders: `banner` (139: channel banner, screensaver frames 98x98, up to 1629x166), `common` (96: RCU key glyphs, colour keys, time/clock dials, ticks),
+  `guide` (27: 1623x61 tab bookmarks), `menu` (51: aspect-ratio icons tv_169/tv_43 normal/stretch/zoom, parental ratings 7/12/16/18, tuner on/off),
+  `pvod` (27: BACK/OK/INFO button caps, parental icons), `messages`, `xion` (browser alert/prompt icons).
+- `stills/` 9 MPEG-2 intra frames (`*.m2v`): PAL 720x576 and HD 1080 backgrounds `menu`, `radio`, `pvod`, `box`. The HD menu still is a blue gradient with the "n HD" logo
+  bottom-left and two light bars the menu text sits on; the radio still adds a microphone.
+- `certificates/` two Java keystores (`box_b-cert.jks`, `cacert_keystore.jks`), not opened.
+The stills and PNGs are displayed by hardware planes (STILL driver for the MPEG-2 background, OSDHID/framebuffer for the PNG overlays), consistent with `/dev/...` strings in `main.elf`.
