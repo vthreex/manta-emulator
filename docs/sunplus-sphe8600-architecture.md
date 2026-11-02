@@ -50,3 +50,11 @@ assume the load address.
 1. Understand stage 1 (`0x1000` block, `0x1c00..0x2c00` high-entropy region, `0x3030` stub, `j 0x020000a4`) — the on-chip boot ROM is not in the dump, so its copy/decompress contract has to be inferred from the data.
 2. Resolve the kernel call target above (load address / relocation).
 3. Then model only the registers the firmware reads (strict mode: stop at the first unmodelled read).
+
+## Graphics found in the dumps (exploratory)
+- **Boot logos only** are standard image files: Shivaki image `0x3f0000` (1920x1080 JPEG, 113 KB), Manta LED4202 image `0x3b5000` (1920x1080 JPEG, 76 KB), each with a 160x90 EXIF thumbnail. The earlier "repeating 16-byte pattern" in the high-entropy region was this JPEG's flat-colour data, not encryption.
+- No PNG/BMP/GIF/TGA anywhere in the flash or in the decompressed kernel/application/OTA blobs (loose BMP/PNG signature scans, BMP header validation).
+- The flash region `0x3e2000..0x3ef000` is plain parameter data: `CIPlusKeyInfo`, panel timing names (`V236BJ1_1366X768`, `CMO_M190A1_L07_C_1440x900`), per-source picture-mode tables (`Tuner_PAL`, `HDMI_HD_16_235`, ...).
+- The "scrambled ELF" module (`0x3bc019`, magic `7f 45 4c 5a`) holds 626 tiny zlib streams that are MIPS function bodies (each begins with `addiu sp,sp,-N`): per-function compressed code, not graphics.
+- The application has its own BMP/PNG/JPEG decoders (`BMP_COMPRESS_RLE8`, SW/HW PNG) and a GUI engine (`Gui_Engine_Init() - GEL_Open`, OSD regions such as `OSD_MAINMENU_V2_REGION_R1`, `DRV_OSD_CreateRegion`, `logobin`). The menu bitmaps are therefore either in a GEL resource format not yet identified (the application data section around `0x6c0000..0x780000` in the Shivaki application blob is low-entropy and 50 % zero, but is not plain ARGB8888/RGBA/ABGR) or are drawn from primitives at run time. Not resolved.
+- Next: follow `Gui_Engine_Init`/`GEL_Open` in the application disassembly to find the resource loader, instead of guessing pixel formats.
