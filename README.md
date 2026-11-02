@@ -34,7 +34,7 @@ Sunplus boot logos (recovered from the flash images) and the 632-bitmap OSD atla
 Download a build from [Releases](../../releases), or build from source (CMake + MinGW, Unicorn 2.1.4; the patched Unicorn source is in `third_party/`).
 
 ```powershell
-.in\manta.exe --firmware firmware\manta-lcd4214-original.bin --headless
+.\bin\manta.exe --firmware firmware\manta-lcd4214-original.bin --headless
 ```
 
 The firmware images used for testing live in `firmware/` (hashes and a rights notice in `firmware/README.md`). The Sunplus runner is `sunplus_run` (see `docs/sunplus-sphe8600-architecture.md`).
