@@ -1,5 +1,9 @@
 # Exploratory hypotheses for the Sunplus SPHE8600 bring-up. Each line: ADDR VALUE [MASK] # why. NONE of these is observed hardware.
 0xBFFE0018 0x0000001f   # clock multiplier: 8005b2b0 returns ((reg & 0x3f)+1) * 6,750,000 Hz. 0x1f -> 216 MHz (bracket 0x1b -> 189 MHz)
 0xBFFE1448 or 0x00002000   # handshake: 8007da0c sets bit12 (start) then 8007da10 polls bit13 until 1 (done). Hypothesis: done reads 1.
-0xBFFE0B08 clear 0x00000080   # thermal sensor: 80060078 writes the command, 8006007c polls bit7 until it clears (busy). Hypothesis: conversion completes at once.
+# (superseded by the --flash SPI model) 0xBFFE0B08 clear 0x00000080   # thermal sensor: 80060078 writes the command, 8006007c polls bit7 until it clears (busy). Hypothesis: conversion completes at once.
 0xBFFE0434 or 0x00000800   # 8005ac1c polls bit11 after each ~6.4M-instruction delay (up to 0x79 tries, dumping registers each time). Hypothesis: ready/lock bit reads 1.
+# (withdrawn: with a working flash driver this made the handler power off) 0xBFFE042C 0x0000ECD5   # 8004c55c compares the low 16 bits with 0xECD5; equal -> s2=1 (no power-off). Hypothesis: standby-domain magic that says 'normal cold start'. Without it the handler takes PowerCtl(0).
+0xBFFE006C 0x00000001   # 'standby_status_dtv Grp 0,27' (firmware's own label). 8005a7d8 returns (reg==0); 0 sends the platform init to PowerCtl(0). Hypothesis: nonzero = normal run (wake already done).
+0xBFFE0D04 clear 0x00000100   # application poll (8007d1fc, loop at 80dec2b0): waits for bit8 to clear (engine busy). Hypothesis: operation completes immediately.
+0xBFFE36E8 or 0x00000200   # application poll at 80c75448: waits for bit9 (done) then writes 0x4000 to 0xBFFE36E4 (ack). Hypothesis: operation done.

@@ -13,6 +13,7 @@ inline void check(uc_err e) {
 class Engine {
 public:
   uc_engine *handle = nullptr;
+  static inline uc_cpu_mips32 cpuModel = UC_CPU_MIPS32_24KC;   // set before constructing an Engine (tools only; the emulator keeps 24Kc)
   const uint8_t *backing_ = nullptr;
   size_t backingSize_ = 0;
   uint32_t *gpr = nullptr;   // direct view of the engine's general registers (found by calibration; null if unavailable)

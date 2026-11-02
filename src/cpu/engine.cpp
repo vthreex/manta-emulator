@@ -2,7 +2,7 @@
 namespace manta {
 Engine::Engine() {
   check(uc_open(UC_ARCH_MIPS, uc_mode(UC_MODE_MIPS32 | UC_MODE_LITTLE_ENDIAN), &handle));
-  check(uc_ctl_set_cpu_model(handle, UC_CPU_MIPS32_24KC));
+  check(uc_ctl_set_cpu_model(handle, cpuModel));
   calibrateDirectRegisters();
 }
 Engine::~Engine() {
