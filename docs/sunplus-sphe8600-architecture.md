@@ -51,10 +51,12 @@ assume the load address.
 2. Resolve the kernel call target above (load address / relocation).
 3. Then model only the registers the firmware reads (strict mode: stop at the first unmodelled read).
 
-## Graphics found in the dumps (exploratory)
-- **Boot logos only** are standard image files: Shivaki image `0x3f0000` (1920x1080 JPEG, 113 KB), Manta LED4202 image `0x3b5000` (1920x1080 JPEG, 76 KB), each with a 160x90 EXIF thumbnail. The earlier "repeating 16-byte pattern" in the high-entropy region was this JPEG's flat-colour data, not encryption.
-- No PNG/BMP/GIF/TGA anywhere in the flash or in the decompressed kernel/application/OTA blobs (loose BMP/PNG signature scans, BMP header validation).
-- The flash region `0x3e2000..0x3ef000` is plain parameter data: `CIPlusKeyInfo`, panel timing names (`V236BJ1_1366X768`, `CMO_M190A1_L07_C_1440x900`), per-source picture-mode tables (`Tuner_PAL`, `HDMI_HD_16_235`, ...).
-- The "scrambled ELF" module (`0x3bc019`, magic `7f 45 4c 5a`) holds 626 tiny zlib streams that are MIPS function bodies (each begins with `addiu sp,sp,-N`): per-function compressed code, not graphics.
-- The application has its own BMP/PNG/JPEG decoders (`BMP_COMPRESS_RLE8`, SW/HW PNG) and a GUI engine (`Gui_Engine_Init() - GEL_Open`, OSD regions such as `OSD_MAINMENU_V2_REGION_R1`, `DRV_OSD_CreateRegion`, `logobin`). The menu bitmaps are therefore either in a GEL resource format not yet identified (the application data section around `0x6c0000..0x780000` in the Shivaki application blob is low-entropy and 50 % zero, but is not plain ARGB8888/RGBA/ABGR) or are drawn from primitives at run time. Not resolved.
-- Next: follow `Gui_Engine_Init`/`GEL_Open` in the application disassembly to find the resource loader, instead of guessing pixel formats.
+## Graphics: where the OSD bitmaps are (found)
+- **Boot logos** are standard JPEGs: Shivaki image `0x3f0000` (1920x1080), Manta LED4202 image `0x3b5000` (1920x1080), each with a 160x90 EXIF thumbnail. (The "repeating pattern" in that region is the JPEG's flat-colour data, not encryption.)
+- **OSD/menu bitmaps** live in the *application* image (LZMA stream `0xf1f5c` Shivaki / `0xf6124` LED4202), not as PNG/BMP files. They are listed in a table of 24-byte descriptors (little endian):
+  `data_ptr, 0x01000000, palette_ptr, (height<<16)|width, bits_per_pixel (8), 5`.
+  Pixels are 8 bpp palette indices, rows padded to 4 bytes in most images (a few use another stride - not all decode cleanly yet); the palette is 256 x 4 bytes `A,R,G,B` with entry 0 = colour key (alpha 0, magenta). 632 descriptors / 10 distinct palettes in each image; artwork is shared between the Shivaki and Manta builds (media-browser icons, player controls, `Ok`/`Exit`/`Return` buttons, satellite-dish/gamepad/settings/tools menu icons, 3D mode icons, ...).
+- **Load address of the application image** (needed to turn pointers into offsets): `0x809e2400` (Shivaki) and `0x809cc000` (LED4202) - found by voting `lui+addiu` targets against string offsets (`tools/sunplus/findbase3.py`); the kernel blob is linked at `0x80000000` and the application sits right after it.
+- Extraction: `tools/sunplus/unpack.py` (LZMA/zlib streams) -> `tools/sunplus/extract_osd.py APP.bin BASE OUTDIR`. Outputs are not committed (copyrighted artwork).
+- Not graphics: flash `0x3e2000..0x3ef000` (panel timing names, per-source picture-mode tables); the scrambled-ELF module at `0x3bc019` (626 tiny zlib streams = per-function compressed MIPS code); the 0x6c0000-0x780000 "low entropy" block is mostly tables, not ARGB.
+- Open: some descriptors still decode as noise (different stride/format); text is drawn from fonts (TrueType-looking `00 01 00 00` zlib blobs in the flash tail) via the GEL/DirectFB layer, not from these bitmaps.
