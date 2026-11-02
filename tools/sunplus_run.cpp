@@ -40,14 +40,15 @@ struct M {
   std::map<uint32_t, std::pair<uint32_t, uint64_t>> zeroReads; std::vector<uint32_t> zeroOrder;
   bool readback = false, unknownZero = false; uint64_t pollLimit = 300000, maxBlocks = 0, blocks = 0; uint32_t cpi = 1;
   std::deque<uint32_t> ring; std::string stop; std::map<uint32_t, int> watch; std::vector<std::string> watchLog;
-  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
+  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint64_t irqInjected = 0; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
   uint32_t lastBlock() const { return ring.empty() ? 0 : ring.back(); }
 };
 
 static uint32_t regValue(M& m, uint32_t off, unsigned size) {
   const uint32_t base = off & ~3u, addr = REG_BASE + base;
   uint32_t val;
-  if (!m.flash.empty() && base >= 0xB00 && base < 0xB40) { val = m.written.count(base) ? m.written[base] : 0; if (base == 0xB08) val &= ~0x80u; }   // SPI flash controller: command done instantly (busy bit clear)
+  if (m.pendLeft > 0 && base == m.pendReg) { val = m.pendBit; m.pendLeft = 0; m.eng.setIrqLines(0); }   // EXPLORATORY injected interrupt source (pending register returns the vector's bit for a few reads)
+  else if (!m.flash.empty() && base >= 0xB00 && base < 0xB40) { val = m.written.count(base) ? m.written[base] : 0; if (base == 0xB08) val &= ~0x80u; }   // SPI flash controller: command done instantly (busy bit clear)
   else if (addr == UART_STAT) val = 0x41;                        // bit0 TX ready + bit6 TX idle (modelled from the firmware's own polls)
   else if (auto h = m.hyp.find(addr); h != m.hyp.end()) { val = h->second.value & h->second.mask; ++m.hypUsed[addr]; }
   else if (m.readback && m.written.count(base)) { val = m.written[base]; ++m.readbackUsed; }
@@ -122,7 +123,7 @@ int main(int argc, char** argv) {
   if (argc < 2) { std::fprintf(stderr, "usage: sunplus_run KERNEL.bin [--hyp FILE] [--readback] [--unknown-zero] [--map-iop] [--max-blocks N] [--poll-limit N] [--cpi N] [--ram-mb N]\n"); return 2; }
   for (int i = 2; i < argc; ++i) if (std::string(argv[i]) == "--cpu-fmt") Engine::cpuModel = UC_CPU_MIPS32_M14K;   // EXPLORATORY: fixed-mapping MMU core (user addresses -> physical +0x40000000 when ERL=0)
   std::vector<std::pair<uint32_t, uint32_t>> iopSets;   // EXPLORATORY: words preset in the IOP data window (offset=value)
-  uint32_t irqMask = 0;   // EXPLORATORY: external interrupt lines IP2..IP6 (bit0 = IP2) asserted at every idle wake-up
+  int irqVec = -1; uint32_t irqMask = 0;   // EXPLORATORY: external interrupt lines IP2..IP6 (bit0 = IP2) asserted at every idle wake-up
   M m; uint64_t maxIdle = 2000000; bool fmt = false; uint32_t xip = 0; std::string uartOut; uint32_t ramMb = 128; bool mapIop = false; uint32_t loadAt = 0x400; size_t nwrites = 60;
   for (int i = 2; i < argc; ++i) {
     std::string a = argv[i];
@@ -132,6 +133,7 @@ int main(int argc, char** argv) {
     else if (a == "--uart-out") uartOut = argv[++i];
     else if (a == "--flash") m.flash = load(argv[++i]);
     else if (a == "--cpu-fmt") fmt = true;
+    else if (a == "--irq-vec") irqVec = int(std::strtol(argv[++i], nullptr, 0));
     else if (a == "--irq-mask") irqMask = uint32_t(std::strtoul(argv[++i], nullptr, 0));
     else if (a == "--app-base") m.appBase = uint32_t(std::strtoul(argv[++i], nullptr, 0));
     else if (a == "--app-end") m.appEnd = uint32_t(std::strtoul(argv[++i], nullptr, 0));
@@ -181,9 +183,20 @@ int main(int argc, char** argv) {
     uint32_t dist = cmp - cnt; if (!dist) dist = 1;
     m.eng.tickCount(dist); ++idles;
     if (irqMask) m.eng.setIrqLines(irqMask);
+    if (irqVec >= 0) {   // vector -> (CPU line, pending register, bit) from the kernel's dispatcher and unmask tables
+      int line; uint32_t reg, bit;
+      if (irqVec >= 0x40 && irqVec <= 0x47) { line = 0; reg = 0x4cc; bit = irqVec - 0x40; }
+      else if (irqVec >= 0x48 && irqVec <= 0x5b) { line = 1; reg = 0x4d0; bit = irqVec - 0x40; }
+      else if (irqVec >= 0x5c && irqVec <= 0x5f) { line = 2; reg = 0x4d4; bit = irqVec - 0x40; }
+      else if (irqVec >= 0x21 && irqVec <= 0x30) { line = 3; reg = 0x4d8; bit = irqVec - 0x20; }
+      else { line = 4; reg = 0x4dc; bit = irqVec - 0x20; }
+      m.pendReg = reg; m.pendBit = 1u << bit; m.pendLeft = 4; ++m.irqInjected;
+      m.eng.setIrqLines(1u << line);
+    }
     e = m.eng.run(m.eng.reg(UC_MIPS_REG_PC), 0);
   }
   m.idleWakes = idles;
+  if (irqVec >= 0) m.eng.setIrqLines(0);
   if (m.stop.empty()) m.stop = e == UC_ERR_OK ? "ended" : std::string("unicorn: ") + uc_strerror(e);
   std::printf("stop: %s\npc=%08x blocks=%llu\n", m.stop.c_str(), m.eng.reg(UC_MIPS_REG_PC), (unsigned long long)m.blocks);
   if (!uartOut.empty()) { std::ofstream f(uartOut, std::ios::binary); f << m.uart; }
