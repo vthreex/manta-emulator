@@ -28,6 +28,7 @@ static constexpr uint32_t REG_BASE = 0x1FFE0000, REG_SIZE = 0x20000, UART_DATA =
 
 struct Hyp { uint32_t value, mask; std::string note; };
 struct Stop { std::string why; };
+struct HostCall { uint32_t fn, a0, a1; uint64_t at; bool done = false; };   // EXPLORATORY host-initiated call of a firmware function from the idle thread
 
 struct M {
   Engine eng;
@@ -102,7 +103,7 @@ static void onBlock(uc_engine*, uint64_t addr, uint32_t size, void* user) {
   m.ring.push_back(uint32_t(addr)); if (m.ring.size() > 600) m.ring.pop_front();
   ++m.blocks;
   if (addr >= m.appBase && addr < m.appEnd) { if (!m.appBlocks++) m.appFirst = uint32_t(addr); m.appLast = uint32_t(addr); }
-  if (!m.watch.empty()) { auto w = m.watch.find(uint32_t(addr)); if (w != m.watch.end() && w->second > 0) { --w->second; char t[320]; std::snprintf(t, sizeof t, "watch %08x blocks=%llu a0=%08x a1=%08x a2=%08x a3=%08x v0=%08x v1=%08x s0=%08x s1=%08x s2=%08x s3=%08x s4=%08x ra=%08x sp=%08x", uint32_t(addr), (unsigned long long)m.blocks, m.eng.reg(UC_MIPS_REG_A0), m.eng.reg(UC_MIPS_REG_A1), m.eng.reg(UC_MIPS_REG_A2), m.eng.reg(UC_MIPS_REG_A3), m.eng.reg(UC_MIPS_REG_V0), m.eng.reg(UC_MIPS_REG_V1), m.eng.reg(UC_MIPS_REG_S0), m.eng.reg(UC_MIPS_REG_S1), m.eng.reg(UC_MIPS_REG_S2), m.eng.reg(UC_MIPS_REG_S3), m.eng.reg(UC_MIPS_REG_S4), m.eng.reg(UC_MIPS_REG_RA), m.eng.reg(UC_MIPS_REG_SP)); m.watchLog.push_back(t); } }
+  if (!m.watch.empty()) { auto w = m.watch.find(uint32_t(addr)); if (w != m.watch.end() && w->second > 0) { --w->second; char t[320]; std::snprintf(t, sizeof t, "watch %08x blocks=%llu a0=%08x a1=%08x a2=%08x a3=%08x v0=%08x v1=%08x s0=%08x s1=%08x s2=%08x s3=%08x s4=%08x ra=%08x sp=%08x gp=%08x", uint32_t(addr), (unsigned long long)m.blocks, m.eng.reg(UC_MIPS_REG_A0), m.eng.reg(UC_MIPS_REG_A1), m.eng.reg(UC_MIPS_REG_A2), m.eng.reg(UC_MIPS_REG_A3), m.eng.reg(UC_MIPS_REG_V0), m.eng.reg(UC_MIPS_REG_V1), m.eng.reg(UC_MIPS_REG_S0), m.eng.reg(UC_MIPS_REG_S1), m.eng.reg(UC_MIPS_REG_S2), m.eng.reg(UC_MIPS_REG_S3), m.eng.reg(UC_MIPS_REG_S4), m.eng.reg(UC_MIPS_REG_RA), m.eng.reg(UC_MIPS_REG_SP), m.eng.reg(UC_MIPS_REG_GP)); m.watchLog.push_back(t); } }
   if (m.cpi) m.eng.tickCount((size / 4) * m.cpi);          // CP0 Count advances with executed instructions; the patched engine raises the timer interrupt
   if (m.maxBlocks && m.blocks >= m.maxBlocks) { m.stop = "block budget"; uc_emu_stop(m.eng.handle); }
   if (addr < 0x400 && m.blocks > 10) { char b[64]; std::snprintf(b, sizeof b, "execution at low address %08x", uint32_t(addr)); m.stop = b; uc_emu_stop(m.eng.handle); }
@@ -123,7 +124,7 @@ int main(int argc, char** argv) {
   if (argc < 2) { std::fprintf(stderr, "usage: sunplus_run KERNEL.bin [--hyp FILE] [--readback] [--unknown-zero] [--map-iop] [--max-blocks N] [--poll-limit N] [--cpi N] [--ram-mb N]\n"); return 2; }
   for (int i = 2; i < argc; ++i) if (std::string(argv[i]) == "--cpu-fmt") Engine::cpuModel = UC_CPU_MIPS32_M14K;   // EXPLORATORY: fixed-mapping MMU core (user addresses -> physical +0x40000000 when ERL=0)
   std::vector<std::pair<uint32_t, uint32_t>> iopSets;   // EXPLORATORY: words preset in the IOP data window (offset=value)
-  int irqVec = -1; uint32_t irqMask = 0;   // EXPLORATORY: external interrupt lines IP2..IP6 (bit0 = IP2) asserted at every idle wake-up
+  std::vector<uint32_t> peeks; std::vector<HostCall> calls; int irqVec = -1; uint32_t irqMask = 0;   // EXPLORATORY: external interrupt lines IP2..IP6 (bit0 = IP2) asserted at every idle wake-up
   M m; uint64_t maxIdle = 2000000; bool fmt = false; uint32_t xip = 0; std::string uartOut; uint32_t ramMb = 128; bool mapIop = false; uint32_t loadAt = 0x400; size_t nwrites = 60;
   for (int i = 2; i < argc; ++i) {
     std::string a = argv[i];
@@ -133,6 +134,8 @@ int main(int argc, char** argv) {
     else if (a == "--uart-out") uartOut = argv[++i];
     else if (a == "--flash") m.flash = load(argv[++i]);
     else if (a == "--cpu-fmt") fmt = true;
+    else if (a == "--peek") peeks.push_back(uint32_t(std::strtoul(argv[++i], nullptr, 0)));
+    else if (a == "--call") { std::string s = argv[++i]; HostCall c{}; auto p1 = s.find(':'), p2 = s.find(':', p1 + 1), at = s.find('@'); c.fn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); c.a0 = uint32_t(std::strtoul(s.c_str() + p1 + 1, nullptr, 0)); c.a1 = uint32_t(std::strtoul(s.c_str() + p2 + 1, nullptr, 0)); c.at = std::strtoull(s.c_str() + at + 1, nullptr, 0); calls.push_back(c); }
     else if (a == "--snap-after") m.trigText = argv[++i];
     else if (a == "--irq-vec") irqVec = int(std::strtol(argv[++i], nullptr, 0));
     else if (a == "--irq-mask") irqMask = uint32_t(std::strtoul(argv[++i], nullptr, 0));
@@ -184,6 +187,14 @@ int main(int argc, char** argv) {
     uint32_t dist = cmp - cnt; if (!dist) dist = 1;
     if (!m.trigText.empty() && m.snap.empty() && m.uart.find(m.trigText) != std::string::npos) m.snap.assign(m.ring.begin(), m.ring.end());
     m.eng.tickCount(dist); ++idles;
+    for (auto& c : calls) if (!c.done && idles == c.at) {   // run the firmware function on the idle thread's stack, returning into the idle loop
+      c.done = true;
+      const uint32_t pc = m.eng.reg(UC_MIPS_REG_PC);
+      m.eng.reg(UC_MIPS_REG_A0, c.a0); m.eng.reg(UC_MIPS_REG_A1, c.a1);
+      m.eng.reg(UC_MIPS_REG_RA, pc); m.eng.reg(UC_MIPS_REG_SP, m.eng.reg(UC_MIPS_REG_SP) - 0x100);
+      m.eng.reg(UC_MIPS_REG_PC, c.fn);
+      std::printf("host call %08x(%08x,%08x) at idle wake %llu (idle pc %08x)\n", c.fn, c.a0, c.a1, (unsigned long long)idles, pc);
+    }
     if (irqMask) m.eng.setIrqLines(irqMask);
     if (irqVec >= 0) {   // vector -> (CPU line, pending register, bit) from the kernel's dispatcher and unmask tables
       int line; uint32_t reg, bit;
@@ -197,6 +208,7 @@ int main(int argc, char** argv) {
     }
     e = m.eng.run(m.eng.reg(UC_MIPS_REG_PC), 0);
   }
+  for (uint32_t pk : peeks) { uint32_t v = 0; m.eng.read(pk & 0x1FFFFFFF, &v, 4); std::printf("peek %08x = %08x\n", pk, v); }
   m.idleWakes = idles;
   if (irqVec >= 0) m.eng.setIrqLines(0);
   if (m.stop.empty()) m.stop = e == UC_ERR_OK ? "ended" : std::string("unicorn: ") + uc_strerror(e);
