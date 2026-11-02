@@ -43,6 +43,13 @@ The firmware images used for testing live in `firmware/` (hashes and a rights no
 
 `src/` emulator core | `native/` recompiled-engine runtime | `frontend/` Qt control centre | `tools/` analysis and test drivers | `docs/` findings and register maps | `evidence/` validation logs and captured frames | `configs/` policies and key maps | `firmware/` test images | `site/` GitHub Pages showcase
 
+## Authorship and credits
+
+This project was directed, tested and published by **v3x**, and built together with AI coding assistants, credited as they were used:
+
+- **OpenAI Codex** did the first reverse-engineering phase (2026-10-11 to 2026-10-18).
+- **Claude** (Anthropic, via Claude Code) did the work after that hand-off: the emulator extensions, the Qt control centre, the Blaupunkt/Sunplus bring-up and this site. Those commits carry a `Co-Authored-By: Claude` trailer, so Claude appears as a contributor in the history.
+
 ## Licence
 
 GPL-2.0 (see `LICENSE`), matching the bundled Unicorn engine. Firmware images and extracted artwork belong to their owners and are included for interoperability and preservation research only.
