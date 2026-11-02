@@ -1,4 +1,59 @@
-# Manta LCD4214 firmware execution research build
+# Manta TV firmware emulator
+
+Booting the **real, unmodified firmware** of Manta televisions in software and watching its own OSD come to life: no UI re-created in host code, no patched firmware, no invented hardware answers. Two very different platforms are covered:
+
+| platform | sets | status |
+|---|---|---|
+| **MStar MSD309** (Titania4, MIPS) | Manta LCD4214 | original firmware boots, the real ZUI draws the OSD, MENU / SOURCE / INFO / factory / hotel / lock menus, USB player, virtual remote |
+| **Sunplus SPHE8600** (MIPS + DSP ASE, eCos + DirectFB) | Manta LED4202, Shivaki STV-24LED14 | kernel boot, SPI-flash model, application starts, DirectFB 1.1.0 initialises; display scan-out in progress |
+
+**[Interactive showcase page](https://vthreex.github.io/manta-emulator/)** (illustrative boot walkthrough and clickable remote built from real captured frames) | **[Releases](../../releases)** | [Architecture notes](docs/sunplus-sphe8600-architecture.md) | [Firmware images and hashes](firmware/README.md)
+
+## Gallery (real frames from the emulator)
+
+| | | |
+|---|---|---|
+| ![Option menu](evidence/ui-states-session10/5_menu_setup_blue_on.png) | ![Input sources](evidence/ui-states-session10/9_input_source_list.png) | ![USB player](evidence/ui-states-session10/10_usb_player_no_device.png) |
+| Option menu (MENU key) | Input source list | USB player, no device |
+| ![Factory menu](evidence/ui-states-session10/12_factory_setting_root.png) | ![White balance](evidence/ui-states-session10/14_factory_wb_adjust.png) | ![Hotel menu](evidence/ui-states-session10/15_hotel_menu.png) |
+| Factory menu | Factory white balance | Hotel menu |
+| ![DTV banner](evidence/ui-states-session10/17_dtv_channel_banner.png) | ![Lock dialog](evidence/ui-states-session10/16_lock_password_dialog.png) | ![NO SIGNAL](evidence/no-signal-dialog-moved-s13.png) |
+| Digital TV banner | Lock password dialog | NO SIGNAL dialog drawn by the original ZUI |
+
+Sunplus boot logos (recovered from the flash images) and the 632-bitmap OSD atlas are on the showcase page.
+
+## Highlights
+
+- **Strict by default.** Unknown hardware stays unknown; every hypothesis is opt-in, labelled and listed in the run report. Diagnostic results are kept separate from connected-boot progress and from displayed pixels.
+- **Fast.** Exact idle-loop skipping (OpenRISC TSP core, 8051 cores), a recompiled native engine for resumed runs, and full-machine save states (a checkpoint loads in about a second).
+- **Qt control centre** (`frontend/manta_control.py`): board switch, remote (keys and mouse), machine settings, live preview, frame sharing over shared memory.
+- **Reverse-engineering notes** for both platforms: register maps, boot flow, flash layouts, interrupt controller, GE/GOP/OSD formats (`docs/`).
+
+## Quick start
+
+Download a build from [Releases](../../releases), or build from source (CMake + MinGW, Unicorn 2.1.4; the patched Unicorn source is in `third_party/`).
+
+```powershell
+.in\manta.exe --firmware firmware\manta-lcd4214-original.bin --headless
+```
+
+The firmware images used for testing live in `firmware/` (hashes and a rights notice in `firmware/README.md`). The Sunplus runner is `sunplus_run` (see `docs/sunplus-sphe8600-architecture.md`).
+
+## Layout
+
+`src/` emulator core | `native/` recompiled-engine runtime | `frontend/` Qt control centre | `tools/` analysis and test drivers | `docs/` findings and register maps | `evidence/` validation logs and captured frames | `configs/` policies and key maps | `firmware/` test images | `site/` GitHub Pages showcase
+
+## Licence
+
+GPL-2.0 (see `LICENSE`), matching the bundled Unicorn engine. Firmware images and extracted artwork belong to their owners and are included for interoperability and preservation research only.
+
+---
+
+## Development log
+
+Newest entries first; each one records what the original instructions executed and what is still unknown.
+
+### Manta LCD4214 firmware execution research build
 
 Latest [HTotal provenance/window-resource work](docs/htotal-provenance-and-zui-resources.md)
 allows the original timing publisher to copy INVALID raw samples without
