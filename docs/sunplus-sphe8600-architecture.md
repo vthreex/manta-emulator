@@ -38,7 +38,19 @@ Tools (this repo): `tools/sunplus/firstlight.py`; unpack/carve/disassemble helpe
 - UART: TX data `0xBFFE0900`, status `0xBFFE0904` (bit0 = TX ready, bit6 = TX idle — both polled by the firmware's own early print routine).
 - The early console prints `Timer`, `Cache region`, `Mon`, `Zero BSS` (verified in `firstlight.py`, identical on both images).
 
-## First light (tools/sunplus/firstlight.py)
+## CORRECTION (supersedes the "First light" / open-question text below)
+- The kernel blob is loaded at **physical 0x400**, not 0 (entry `0x80000400`, whose first instruction jumps to `0x80000910`). Evidence: with a -0x400 shift every call target in the early code lands on a function entry, on both images; the application image then sits at `0x400 + kernel size` (`0x809e2400` Shivaki, `0x809cc000` Manta LED4202). The earlier "call lands mid-epilogue" problem was this off-by-0x400 load address.
+- Flash has named section headers (`bootloader` `0x8010`, `mainSys` `0x54010`, ...) and a boot header at `0x1200` followed by the register init table; the firmware looks the sections up through a flash driver (`pl_flash.c`, device id 3, ops table `0x800054b0`).
+
+## Bring-up runner (tools/sunplus_run.cpp, built as `sunplus_run`)
+Runs on the repo's patched Unicorn (CP0 Count/Compare ticking and timer IRQ). Strict by default (unmodelled register read = stop); labelled opt-ins: `--hyp FILE` (value / `or` / `clear` rules, each use counted and reported), `--readback`, `--unknown-zero`, `--map-iop`. The register window is an `mmio_map` (memory hooks mis-handle stores in branch delay slots in this Unicorn; reproduced in isolation). `configs/sunplus/hyp-001.tsv` lists every hypothesis used so far (none is observed hardware).
+
+Console output reached (eCos boot, real firmware code): `MMU, FPU, IntC, Cache, Timer, Cache region, Mon, Zero BSS, Var Init, Plf Init, Get IOP Data, Ctor Init, cyg_start`, GPIO/LED setup text, a DDR PUB (PHY) delay-line dump, `Thermal report`, an I2C bus table, `system_standby in RISC cache`, `Wait turn off power`.
+Hypotheses needed so far: clock multiplier `0xBFFE0018` (low 6 bits+1, x6.75 MHz), `0xBFFE1448` bit13 (done after start bit12), `0xBFFE0B08` bit7 (thermal busy clears), `0xBFFE0434` bit11 (ready/lock), IOP window `0xBFFC0000..` as zero RAM.
+
+**Where it stops (not solved):** the event/IOP handler at `0x8004c4c8` asks the standby processor ("IOP") for wake-up/key state through a register mailbox around `0xBFFE0428..0xBFFE0440` (and the `0x172b7c` call interface); with zero replies it takes the `PowerCtl(0)` power-off branch (`0x8004c788`). Needs an IOP/mailbox model (the IOP firmware is probably the 4 KB high-entropy block at flash `0x1c00..0x2c00`, not decoded yet) and a registered SPI-flash device (`PL_FlashInit(3)`). Nothing is reaching the OSD, GE or display yet; the OSD bitmap extraction is independent of this.
+
+## First light (tools/sunplus/firstlight.py) - historical, load address was wrong
 Kernel placed at phys 0, entered at `0x80000000` with `$s6=0xBFFE8000` (what the stage-1 stub sets). Result on both images:
 `Timer / Cache region / Mon / Zero BSS`, then a call through `lui k0,0x8020; addiu k0,k0,-0x2144` (= `0x801fdebc` Shivaki,
 equivalent address in the Manta image) lands in the middle of a function epilogue and returns to `$ra = 0`.

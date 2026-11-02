@@ -1,7 +1,7 @@
 """First-light harness for the Sunplus SPHE8600 (MIPS32 LE, eCos) kernel of the Shivaki STV-24LED14 image.
 
-Not the stage-1 boot ROM path: the decompressed kernel (flash LZMA stream at 0x54070) is placed at physical 0 and entered
-at 0x80000000 with $s6 = 0xBFFE8000, exactly as the stage-1 stub at flash 0x3030 sets it.  That hand-off is a LABELLED
+Not the stage-1 boot ROM path: the decompressed kernel (flash LZMA stream at 0x54070) is placed at physical 0x400 and entered
+at 0x80000400 (its first instruction jumps to 0x80000910) with $s6 = 0xBFFE8000, exactly as the stage-1 stub at flash 0x3030 sets it.  That hand-off is a LABELLED
 EXPLORATORY SHORTCUT (stage 1 itself is not run yet).
 
 Hardware is modelled only where the firmware's own code demands it:
@@ -32,6 +32,7 @@ def main():
     ap.add_argument('kernel')
     ap.add_argument('--max-insns', type=int, default=20_000_000)
     ap.add_argument('--ram-mb', type=int, default=128)
+    ap.add_argument('--load', type=lambda s: int(s, 0), default=0x400, help='physical load address of the kernel blob (derived: 0x400; calls inside the image only make sense with this base)')
     ap.add_argument('--log-writes', type=int, default=40, help='how many distinct register writes to print')
     a = ap.parse_args()
 
@@ -39,7 +40,7 @@ def main():
     uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
     ram = a.ram_mb << 20
     uc.mem_map(0, ram)
-    uc.mem_write(0, kernel[:ram])
+    uc.mem_write(a.load, kernel[:ram - a.load])
     regs = bytearray(REG_SIZE)           # backing store only for registers whose written value is read back is NOT assumed
     uc.mem_map(REG_BASE, REG_SIZE)       # physical alias; accesses are intercepted by the hooks below
 
@@ -84,7 +85,7 @@ def main():
     uc.reg_write(UC_MIPS_REG_S6, 0xBFFE8000)        # stage-1 stub: lui s6,0xbffe ; ori s6,s6,0x8000
     why = ''
     try:
-        uc.emu_start(0x80000000, 0xFFFFFFFF)
+        uc.emu_start(0x80000000 + a.load, 0xFFFFFFFF)
         why = 'ended'
     except Stop as e:
         why = str(e)
