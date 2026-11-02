@@ -43,7 +43,7 @@ struct M {
   std::map<uint32_t, std::pair<uint32_t, uint64_t>> zeroReads; std::vector<uint32_t> zeroOrder;
   bool readback = false, unknownZero = false; uint64_t pollLimit = 300000, maxBlocks = 0, blocks = 0; uint32_t cpi = 1;
   std::deque<uint32_t> ring; std::string stop; std::map<uint32_t, int> watch; std::vector<std::string> watchLog;
-  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
+  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
   uint32_t lastBlock() const { return ring.empty() ? 0 : ring.back(); }
 };
 
@@ -55,7 +55,13 @@ static uint32_t regValue(M& m, uint32_t off, unsigned size) {
   else if (!m.flash.empty() && base >= 0xB00 && base < 0xB40) { val = m.written.count(base) ? m.written[base] : 0; if (base == 0xB08) val &= ~0x80u; }   // SPI flash controller: command done instantly (busy bit clear)
   else if (addr == UART_STAT) val = 0x41;                        // bit0 TX ready + bit6 TX idle (modelled from the firmware's own polls)
   else if (auto h = m.hyp.find(addr); h != m.hyp.end()) { val = h->second.value & h->second.mask; ++m.hypUsed[addr]; }
-  else if (m.readback && m.written.count(base)) { val = m.written[base]; ++m.readbackUsed; }
+  else if (m.readback && m.written.count(base)) {
+    val = m.written[base]; ++m.readbackUsed;
+    uint64_t& rc = m.rbReads[base]; if (++rc >= m.pollLimit) {   // the firmware keeps re-reading a register it wrote itself and nothing changes it: report like an unknown-register poll
+      char t[200]; std::snprintf(t, sizeof t, "stuck polling %08x (%llu reads of the unknown-zero value) first near block %08x now block %08x", addr | 0xA0000000u, (unsigned long long)rc, m.lastBlock(), m.lastBlock());
+      m.stop = t; throw Stop{t};
+    }
+  }
   else if (m.unknownZero) {
     auto it = m.zeroReads.find(base);
     if (it == m.zeroReads.end()) { it = m.zeroReads.emplace(base, std::make_pair(m.lastBlock(), uint64_t(0))).first; m.zeroOrder.push_back(base); }
@@ -83,6 +89,7 @@ static void mmioWrite(uc_engine*, uint64_t off, unsigned size, uint64_t value, v
   const uint32_t addr = REG_BASE + uint32_t(off);
   if (addr == UART_DATA) { m.uart.push_back(char(value & 0xff)); return; }
   const uint32_t mask = size >= 4 ? 0xFFFFFFFFu : ((1u << (8 * size)) - 1), v = uint32_t(value) & mask, base = uint32_t(off) & ~3u;
+  m.rbReads[base] = 0;
   if (size == 4) m.written[base] = v;
   else { const unsigned sh = (off & 3) * 8; m.written[base] = (m.written[base] & ~(mask << sh)) | (v << sh); }
   if (!m.flash.empty() && uint32_t(off) == 0xB08) {                // SPI command: [opcode:8][flags:8]; address in 0B0C (low 16) / 0B10 (bits 16..23); data back in 0B14 (low 16) / 0B18 (high 16)
@@ -247,6 +254,7 @@ int main(int argc, char** argv) {
   if (coverHi) { std::printf("covered blocks %08x..%08x:", coverLo, coverHi); for (auto& [a, n] : m.hot) if (a >= coverLo && a < coverHi) std::printf(" %08x:%llu", a, (unsigned long long)n); std::printf("\n"); }
   if (m.spHi) { std::printf("thread blocks (sp %08x..%08x), oldest..newest:", m.spLo, m.spHi); for (uint32_t x : m.spRing) std::printf(" %08x", x); std::printf("\n"); }
   std::printf("last injected vector: %#x (injections %llu)\n", m.lastVec, (unsigned long long)m.irqInjected);
+  if (m.stop.rfind("stuck polling", 0) == 0 && m.lastBlock()) { uint8_t cb[96]; m.eng.read(m.lastBlock() & 0x1FFFFFFF, cb, sizeof cb); std::printf("stuck-code %08x:", m.lastBlock()); for (uint8_t x : cb) std::printf("%02x", x); std::printf("\n"); }
   m.idleWakes = idles;
   if (irqVec >= 0) m.eng.setIrqLines(0);
   if (m.stop.empty()) m.stop = e == UC_ERR_OK ? "ended" : std::string("unicorn: ") + uc_strerror(e);
