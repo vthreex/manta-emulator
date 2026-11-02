@@ -10,3 +10,6 @@ native/gen/
 native/runtime_image.bin
 native/build/
 dist/
+
+# The original Manta LCD4214 image is kept in firmware/ on purpose
+!firmware/manta-lcd4214-original.bin
