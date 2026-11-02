@@ -13,3 +13,11 @@ and want it removed, open an issue and it will be taken down.
 
 Other firmware images (other boards, dumps, saved machine states) are deliberately not included:
 supply your own and see `docs/other-board-bringup.md`.
+
+## Sunplus SPHE8600 images (Cultraview CV9202 boards)
+Used by `tools/sunplus_run.cpp` and documented in `docs/sunplus-sphe8600-architecture.md`. Same rights notice as above.
+
+| file | what | size | SHA-256 |
+|---|---|---|---|
+| `sunplus-shivaki-stv-24led14.bin` | Shivaki STV-24LED14, CV9202L-T, 8 MB SPI flash, software of 2014-11 | 8,388,608 | `7827b52a8ef7eed4d5955f42f2263c9295bfee20efd7ba6155b5767be3a9fa2e` |
+| `sunplus-manta-led4202-cv9202h.bin` | Manta LED4202, CV9202H-A39, 4 MB SPI flash (25Q32FV), software of 2016-03 | 4,194,304 | `add6fbbbaaba6f0881c9d9dd7deb853afbf51d3ae585ad7ecefbf950c312ad06` |
