@@ -40,7 +40,7 @@ struct M {
   std::map<uint32_t, std::pair<uint32_t, uint64_t>> zeroReads; std::vector<uint32_t> zeroOrder;
   bool readback = false, unknownZero = false; uint64_t pollLimit = 300000, maxBlocks = 0, blocks = 0; uint32_t cpi = 1;
   std::deque<uint32_t> ring; std::string stop; std::map<uint32_t, int> watch; std::vector<std::string> watchLog;
-  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint64_t irqInjected = 0; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
+  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
   uint32_t lastBlock() const { return ring.empty() ? 0 : ring.back(); }
 };
 
@@ -99,7 +99,7 @@ static void mmioWrite(uc_engine*, uint64_t off, unsigned size, uint64_t value, v
 }
 static void onBlock(uc_engine*, uint64_t addr, uint32_t size, void* user) {
   M& m = *static_cast<M*>(user);
-  m.ring.push_back(uint32_t(addr)); if (m.ring.size() > 64) m.ring.pop_front();
+  m.ring.push_back(uint32_t(addr)); if (m.ring.size() > 600) m.ring.pop_front();
   ++m.blocks;
   if (addr >= m.appBase && addr < m.appEnd) { if (!m.appBlocks++) m.appFirst = uint32_t(addr); m.appLast = uint32_t(addr); }
   if (!m.watch.empty()) { auto w = m.watch.find(uint32_t(addr)); if (w != m.watch.end() && w->second > 0) { --w->second; char t[320]; std::snprintf(t, sizeof t, "watch %08x blocks=%llu a0=%08x a1=%08x a2=%08x a3=%08x v0=%08x v1=%08x s0=%08x s1=%08x s2=%08x s3=%08x s4=%08x ra=%08x sp=%08x", uint32_t(addr), (unsigned long long)m.blocks, m.eng.reg(UC_MIPS_REG_A0), m.eng.reg(UC_MIPS_REG_A1), m.eng.reg(UC_MIPS_REG_A2), m.eng.reg(UC_MIPS_REG_A3), m.eng.reg(UC_MIPS_REG_V0), m.eng.reg(UC_MIPS_REG_V1), m.eng.reg(UC_MIPS_REG_S0), m.eng.reg(UC_MIPS_REG_S1), m.eng.reg(UC_MIPS_REG_S2), m.eng.reg(UC_MIPS_REG_S3), m.eng.reg(UC_MIPS_REG_S4), m.eng.reg(UC_MIPS_REG_RA), m.eng.reg(UC_MIPS_REG_SP)); m.watchLog.push_back(t); } }
@@ -133,6 +133,7 @@ int main(int argc, char** argv) {
     else if (a == "--uart-out") uartOut = argv[++i];
     else if (a == "--flash") m.flash = load(argv[++i]);
     else if (a == "--cpu-fmt") fmt = true;
+    else if (a == "--snap-after") m.trigText = argv[++i];
     else if (a == "--irq-vec") irqVec = int(std::strtol(argv[++i], nullptr, 0));
     else if (a == "--irq-mask") irqMask = uint32_t(std::strtoul(argv[++i], nullptr, 0));
     else if (a == "--app-base") m.appBase = uint32_t(std::strtoul(argv[++i], nullptr, 0));
@@ -181,6 +182,7 @@ int main(int argc, char** argv) {
   while (e == UC_ERR_OK && m.stop.empty() && idles < maxIdles) {
     const uint32_t cmp = m.eng.reg(UC_MIPS_REG_CP0_COMPARE), cnt = m.eng.reg(UC_MIPS_REG_CP0_COUNT);
     uint32_t dist = cmp - cnt; if (!dist) dist = 1;
+    if (!m.trigText.empty() && m.snap.empty() && m.uart.find(m.trigText) != std::string::npos) m.snap.assign(m.ring.begin(), m.ring.end());
     m.eng.tickCount(dist); ++idles;
     if (irqMask) m.eng.setIrqLines(irqMask);
     if (irqVec >= 0) {   // vector -> (CPU line, pending register, bit) from the kernel's dispatcher and unmask tables
@@ -212,6 +214,7 @@ int main(int argc, char** argv) {
     std::printf("\n");
   }
   for (auto& s : m.watchLog) std::printf("%s\n", s.c_str());
+  if (!m.snap.empty()) { std::printf("snapshot at first idle after trigger (oldest..newest, %zu blocks):\n", m.snap.size()); for (size_t i = 0; i < m.snap.size(); ++i) std::printf("%08x%c", m.snap[i], (i % 12 == 11) ? '\n' : ' '); std::printf("\n"); }
   std::printf("hypotheses used:\n");
   for (auto& [a, y] : m.hyp) std::printf("  %08x = %08x  used %llu  %s\n", a | 0xA0000000u, y.value, (unsigned long long)m.hypUsed[a], y.note.c_str());
   for (auto& [a, y] : m.orHyp) std::printf("  %08x |= %08x (bits read as 1 on top of the register)  used %llu  %s\n", a | 0xA0000000u, y.value, (unsigned long long)m.hypUsed[a | 1], y.note.c_str());
