@@ -12,6 +12,7 @@
 //   --unknown-zero   (EXPLORATORY) every other register read returns 0; each distinct address is listed in the report
 // The register window uses uc_mmio_map callbacks (memory hooks mis-handle stores in branch delay slots in this Unicorn).
 #include "cpu/engine.hpp"
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -19,6 +20,7 @@
 #include <fstream>
 #include <iterator>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -41,14 +43,15 @@ struct M {
   std::map<uint32_t, std::pair<uint32_t, uint64_t>> zeroReads; std::vector<uint32_t> zeroOrder;
   bool readback = false, unknownZero = false; uint64_t pollLimit = 300000, maxBlocks = 0, blocks = 0; uint32_t cpi = 1;
   std::deque<uint32_t> ring; std::string stop; std::map<uint32_t, int> watch; std::vector<std::string> watchLog;
-  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
+  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
   uint32_t lastBlock() const { return ring.empty() ? 0 : ring.back(); }
 };
 
 static uint32_t regValue(M& m, uint32_t off, unsigned size) {
   const uint32_t base = off & ~3u, addr = REG_BASE + base;
   uint32_t val;
-  if (m.pendLeft > 0 && base == m.pendReg) { val = m.pendBit; m.pendLeft = 0; m.eng.setIrqLines(0); }   // EXPLORATORY injected interrupt source (pending register returns the vector's bit for a few reads)
+  if (m.sfFn && addr == m.sfReg) { if (m.blocks - m.sfLast < 3000) val = m.sfExpect[0] | (m.sfExpect[1] << 4) | (m.sfExpect[2] << 8) | (m.sfExpect[3] << 12); else val = m.sfDefault * 0x1111u; }
+  else if (m.pendLeft > 0 && base == m.pendReg) { val = m.pendBit; m.pendLeft = 0; m.eng.setIrqLines(0); }   // EXPLORATORY injected interrupt source (pending register returns the vector's bit for a few reads)
   else if (!m.flash.empty() && base >= 0xB00 && base < 0xB40) { val = m.written.count(base) ? m.written[base] : 0; if (base == 0xB08) val &= ~0x80u; }   // SPI flash controller: command done instantly (busy bit clear)
   else if (addr == UART_STAT) val = 0x41;                        // bit0 TX ready + bit6 TX idle (modelled from the firmware's own polls)
   else if (auto h = m.hyp.find(addr); h != m.hyp.end()) { val = h->second.value & h->second.mask; ++m.hypUsed[addr]; }
@@ -102,6 +105,9 @@ static void onBlock(uc_engine*, uint64_t addr, uint32_t size, void* user) {
   M& m = *static_cast<M*>(user);
   m.ring.push_back(uint32_t(addr)); if (m.ring.size() > 600) m.ring.pop_front();
   ++m.blocks;
+  if (m.spHi) { uint32_t sp = m.eng.reg(UC_MIPS_REG_SP); if (sp >= m.spLo && sp < m.spHi) { m.spRing.push_back(uint32_t(addr)); if (m.spRing.size() > 400) m.spRing.pop_front(); } }
+  if (m.hotN) ++m.hot[uint32_t(addr)];
+  if (m.sfFn && uint32_t(addr) == m.sfFn) { m.sfExpect[m.eng.reg(UC_MIPS_REG_A0) & 3] = m.eng.reg(UC_MIPS_REG_A1) & 0xf; ++m.sfUses; m.sfLast = m.blocks; }   // EXPLORATORY state-follow: the wait function's expected state is what the status register reports
   if (addr >= m.appBase && addr < m.appEnd) { if (!m.appBlocks++) m.appFirst = uint32_t(addr); m.appLast = uint32_t(addr); }
   if (!m.watch.empty()) { auto w = m.watch.find(uint32_t(addr)); if (w != m.watch.end() && w->second > 0) { --w->second; char t[320]; std::snprintf(t, sizeof t, "watch %08x blocks=%llu a0=%08x a1=%08x a2=%08x a3=%08x v0=%08x v1=%08x s0=%08x s1=%08x s2=%08x s3=%08x s4=%08x ra=%08x sp=%08x gp=%08x", uint32_t(addr), (unsigned long long)m.blocks, m.eng.reg(UC_MIPS_REG_A0), m.eng.reg(UC_MIPS_REG_A1), m.eng.reg(UC_MIPS_REG_A2), m.eng.reg(UC_MIPS_REG_A3), m.eng.reg(UC_MIPS_REG_V0), m.eng.reg(UC_MIPS_REG_V1), m.eng.reg(UC_MIPS_REG_S0), m.eng.reg(UC_MIPS_REG_S1), m.eng.reg(UC_MIPS_REG_S2), m.eng.reg(UC_MIPS_REG_S3), m.eng.reg(UC_MIPS_REG_S4), m.eng.reg(UC_MIPS_REG_RA), m.eng.reg(UC_MIPS_REG_SP), m.eng.reg(UC_MIPS_REG_GP)); m.watchLog.push_back(t); } }
   if (m.cpi) m.eng.tickCount((size / 4) * m.cpi);          // CP0 Count advances with executed instructions; the patched engine raises the timer interrupt
@@ -122,9 +128,13 @@ static std::vector<uint8_t> load(const char* p) {
 
 int main(int argc, char** argv) {
   if (argc < 2) { std::fprintf(stderr, "usage: sunplus_run KERNEL.bin [--hyp FILE] [--readback] [--unknown-zero] [--map-iop] [--max-blocks N] [--poll-limit N] [--cpi N] [--ram-mb N]\n"); return 2; }
-  for (int i = 2; i < argc; ++i) if (std::string(argv[i]) == "--cpu-fmt") Engine::cpuModel = UC_CPU_MIPS32_M14K;   // EXPLORATORY: fixed-mapping MMU core (user addresses -> physical +0x40000000 when ERL=0)
+  for (int i = 2; i < argc; ++i) if (std::string(argv[i]) == "--cpu-fmt") Engine::cpuModel = UC_CPU_MIPS32_M14K;
+  for (int i = 2; i + 1 < argc; ++i) if (std::string(argv[i]) == "--cpu") {   // EXPLORATORY: the firmware executes MIPS DSP ASE instructions (dpaq_sa.l.w, extr_rs.w)
+    std::string n = argv[i + 1];
+    if (n == "24kec") Engine::cpuModel = UC_CPU_MIPS32_24KEC; else if (n == "74kf") Engine::cpuModel = UC_CPU_MIPS32_74KF; else if (n == "34kf") Engine::cpuModel = UC_CPU_MIPS32_34KF; else if (n == "24kc") Engine::cpuModel = UC_CPU_MIPS32_24KC;
+  }   // EXPLORATORY: fixed-mapping MMU core (user addresses -> physical +0x40000000 when ERL=0)
   std::vector<std::pair<uint32_t, uint32_t>> iopSets;   // EXPLORATORY: words preset in the IOP data window (offset=value)
-  std::vector<uint32_t> peeks; std::vector<HostCall> calls; int irqVec = -1; uint32_t irqMask = 0;   // EXPLORATORY: external interrupt lines IP2..IP6 (bit0 = IP2) asserted at every idle wake-up
+  uint32_t coverLo = 0, coverHi = 0; std::vector<std::pair<uint32_t, uint32_t>> dumps; std::vector<uint32_t> peeks; std::vector<HostCall> calls; std::set<int> irqExcl; bool irqAuto = false; std::vector<int> irqVecs; int irqVec = -1; uint32_t irqMask = 0;   // EXPLORATORY: external interrupt lines IP2..IP6 (bit0 = IP2) asserted at every idle wake-up
   M m; uint64_t maxIdle = 2000000; bool fmt = false; uint32_t xip = 0; std::string uartOut; uint32_t ramMb = 128; bool mapIop = false; uint32_t loadAt = 0x400; size_t nwrites = 60;
   for (int i = 2; i < argc; ++i) {
     std::string a = argv[i];
@@ -134,10 +144,19 @@ int main(int argc, char** argv) {
     else if (a == "--uart-out") uartOut = argv[++i];
     else if (a == "--flash") m.flash = load(argv[++i]);
     else if (a == "--cpu-fmt") fmt = true;
+    else if (a == "--cpu") ++i;
+    else if (a == "--irq-auto") irqAuto = true;
+    else if (a == "--irq-exclude") { std::string s = argv[++i]; size_t p0 = 0; while (p0 <= s.size()) { size_t p1 = s.find(',', p0); if (p1 == std::string::npos) p1 = s.size(); irqExcl.insert(int(std::strtol(s.substr(p0, p1 - p0).c_str(), nullptr, 0))); p0 = p1 + 1; } }
+    else if (a == "--sp-ring") { m.spLo = uint32_t(std::strtoul(argv[++i], nullptr, 0)); m.spHi = uint32_t(std::strtoul(argv[++i], nullptr, 0)); }
+    else if (a == "--cover") { coverLo = uint32_t(std::strtoul(argv[++i], nullptr, 0)); coverHi = uint32_t(std::strtoul(argv[++i], nullptr, 0)); m.hotN = m.hotN ? m.hotN : 1; }
+    else if (a == "--hot") m.hotN = std::strtoul(argv[++i], nullptr, 0);
+    else if (a == "--state-default") m.sfDefault = uint32_t(std::strtoul(argv[++i], nullptr, 0)) & 0xf;
+    else if (a == "--state-follow") { std::string s = argv[++i]; auto c = s.find(':'); m.sfFn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); m.sfReg = uint32_t(std::strtoul(s.c_str() + c + 1, nullptr, 0)) & 0x1FFFFFFF; }
+    else if (a == "--dump") { uint32_t ad = uint32_t(std::strtoul(argv[++i], nullptr, 0)); uint32_t ln = uint32_t(std::strtoul(argv[++i], nullptr, 0)); dumps.push_back({ad, ln}); }
     else if (a == "--peek") peeks.push_back(uint32_t(std::strtoul(argv[++i], nullptr, 0)));
     else if (a == "--call") { std::string s = argv[++i]; HostCall c{}; auto p1 = s.find(':'), p2 = s.find(':', p1 + 1), at = s.find('@'); c.fn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); c.a0 = uint32_t(std::strtoul(s.c_str() + p1 + 1, nullptr, 0)); c.a1 = uint32_t(std::strtoul(s.c_str() + p2 + 1, nullptr, 0)); c.at = std::strtoull(s.c_str() + at + 1, nullptr, 0); calls.push_back(c); }
     else if (a == "--snap-after") m.trigText = argv[++i];
-    else if (a == "--irq-vec") irqVec = int(std::strtol(argv[++i], nullptr, 0));
+    else if (a == "--irq-vec") { std::string s = argv[++i]; size_t p0 = 0; while (p0 <= s.size()) { size_t p1 = s.find(',', p0); if (p1 == std::string::npos) p1 = s.size(); irqVecs.push_back(int(std::strtol(s.substr(p0, p1 - p0).c_str(), nullptr, 0))); p0 = p1 + 1; } irqVec = irqVecs[0]; }
     else if (a == "--irq-mask") irqMask = uint32_t(std::strtoul(argv[++i], nullptr, 0));
     else if (a == "--app-base") m.appBase = uint32_t(std::strtoul(argv[++i], nullptr, 0));
     else if (a == "--app-end") m.appEnd = uint32_t(std::strtoul(argv[++i], nullptr, 0));
@@ -177,7 +196,7 @@ int main(int argc, char** argv) {
   uc_hook h1, h2;
   check(uc_hook_add(m.eng.handle, &h1, UC_HOOK_BLOCK, reinterpret_cast<void*>(onBlock), &m, 1, 0));
   check(uc_hook_add(m.eng.handle, &h2, UC_HOOK_INTR, reinterpret_cast<void*>(onIntr), &m, 1, 0));
-  m.eng.reg(UC_MIPS_REG_CP0_STATUS, 0);                       // EXPLORATORY: boot ROM leaves ERL/BEV clear
+  m.eng.reg(UC_MIPS_REG_CP0_STATUS, 0x01000000);   // EXPLORATORY handoff state: ERL/BEV clear, Status.MX (DSP ASE enable) set                       // EXPLORATORY: boot ROM leaves ERL/BEV clear
   m.eng.reg(UC_MIPS_REG_S6, 0xBFFE8000);                      // stage-1 stub: lui s6,0xbffe ; ori s6,s6,0x8000
   uc_err e = m.eng.run(0x80000400, 0);
   // `wait` (the eCos idle thread) halts the engine. EXPLORATORY idle model: advance CP0 Count to Compare so the timer interrupt fires, then resume.
@@ -187,28 +206,47 @@ int main(int argc, char** argv) {
     uint32_t dist = cmp - cnt; if (!dist) dist = 1;
     if (!m.trigText.empty() && m.snap.empty() && m.uart.find(m.trigText) != std::string::npos) m.snap.assign(m.ring.begin(), m.ring.end());
     m.eng.tickCount(dist); ++idles;
-    for (auto& c : calls) if (!c.done && idles == c.at) {   // run the firmware function on the idle thread's stack, returning into the idle loop
+    for (auto& c : calls) if (!c.done && idles == c.at) {   // EXPLORATORY host call: run the firmware function to completion on a scratch stack with interrupts masked, then resume the idle loop
       c.done = true;
-      const uint32_t pc = m.eng.reg(UC_MIPS_REG_PC);
+      uint32_t saved[40]; const int ids[] = {UC_MIPS_REG_A0, UC_MIPS_REG_A1, UC_MIPS_REG_A2, UC_MIPS_REG_A3, UC_MIPS_REG_V0, UC_MIPS_REG_V1, UC_MIPS_REG_RA, UC_MIPS_REG_SP, UC_MIPS_REG_PC, UC_MIPS_REG_CP0_STATUS, UC_MIPS_REG_S0, UC_MIPS_REG_S1, UC_MIPS_REG_S2, UC_MIPS_REG_S3, UC_MIPS_REG_S4, UC_MIPS_REG_S5, UC_MIPS_REG_S6, UC_MIPS_REG_S7, UC_MIPS_REG_FP, UC_MIPS_REG_T0, UC_MIPS_REG_T1, UC_MIPS_REG_T2, UC_MIPS_REG_T3, UC_MIPS_REG_T4, UC_MIPS_REG_T5, UC_MIPS_REG_T6, UC_MIPS_REG_T7, UC_MIPS_REG_T8, UC_MIPS_REG_T9, UC_MIPS_REG_GP};
+      const int nids = int(sizeof ids / sizeof ids[0]);
+      for (int k = 0; k < nids; ++k) saved[k] = m.eng.reg(ids[k]);
+      const uint32_t pc = saved[8], status = saved[9];
       m.eng.reg(UC_MIPS_REG_A0, c.a0); m.eng.reg(UC_MIPS_REG_A1, c.a1);
-      m.eng.reg(UC_MIPS_REG_RA, pc); m.eng.reg(UC_MIPS_REG_SP, m.eng.reg(UC_MIPS_REG_SP) - 0x100);
-      m.eng.reg(UC_MIPS_REG_PC, c.fn);
-      std::printf("host call %08x(%08x,%08x) at idle wake %llu (idle pc %08x)\n", c.fn, c.a0, c.a1, (unsigned long long)idles, pc);
+      m.eng.reg(UC_MIPS_REG_RA, pc); m.eng.reg(UC_MIPS_REG_SP, 0x87F80000);
+      m.eng.reg(UC_MIPS_REG_CP0_STATUS, status & ~1u);
+      const uint64_t b0 = m.blocks;
+      uc_err ce = uc_emu_start(m.eng.handle, c.fn, pc, 0, 5000000);
+      std::printf("host call %08x(%08x,%08x) at idle wake %llu: %s, %llu blocks, v0=%08x\n", c.fn, c.a0, c.a1, (unsigned long long)idles, ce == UC_ERR_OK ? "ok" : uc_strerror(ce), (unsigned long long)(m.blocks - b0), m.eng.reg(UC_MIPS_REG_V0));
+      for (int k = 0; k < nids; ++k) m.eng.reg(ids[k], saved[k]);
+      if (!m.stop.empty()) break;
     }
     if (irqMask) m.eng.setIrqLines(irqMask);
-    if (irqVec >= 0) {   // vector -> (CPU line, pending register, bit) from the kernel's dispatcher and unmask tables
+    if (irqAuto) {   // EXPLORATORY: raise (round robin) only vectors whose mask bit the firmware has set
+      auto maskOf = [&](int v, uint32_t& reg, uint32_t& bit) { if (v >= 0x40 && v <= 0x47) { reg = 0x49c; bit = v - 0x40; return true; } if (v >= 0x48 && v <= 0x5b) { reg = 0x4a0; bit = v - 0x40; return true; } if (v >= 0x5c && v <= 0x5f) { reg = 0x4a4; bit = v - 0x40; return true; } if (v >= 0x21 && v <= 0x30) { reg = 0x4a8; bit = v - 0x20; return true; } if (v >= 0x31 && v <= 0x3f) { reg = 0x4ac; bit = v - 0x20; return true; } return false; };
+      irqVecs.clear();
+      for (int v = 0x21; v <= 0x5f; ++v) { uint32_t r, bt; if (!irqExcl.count(v) && maskOf(v, r, bt) && m.written.count(r) && ((m.written[r] >> bt) & 1)) irqVecs.push_back(v); }
+      irqVec = irqVecs.empty() ? -1 : 0;
+    }
+    if (irqVec >= 0 && !irqVecs.empty()) {   // vector -> (CPU line, pending register, bit) from the kernel's dispatcher and unmask tables
+      irqVec = irqVecs[idles % irqVecs.size()];
       int line; uint32_t reg, bit;
       if (irqVec >= 0x40 && irqVec <= 0x47) { line = 0; reg = 0x4cc; bit = irqVec - 0x40; }
       else if (irqVec >= 0x48 && irqVec <= 0x5b) { line = 1; reg = 0x4d0; bit = irqVec - 0x40; }
       else if (irqVec >= 0x5c && irqVec <= 0x5f) { line = 2; reg = 0x4d4; bit = irqVec - 0x40; }
       else if (irqVec >= 0x21 && irqVec <= 0x30) { line = 3; reg = 0x4d8; bit = irqVec - 0x20; }
       else { line = 4; reg = 0x4dc; bit = irqVec - 0x20; }
-      m.pendReg = reg; m.pendBit = 1u << bit; m.pendLeft = 4; ++m.irqInjected;
+      m.lastVec = irqVec; m.pendReg = reg; m.pendBit = 1u << bit; m.pendLeft = 4; ++m.irqInjected;
       m.eng.setIrqLines(1u << line);
     }
     e = m.eng.run(m.eng.reg(UC_MIPS_REG_PC), 0);
   }
   for (uint32_t pk : peeks) { uint32_t v = 0; m.eng.read(pk & 0x1FFFFFFF, &v, 4); std::printf("peek %08x = %08x\n", pk, v); }
+  for (auto& [ad, ln] : dumps) { std::vector<uint8_t> buf(ln); m.eng.read(ad & 0x1FFFFFFF, buf.data(), ln); std::printf("dump %08x:", ad); for (uint32_t k = 0; k < ln; ++k) std::printf("%02x", buf[k]); std::printf("\n"); }
+  if (m.hotN) { std::vector<std::pair<uint64_t, uint32_t>> v; for (auto& [a, n] : m.hot) v.push_back({n, a}); std::sort(v.rbegin(), v.rend()); std::printf("hot blocks:"); for (size_t k = 0; k < v.size() && k < m.hotN; ++k) std::printf(" %08x:%llu", v[k].second, (unsigned long long)v[k].first); std::printf("\n"); }
+  if (coverHi) { std::printf("covered blocks %08x..%08x:", coverLo, coverHi); for (auto& [a, n] : m.hot) if (a >= coverLo && a < coverHi) std::printf(" %08x:%llu", a, (unsigned long long)n); std::printf("\n"); }
+  if (m.spHi) { std::printf("thread blocks (sp %08x..%08x), oldest..newest:", m.spLo, m.spHi); for (uint32_t x : m.spRing) std::printf(" %08x", x); std::printf("\n"); }
+  std::printf("last injected vector: %#x (injections %llu)\n", m.lastVec, (unsigned long long)m.irqInjected);
   m.idleWakes = idles;
   if (irqVec >= 0) m.eng.setIrqLines(0);
   if (m.stop.empty()) m.stop = e == UC_ERR_OK ? "ended" : std::string("unicorn: ") + uc_strerror(e);
