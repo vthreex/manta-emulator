@@ -67,3 +67,10 @@ drawn pixels; rendered with the firmware's CLUT (0x85cbf4b8) it is the main menu
 Режим изоб. Динамично, Яркость 55, Контраст 55, Резкость 5, Цветность 55, Оттенок 50, Цветовая температура Стандар, Формат экрана 16:9, hint bar "Перем. / Ok Ввод / Exit Выход / Menu Возвр.".
 evidence/sunplus/manta-led4202-main-menu.png (1216x660 OSD buffer) and ...-1366x768-approx-position.png (placement is a guess; scan-out registers still unlocated). Some sidebar labels use
 other CLUT entries than the table used here (dark text on dark), so colours there are not final. The default OSD language is Russian in both images (language/region selection and persisted settings not modelled).
+
+### GPU model corrections that fixed the menu (Manta)
+* All rectangle sizes are stored as (width-1, height-1): regs 0x81 (fill) and 0x91 (blit/stretch source). Dropping the "+1" lost every 1-pixel slice.
+* Command 5 (stretch): regs 0x75/0x76 are the DESTINATION rectangle as inclusive (x0,y0)-(x1,y1); 0x90/0x91 select the source slice (typically a 1-px column/row of a 3-slice button or a 4-px bar)
+  that is stretched (nearest) over it. For ordinary blits 0x75/0x76 are the destination clip rectangle and 0x92 the destination position.
+* Result: evidence/sunplus/manta-led4202-main-menu.png is the complete "Картина" menu (silver sidebar buttons with the selected one in blue, rounded black title capsule, blue value pills,
+  greyed disabled entry, scroll arrows, hint bar). The earlier "broken" look (dark unreadable labels, missing separators) was the missing 1-px stretch slices.
