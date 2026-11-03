@@ -59,3 +59,11 @@ Of 164 event ids 0x109d..0x1140 most change nothing (GPU stays at the base 88 co
 and a red "ПО не найдено" ("software not found") line: the USB software-update screen. See evidence/sunplus/menu-window-event-10a0.png.
 Strings: "Нет каналов"/"ЦТВ" (ISO-8859-5 at 0x80fcb57c/0x80fc69bc) is the DTV no-channels popup; "Нет сигнала" (no signal, 0x80f383d4 in the Russian table) is used for
 non-DTV sources, which the emulated TV does not select (boots to DTV).
+
+## MILESTONE 2: the Manta LED4202 firmware draws its own main menu
+The Manta LED4202 image (kernel blob `lzma_059070.bin`, flash `Manta_LED4202_CV9202H-A39_25Q32FV.bin`, same hypotheses file `hyp-v2.tsv` and options, WITHOUT the Shivaki-specific `--state-follow`)
+boots to the same DirectFB point and issues 297 GPU kicks (58 fill / 212 blit / 27 stretch) with no host calls. `SUNPLUS_BEST_SCREEN=4a17a00,1216,660 SUNPLUS_BEST_FILE=f` keeps the OSD buffer state with the most
+drawn pixels; rendered with the firmware's CLUT (0x85cbf4b8) it is the main menu: title "Картина" (Picture), sidebar Картина / Звук / Канал / Особенности / Уст, rows
+Режим изоб. Динамично, Яркость 55, Контраст 55, Резкость 5, Цветность 55, Оттенок 50, Цветовая температура Стандар, Формат экрана 16:9, hint bar "Перем. / Ok Ввод / Exit Выход / Menu Возвр.".
+evidence/sunplus/manta-led4202-main-menu.png (1216x660 OSD buffer) and ...-1366x768-approx-position.png (placement is a guess; scan-out registers still unlocated). Some sidebar labels use
+other CLUT entries than the table used here (dark text on dark), so colours there are not final. The default OSD language is Russian in both images (language/region selection and persisted settings not modelled).
