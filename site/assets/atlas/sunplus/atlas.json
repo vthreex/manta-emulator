@@ -1,5 +1,6 @@
 {
 "title": "Sunplus SPHE8600 (Manta LED4202)",
+"encoding": "webp lossless",
 "screens": [
 {
 "id": 0,
@@ -74,7 +75,7 @@
 "LEFT": 1,
 "EXIT": 0,
 "OK": 19,
-"DOWN": 32,
+"DOWN": 33,
 "MENU": 0,
 "RIGHT": 19,
 "SOURCE": 2,
@@ -465,11 +466,11 @@
 "next": {
 "EXIT": 0,
 "OK": 26,
-"UP": 42,
+"UP": 43,
 "LEFT": 10,
 "MENU": 0,
 "RIGHT": 26,
-"DOWN": 89,
+"DOWN": 120,
 "SOURCE": 2,
 "VOL+": 18,
 "VOL-": 18
@@ -538,7 +539,7 @@
 "MENU": 0,
 "LEFT": 21,
 "OK": 29,
-"UP": 32,
+"UP": 33,
 "SOURCE": 2,
 "VOL+": 21,
 "VOL-": 21
@@ -605,7 +606,12 @@
 "MENU": 1,
 "UP": 7,
 "DOWN": 7,
-"LEFT": 7
+"LEFT": 7,
+"RIGHT": 7,
+"OK": 24,
+"SOURCE": 2,
+"VOL+": 32,
+"VOL-": 16
 }
 },
 {
@@ -623,7 +629,12 @@
 "MENU": 1,
 "UP": 7,
 "DOWN": 7,
-"LEFT": 7
+"LEFT": 7,
+"OK": 25,
+"EXIT": 7,
+"SOURCE": 2,
+"VOL+": 16,
+"VOL-": 17
 }
 },
 {
@@ -640,9 +651,9 @@
 "next": {
 "EXIT": 0,
 "LEFT": 18,
-"UP": 95,
+"UP": 145,
 "MENU": 0,
-"DOWN": 36,
+"DOWN": 37,
 "RIGHT": 18,
 "OK": 18,
 "SOURCE": 2,
@@ -666,9 +677,9 @@
 "LEFT": 20,
 "EXIT": 0,
 "MENU": 0,
-"UP": 37,
+"UP": 38,
 "RIGHT": 20,
-"DOWN": 39,
+"DOWN": 40,
 "SOURCE": 2,
 "VOL+": 27,
 "VOL-": 27
@@ -687,11 +698,11 @@
 ],
 "next": {
 "MENU": 0,
-"UP": 55,
+"UP": 56,
 "EXIT": 0,
 "RIGHT": 19,
 "OK": 19,
-"DOWN": 35,
+"DOWN": 36,
 "LEFT": 19,
 "SOURCE": 2,
 "VOL+": 28,
@@ -710,12 +721,12 @@
 "RIGHT"
 ],
 "next": {
-"UP": 34,
+"UP": 35,
 "EXIT": 0,
-"RIGHT": 56,
+"RIGHT": 57,
 "MENU": 0,
-"OK": 56,
-"DOWN": 38,
+"OK": 57,
+"DOWN": 39,
 "LEFT": 21,
 "SOURCE": 2,
 "VOL+": 29,
@@ -735,13 +746,13 @@
 ],
 "next": {
 "LEFT": 30,
-"DOWN": 45,
+"DOWN": 46,
 "MENU": 1,
 "UP": 22,
 "OK": 0,
 "RIGHT": 0,
 "EXIT": 0,
-"SOURCE": 45,
+"SOURCE": 46,
 "VOL+": 30,
 "VOL-": 30
 }
@@ -760,7 +771,7 @@
 "next": {
 "OK": 0,
 "MENU": 1,
-"UP": 40,
+"UP": 41,
 "RIGHT": 0,
 "DOWN": 23,
 "LEFT": 31,
@@ -773,6 +784,23 @@
 {
 "id": 32,
 "file": "screens/0032.webp",
+"hash": "03225190caf6",
+"path": [
+"EV_101D",
+"VOL+",
+"VOL+",
+"OK",
+"VOL+"
+],
+"next": {
+"DOWN": 7,
+"MENU": 1,
+"UP": 7
+}
+},
+{
+"id": 33,
+"file": "screens/0033.webp",
 "hash": "a0d5b0249c60",
 "path": [
 "RIGHT",
@@ -783,21 +811,21 @@
 "DOWN"
 ],
 "next": {
-"OK": 41,
+"OK": 42,
 "MENU": 0,
 "DOWN": 21,
-"RIGHT": 41,
-"LEFT": 32,
+"RIGHT": 42,
+"LEFT": 33,
 "UP": 1,
 "EXIT": 0,
 "SOURCE": 2,
-"VOL+": 32,
-"VOL-": 32
+"VOL+": 33,
+"VOL-": 33
 }
 },
 {
-"id": 33,
-"file": "screens/0033.webp",
+"id": 34,
+"file": "screens/0034.webp",
 "hash": "8c278b41e48c",
 "path": [
 "EV_104F",
@@ -808,21 +836,21 @@
 "RIGHT"
 ],
 "next": {
-"UP": 43,
+"UP": 44,
 "EXIT": 0,
 "MENU": 0,
-"DOWN": 48,
-"LEFT": 41,
-"RIGHT": 41,
-"OK": 41,
+"DOWN": 49,
+"LEFT": 42,
+"RIGHT": 42,
+"OK": 42,
 "SOURCE": 2,
-"VOL+": 33,
-"VOL-": 33
+"VOL+": 34,
+"VOL-": 34
 }
 },
 {
-"id": 34,
-"file": "screens/0034.webp",
+"id": 35,
+"file": "screens/0035.webp",
 "hash": "34a305424185",
 "path": [
 "MENU",
@@ -836,18 +864,18 @@
 "DOWN": 29,
 "LEFT": 21,
 "MENU": 0,
-"OK": 101,
-"UP": 51,
-"RIGHT": 101,
+"OK": 155,
+"UP": 52,
+"RIGHT": 155,
 "EXIT": 0,
 "SOURCE": 2,
-"VOL+": 34,
-"VOL-": 34
+"VOL+": 35,
+"VOL-": 35
 }
 },
 {
-"id": 35,
-"file": "screens/0035.webp",
+"id": 36,
+"file": "screens/0036.webp",
 "hash": "367ca3ce70ea",
 "path": [
 "EV_100D",
@@ -858,21 +886,21 @@
 "DOWN"
 ],
 "next": {
-"DOWN": 44,
-"LEFT": 162,
+"DOWN": 45,
+"LEFT": 234,
 "MENU": 0,
-"RIGHT": 162,
-"OK": 162,
+"RIGHT": 234,
+"OK": 234,
 "UP": 28,
 "EXIT": 0,
 "SOURCE": 2,
-"VOL+": 35,
-"VOL-": 35
+"VOL+": 36,
+"VOL-": 36
 }
 },
 {
-"id": 36,
-"file": "screens/0036.webp",
+"id": 37,
+"file": "screens/0037.webp",
 "hash": "9ac4415c415b",
 "path": [
 "EV_103B",
@@ -883,21 +911,21 @@
 "DOWN"
 ],
 "next": {
-"LEFT": 46,
+"LEFT": 47,
 "MENU": 0,
 "EXIT": 0,
 "UP": 26,
-"RIGHT": 46,
-"DOWN": 52,
-"OK": 46,
+"RIGHT": 47,
+"DOWN": 53,
+"OK": 47,
 "SOURCE": 2,
-"VOL+": 36,
-"VOL-": 36
+"VOL+": 37,
+"VOL-": 37
 }
 },
 {
-"id": 37,
-"file": "screens/0037.webp",
+"id": 38,
+"file": "screens/0038.webp",
 "hash": "0274e46bc85a",
 "path": [
 "EV_1044",
@@ -909,20 +937,20 @@
 ],
 "next": {
 "MENU": 0,
-"UP": 39,
+"UP": 40,
 "DOWN": 27,
-"LEFT": 53,
-"RIGHT": 53,
-"OK": 53,
+"LEFT": 54,
+"RIGHT": 54,
+"OK": 54,
 "EXIT": 0,
 "SOURCE": 2,
-"VOL+": 37,
-"VOL-": 37
+"VOL+": 38,
+"VOL-": 38
 }
 },
 {
-"id": 38,
-"file": "screens/0038.webp",
+"id": 39,
+"file": "screens/0039.webp",
 "hash": "939b6a0b2eb2",
 "path": [
 "MENU",
@@ -933,21 +961,21 @@
 "DOWN"
 ],
 "next": {
-"RIGHT": 47,
+"RIGHT": 48,
 "MENU": 0,
 "UP": 29,
-"DOWN": 51,
+"DOWN": 52,
 "LEFT": 21,
-"OK": 47,
+"OK": 48,
 "EXIT": 0,
 "SOURCE": 2,
-"VOL+": 38,
-"VOL-": 38
+"VOL+": 39,
+"VOL-": 39
 }
 },
 {
-"id": 39,
-"file": "screens/0039.webp",
+"id": 40,
+"file": "screens/0040.webp",
 "hash": "37b3f1c41293",
 "path": [
 "EV_1044",
@@ -958,21 +986,21 @@
 "DOWN"
 ],
 "next": {
-"RIGHT": 50,
+"RIGHT": 51,
 "UP": 27,
-"OK": 50,
+"OK": 51,
 "MENU": 0,
-"DOWN": 37,
-"LEFT": 50,
+"DOWN": 38,
+"LEFT": 51,
 "EXIT": 0,
 "SOURCE": 2,
-"VOL+": 39,
-"VOL-": 39
+"VOL+": 40,
+"VOL-": 40
 }
 },
 {
-"id": 40,
-"file": "screens/0040.webp",
+"id": 41,
+"file": "screens/0041.webp",
 "hash": "aac1c61b061e",
 "path": [
 "SOURCE",
@@ -983,20 +1011,21 @@
 "UP"
 ],
 "next": {
-"LEFT": 40,
+"LEFT": 41,
 "DOWN": 31,
 "RIGHT": 0,
 "OK": 0,
-"UP": 57,
+"UP": 58,
 "EXIT": 0,
 "SOURCE": 31,
-"VOL+": 40,
-"VOL-": 40
+"VOL+": 41,
+"VOL-": 41,
+"MENU": 1
 }
 },
 {
-"id": 41,
-"file": "screens/0041.webp",
+"id": 42,
+"file": "screens/0042.webp",
 "hash": "af5547c3f054",
 "path": [
 "RIGHT",
@@ -1008,21 +1037,21 @@
 "OK"
 ],
 "next": {
-"RIGHT": 33,
-"LEFT": 32,
+"RIGHT": 34,
+"LEFT": 33,
 "EXIT": 0,
-"UP": 161,
+"UP": 233,
 "MENU": 0,
-"DOWN": 97,
-"OK": 33,
+"DOWN": 147,
+"OK": 34,
 "SOURCE": 2,
-"VOL+": 41,
-"VOL-": 41
+"VOL+": 42,
+"VOL-": 42
 }
 },
 {
-"id": 42,
-"file": "screens/0042.webp",
+"id": 43,
+"file": "screens/0043.webp",
 "hash": "8e61e4b70450",
 "path": [
 "EV_103D",
@@ -1035,20 +1064,20 @@
 ],
 "next": {
 "DOWN": 18,
-"UP": 54,
-"OK": 143,
+"UP": 55,
+"OK": 211,
 "MENU": 0,
 "LEFT": 10,
-"RIGHT": 143,
+"RIGHT": 211,
 "EXIT": 0,
 "SOURCE": 2,
-"VOL+": 42,
-"VOL-": 42
+"VOL+": 43,
+"VOL-": 43
 }
 },
 {
-"id": 43,
-"file": "screens/0043.webp",
+"id": 44,
+"file": "screens/0044.webp",
 "hash": "3fabe6a46999",
 "path": [
 "EV_104F",
@@ -1060,19 +1089,21 @@
 "UP"
 ],
 "next": {
-"RIGHT": 122,
+"RIGHT": 186,
 "MENU": 0,
-"UP": 64,
-"DOWN": 33,
-"LEFT": 122,
-"OK": 122,
+"UP": 65,
+"DOWN": 34,
+"LEFT": 186,
+"OK": 186,
 "EXIT": 0,
-"SOURCE": 2
+"SOURCE": 2,
+"VOL+": 44,
+"VOL-": 44
 }
 },
 {
-"id": 44,
-"file": "screens/0044.webp",
+"id": 45,
+"file": "screens/0045.webp",
 "hash": "99e130020092",
 "path": [
 "EV_100D",
@@ -1086,13 +1117,16 @@
 "next": {
 "EXIT": 0,
 "MENU": 0,
-"UP": 35,
-"DOWN": 55
+"UP": 36,
+"DOWN": 56,
+"SOURCE": 2,
+"VOL+": 45,
+"VOL-": 45
 }
 },
 {
-"id": 45,
-"file": "screens/0045.webp",
+"id": 46,
+"file": "screens/0046.webp",
 "hash": "34e0feb06e6e",
 "path": [
 "SOURCE",
@@ -1104,17 +1138,20 @@
 "DOWN"
 ],
 "next": {
-"DOWN": 57,
+"DOWN": 58,
 "OK": 0,
 "UP": 30,
-"LEFT": 45,
+"LEFT": 46,
 "RIGHT": 0,
-"EXIT": 0
+"EXIT": 0,
+"SOURCE": 58,
+"VOL+": 46,
+"VOL-": 46
 }
 },
 {
-"id": 46,
-"file": "screens/0046.webp",
+"id": 47,
+"file": "screens/0047.webp",
 "hash": "7d1e98a269b9",
 "path": [
 "EV_103B",
@@ -1126,21 +1163,21 @@
 "LEFT"
 ],
 "next": {
-"UP": 58,
-"DOWN": 90,
+"UP": 59,
+"DOWN": 121,
 "MENU": 0,
-"OK": 63,
-"LEFT": 72,
-"RIGHT": 63,
+"OK": 64,
+"LEFT": 73,
+"RIGHT": 64,
 "EXIT": 0,
 "SOURCE": 2,
-"VOL+": 46,
-"VOL-": 46
+"VOL+": 47,
+"VOL-": 47
 }
 },
 {
-"id": 47,
-"file": "screens/0047.webp",
+"id": 48,
+"file": "screens/0048.webp",
 "hash": "ddee457ac207",
 "path": [
 "MENU",
@@ -1152,18 +1189,21 @@
 "RIGHT"
 ],
 "next": {
-"OK": 60,
+"OK": 61,
 "MENU": 0,
 "EXIT": 0,
-"UP": 65,
-"DOWN": 66,
-"LEFT": 38,
-"RIGHT": 60
+"UP": 66,
+"DOWN": 67,
+"LEFT": 39,
+"RIGHT": 61,
+"SOURCE": 2,
+"VOL+": 48,
+"VOL-": 48
 }
 },
 {
-"id": 48,
-"file": "screens/0048.webp",
+"id": 49,
+"file": "screens/0049.webp",
 "hash": "f6ebf4d07ee8",
 "path": [
 "EV_104F",
@@ -1177,15 +1217,19 @@
 "next": {
 "MENU": 0,
 "EXIT": 0,
-"UP": 33,
-"DOWN": 67,
-"LEFT": 68,
-"RIGHT": 68
+"UP": 34,
+"DOWN": 68,
+"LEFT": 69,
+"RIGHT": 69,
+"OK": 69,
+"SOURCE": 2,
+"VOL+": 49,
+"VOL-": 49
 }
 },
 {
-"id": 49,
-"file": "screens/0049.webp",
+"id": 50,
+"file": "screens/0050.webp",
 "hash": "84abf0aa41f7",
 "path": [
 "MENU",
@@ -1197,16 +1241,21 @@
 "UP"
 ],
 "next": {
-"OK": 61,
+"OK": 62,
 "MENU": 0,
 "LEFT": 10,
-"UP": 134,
-"DOWN": 54
+"UP": 200,
+"DOWN": 55,
+"RIGHT": 62,
+"EXIT": 0,
+"SOURCE": 2,
+"VOL+": 50,
+"VOL-": 50
 }
 },
 {
-"id": 50,
-"file": "screens/0050.webp",
+"id": 51,
+"file": "screens/0051.webp",
 "hash": "9b4f45137c39",
 "path": [
 "EV_1044",
@@ -1218,19 +1267,21 @@
 "RIGHT"
 ],
 "next": {
-"OK": 62,
-"LEFT": 79,
-"DOWN": 135,
-"UP": 135,
-"RIGHT": 62,
+"OK": 63,
+"LEFT": 93,
+"DOWN": 201,
+"UP": 201,
+"RIGHT": 63,
 "MENU": 0,
 "EXIT": 0,
-"SOURCE": 2
+"SOURCE": 2,
+"VOL+": 51,
+"VOL-": 51
 }
 },
 {
-"id": 51,
-"file": "screens/0051.webp",
+"id": 52,
+"file": "screens/0052.webp",
 "hash": "6dc1c4bf939e",
 "path": [
 "MENU",
@@ -1243,16 +1294,20 @@
 ],
 "next": {
 "EXIT": 0,
-"DOWN": 34,
+"DOWN": 35,
 "MENU": 0,
-"UP": 38,
+"UP": 39,
 "LEFT": 21,
-"RIGHT": 70
+"RIGHT": 71,
+"OK": 71,
+"SOURCE": 2,
+"VOL+": 52,
+"VOL-": 52
 }
 },
 {
-"id": 52,
-"file": "screens/0052.webp",
+"id": 53,
+"file": "screens/0053.webp",
 "hash": "e798921c77ec",
 "path": [
 "EV_103B",
@@ -1264,15 +1319,21 @@
 "DOWN"
 ],
 "next": {
-"UP": 36,
+"UP": 37,
 "MENU": 0,
-"DOWN": 69,
-"LEFT": 71
+"DOWN": 70,
+"LEFT": 72,
+"RIGHT": 72,
+"OK": 72,
+"EXIT": 0,
+"SOURCE": 2,
+"VOL+": 53,
+"VOL-": 53
 }
 },
 {
-"id": 53,
-"file": "screens/0053.webp",
+"id": 54,
+"file": "screens/0054.webp",
 "hash": "b9d913178772",
 "path": [
 "EV_1044",
@@ -1284,20 +1345,21 @@
 "LEFT"
 ],
 "next": {
-"LEFT": 59,
+"LEFT": 60,
 "MENU": 0,
-"OK": 73,
+"OK": 74,
 "EXIT": 0,
-"RIGHT": 73,
-"DOWN": 115,
-"UP": 115,
+"RIGHT": 74,
+"DOWN": 179,
+"UP": 179,
 "SOURCE": 2,
-"VOL+": 53
+"VOL+": 54,
+"VOL-": 54
 }
 },
 {
-"id": 54,
-"file": "screens/0054.webp",
+"id": 55,
+"file": "screens/0055.webp",
 "hash": "b608ae301102",
 "path": [
 "MENU",
@@ -1310,18 +1372,21 @@
 "UP"
 ],
 "next": {
-"OK": 128,
-"UP": 49,
-"DOWN": 42,
+"OK": 193,
+"UP": 50,
+"DOWN": 43,
 "MENU": 0,
 "LEFT": 10,
-"RIGHT": 128,
-"EXIT": 0
+"RIGHT": 193,
+"EXIT": 0,
+"SOURCE": 2,
+"VOL+": 55,
+"VOL-": 55
 }
 },
 {
-"id": 55,
-"file": "screens/0055.webp",
+"id": 56,
+"file": "screens/0056.webp",
 "hash": "8ac97f49480c",
 "path": [
 "SOURCE",
@@ -1334,19 +1399,21 @@
 "UP"
 ],
 "next": {
-"RIGHT": 104,
-"UP": 44,
+"RIGHT": 161,
+"UP": 45,
 "EXIT": 0,
 "DOWN": 28,
-"OK": 104,
+"OK": 161,
 "MENU": 0,
-"LEFT": 104,
-"SOURCE": 2
+"LEFT": 161,
+"SOURCE": 2,
+"VOL+": 56,
+"VOL-": 56
 }
 },
 {
-"id": 56,
-"file": "screens/0056.webp",
+"id": 57,
+"file": "screens/0057.webp",
 "hash": "429b65a65451",
 "path": [
 "EV_103D",
@@ -1360,19 +1427,20 @@
 ],
 "next": {
 "EXIT": 0,
-"OK": 56,
-"LEFT": 56,
-"RIGHT": 56,
+"OK": 57,
+"LEFT": 57,
+"RIGHT": 57,
 "MENU": 0,
 "DOWN": 29,
 "UP": 29,
 "SOURCE": 2,
-"VOL+": 56
+"VOL+": 57,
+"VOL-": 57
 }
 },
 {
-"id": 57,
-"file": "screens/0057.webp",
+"id": 58,
+"file": "screens/0058.webp",
 "hash": "746b785ce135",
 "path": [
 "SOURCE",
@@ -1387,15 +1455,19 @@
 "next": {
 "EXIT": 0,
 "RIGHT": 0,
-"UP": 45,
-"LEFT": 57,
+"UP": 46,
+"LEFT": 58,
 "OK": 0,
-"MENU": 1
+"MENU": 1,
+"DOWN": 41,
+"SOURCE": 41,
+"VOL+": 58,
+"VOL-": 58
 }
 },
 {
-"id": 58,
-"file": "screens/0058.webp",
+"id": 59,
+"file": "screens/0059.webp",
 "hash": "012d04265552",
 "path": [
 "EV_103B",
@@ -1408,14 +1480,21 @@
 "UP"
 ],
 "next": {
-"LEFT": 72,
-"DOWN": 46,
-"MENU": 0
+"LEFT": 73,
+"DOWN": 47,
+"MENU": 0,
+"UP": 81,
+"EXIT": 0,
+"RIGHT": 211,
+"OK": 211,
+"SOURCE": 2,
+"VOL+": 59,
+"VOL-": 59
 }
 },
 {
-"id": 59,
-"file": "screens/0059.webp",
+"id": 60,
+"file": "screens/0060.webp",
 "hash": "4df63a16eb51",
 "path": [
 "EV_1044",
@@ -1428,18 +1507,21 @@
 "MENU"
 ],
 "next": {
-"LEFT": 59,
+"LEFT": 60,
 "UP": 10,
-"OK": 115,
+"OK": 179,
 "MENU": 0,
-"RIGHT": 115,
-"DOWN": 32,
-"EXIT": 0
+"RIGHT": 179,
+"DOWN": 33,
+"EXIT": 0,
+"SOURCE": 2,
+"VOL+": 60,
+"VOL-": 60
 }
 },
 {
-"id": 60,
-"file": "screens/0060.webp",
+"id": 61,
+"file": "screens/0061.webp",
 "hash": "c0411c496e1a",
 "path": [
 "MENU",
@@ -1452,14 +1534,20 @@
 "OK"
 ],
 "next": {
-"RIGHT": 47,
-"LEFT": 47,
-"UP": 77
+"RIGHT": 48,
+"LEFT": 48,
+"UP": 78,
+"MENU": 0,
+"DOWN": 83,
+"OK": 48,
+"EXIT": 0,
+"SOURCE": 2,
+"VOL+": 61
 }
 },
 {
-"id": 61,
-"file": "screens/0061.webp",
+"id": 62,
+"file": "screens/0062.webp",
 "hash": "9b0df7ea624e",
 "path": [
 "MENU",
@@ -1472,12 +1560,19 @@
 "OK"
 ],
 "next": {
-"MENU": 0
+"MENU": 0,
+"EXIT": 0,
+"UP": 82,
+"DOWN": 84,
+"LEFT": 50,
+"RIGHT": 50,
+"OK": 50,
+"SOURCE": 2
 }
 },
 {
-"id": 62,
-"file": "screens/0062.webp",
+"id": 63,
+"file": "screens/0063.webp",
 "hash": "0d3c6b0b12f5",
 "path": [
 "EV_1044",
@@ -1490,13 +1585,20 @@
 "OK"
 ],
 "next": {
-"RIGHT": 50,
-"EXIT": 0
+"RIGHT": 51,
+"EXIT": 0,
+"MENU": 0,
+"UP": 171,
+"DOWN": 85,
+"LEFT": 51,
+"OK": 51,
+"SOURCE": 2,
+"VOL+": 63
 }
 },
 {
-"id": 63,
-"file": "screens/0063.webp",
+"id": 64,
+"file": "screens/0064.webp",
 "hash": "ff2d15f5e8cf",
 "path": [
 "EV_103B",
@@ -1509,14 +1611,20 @@
 "OK"
 ],
 "next": {
-"LEFT": 46,
-"RIGHT": 46,
-"DOWN": 82
+"LEFT": 47,
+"RIGHT": 47,
+"DOWN": 96,
+"MENU": 0,
+"UP": 86,
+"OK": 47,
+"EXIT": 0,
+"SOURCE": 2,
+"VOL+": 64
 }
 },
 {
-"id": 64,
-"file": "screens/0064.webp",
+"id": 65,
+"file": "screens/0065.webp",
 "hash": "e100e09024af",
 "path": [
 "EV_104F",
@@ -1530,14 +1638,20 @@
 ],
 "next": {
 "MENU": 0,
-"RIGHT": 85,
-"UP": 67,
-"DOWN": 43
+"RIGHT": 109,
+"UP": 68,
+"DOWN": 44,
+"OK": 109,
+"LEFT": 109,
+"EXIT": 0,
+"SOURCE": 2,
+"VOL+": 65,
+"VOL-": 65
 }
 },
 {
-"id": 65,
-"file": "screens/0065.webp",
+"id": 66,
+"file": "screens/0066.webp",
 "hash": "c09db472f49c",
 "path": [
 "MENU",
@@ -1551,12 +1665,17 @@
 ],
 "next": {
 "EXIT": 0,
-"MENU": 0
+"MENU": 0,
+"UP": 67,
+"DOWN": 48,
+"LEFT": 39,
+"RIGHT": 89,
+"OK": 89
 }
 },
 {
-"id": 66,
-"file": "screens/0066.webp",
+"id": 67,
+"file": "screens/0067.webp",
 "hash": "b915e924094c",
 "path": [
 "MENU",
@@ -1569,13 +1688,18 @@
 "DOWN"
 ],
 "next": {
-"UP": 47,
-"RIGHT": 148
+"UP": 48,
+"RIGHT": 216,
+"OK": 216,
+"MENU": 0,
+"DOWN": 66,
+"LEFT": 39,
+"EXIT": 0
 }
 },
 {
-"id": 67,
-"file": "screens/0067.webp",
+"id": 68,
+"file": "screens/0068.webp",
 "hash": "23831eeab493",
 "path": [
 "EV_104F",
@@ -1588,12 +1712,17 @@
 "DOWN"
 ],
 "next": {
-"DOWN": 64
+"DOWN": 65,
+"RIGHT": 100,
+"MENU": 0,
+"UP": 49,
+"LEFT": 100,
+"OK": 100
 }
 },
 {
-"id": 68,
-"file": "screens/0068.webp",
+"id": 69,
+"file": "screens/0069.webp",
 "hash": "0df3e048bada",
 "path": [
 "EV_104F",
@@ -1607,13 +1736,19 @@
 ],
 "next": {
 "MENU": 0,
-"LEFT": 130,
-"EXIT": 0
+"LEFT": 195,
+"EXIT": 0,
+"RIGHT": 80,
+"OK": 80,
+"UP": 87,
+"DOWN": 88,
+"SOURCE": 2,
+"VOL+": 69
 }
 },
 {
-"id": 69,
-"file": "screens/0069.webp",
+"id": 70,
+"file": "screens/0070.webp",
 "hash": "830ada5aadd9",
 "path": [
 "EV_103B",
@@ -1626,12 +1761,15 @@
 "DOWN"
 ],
 "next": {
-"RIGHT": 76
+"RIGHT": 77,
+"MENU": 0,
+"UP": 90,
+"DOWN": 92
 }
 },
 {
-"id": 70,
-"file": "screens/0070.webp",
+"id": 71,
+"file": "screens/0071.webp",
 "hash": "445206a261fe",
 "path": [
 "MENU",
@@ -1644,12 +1782,16 @@
 "RIGHT"
 ],
 "next": {
-"EXIT": 0
+"EXIT": 0,
+"UP": 102,
+"MENU": 0,
+"DOWN": 91,
+"LEFT": 52
 }
 },
 {
-"id": 71,
-"file": "screens/0071.webp",
+"id": 72,
+"file": "screens/0072.webp",
 "hash": "e0ade6d30837",
 "path": [
 "EV_103B",
@@ -1662,12 +1804,18 @@
 "LEFT"
 ],
 "next": {
-"OK": 78
+"OK": 79,
+"RIGHT": 79,
+"LEFT": 157,
+"DOWN": 245,
+"MENU": 0,
+"UP": 248,
+"EXIT": 0
 }
 },
 {
-"id": 72,
-"file": "screens/0072.webp",
+"id": 73,
+"file": "screens/0073.webp",
 "hash": "4fc04f068290",
 "path": [
 "EV_103B",
@@ -1681,17 +1829,21 @@
 "LEFT"
 ],
 "next": {
-"OK": 58,
-"RIGHT": 90,
+"OK": 59,
+"RIGHT": 121,
 "EXIT": 0,
-"LEFT": 72,
+"LEFT": 73,
 "DOWN": 1,
-"MENU": 0
+"MENU": 0,
+"UP": 21,
+"SOURCE": 2,
+"VOL+": 73,
+"VOL-": 73
 }
 },
 {
-"id": 73,
-"file": "screens/0073.webp",
+"id": 74,
+"file": "screens/0074.webp",
 "hash": "f613d5ffd9f7",
 "path": [
 "EV_1044",
@@ -1705,14 +1857,18 @@
 "OK"
 ],
 "next": {
-"OK": 53,
+"OK": 54,
 "MENU": 0,
-"LEFT": 53
+"LEFT": 54,
+"UP": 232,
+"DOWN": 246,
+"RIGHT": 54,
+"EXIT": 0
 }
 },
 {
-"id": 74,
-"file": "screens/0074.webp",
+"id": 75,
+"file": "screens/0075.webp",
 "hash": "0c9c48996248",
 "path": [
 "MENU",
@@ -1726,12 +1882,14 @@
 "UP"
 ],
 "next": {
-"UP": 80
+"UP": 94,
+"MENU": 0,
+"DOWN": 155
 }
 },
 {
-"id": 75,
-"file": "screens/0075.webp",
+"id": 76,
+"file": "screens/0076.webp",
 "hash": "501d3d5d430f",
 "path": [
 "EV_104F",
@@ -1745,12 +1903,16 @@
 "RIGHT"
 ],
 "next": {
-"UP": 81
+"UP": 95,
+"LEFT": 186,
+"OK": 186,
+"MENU": 0,
+"DOWN": 105
 }
 },
 {
-"id": 76,
-"file": "screens/0076.webp",
+"id": 77,
+"file": "screens/0077.webp",
 "hash": "8c1561fb4cb9",
 "path": [
 "EV_103B",
@@ -1765,12 +1927,13 @@
 ],
 "next": {
 "EXIT": 0,
-"DOWN": 120
+"DOWN": 184,
+"MENU": 0
 }
 },
 {
-"id": 77,
-"file": "screens/0077.webp",
+"id": 78,
+"file": "screens/0078.webp",
 "hash": "eef5cc36a1a1",
 "path": [
 "MENU",
@@ -1784,12 +1947,18 @@
 "UP"
 ],
 "next": {
-"MENU": 0
+"MENU": 0,
+"OK": 124,
+"LEFT": 124,
+"RIGHT": 124,
+"EXIT": 0,
+"DOWN": 61,
+"UP": 106
 }
 },
 {
-"id": 78,
-"file": "screens/0078.webp",
+"id": 79,
+"file": "screens/0079.webp",
 "hash": "259dd778dae2",
 "path": [
 "EV_103B",
@@ -1803,13 +1972,274 @@
 "OK"
 ],
 "next": {
-"OK": 71,
+"OK": 72,
+"MENU": 0,
+"RIGHT": 72,
+"EXIT": 0,
+"UP": 107
+}
+},
+{
+"id": 80,
+"file": "screens/0080.webp",
+"hash": "cb59a8e87c56",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"OK",
+"RIGHT"
+],
+"next": {
+"OK": 69,
+"EXIT": 0,
+"UP": 126,
+"MENU": 0,
+"RIGHT": 69,
+"LEFT": 69
+}
+},
+{
+"id": 81,
+"file": "screens/0081.webp",
+"hash": "d642e35b8dcb",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {
+"DOWN": 59
+}
+},
+{
+"id": 82,
+"file": "screens/0082.webp",
+"hash": "dceedcee2349",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"UP"
+],
+"next": {
+"OK": 98
+}
+},
+{
+"id": 83,
+"file": "screens/0083.webp",
+"hash": "67e3cc1c51d5",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"OK",
+"DOWN"
+],
+"next": {
+"UP": 61
+}
+},
+{
+"id": 84,
+"file": "screens/0084.webp",
+"hash": "2add8294908a",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"DOWN"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 85,
+"file": "screens/0085.webp",
+"hash": "9fea30dd5312",
+"path": [
+"EV_1044",
+"MENU",
+"OK",
+"DOWN",
+"OK",
+"DOWN",
+"RIGHT",
+"OK",
+"DOWN"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 86,
+"file": "screens/0086.webp",
+"hash": "fbc3b057cb7d",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"OK",
+"OK",
+"UP"
+],
+"next": {
+"EXIT": 0,
+"UP": 134
+}
+},
+{
+"id": 87,
+"file": "screens/0087.webp",
+"hash": "7392cf27ecec",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {
+"OK": 101,
+"UP": 125,
+"LEFT": 195,
+"RIGHT": 101
+}
+},
+{
+"id": 88,
+"file": "screens/0088.webp",
+"hash": "99629008a83f",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {
+"UP": 69
+}
+},
+{
+"id": 89,
+"file": "screens/0089.webp",
+"hash": "42e43bf87909",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {
+"OK": 66,
+"MENU": 0,
+"UP": 104
+}
+},
+{
+"id": 90,
+"file": "screens/0090.webp",
+"hash": "270914f9689d",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"DOWN",
+"DOWN",
+"UP"
+],
+"next": {
+"RIGHT": 72
+}
+},
+{
+"id": 91,
+"file": "screens/0091.webp",
+"hash": "a979d060ff88",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 92,
+"file": "screens/0092.webp",
+"hash": "8a5e66e523f2",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"DOWN",
+"DOWN",
+"DOWN"
+],
+"next": {
 "MENU": 0
 }
 },
 {
-"id": 79,
-"file": "screens/0079.webp",
+"id": 93,
+"file": "screens/0093.webp",
 "hash": "b986ef9f8b58",
 "path": [
 "EV_1044",
@@ -1825,17 +2255,17 @@
 ],
 "next": {
 "MENU": 0,
-"DOWN": 32,
-"OK": 135,
-"LEFT": 79,
-"RIGHT": 135,
+"DOWN": 33,
+"OK": 201,
+"LEFT": 93,
+"RIGHT": 201,
 "UP": 10,
 "EXIT": 0
 }
 },
 {
-"id": 80,
-"file": "screens/0080.webp",
+"id": 94,
+"file": "screens/0094.webp",
 "hash": "1ebd4d3f82b0",
 "path": [
 "MENU",
@@ -1854,8 +2284,8 @@
 }
 },
 {
-"id": 81,
-"file": "screens/0081.webp",
+"id": 95,
+"file": "screens/0095.webp",
 "hash": "76f4f3381a23",
 "path": [
 "EV_104F",
@@ -1870,13 +2300,13 @@
 "UP"
 ],
 "next": {
-"UP": 86,
+"UP": 110,
 "EXIT": 0
 }
 },
 {
-"id": 82,
-"file": "screens/0082.webp",
+"id": 96,
+"file": "screens/0096.webp",
 "hash": "134bcd15bdd5",
 "path": [
 "EV_103B",
@@ -1891,12 +2321,14 @@
 "DOWN"
 ],
 "next": {
-"MENU": 0
+"MENU": 0,
+"RIGHT": 72,
+"EXIT": 0
 }
 },
 {
-"id": 83,
-"file": "screens/0083.webp",
+"id": 97,
+"file": "screens/0097.webp",
 "hash": "345b80a9e9c4",
 "path": [
 "MENU",
@@ -1911,12 +2343,216 @@
 "LEFT"
 ],
 "next": {
-"OK": 87
+"OK": 111,
+"UP": 97,
+"MENU": 0
 }
 },
 {
-"id": 84,
-"file": "screens/0084.webp",
+"id": 98,
+"file": "screens/0098.webp",
+"hash": "0c2f4a186144",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"UP",
+"OK"
+],
+"next": {
+"UP": 113
+}
+},
+{
+"id": 99,
+"file": "screens/0099.webp",
+"hash": "9ec86b4d4e80",
+"path": [
+"SOURCE",
+"LEFT",
+"DOWN",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"VOL+",
+"RIGHT",
+"MENU"
+],
+"next": {}
+},
+{
+"id": 100,
+"file": "screens/0100.webp",
+"hash": "4498be4ba766",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"VOL+",
+"DOWN",
+"RIGHT"
+],
+"next": {
+"DOWN": 115,
+"UP": 103,
+"RIGHT": 143
+}
+},
+{
+"id": 101,
+"file": "screens/0101.webp",
+"hash": "a4132cc322d3",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"UP",
+"OK"
+],
+"next": {
+"LEFT": 87,
+"EXIT": 0
+}
+},
+{
+"id": 102,
+"file": "screens/0102.webp",
+"hash": "e35a7ab9c2cf",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"VOL-",
+"OK",
+"UP"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 103,
+"file": "screens/0103.webp",
+"hash": "3c72b9b102f9",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {
+"RIGHT": 116,
+"DOWN": 100
+}
+},
+{
+"id": 104,
+"file": "screens/0104.webp",
+"hash": "fad92297eb0c",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"OK",
+"UP"
+],
+"next": {
+"UP": 117
+}
+},
+{
+"id": 105,
+"file": "screens/0105.webp",
+"hash": "974aa672368c",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"LEFT",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"OK": 42
+}
+},
+{
+"id": 106,
+"file": "screens/0106.webp",
+"hash": "239a0b6e3f3b",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {
+"RIGHT": 119
+}
+},
+{
+"id": 107,
+"file": "screens/0107.webp",
+"hash": "2eab0d4a7621",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"OK",
+"UP"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 108,
+"file": "screens/0108.webp",
 "hash": "331e62f58964",
 "path": [
 "VOL+",
@@ -1932,14 +2568,15 @@
 "OK"
 ],
 "next": {
-"OK": 161,
-"DOWN": 137,
-"MENU": 0
+"OK": 233,
+"DOWN": 203,
+"MENU": 0,
+"LEFT": 233
 }
 },
 {
-"id": 85,
-"file": "screens/0085.webp",
+"id": 109,
+"file": "screens/0109.webp",
 "hash": "81884dcf3bc6",
 "path": [
 "EV_104F",
@@ -1955,12 +2592,16 @@
 "RIGHT"
 ],
 "next": {
-"MENU": 0
+"MENU": 0,
+"EXIT": 0,
+"LEFT": 243,
+"DOWN": 165,
+"OK": 240
 }
 },
 {
-"id": 86,
-"file": "screens/0086.webp",
+"id": 110,
+"file": "screens/0110.webp",
 "hash": "876f61b9c8f7",
 "path": [
 "EV_104F",
@@ -1976,12 +2617,12 @@
 "UP"
 ],
 "next": {
-"DOWN": 81
+"DOWN": 95
 }
 },
 {
-"id": 87,
-"file": "screens/0087.webp",
+"id": 111,
+"file": "screens/0111.webp",
 "hash": "bea38c7adf42",
 "path": [
 "MENU",
@@ -1997,13 +2638,13 @@
 "OK"
 ],
 "next": {
-"LEFT": 87,
-"RIGHT": 91
+"LEFT": 111,
+"RIGHT": 128
 }
 },
 {
-"id": 88,
-"file": "screens/0088.webp",
+"id": 112,
+"file": "screens/0112.webp",
 "hash": "7ebf96529f06",
 "path": [
 "SOURCE",
@@ -2019,12 +2660,161 @@
 "DOWN"
 ],
 "next": {
-"RIGHT": 19
+"RIGHT": 19,
+"DOWN": 244
 }
 },
 {
-"id": 89,
-"file": "screens/0089.webp",
+"id": 113,
+"file": "screens/0113.webp",
+"hash": "50c271b87b2c",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"UP",
+"OK",
+"UP"
+],
+"next": {
+"MENU": 0
+}
+},
+{
+"id": 114,
+"file": "screens/0114.webp",
+"hash": "c04f8eff6767",
+"path": [
+"SOURCE",
+"UP",
+"EXIT",
+"DOWN",
+"MENU",
+"RIGHT",
+"OK",
+"UP",
+"VOL-",
+"LEFT",
+"DOWN"
+],
+"next": {
+"DOWN": 123,
+"LEFT": 192
+}
+},
+{
+"id": 115,
+"file": "screens/0115.webp",
+"hash": "eb333ce043a7",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"VOL+",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 116,
+"file": "screens/0116.webp",
+"hash": "bbe025b849d6",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {
+"OK": 103
+}
+},
+{
+"id": 117,
+"file": "screens/0117.webp",
+"hash": "51d1bf03ec24",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"OK",
+"UP",
+"UP"
+],
+"next": {
+"OK": 127
+}
+},
+{
+"id": 118,
+"file": "screens/0118.webp",
+"hash": "5848b41bd1b6",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 119,
+"file": "screens/0119.webp",
+"hash": "f6798fb0d4a8",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {
+"MENU": 0
+}
+},
+{
+"id": 120,
+"file": "screens/0120.webp",
 "hash": "891b35fd6090",
 "path": [
 "EV_103B",
@@ -2042,16 +2832,16 @@
 ],
 "next": {
 "MENU": 0,
-"DOWN": 134,
+"DOWN": 200,
 "LEFT": 10,
-"RIGHT": 160,
+"RIGHT": 230,
 "EXIT": 0,
 "UP": 18
 }
 },
 {
-"id": 90,
-"file": "screens/0090.webp",
+"id": 121,
+"file": "screens/0121.webp",
 "hash": "813087821f54",
 "path": [
 "EV_103B",
@@ -2068,14 +2858,151 @@
 "DOWN"
 ],
 "next": {
-"LEFT": 72,
+"LEFT": 73,
 "MENU": 0,
-"OK": 98
+"OK": 148,
+"UP": 47
 }
 },
 {
-"id": 91,
-"file": "screens/0091.webp",
+"id": 122,
+"file": "screens/0122.webp",
+"hash": "1c9cae70eefb",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"VOL+",
+"DOWN",
+"UP",
+"OK",
+"DOWN"
+],
+"next": {
+"DOWN": 129
+}
+},
+{
+"id": 123,
+"file": "screens/0123.webp",
+"hash": "582765a45347",
+"path": [
+"SOURCE",
+"UP",
+"EXIT",
+"DOWN",
+"MENU",
+"RIGHT",
+"OK",
+"UP",
+"VOL-",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 0,
+"DOWN": 205,
+"OK": 227
+}
+},
+{
+"id": 124,
+"file": "screens/0124.webp",
+"hash": "68300f5ac7b7",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"OK",
+"DOWN",
+"UP",
+"UP",
+"OK"
+],
+"next": {
+"OK": 78,
+"DOWN": 164,
+"RIGHT": 78
+}
+},
+{
+"id": 125,
+"file": "screens/0125.webp",
+"hash": "e110b07bf321",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"UP",
+"OK",
+"LEFT",
+"UP"
+],
+"next": {
+"UP": 133
+}
+},
+{
+"id": 126,
+"file": "screens/0126.webp",
+"hash": "5ac6bacb11aa",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"UP",
+"OK",
+"OK",
+"UP"
+],
+"next": {
+"LEFT": 42
+}
+},
+{
+"id": 127,
+"file": "screens/0127.webp",
+"hash": "2d55c55e72ce",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"OK",
+"UP",
+"UP",
+"OK"
+],
+"next": {
+"DOWN": 135
+}
+},
+{
+"id": 128,
+"file": "screens/0128.webp",
 "hash": "cf74b7113e66",
 "path": [
 "MENU",
@@ -2095,8 +3022,170 @@
 "next": {}
 },
 {
-"id": 92,
-"file": "screens/0092.webp",
+"id": 129,
+"file": "screens/0129.webp",
+"hash": "748e91e1b2d3",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"VOL+",
+"DOWN",
+"UP",
+"OK",
+"DOWN",
+"DOWN"
+],
+"next": {
+"OK": 139
+}
+},
+{
+"id": 130,
+"file": "screens/0130.webp",
+"hash": "2691f7b3ec4f",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"DOWN",
+"EXIT",
+"LEFT",
+"MENU",
+"UP"
+],
+"next": {
+"MENU": 0
+}
+},
+{
+"id": 131,
+"file": "screens/0131.webp",
+"hash": "be5e728f43b4",
+"path": [
+"EV_100D",
+"MENU",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"VOL-",
+"UP",
+"RIGHT",
+"OK",
+"UP",
+"UP"
+],
+"next": {
+"OK": 161
+}
+},
+{
+"id": 132,
+"file": "screens/0132.webp",
+"hash": "f2cf7f8b17d8",
+"path": [
+"EV_1044",
+"MENU",
+"OK",
+"DOWN",
+"OK",
+"UP",
+"MENU",
+"MENU",
+"VOL-",
+"OK",
+"OK",
+"UP",
+"RIGHT"
+],
+"next": {
+"UP": 140,
+"LEFT": 225
+}
+},
+{
+"id": 133,
+"file": "screens/0133.webp",
+"hash": "64e30959f6eb",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"UP",
+"OK",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {
+"UP": 141
+}
+},
+{
+"id": 134,
+"file": "screens/0134.webp",
+"hash": "467266208168",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"DOWN",
+"VOL-",
+"UP",
+"RIGHT",
+"OK",
+"UP",
+"UP"
+],
+"next": {
+"RIGHT": 153
+}
+},
+{
+"id": 135,
+"file": "screens/0135.webp",
+"hash": "ae25872942d8",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"OK",
+"UP",
+"UP",
+"OK",
+"DOWN"
+],
+"next": {
+"MENU": 0
+}
+},
+{
+"id": 136,
+"file": "screens/0136.webp",
 "hash": "f983fd8dfa3a",
 "path": [
 "EV_100D",
@@ -2115,17 +3204,17 @@
 "MENU"
 ],
 "next": {
-"RIGHT": 96,
+"RIGHT": 146,
 "UP": 10,
-"DOWN": 32,
-"OK": 96,
+"DOWN": 33,
+"OK": 146,
 "MENU": 0,
 "EXIT": 0
 }
 },
 {
-"id": 93,
-"file": "screens/0093.webp",
+"id": 137,
+"file": "screens/0137.webp",
 "hash": "7eb3e6def7c2",
 "path": [
 "EV_104F",
@@ -2144,12 +3233,13 @@
 "UP"
 ],
 "next": {
-"MENU": 0
+"MENU": 0,
+"EXIT": 0
 }
 },
 {
-"id": 94,
-"file": "screens/0094.webp",
+"id": 138,
+"file": "screens/0138.webp",
 "hash": "666a5acdf749",
 "path": [
 "MENU",
@@ -2170,12 +3260,162 @@
 "next": {
 "EXIT": 0,
 "MENU": 0,
-"OK": 121
+"OK": 185,
+"LEFT": 138,
+"RIGHT": 185
 }
 },
 {
-"id": 95,
-"file": "screens/0095.webp",
+"id": 139,
+"file": "screens/0139.webp",
+"hash": "a5656b3ed603",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"VOL+",
+"DOWN",
+"UP",
+"OK",
+"DOWN",
+"DOWN",
+"OK"
+],
+"next": {
+"UP": 149
+}
+},
+{
+"id": 140,
+"file": "screens/0140.webp",
+"hash": "a5dc7cea8255",
+"path": [
+"EV_1044",
+"MENU",
+"OK",
+"DOWN",
+"OK",
+"UP",
+"MENU",
+"MENU",
+"VOL-",
+"OK",
+"OK",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {
+"MENU": 0
+}
+},
+{
+"id": 141,
+"file": "screens/0141.webp",
+"hash": "e88cd483654d",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"UP",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"UP"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 142,
+"file": "screens/0142.webp",
+"hash": "3b3b6e06d652",
+"path": [
+"EV_1044",
+"MENU",
+"OK",
+"DOWN",
+"OK",
+"DOWN",
+"RIGHT",
+"OK",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN"
+],
+"next": {
+"UP": 242
+}
+},
+{
+"id": 143,
+"file": "screens/0143.webp",
+"hash": "851078b6ef31",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT",
+"OK",
+"DOWN",
+"RIGHT"
+],
+"next": {
+"MENU": 0,
+"DOWN": 118
+}
+},
+{
+"id": 144,
+"file": "screens/0144.webp",
+"hash": "fc5cae258ec8",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"DOWN",
+"DOWN",
+"DOWN",
+"MENU",
+"DOWN",
+"LEFT",
+"MENU",
+"UP"
+],
+"next": {
+"RIGHT": 151,
+"OK": 151,
+"LEFT": 144,
+"DOWN": 1
+}
+},
+{
+"id": 145,
+"file": "screens/0145.webp",
 "hash": "fbdfbf8d48f6",
 "path": [
 "RIGHT",
@@ -2195,15 +3435,16 @@
 "UP"
 ],
 "next": {
-"LEFT": 99,
-"UP": 107,
-"OK": 99,
-"DOWN": 26
+"LEFT": 153,
+"UP": 166,
+"OK": 153,
+"DOWN": 26,
+"MENU": 0
 }
 },
 {
-"id": 96,
-"file": "screens/0096.webp",
+"id": 146,
+"file": "screens/0146.webp",
 "hash": "9d6ea3af6924",
 "path": [
 "EV_100D",
@@ -2223,15 +3464,15 @@
 "RIGHT"
 ],
 "next": {
-"RIGHT": 100,
+"RIGHT": 154,
 "EXIT": 0,
 "MENU": 0,
-"OK": 100
+"OK": 154
 }
 },
 {
-"id": 97,
-"file": "screens/0097.webp",
+"id": 147,
+"file": "screens/0147.webp",
 "hash": "ffa53fb3aaaf",
 "path": [
 "RIGHT",
@@ -2251,15 +3492,16 @@
 "DOWN"
 ],
 "next": {
-"UP": 41,
+"UP": 42,
 "EXIT": 0,
-"LEFT": 32,
-"MENU": 0
+"LEFT": 33,
+"MENU": 0,
+"DOWN": 199
 }
 },
 {
-"id": 98,
-"file": "screens/0098.webp",
+"id": 148,
+"file": "screens/0148.webp",
 "hash": "23ebc111af23",
 "path": [
 "EV_103B",
@@ -2283,8 +3525,111 @@
 }
 },
 {
-"id": 99,
-"file": "screens/0099.webp",
+"id": 149,
+"file": "screens/0149.webp",
+"hash": "dbe135cce76e",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"VOL+",
+"DOWN",
+"UP",
+"OK",
+"DOWN",
+"DOWN",
+"OK",
+"UP"
+],
+"next": {
+"RIGHT": 158
+}
+},
+{
+"id": 150,
+"file": "screens/0150.webp",
+"hash": "8627b326b3c0",
+"path": [
+"EV_100D",
+"MENU",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"VOL+",
+"EXIT",
+"EXIT",
+"OK",
+"MENU",
+"OK",
+"OK",
+"UP"
+],
+"next": {
+"UP": 159
+}
+},
+{
+"id": 151,
+"file": "screens/0151.webp",
+"hash": "0de069af61de",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"DOWN",
+"DOWN",
+"DOWN",
+"MENU",
+"DOWN",
+"LEFT",
+"MENU",
+"UP",
+"RIGHT"
+],
+"next": {
+"OK": 160,
+"LEFT": 144,
+"EXIT": 0
+}
+},
+{
+"id": 152,
+"file": "screens/0152.webp",
+"hash": "6058996ad057",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"MENU",
+"RIGHT",
+"DOWN",
+"MENU"
+],
+"next": {
+"EXIT": 0,
+"UP": 174
+}
+},
+{
+"id": 153,
+"file": "screens/0153.webp",
 "hash": "b731387fd7ca",
 "path": [
 "RIGHT",
@@ -2306,12 +3651,12 @@
 ],
 "next": {
 "MENU": 0,
-"DOWN": 111
+"DOWN": 170
 }
 },
 {
-"id": 100,
-"file": "screens/0100.webp",
+"id": 154,
+"file": "screens/0154.webp",
 "hash": "d0608554cc9a",
 "path": [
 "EV_100D",
@@ -2332,13 +3677,14 @@
 "RIGHT"
 ],
 "next": {
-"RIGHT": 96,
-"EXIT": 0
+"RIGHT": 146,
+"EXIT": 0,
+"UP": 150
 }
 },
 {
-"id": 101,
-"file": "screens/0101.webp",
+"id": 155,
+"file": "screens/0155.webp",
 "hash": "5ebd50bb6dd2",
 "path": [
 "MENU",
@@ -2359,14 +3705,15 @@
 "OK"
 ],
 "next": {
-"DOWN": 105,
+"DOWN": 162,
 "MENU": 0,
-"UP": 74
+"UP": 75,
+"LEFT": 35
 }
 },
 {
-"id": 102,
-"file": "screens/0102.webp",
+"id": 156,
+"file": "screens/0156.webp",
 "hash": "7b3df8be5024",
 "path": [
 "EV_1044",
@@ -2387,12 +3734,13 @@
 "UP"
 ],
 "next": {
-"RIGHT": 106
+"RIGHT": 163,
+"OK": 163
 }
 },
 {
-"id": 103,
-"file": "screens/0103.webp",
+"id": 157,
+"file": "screens/0157.webp",
 "hash": "2ce12b2c8944",
 "path": [
 "EV_103B",
@@ -2413,12 +3761,96 @@
 "UP"
 ],
 "next": {
-"DOWN": 1
+"DOWN": 1,
+"LEFT": 157,
+"OK": 72,
+"EXIT": 0,
+"UP": 21,
+"RIGHT": 72
 }
 },
 {
-"id": 104,
-"file": "screens/0104.webp",
+"id": 158,
+"file": "screens/0158.webp",
+"hash": "2985a744aef9",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"VOL+",
+"DOWN",
+"UP",
+"OK",
+"DOWN",
+"DOWN",
+"OK",
+"UP",
+"RIGHT"
+],
+"next": {
+"MENU": 0
+}
+},
+{
+"id": 159,
+"file": "screens/0159.webp",
+"hash": "28b0b99b9787",
+"path": [
+"EV_100D",
+"MENU",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"VOL+",
+"EXIT",
+"EXIT",
+"OK",
+"MENU",
+"OK",
+"OK",
+"UP",
+"UP"
+],
+"next": {
+"DOWN": 150,
+"OK": 19
+}
+},
+{
+"id": 160,
+"file": "screens/0160.webp",
+"hash": "058af97ee5c7",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"DOWN",
+"DOWN",
+"DOWN",
+"MENU",
+"DOWN",
+"LEFT",
+"MENU",
+"UP",
+"RIGHT",
+"OK"
+],
+"next": {
+"RIGHT": 151
+}
+},
+{
+"id": 161,
+"file": "screens/0161.webp",
 "hash": "cbd19b48c22d",
 "path": [
 "SOURCE",
@@ -2441,16 +3873,17 @@
 ],
 "next": {
 "MENU": 0,
-"OK": 163,
-"UP": 139,
-"RIGHT": 163,
+"OK": 237,
+"UP": 206,
+"RIGHT": 237,
 "EXIT": 0,
-"LEFT": 127
+"LEFT": 192,
+"DOWN": 114
 }
 },
 {
-"id": 105,
-"file": "screens/0105.webp",
+"id": 162,
+"file": "screens/0162.webp",
 "hash": "810223cd1d52",
 "path": [
 "MENU",
@@ -2472,12 +3905,13 @@
 "DOWN"
 ],
 "next": {
-"RIGHT": 108
+"RIGHT": 167,
+"UP": 155
 }
 },
 {
-"id": 106,
-"file": "screens/0106.webp",
+"id": 163,
+"file": "screens/0163.webp",
 "hash": "59ee687f0b14",
 "path": [
 "EV_1044",
@@ -2499,15 +3933,72 @@
 "RIGHT"
 ],
 "next": {
-"DOWN": 110,
-"RIGHT": 117,
+"DOWN": 169,
+"RIGHT": 181,
 "EXIT": 0,
 "MENU": 0
 }
 },
 {
-"id": 107,
-"file": "screens/0107.webp",
+"id": 164,
+"file": "screens/0164.webp",
+"hash": "deb713c8481a",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"OK",
+"DOWN",
+"UP",
+"UP",
+"OK",
+"OK",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"OK": 172,
+"UP": 124,
+"MENU": 0
+}
+},
+{
+"id": 165,
+"file": "screens/0165.webp",
+"hash": "3858f3a94cc2",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"VOL+",
+"MENU",
+"MENU",
+"UP",
+"DOWN",
+"LEFT",
+"DOWN",
+"OK",
+"DOWN"
+],
+"next": {
+"UP": 109,
+"EXIT": 0
+}
+},
+{
+"id": 166,
+"file": "screens/0166.webp",
 "hash": "5b1272b49e51",
 "path": [
 "EV_1044",
@@ -2530,12 +4021,13 @@
 "UP"
 ],
 "next": {
-"RIGHT": 112
+"RIGHT": 175,
+"LEFT": 175
 }
 },
 {
-"id": 108,
-"file": "screens/0108.webp",
+"id": 167,
+"file": "screens/0167.webp",
 "hash": "52b2cb73e853",
 "path": [
 "MENU",
@@ -2558,12 +4050,12 @@
 "RIGHT"
 ],
 "next": {
-"UP": 113
+"UP": 176
 }
 },
 {
-"id": 109,
-"file": "screens/0109.webp",
+"id": 168,
+"file": "screens/0168.webp",
 "hash": "624518340e09",
 "path": [
 "SOURCE",
@@ -2588,12 +4080,12 @@
 "next": {
 "EXIT": 0,
 "MENU": 0,
-"UP": 146
+"UP": 214
 }
 },
 {
-"id": 110,
-"file": "screens/0110.webp",
+"id": 169,
+"file": "screens/0169.webp",
 "hash": "ffcba6acbf45",
 "path": [
 "EV_1044",
@@ -2616,12 +4108,12 @@
 "DOWN"
 ],
 "next": {
-"UP": 106
+"UP": 163
 }
 },
 {
-"id": 111,
-"file": "screens/0111.webp",
+"id": 170,
+"file": "screens/0170.webp",
 "hash": "716db402ae2c",
 "path": [
 "MENU",
@@ -2644,12 +4136,125 @@
 "DOWN"
 ],
 "next": {
-"LEFT": 153
+"LEFT": 222
 }
 },
 {
-"id": 112,
-"file": "screens/0112.webp",
+"id": 171,
+"file": "screens/0171.webp",
+"hash": "5056d0b6263e",
+"path": [
+"EV_1044",
+"MENU",
+"OK",
+"DOWN",
+"OK",
+"DOWN",
+"RIGHT",
+"OK",
+"MENU",
+"LEFT",
+"UP",
+"RIGHT",
+"OK",
+"MENU",
+"OK",
+"UP",
+"OK",
+"UP"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 172,
+"file": "screens/0172.webp",
+"hash": "fa76b98978e1",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"OK",
+"DOWN",
+"UP",
+"UP",
+"OK",
+"OK",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"OK"
+],
+"next": {
+"OK": 164
+}
+},
+{
+"id": 173,
+"file": "screens/0173.webp",
+"hash": "ff8aa8b709fe",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT",
+"OK",
+"LEFT",
+"OK",
+"DOWN",
+"OK",
+"LEFT",
+"RIGHT"
+],
+"next": {
+"LEFT": 39,
+"RIGHT": 61
+}
+},
+{
+"id": 174,
+"file": "screens/0174.webp",
+"hash": "31e6fef49197",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"MENU",
+"RIGHT",
+"DOWN",
+"MENU",
+"EXIT",
+"MENU",
+"UP"
+],
+"next": {
+"RIGHT": 178
+}
+},
+{
+"id": 175,
+"file": "screens/0175.webp",
 "hash": "55c176c68181",
 "path": [
 "EV_1044",
@@ -2673,12 +4278,13 @@
 "RIGHT"
 ],
 "next": {
-"DOWN": 116
+"DOWN": 180,
+"MENU": 0
 }
 },
 {
-"id": 113,
-"file": "screens/0113.webp",
+"id": 176,
+"file": "screens/0176.webp",
 "hash": "37d11c8710c6",
 "path": [
 "MENU",
@@ -2706,8 +4312,8 @@
 }
 },
 {
-"id": 114,
-"file": "screens/0114.webp",
+"id": 177,
+"file": "screens/0177.webp",
 "hash": "899cc6fd1fa8",
 "path": [
 "EV_103B",
@@ -2731,13 +4337,44 @@
 "UP"
 ],
 "next": {
-"RIGHT": 76,
+"RIGHT": 77,
 "UP": 21
 }
 },
 {
-"id": 115,
-"file": "screens/0115.webp",
+"id": 178,
+"file": "screens/0178.webp",
+"hash": "5191e5174989",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"MENU",
+"RIGHT",
+"DOWN",
+"MENU",
+"EXIT",
+"MENU",
+"UP",
+"RIGHT"
+],
+"next": {
+"EXIT": 0,
+"OK": 231,
+"UP": 236
+}
+},
+{
+"id": 179,
+"file": "screens/0179.webp",
 "hash": "bd55f799e9bb",
 "path": [
 "EV_1044",
@@ -2763,17 +4400,17 @@
 ],
 "next": {
 "EXIT": 0,
-"OK": 149,
-"LEFT": 59,
-"UP": 53,
-"RIGHT": 149,
+"OK": 218,
+"LEFT": 60,
+"UP": 54,
+"RIGHT": 218,
 "MENU": 0,
-"DOWN": 53
+"DOWN": 54
 }
 },
 {
-"id": 116,
-"file": "screens/0116.webp",
+"id": 180,
+"file": "screens/0180.webp",
 "hash": "f7423b260697",
 "path": [
 "EV_1044",
@@ -2798,13 +4435,13 @@
 "DOWN"
 ],
 "next": {
-"LEFT": 118,
-"RIGHT": 125
+"LEFT": 182,
+"RIGHT": 190
 }
 },
 {
-"id": 117,
-"file": "screens/0117.webp",
+"id": 181,
+"file": "screens/0181.webp",
 "hash": "58bf7d31fa36",
 "path": [
 "EV_1044",
@@ -2829,12 +4466,12 @@
 "RIGHT"
 ],
 "next": {
-"OK": 106
+"OK": 163
 }
 },
 {
-"id": 118,
-"file": "screens/0118.webp",
+"id": 182,
+"file": "screens/0182.webp",
 "hash": "cdf0efec1721",
 "path": [
 "EV_1044",
@@ -2860,12 +4497,12 @@
 "LEFT"
 ],
 "next": {
-"OK": 116
+"OK": 180
 }
 },
 {
-"id": 119,
-"file": "screens/0119.webp",
+"id": 183,
+"file": "screens/0183.webp",
 "hash": "b3764db5b4e4",
 "path": [
 "EV_103B",
@@ -2892,13 +4529,13 @@
 ],
 "next": {
 "MENU": 0,
-"DOWN": 161,
-"OK": 126
+"DOWN": 233,
+"OK": 191
 }
 },
 {
-"id": 120,
-"file": "screens/0120.webp",
+"id": 184,
+"file": "screens/0184.webp",
 "hash": "d01d9f9d0ce3",
 "path": [
 "EV_103B",
@@ -2928,8 +4565,8 @@
 }
 },
 {
-"id": 121,
-"file": "screens/0121.webp",
+"id": 185,
+"file": "screens/0185.webp",
 "hash": "9cc4c1f7cfa4",
 "path": [
 "MENU",
@@ -2955,13 +4592,14 @@
 "OK"
 ],
 "next": {
-"RIGHT": 123,
-"OK": 123
+"RIGHT": 187,
+"OK": 187,
+"MENU": 0
 }
 },
 {
-"id": 122,
-"file": "screens/0122.webp",
+"id": 186,
+"file": "screens/0186.webp",
 "hash": "4d416b11f7dc",
 "path": [
 "EV_101D",
@@ -2988,14 +4626,17 @@
 "RIGHT"
 ],
 "next": {
-"LEFT": 124,
-"RIGHT": 75,
-"UP": 93
+"LEFT": 189,
+"RIGHT": 76,
+"UP": 137,
+"DOWN": 122,
+"OK": 76,
+"EXIT": 0
 }
 },
 {
-"id": 123,
-"file": "screens/0123.webp",
+"id": 187,
+"file": "screens/0187.webp",
 "hash": "dc4fbbd4f98c",
 "path": [
 "MENU",
@@ -3022,13 +4663,45 @@
 "RIGHT"
 ],
 "next": {
-"RIGHT": 121,
-"DOWN": 133
+"RIGHT": 185,
+"DOWN": 198
 }
 },
 {
-"id": 124,
-"file": "screens/0124.webp",
+"id": 188,
+"file": "screens/0188.webp",
+"hash": "4f6fc189ae64",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT",
+"LEFT",
+"EXIT",
+"OK",
+"RIGHT",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {
+"MENU": 0
+}
+},
+{
+"id": 189,
+"file": "screens/0189.webp",
 "hash": "e4cab0765f09",
 "path": [
 "EV_101D",
@@ -3057,12 +4730,13 @@
 ],
 "next": {
 "EXIT": 0,
-"DOWN": 21
+"DOWN": 21,
+"OK": 186
 }
 },
 {
-"id": 125,
-"file": "screens/0125.webp",
+"id": 190,
+"file": "screens/0190.webp",
 "hash": "7fb71dbde889",
 "path": [
 "EV_1044",
@@ -3090,12 +4764,12 @@
 "RIGHT"
 ],
 "next": {
-"DOWN": 129
+"DOWN": 194
 }
 },
 {
-"id": 126,
-"file": "screens/0126.webp",
+"id": 191,
+"file": "screens/0191.webp",
 "hash": "5a28f634880d",
 "path": [
 "EV_1044",
@@ -3123,12 +4797,12 @@
 "OK"
 ],
 "next": {
-"LEFT": 119
+"LEFT": 183
 }
 },
 {
-"id": 127,
-"file": "screens/0127.webp",
+"id": 192,
+"file": "screens/0192.webp",
 "hash": "96a79d25b645",
 "path": [
 "SOURCE",
@@ -3157,18 +4831,18 @@
 "MENU"
 ],
 "next": {
-"LEFT": 127,
-"DOWN": 32,
+"LEFT": 192,
+"DOWN": 33,
 "EXIT": 0,
-"RIGHT": 104,
+"RIGHT": 161,
 "MENU": 0,
-"OK": 104,
+"OK": 161,
 "UP": 10
 }
 },
 {
-"id": 128,
-"file": "screens/0128.webp",
+"id": 193,
+"file": "screens/0193.webp",
 "hash": "cefe1c136e50",
 "path": [
 "SOURCE",
@@ -3198,13 +4872,14 @@
 ],
 "next": {
 "EXIT": 0,
-"OK": 54,
-"LEFT": 83
+"OK": 55,
+"LEFT": 97,
+"RIGHT": 97
 }
 },
 {
-"id": 129,
-"file": "screens/0129.webp",
+"id": 194,
+"file": "screens/0194.webp",
 "hash": "d43772c8620a",
 "path": [
 "EV_1044",
@@ -3237,8 +4912,8 @@
 }
 },
 {
-"id": 130,
-"file": "screens/0130.webp",
+"id": 195,
+"file": "screens/0195.webp",
 "hash": "dc00eac80b5e",
 "path": [
 "EV_104F",
@@ -3267,15 +4942,16 @@
 "DOWN"
 ],
 "next": {
-"OK": 68,
-"LEFT": 130,
+"OK": 69,
+"LEFT": 195,
 "DOWN": 21,
-"UP": 1
+"UP": 1,
+"EXIT": 0
 }
 },
 {
-"id": 131,
-"file": "screens/0131.webp",
+"id": 196,
+"file": "screens/0196.webp",
 "hash": "04b60c9c78f6",
 "path": [
 "MENU",
@@ -3305,13 +4981,13 @@
 "UP"
 ],
 "next": {
-"UP": 32,
-"RIGHT": 151
+"UP": 33,
+"RIGHT": 220
 }
 },
 {
-"id": 132,
-"file": "screens/0132.webp",
+"id": 197,
+"file": "screens/0197.webp",
 "hash": "b3820ec5747f",
 "path": [
 "SOURCE",
@@ -3341,18 +5017,18 @@
 "MENU"
 ],
 "next": {
-"RIGHT": 162,
-"OK": 141,
-"UP": 132,
-"LEFT": 132,
+"RIGHT": 234,
+"OK": 208,
+"UP": 197,
+"LEFT": 197,
 "MENU": 0,
 "EXIT": 0,
-"DOWN": 32
+"DOWN": 33
 }
 },
 {
-"id": 133,
-"file": "screens/0133.webp",
+"id": 198,
+"file": "screens/0198.webp",
 "hash": "c54ceb88d418",
 "path": [
 "MENU",
@@ -3382,12 +5058,47 @@
 "DOWN"
 ],
 "next": {
-"LEFT": 138
+"LEFT": 204
 }
 },
 {
-"id": 134,
-"file": "screens/0134.webp",
+"id": 199,
+"file": "screens/0199.webp",
+"hash": "774a2cf0a9f3",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"LEFT",
+"RIGHT",
+"DOWN",
+"OK",
+"LEFT",
+"EXIT",
+"OK",
+"LEFT",
+"MENU",
+"RIGHT",
+"LEFT",
+"MENU",
+"MENU",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"LEFT": 33
+}
+},
+{
+"id": 200,
+"file": "screens/0200.webp",
 "hash": "af641b0d0bf1",
 "path": [
 "EV_103D",
@@ -3418,15 +5129,15 @@
 "DOWN"
 ],
 "next": {
-"OK": 140,
+"OK": 207,
 "EXIT": 0,
-"RIGHT": 140,
-"UP": 89
+"RIGHT": 207,
+"UP": 120
 }
 },
 {
-"id": 135,
-"file": "screens/0135.webp",
+"id": 201,
+"file": "screens/0201.webp",
 "hash": "b0cd06fb30f4",
 "path": [
 "EV_1044",
@@ -3458,16 +5169,17 @@
 ],
 "next": {
 "MENU": 0,
-"RIGHT": 165,
-"OK": 165,
-"LEFT": 79,
+"RIGHT": 242,
+"OK": 242,
+"LEFT": 93,
 "EXIT": 0,
-"DOWN": 50
+"DOWN": 51,
+"UP": 51
 }
 },
 {
-"id": 136,
-"file": "screens/0136.webp",
+"id": 202,
+"file": "screens/0202.webp",
 "hash": "122bf9d847e8",
 "path": [
 "EV_1044",
@@ -3499,14 +5211,14 @@
 ],
 "next": {
 "UP": 10,
-"LEFT": 136,
-"RIGHT": 106,
+"LEFT": 202,
+"RIGHT": 163,
 "EXIT": 0
 }
 },
 {
-"id": 137,
-"file": "screens/0137.webp",
+"id": 203,
+"file": "screens/0203.webp",
 "hash": "db8843458d8a",
 "path": [
 "EV_103B",
@@ -3542,8 +5254,8 @@
 }
 },
 {
-"id": 138,
-"file": "screens/0138.webp",
+"id": 204,
+"file": "screens/0204.webp",
 "hash": "d50384b6fae6",
 "path": [
 "MENU",
@@ -3574,13 +5286,49 @@
 "LEFT"
 ],
 "next": {
-"OK": 142,
+"OK": 209,
 "MENU": 0
 }
 },
 {
-"id": 139,
-"file": "screens/0139.webp",
+"id": 205,
+"file": "screens/0205.webp",
+"hash": "d3b9c83156e9",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"OK",
+"MENU",
+"UP",
+"DOWN",
+"MENU",
+"LEFT",
+"RIGHT",
+"RIGHT",
+"UP",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"DOWN"
+],
+"next": {
+"RIGHT": 210
+}
+},
+{
+"id": 206,
+"file": "screens/0206.webp",
 "hash": "193e16ddc472",
 "path": [
 "MENU",
@@ -3612,13 +5360,13 @@
 "UP"
 ],
 "next": {
-"RIGHT": 144,
-"DOWN": 104
+"RIGHT": 212,
+"DOWN": 161
 }
 },
 {
-"id": 140,
-"file": "screens/0140.webp",
+"id": 207,
+"file": "screens/0207.webp",
 "hash": "ff391a32177c",
 "path": [
 "EV_103D",
@@ -3650,13 +5398,13 @@
 "OK"
 ],
 "next": {
-"UP": 145,
-"OK": 134
+"UP": 213,
+"OK": 200
 }
 },
 {
-"id": 141,
-"file": "screens/0141.webp",
+"id": 208,
+"file": "screens/0208.webp",
 "hash": "2601417b726b",
 "path": [
 "SOURCE",
@@ -3688,15 +5436,15 @@
 "DOWN"
 ],
 "next": {
-"LEFT": 132,
-"UP": 162,
+"LEFT": 197,
+"UP": 234,
 "MENU": 0,
-"DOWN": 162
+"DOWN": 234
 }
 },
 {
-"id": 142,
-"file": "screens/0142.webp",
+"id": 209,
+"file": "screens/0209.webp",
 "hash": "a8d2506998a4",
 "path": [
 "MENU",
@@ -3728,12 +5476,50 @@
 "OK"
 ],
 "next": {
-"LEFT": 138
+"LEFT": 204
 }
 },
 {
-"id": 143,
-"file": "screens/0143.webp",
+"id": 210,
+"file": "screens/0210.webp",
+"hash": "275a767bbba9",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"OK",
+"MENU",
+"UP",
+"DOWN",
+"MENU",
+"LEFT",
+"RIGHT",
+"RIGHT",
+"UP",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {
+"DOWN": 217,
+"UP": 227
+}
+},
+{
+"id": 211,
+"file": "screens/0211.webp",
 "hash": "07220b03f768",
 "path": [
 "VOL-",
@@ -3766,18 +5552,18 @@
 "OK"
 ],
 "next": {
-"DOWN": 143,
-"OK": 143,
-"LEFT": 143,
-"UP": 143,
-"MENU": 143,
-"RIGHT": 143,
-"EXIT": 143
+"DOWN": 211,
+"OK": 211,
+"LEFT": 211,
+"UP": 211,
+"MENU": 211,
+"RIGHT": 211,
+"EXIT": 211
 }
 },
 {
-"id": 144,
-"file": "screens/0144.webp",
+"id": 212,
+"file": "screens/0212.webp",
 "hash": "1d1c7acc48fe",
 "path": [
 "MENU",
@@ -3810,12 +5596,12 @@
 "RIGHT"
 ],
 "next": {
-"LEFT": 139
+"LEFT": 206
 }
 },
 {
-"id": 145,
-"file": "screens/0145.webp",
+"id": 213,
+"file": "screens/0213.webp",
 "hash": "8c6cb17e8e45",
 "path": [
 "EV_103D",
@@ -3848,12 +5634,12 @@
 "UP"
 ],
 "next": {
-"LEFT": 150
+"LEFT": 219
 }
 },
 {
-"id": 146,
-"file": "screens/0146.webp",
+"id": 214,
+"file": "screens/0214.webp",
 "hash": "cf2278a7bde3",
 "path": [
 "MENU",
@@ -3886,12 +5672,13 @@
 "UP"
 ],
 "next": {
-"MENU": 0
+"MENU": 0,
+"UP": 131
 }
 },
 {
-"id": 147,
-"file": "screens/0147.webp",
+"id": 215,
+"file": "screens/0215.webp",
 "hash": "64c4f850a306",
 "path": [
 "EV_1044",
@@ -3924,12 +5711,14 @@
 "UP"
 ],
 "next": {
-"EXIT": 0
+"EXIT": 0,
+"MENU": 0,
+"RIGHT": 132
 }
 },
 {
-"id": 148,
-"file": "screens/0148.webp",
+"id": 216,
+"file": "screens/0216.webp",
 "hash": "2569a455a9a4",
 "path": [
 "EV_101D",
@@ -3962,12 +5751,54 @@
 "RIGHT"
 ],
 "next": {
-"DOWN": 152
+"DOWN": 221,
+"RIGHT": 67,
+"LEFT": 67
 }
 },
 {
-"id": 149,
-"file": "screens/0149.webp",
+"id": 217,
+"file": "screens/0217.webp",
+"hash": "f10cc5c8e011",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"OK",
+"MENU",
+"UP",
+"DOWN",
+"MENU",
+"LEFT",
+"RIGHT",
+"RIGHT",
+"UP",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"UP": 210,
+"DOWN": 235,
+"RIGHT": 249
+}
+},
+{
+"id": 218,
+"file": "screens/0218.webp",
 "hash": "1a28bd17ec35",
 "path": [
 "SOURCE",
@@ -4001,16 +5832,16 @@
 "OK"
 ],
 "next": {
-"DOWN": 154,
-"LEFT": 115,
+"DOWN": 223,
+"LEFT": 179,
 "MENU": 0,
-"UP": 147,
-"RIGHT": 115
+"UP": 215,
+"RIGHT": 179
 }
 },
 {
-"id": 150,
-"file": "screens/0150.webp",
+"id": 219,
+"file": "screens/0219.webp",
 "hash": "b61605d14f74",
 "path": [
 "EV_103D",
@@ -4044,12 +5875,12 @@
 "LEFT"
 ],
 "next": {
-"UP": 155
+"UP": 224
 }
 },
 {
-"id": 151,
-"file": "screens/0151.webp",
+"id": 220,
+"file": "screens/0220.webp",
 "hash": "e6cbca6168be",
 "path": [
 "MENU",
@@ -4087,8 +5918,8 @@
 }
 },
 {
-"id": 152,
-"file": "screens/0152.webp",
+"id": 221,
+"file": "screens/0221.webp",
 "hash": "75d6fea06007",
 "path": [
 "EV_101D",
@@ -4122,12 +5953,13 @@
 "DOWN"
 ],
 "next": {
-"RIGHT": 157
+"RIGHT": 226,
+"OK": 226
 }
 },
 {
-"id": 153,
-"file": "screens/0153.webp",
+"id": 222,
+"file": "screens/0222.webp",
 "hash": "6ff8a5c5d7af",
 "path": [
 "RIGHT",
@@ -4163,13 +5995,13 @@
 ],
 "next": {
 "UP": 21,
-"LEFT": 153,
+"LEFT": 222,
 "DOWN": 1
 }
 },
 {
-"id": 154,
-"file": "screens/0154.webp",
+"id": 223,
+"file": "screens/0223.webp",
 "hash": "1c402bbb46e5",
 "path": [
 "SOURCE",
@@ -4204,13 +6036,13 @@
 "DOWN"
 ],
 "next": {
-"OK": 158,
-"UP": 149
+"OK": 228,
+"UP": 218
 }
 },
 {
-"id": 155,
-"file": "screens/0155.webp",
+"id": 224,
+"file": "screens/0224.webp",
 "hash": "83ad9f6f44c1",
 "path": [
 "EV_103D",
@@ -4245,12 +6077,12 @@
 "UP"
 ],
 "next": {
-"UP": 159
+"UP": 229
 }
 },
 {
-"id": 156,
-"file": "screens/0156.webp",
+"id": 225,
+"file": "screens/0225.webp",
 "hash": "dd25135268e7",
 "path": [
 "EV_1044",
@@ -4285,12 +6117,15 @@
 "MENU"
 ],
 "next": {
-"UP": 10
+"UP": 10,
+"EXIT": 0,
+"LEFT": 225,
+"OK": 132
 }
 },
 {
-"id": 157,
-"file": "screens/0157.webp",
+"id": 226,
+"file": "screens/0226.webp",
 "hash": "cb35de011c22",
 "path": [
 "EV_101D",
@@ -4325,12 +6160,54 @@
 "RIGHT"
 ],
 "next": {
-"EXIT": 0
+"EXIT": 0,
+"LEFT": 39
 }
 },
 {
-"id": 158,
-"file": "screens/0158.webp",
+"id": 227,
+"file": "screens/0227.webp",
+"hash": "029ac55b6711",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"OK",
+"MENU",
+"UP",
+"DOWN",
+"MENU",
+"LEFT",
+"RIGHT",
+"RIGHT",
+"UP",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 123,
+"LEFT": 235
+}
+},
+{
+"id": 228,
+"file": "screens/0228.webp",
 "hash": "9630ed783000",
 "path": [
 "SOURCE",
@@ -4370,8 +6247,8 @@
 }
 },
 {
-"id": 159,
-"file": "screens/0159.webp",
+"id": 229,
+"file": "screens/0229.webp",
 "hash": "a992c256005a",
 "path": [
 "EV_103D",
@@ -4407,13 +6284,13 @@
 "UP"
 ],
 "next": {
-"DOWN": 155,
-"LEFT": 164
+"DOWN": 224,
+"LEFT": 238
 }
 },
 {
-"id": 160,
-"file": "screens/0160.webp",
+"id": 230,
+"file": "screens/0230.webp",
 "hash": "4808013db75b",
 "path": [
 "RIGHT",
@@ -4453,8 +6330,94 @@
 }
 },
 {
-"id": 161,
-"file": "screens/0161.webp",
+"id": 231,
+"file": "screens/0231.webp",
+"hash": "acd19fc0cfc3",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"MENU",
+"RIGHT",
+"DOWN",
+"MENU",
+"EXIT",
+"MENU",
+"UP",
+"RIGHT",
+"EXIT",
+"OK",
+"OK",
+"LEFT",
+"DOWN",
+"OK",
+"DOWN",
+"OK",
+"MENU",
+"UP",
+"RIGHT",
+"OK"
+],
+"next": {
+"LEFT": 178
+}
+},
+{
+"id": 232,
+"file": "screens/0232.webp",
+"hash": "8ae1ce37ab35",
+"path": [
+"EV_1044",
+"MENU",
+"OK",
+"DOWN",
+"OK",
+"DOWN",
+"RIGHT",
+"OK",
+"DOWN",
+"EXIT",
+"RIGHT",
+"RIGHT",
+"LEFT",
+"MENU",
+"DOWN",
+"RIGHT",
+"DOWN",
+"UP",
+"LEFT",
+"LEFT",
+"LEFT",
+"DOWN",
+"MENU",
+"EXIT",
+"MENU",
+"LEFT",
+"RIGHT",
+"LEFT",
+"RIGHT",
+"UP",
+"OK",
+"UP"
+],
+"next": {
+"DOWN": 74,
+"UP": 246,
+"LEFT": 51,
+"OK": 51
+}
+},
+{
+"id": 233,
+"file": "screens/0233.webp",
 "hash": "c5de8fccb410",
 "path": [
 "EV_1044",
@@ -4492,18 +6455,18 @@
 "UP"
 ],
 "next": {
-"DOWN": 41,
-"OK": 84,
-"LEFT": 32,
-"RIGHT": 84,
-"UP": 119,
+"DOWN": 42,
+"OK": 108,
+"LEFT": 33,
+"RIGHT": 108,
+"UP": 183,
 "EXIT": 0,
 "MENU": 0
 }
 },
 {
-"id": 162,
-"file": "screens/0162.webp",
+"id": 234,
+"file": "screens/0234.webp",
 "hash": "a848e7d99683",
 "path": [
 "MENU",
@@ -4541,17 +6504,105 @@
 "LEFT"
 ],
 "next": {
-"RIGHT": 109,
-"DOWN": 141,
-"UP": 141,
+"RIGHT": 168,
+"DOWN": 208,
+"UP": 208,
 "MENU": 0,
-"OK": 109,
-"EXIT": 0
+"OK": 168,
+"EXIT": 0,
+"LEFT": 197
 }
 },
 {
-"id": 163,
-"file": "screens/0163.webp",
+"id": 235,
+"file": "screens/0235.webp",
+"hash": "b28ac852db52",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"OK",
+"MENU",
+"UP",
+"DOWN",
+"MENU",
+"LEFT",
+"RIGHT",
+"RIGHT",
+"UP",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"UP",
+"UP",
+"MENU",
+"OK",
+"LEFT"
+],
+"next": {
+"UP": 217,
+"DOWN": 210
+}
+},
+{
+"id": 236,
+"file": "screens/0236.webp",
+"hash": "79ace135e3e1",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"MENU",
+"RIGHT",
+"DOWN",
+"MENU",
+"EXIT",
+"MENU",
+"UP",
+"RIGHT",
+"EXIT",
+"OK",
+"OK",
+"LEFT",
+"DOWN",
+"OK",
+"DOWN",
+"OK",
+"MENU",
+"UP",
+"RIGHT",
+"OK",
+"LEFT",
+"UP"
+],
+"next": {
+"OK": 241
+}
+},
+{
+"id": 237,
+"file": "screens/0237.webp",
 "hash": "17f5634e4d41",
 "path": [
 "SOURCE",
@@ -4591,14 +6642,14 @@
 ],
 "next": {
 "MENU": 0,
-"OK": 104,
+"OK": 161,
 "EXIT": 0,
-"DOWN": 88
+"DOWN": 112
 }
 },
 {
-"id": 164,
-"file": "screens/0164.webp",
+"id": 238,
+"file": "screens/0238.webp",
 "hash": "c6fd51e2cab0",
 "path": [
 "EV_103D",
@@ -4637,12 +6688,148 @@
 "LEFT"
 ],
 "next": {
-"RIGHT": 159
+"RIGHT": 229
 }
 },
 {
-"id": 165,
-"file": "screens/0165.webp",
+"id": 239,
+"file": "screens/0239.webp",
+"hash": "800a6cc554bc",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"UP",
+"OK",
+"UP",
+"MENU",
+"MENU",
+"DOWN",
+"UP",
+"RIGHT",
+"LEFT",
+"RIGHT",
+"DOWN",
+"UP",
+"RIGHT",
+"EXIT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"EXIT",
+"UP",
+"LEFT",
+"EXIT",
+"OK",
+"MENU",
+"LEFT",
+"UP"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 240,
+"file": "screens/0240.webp",
+"hash": "10d35a4adf81",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"VOL-",
+"RIGHT",
+"MENU",
+"EXIT",
+"UP",
+"UP",
+"MENU",
+"RIGHT",
+"MENU",
+"RIGHT",
+"OK",
+"RIGHT",
+"OK",
+"EXIT",
+"UP",
+"RIGHT",
+"OK",
+"LEFT",
+"OK",
+"MENU",
+"LEFT",
+"DOWN",
+"DOWN",
+"UP",
+"OK",
+"OK"
+],
+"next": {
+"UP": 247
+}
+},
+{
+"id": 241,
+"file": "screens/0241.webp",
+"hash": "cb4112f4d9e5",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"MENU",
+"RIGHT",
+"DOWN",
+"MENU",
+"EXIT",
+"MENU",
+"UP",
+"RIGHT",
+"EXIT",
+"OK",
+"OK",
+"LEFT",
+"DOWN",
+"OK",
+"DOWN",
+"OK",
+"MENU",
+"UP",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"OK"
+],
+"next": {
+"LEFT": 241,
+"RIGHT": 241,
+"EXIT": 241,
+"MENU": 241,
+"UP": 241
+}
+},
+{
+"id": 242,
+"file": "screens/0242.webp",
 "hash": "3aaac0e75c73",
 "path": [
 "EV_104F",
@@ -4683,12 +6870,17 @@
 ],
 "next": {
 "EXIT": 0,
-"UP": 102
+"UP": 156,
+"OK": 201,
+"LEFT": 201,
+"RIGHT": 201,
+"DOWN": 142,
+"MENU": 0
 }
 },
 {
-"id": 166,
-"file": "screens/0166.webp",
+"id": 243,
+"file": "screens/0243.webp",
 "hash": "0ec45df4807b",
 "path": [
 "EV_104F",
@@ -4728,11 +6920,388 @@
 "DOWN"
 ],
 "next": {
-"RIGHT": 85
+"RIGHT": 109,
+"UP": 1,
+"EXIT": 0,
+"OK": 109,
+"DOWN": 21
 }
+},
+{
+"id": 244,
+"file": "screens/0244.webp",
+"hash": "0f06ba3026af",
+"path": [
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"OK",
+"EXIT",
+"OK",
+"EXIT",
+"UP",
+"EXIT",
+"OK",
+"MENU",
+"UP",
+"DOWN",
+"DOWN",
+"UP",
+"EXIT",
+"RIGHT",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN",
+"EXIT",
+"OK",
+"MENU",
+"OK",
+"OK",
+"UP",
+"LEFT",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"OK": 234
+}
+},
+{
+"id": 245,
+"file": "screens/0245.webp",
+"hash": "059d946d198f",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"OK",
+"OK",
+"MENU",
+"EXIT",
+"MENU",
+"MENU",
+"LEFT",
+"LEFT",
+"EXIT",
+"LEFT",
+"EXIT",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"MENU",
+"UP",
+"DOWN",
+"DOWN",
+"UP",
+"MENU",
+"MENU",
+"UP",
+"LEFT",
+"OK",
+"DOWN"
+],
+"next": {
+"LEFT": 157,
+"RIGHT": 188
+}
+},
+{
+"id": 246,
+"file": "screens/0246.webp",
+"hash": "502deacf2949",
+"path": [
+"EV_1044",
+"MENU",
+"OK",
+"DOWN",
+"OK",
+"DOWN",
+"RIGHT",
+"OK",
+"DOWN",
+"EXIT",
+"RIGHT",
+"RIGHT",
+"LEFT",
+"MENU",
+"DOWN",
+"RIGHT",
+"DOWN",
+"UP",
+"LEFT",
+"LEFT",
+"LEFT",
+"DOWN",
+"MENU",
+"EXIT",
+"MENU",
+"LEFT",
+"RIGHT",
+"LEFT",
+"RIGHT",
+"UP",
+"OK",
+"UP",
+"DOWN",
+"UP",
+"UP"
+],
+"next": {
+"LEFT": 20
+}
+},
+{
+"id": 247,
+"file": "screens/0247.webp",
+"hash": "c02b6b41803c",
+"path": [
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"VOL-",
+"RIGHT",
+"MENU",
+"EXIT",
+"UP",
+"UP",
+"MENU",
+"RIGHT",
+"MENU",
+"RIGHT",
+"OK",
+"RIGHT",
+"OK",
+"EXIT",
+"UP",
+"RIGHT",
+"OK",
+"LEFT",
+"OK",
+"MENU",
+"LEFT",
+"DOWN",
+"DOWN",
+"UP",
+"OK",
+"OK",
+"UP"
+],
+"next": {
+"EXIT": 0
+}
+},
+{
+"id": 248,
+"file": "screens/0248.webp",
+"hash": "485ba200ea3e",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"VOL+",
+"DOWN",
+"OK",
+"DOWN",
+"EXIT",
+"OK",
+"OK",
+"MENU",
+"OK",
+"OK",
+"MENU",
+"DOWN",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"EXIT",
+"RIGHT",
+"EXIT",
+"DOWN",
+"EXIT",
+"RIGHT",
+"LEFT",
+"EXIT",
+"MENU",
+"UP",
+"RIGHT",
+"OK",
+"OK",
+"UP"
+],
+"next": {
+"UP": 250,
+"DOWN": 72,
+"MENU": 0
+}
+},
+{
+"id": 249,
+"file": "screens/0249.webp",
+"hash": "28036c79add8",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"OK",
+"MENU",
+"UP",
+"DOWN",
+"MENU",
+"LEFT",
+"RIGHT",
+"RIGHT",
+"UP",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"UP",
+"UP",
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"DOWN",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {
+"RIGHT": 251
+}
+},
+{
+"id": 250,
+"file": "screens/0250.webp",
+"hash": "721bdfb711d5",
+"path": [
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"VOL+",
+"DOWN",
+"OK",
+"DOWN",
+"EXIT",
+"OK",
+"OK",
+"MENU",
+"OK",
+"OK",
+"MENU",
+"DOWN",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"EXIT",
+"RIGHT",
+"EXIT",
+"DOWN",
+"EXIT",
+"RIGHT",
+"LEFT",
+"EXIT",
+"MENU",
+"UP",
+"RIGHT",
+"OK",
+"OK",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 251,
+"file": "screens/0251.webp",
+"hash": "96bab8b72f70",
+"path": [
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"OK",
+"OK",
+"MENU",
+"UP",
+"DOWN",
+"MENU",
+"LEFT",
+"RIGHT",
+"RIGHT",
+"UP",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"UP",
+"UP",
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"DOWN",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
 }
 ],
-"transitions": 9353,
+"transitions": 14119,
 "meta": {
 "hotkeys": [
 "EV_103A",
@@ -5837,6 +8406,508 @@
 "EXIT",
 "OK",
 "MENU"
+]
+],
+[
+"66cf22322af2",
+"UP",
+[
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"VOL+",
+"DOWN",
+"UP",
+"OK",
+"DOWN",
+"DOWN",
+"OK",
+"UP",
+"RIGHT",
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"EXIT",
+"MENU",
+"OK",
+"UP",
+"UP",
+"DOWN",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"MENU",
+"MENU",
+"OK",
+"LEFT",
+"UP"
+]
+],
+[
+"7fe539b5ee58",
+"UP",
+[
+"EV_100D",
+"MENU",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"SOURCE",
+"RIGHT",
+"EXIT",
+"UP",
+"EXIT",
+"EXIT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"DOWN",
+"MENU",
+"DOWN",
+"UP",
+"DOWN",
+"DOWN",
+"UP"
+]
+],
+[
+"a76bd0650cfd",
+"RIGHT",
+[
+"SOURCE",
+"LEFT",
+"DOWN",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"SOURCE",
+"LEFT",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT",
+"EXIT",
+"RIGHT",
+"LEFT",
+"RIGHT"
+]
+],
+[
+"5ebd50bb6dd2",
+"MENU",
+[
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"OK",
+"RIGHT",
+"OK",
+"OK",
+"EXIT",
+"EXIT",
+"DOWN",
+"EXIT",
+"DOWN",
+"OK",
+"OK",
+"EXIT",
+"DOWN",
+"UP",
+"LEFT",
+"UP",
+"EXIT",
+"UP",
+"OK",
+"LEFT",
+"RIGHT",
+"OK",
+"MENU",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"DOWN",
+"UP",
+"MENU"
+]
+],
+[
+"a76bd0650cfd",
+"EXIT",
+[
+"SOURCE",
+"LEFT",
+"DOWN",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"DOWN",
+"LEFT",
+"RIGHT",
+"EXIT",
+"DOWN",
+"RIGHT",
+"EXIT"
+]
+],
+[
+"9ec86b4d4e80",
+"OK",
+[
+"SOURCE",
+"LEFT",
+"DOWN",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"VOL+",
+"RIGHT",
+"MENU",
+"OK"
+]
+],
+[
+"a76bd0650cfd",
+"MENU",
+[
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"EXIT",
+"UP",
+"OK",
+"MENU",
+"UP",
+"RIGHT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"EXIT",
+"MENU"
+]
+],
+[
+"a76bd0650cfd",
+"MENU",
+[
+"EV_1044",
+"MENU",
+"OK",
+"DOWN",
+"OK",
+"UP",
+"MENU",
+"MENU",
+"VOL+",
+"EXIT",
+"DOWN",
+"RIGHT",
+"EXIT",
+"MENU",
+"DOWN",
+"LEFT",
+"LEFT",
+"OK",
+"EXIT",
+"UP",
+"EXIT",
+"MENU",
+"OK",
+"RIGHT",
+"RIGHT",
+"RIGHT",
+"UP",
+"MENU",
+"RIGHT",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"MENU"
+]
+],
+[
+"a76bd0650cfd",
+"OK",
+[
+"MENU",
+"UP",
+"RIGHT",
+"VOL+",
+"UP",
+"UP",
+"UP",
+"SOURCE",
+"UP",
+"LEFT",
+"RIGHT",
+"RIGHT",
+"MENU",
+"LEFT",
+"OK"
+]
+],
+[
+"a76bd0650cfd",
+"MENU",
+[
+"SOURCE",
+"LEFT",
+"DOWN",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"VOL+",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"EXIT",
+"MENU"
+]
+],
+[
+"a76bd0650cfd",
+"MENU",
+[
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"MENU",
+"EXIT",
+"MENU",
+"RIGHT",
+"UP",
+"LEFT",
+"MENU",
+"UP",
+"DOWN",
+"MENU",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"EXIT",
+"RIGHT",
+"MENU"
+]
+],
+[
+"a76bd0650cfd",
+"OK",
+[
+"SOURCE",
+"LEFT",
+"DOWN",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"VOL-",
+"OK",
+"EXIT",
+"UP",
+"EXIT",
+"OK"
+]
+],
+[
+"66cf22322af2",
+"UP",
+[
+"EV_101D",
+"VOL-",
+"VOL+",
+"OK",
+"VOL-",
+"MENU",
+"UP"
+]
+],
+[
+"a76bd0650cfd",
+"DOWN",
+[
+"EV_103B",
+"MENU",
+"UP",
+"OK",
+"OK",
+"DOWN",
+"OK",
+"OK",
+"SOURCE",
+"UP",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN"
+]
+],
+[
+"a76bd0650cfd",
+"MENU",
+[
+"MENU",
+"EV_100E",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT",
+"OK",
+"RIGHT",
+"MENU",
+"LEFT",
+"MENU",
+"RIGHT",
+"OK",
+"UP",
+"MENU",
+"DOWN",
+"MENU"
+]
+],
+[
+"a76bd0650cfd",
+"MENU",
+[
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"SOURCE",
+"RIGHT",
+"LEFT",
+"EXIT",
+"DOWN",
+"RIGHT",
+"EXIT",
+"OK",
+"OK",
+"MENU",
+"RIGHT",
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"EXIT",
+"UP",
+"MENU",
+"OK",
+"RIGHT",
+"OK",
+"EXIT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"OK",
+"MENU"
+]
+],
+[
+"7fe539b5ee58",
+"RIGHT",
+[
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"LEFT",
+"RIGHT",
+"MENU",
+"LEFT",
+"DOWN",
+"RIGHT",
+"MENU",
+"EXIT",
+"DOWN",
+"MENU",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+]
+],
+[
+"66cf22322af2",
+"DOWN",
+[
+"EV_104F",
+"DOWN",
+"MENU",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"EXIT",
+"EXIT",
+"DOWN",
+"LEFT",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"OK",
+"RIGHT",
+"LEFT",
+"MENU",
+"MENU",
+"MENU",
+"EXIT",
+"MENU",
+"DOWN"
 ]
 ]
 ]
