@@ -627,7 +627,10 @@ $('#heroImg').alt=HERO[0][1];heroAuto();
 
 /* ---------- playground ---------- */
 const T=window.TOUR||null;
-const frameSrc=h=>'assets/sunplus/tour/'+h+'.png';
+if(T&&T.files){   // exploration data: numeric screen ids, images from the every-screen atlas
+  const S=x=>String(x);T.start=S(T.start);T.steps=T.steps.map(([a,k,b])=>[S(a),k,S(b)]);T.playback=(T.playback||[]).map(([a,k,b])=>[S(a),k,S(b)]);
+}
+const frameSrc=h=>T&&T.files?T.files[h]:'assets/sunplus/tour/'+h+'.png';
 let edges={}, plat='sunplus', cur=null, trail=[], tourTimer=null;
 if(T){
   // edges[h][key] = most frequent target
@@ -638,7 +641,8 @@ if(T){
   $('#statFrames').textContent=Object.keys(T.frames).length;
   // shortest key path from boot to every frame, used as its caption
   T.path={[T.start]:[]};const q=[T.start];
-  while(q.length){const a=q.shift();for(const k of ['MENU','SOURCE','EXIT','OK','UP','DOWN','LEFT','RIGHT','INFO','POWER']){const b=edges[a]&&edges[a][k];if(b&&!(b in T.path)){T.path[b]=T.path[a].concat(k);q.push(b)}}}
+  const ORDER=[...new Set(['MENU','SOURCE','EXIT','OK','UP','DOWN','LEFT','RIGHT','VOL+','VOL-','INFO','POWER',...T.steps.map(s=>s[1])])];
+  while(q.length){const a=q.shift();for(const k of ORDER){const b=edges[a]&&edges[a][k];if(b&&!(b in T.path)){T.path[b]=T.path[a].concat(k);q.push(b)}}}
 }
 const pathText=h=>{const p=T.path&&T.path[h];if(!p)return'reached in the recorded session';if(!p.length)return'after boot, no key pressed';return'shortest path: '+(p.length>7?'… '+p.slice(-6).join(' → '):p.join(' → '))};
 const MS={
@@ -767,8 +771,9 @@ function setPlat(p){
       trail=[];showSun(T.start);let i=0;
       $('#tourBtn').textContent='❚❚ Pause';
       tourTimer=setInterval(()=>{
-        if(i>=T.steps.length){stopTour();return}
-        const [a,k,b]=T.steps[i++];if(a!==cur)showSun(a);flash(k);addTrail(k,true);showSun(b);
+        const P=T.playback&&T.playback.length?T.playback:T.steps;
+        if(i>=P.length){stopTour();return}
+        const [a,k,b]=P[i++];if(a!==cur)showSun(a);flash(k);addTrail(k,true);showSun(b);
       },1100);
     };
   }else{
