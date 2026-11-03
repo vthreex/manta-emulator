@@ -105,7 +105,8 @@ h1 em{font-style:normal;color:var(--acc)}
 .tv .scr::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2}
 .tv .led{position:absolute;width:3px;height:3px;border-radius:50%;background:#d23b3b;box-shadow:0 0 4px #d23b3b}
 .tv .led.on{background:#7cc4ff;box-shadow:0 0 5px #7cc4ff}
-.tv .brandmark{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.35em;font-weight:800;white-space:nowrap;line-height:1;pointer-events:none}
+.tv .brandmark{position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;line-height:0}
+.tv .brandmark img{width:100%;height:auto}
 .stand{position:relative;margin:0 auto;pointer-events:none}
 .stand::before,.stand::after{content:"";position:absolute;left:50%;transform:translateX(-50%)}
 
@@ -115,8 +116,7 @@ h1 em{font-style:normal;color:var(--acc)}
   box-shadow:var(--shadow),inset 0 0 0 1px #3c3f44,inset 0 1px 0 rgba(255,255,255,.3)}
 .tv[data-model=lcd] .scr{box-shadow:0 0 0 1px #5d6168,0 0 0 2px #1b1c1f}
 .tv[data-model=lcd] .scr::after{background:linear-gradient(118deg,rgba(255,255,255,.11) 0,rgba(255,255,255,.04) 36%,rgba(255,255,255,0) 36.3%)}
-.tv[data-model=lcd] .brandmark{bottom:1.7%;font-size:clamp(6px,1.05vw,11px);letter-spacing:.16em;color:#d3d6da}
-.tv[data-model=lcd] .brandmark::before{content:"";width:1.1em;height:.62em;background:#d3d6da;clip-path:polygon(0 50%,38% 0,100% 0,62% 50%,100% 100%,38% 100%)}
+.tv[data-model=lcd] .brandmark{bottom:3%;width:15%}
 .tv[data-model=lcd] .led{left:3.4%;bottom:2.4%}
 .stand[data-model=lcd]{width:100%;height:clamp(18px,3.4vw,34px)}
 .stand[data-model=lcd]::before{top:0;width:5.5%;height:62%;background:linear-gradient(90deg,#1e2023,#8d939a 28%,#eef0f2 50%,#848a91 72%,#1e2023);opacity:.92}
@@ -125,7 +125,7 @@ h1 em{font-style:normal;color:var(--acc)}
 .tv[data-model=led]{border-radius:.5%/.9%;padding:1.1% 1.1% 3.3%;
   background:linear-gradient(180deg,#17181b,#0b0c0d);box-shadow:var(--shadow),inset 0 0 0 1px #2c2f34,inset 0 1px 0 rgba(255,255,255,.08)}
 .tv[data-model=led] .scr::after{background:linear-gradient(120deg,rgba(255,255,255,.05) 0,rgba(255,255,255,0) 40%)}
-.tv[data-model=led] .brandmark{bottom:.95%;font-size:clamp(5px,.85vw,9px);letter-spacing:.26em;color:#9a9fa6}
+.tv[data-model=led] .brandmark{bottom:1.9%;width:7%;opacity:.85}
 .tv[data-model=led] .led{right:2.2%;bottom:1.4%}
 .stand[data-model=led]{width:100%;height:clamp(18px,3.3vw,34px)}
 .stand[data-model=led]::before{top:0;width:12%;height:74%;
@@ -172,21 +172,66 @@ h3{font-size:18px;line-height:1.3;margin:0 0 8px}
 .trail .k{font:600 11.5px/1 ui-monospace,Consolas,monospace;padding:5px 7px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--text)}
 .trail .k.no{color:var(--dim);text-decoration:line-through}
 .remote-wrap{display:flex;flex-direction:column;gap:14px}
-.remote{background:linear-gradient(180deg,var(--remote),color-mix(in srgb,var(--remote) 80%,#000));border-radius:34px 34px 26px 26px;padding:20px 20px 24px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.06);max-width:260px;width:100%;margin:0 auto;user-select:none;-webkit-user-select:none}
-.remote .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
-.rk{position:relative;border:0;border-radius:10px;background:var(--remote-key);color:#e8edf2;font:700 11.5px/1 system-ui,sans-serif;letter-spacing:.04em;padding:11px 4px;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);transition:background .12s,transform .05s}
-.rk:hover{background:var(--remote-key-hi)}
-.rk:active,.rk.hit{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
-.rk.pwr{background:#9b2c2c;color:#fff}.rk.pwr:hover{background:#b23535}
-.rk.dis{opacity:.38}
-.rk .sub{display:block;font-size:9px;font-weight:600;color:#9aa6b2;margin-top:3px;letter-spacing:.02em}
-.dpad{position:relative;width:170px;height:170px;margin:6px auto 16px;border-radius:50%;background:var(--remote-key);box-shadow:0 3px 0 rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
-.dpad .rk{position:absolute;background:transparent;box-shadow:none;width:56px;height:56px;padding:0;font-size:16px;border-radius:12px}
-.dpad .rk:hover{background:rgba(255,255,255,.07)}
-.dpad .up{left:57px;top:2px}.dpad .down{left:57px;bottom:2px}.dpad .left{left:2px;top:57px}.dpad .right{right:2px;top:57px}
-.dpad .ok{left:47px;top:47px;width:76px;height:76px;border-radius:50%;background:var(--remote-key-hi);box-shadow:0 2px 0 rgba(0,0,0,.4);font-size:14px}
-.dpad .ok:hover{background:#4a5563}
-.remote .lbl{display:block;text-align:center;color:#5e6873;font-size:9px;letter-spacing:.35em;font-weight:800;margin-top:6px}
+/* Remotes, drawn after the sets' own remotes. lcd = Manta LCD4214 remote (grey keys, labels above, coloured row, dark d-pad ring, logo at the foot);
+   led = LED4202 remote (white pill keys, red power + green mute, VOL/CH rockers, media key panel). Keys with a blue ring were pressed from the current screen in the recording. */
+.remote{position:relative;margin:0 auto;user-select:none;-webkit-user-select:none;font-family:system-ui,"Segoe UI",Arial,sans-serif}
+.remote .row{display:grid;gap:7px 8px;margin-bottom:8px;align-items:end}
+.remote .cell{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:0}
+.remote .kl{font-size:7.5px;font-weight:700;letter-spacing:.02em;color:#e9ecef;text-align:center;white-space:nowrap;line-height:1;min-height:7.5px}
+.rk{position:relative;border:0;cursor:pointer;font:700 10px/1 system-ui,"Segoe UI",Arial,sans-serif;display:grid;place-items:center;padding:0;transition:filter .12s,transform .05s}
+.rk svg{width:11px;height:11px;display:block}
+.rk:hover{filter:brightness(1.12)}
+.rk:active,.rk.hit{transform:translateY(1px);filter:brightness(.9)}
+.rk.live{box-shadow:0 0 0 2px #5eb8ff,0 0 10px rgba(94,184,255,.55)!important}
+.remote .gap{visibility:hidden}
+.remote.compact>:not(.core):not(.logo){display:none}
+.remote.compact .logo{margin-top:14px}
+.remote.compact.lcd{border-radius:44px 44px 56px 56px/34px 34px 70px 70px}
+.remote-toggle{align-self:center;padding:6px 14px;font-size:13.5px}
+
+.remote.lcd{width:214px;padding:22px 16px 30px;border-radius:44px 44px 70px 70px/34px 34px 120px 120px;
+  background:linear-gradient(90deg,#0b0b0c,#1c1d1f 14%,#1a1b1d 86%,#0b0b0c);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08)}
+.remote.lcd .row{grid-template-columns:repeat(4,minmax(0,1fr))}
+.remote.lcd .rk{height:21px;border-radius:5px;color:#fff;background:linear-gradient(180deg,#a2a6ab,#7b8086);box-shadow:0 2px 0 #3a3c40,inset 0 1px 0 rgba(255,255,255,.35);font-size:9.5px}
+.remote.lcd .rk.num{font-size:13px}
+.remote.lcd .rk.pwr{width:62px;height:28px;margin:0 auto;border-radius:50%/60%;background:radial-gradient(circle at 50% 35%,#ff5a4f,#d8261c 70%);box-shadow:0 2px 0 #6e1410}
+.remote.lcd .rk.pwr svg{width:14px;height:14px}
+.remote.lcd .rk.red{background:linear-gradient(#ff4b3e,#d9241a)}.remote.lcd .rk.green{background:linear-gradient(#22c08a,#0f9466)}
+.remote.lcd .rk.yellow{background:linear-gradient(#ffe03a,#e8bd00)}.remote.lcd .rk.blue{background:linear-gradient(#45b1f0,#1c8bd6)}
+.remote.lcd .colours{margin-top:4px}
+.remote.lcd .logo{display:block;width:62%;margin:26px auto 0;opacity:.95}
+
+.remote.led{width:222px;padding:20px 16px 26px;border-radius:30px 30px 20px 20px;
+  background:linear-gradient(90deg,#101112,#202124 12%,#1d1e21 88%,#101112);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08)}
+.remote.led .row{grid-template-columns:repeat(3,minmax(0,1fr))}
+.remote.led .rk{height:22px;border-radius:11px;color:#222;background:linear-gradient(180deg,#ffffff,#e4e4e1);box-shadow:0 2px 0 #77787a,inset 0 -1px 0 rgba(0,0,0,.08);font-size:13px}
+.remote.led .rk.small{height:17px;width:70%;justify-self:center;margin:0 auto}
+.remote.led .rk.pwr{background:linear-gradient(#ff5d4b,#df2e1d);color:#fff;width:76%;margin:0 auto;height:24px}
+.remote.led .rk.mute{background:linear-gradient(#3fcf63,#1f9e3e);color:#fff;width:76%;margin:0 auto;height:24px}
+.remote.led .panel{border:1px solid #3a3c40;border-radius:6px;padding:7px 6px 2px;margin-top:4px;background:rgba(255,255,255,.02)}
+.remote.led .panel .row{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px 6px}
+.remote.led .panel .rk{height:15px;font-size:9px}
+.remote.led .panel .kl{font-size:6.5px}
+.remote.led .rk.red{background:linear-gradient(#ff5d4b,#df2e1d)}.remote.led .rk.green{background:linear-gradient(#3fcf63,#1f9e3e)}
+.remote.led .rk.yellow{background:linear-gradient(#ffe34a,#efc400)}.remote.led .rk.cyan{background:linear-gradient(#3aa0f2,#1673d6)}
+.remote.led .rocker{display:flex;flex-direction:column;width:34px;margin:0 auto;border-radius:17px;background:linear-gradient(180deg,#fff,#e4e4e1);box-shadow:0 2px 0 #77787a;overflow:hidden}
+.remote.led .rocker .rk{height:28px;border-radius:0;background:transparent;box-shadow:none;font-size:16px;font-weight:500}
+.remote.led .rocker span{font-size:9px;color:#333;text-align:center;line-height:12px}
+.remote.led .mid{display:flex;flex-direction:column;gap:3px;justify-content:center}
+
+.dpad{position:relative;margin:10px auto 14px;border-radius:50%}
+.dpad .rk{position:absolute}
+.remote.lcd .dpad{width:156px;height:156px;background:radial-gradient(circle,#2b2c2f 60%,#1e1f21);box-shadow:inset 0 2px 4px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.06)}
+.remote.lcd .dpad .rk{border-radius:10px;background:linear-gradient(180deg,#a7abb0,#80858b);box-shadow:0 2px 0 #3a3c40;font-size:12px;color:#fff}
+.remote.lcd .dpad .up,.remote.lcd .dpad .down{left:46px;width:64px;height:30px}.remote.lcd .dpad .up{top:10px;border-radius:28px 28px 8px 8px}.remote.lcd .dpad .down{bottom:10px;border-radius:8px 8px 28px 28px}
+.remote.lcd .dpad .left,.remote.lcd .dpad .right{top:46px;width:30px;height:64px}.remote.lcd .dpad .left{left:10px;border-radius:28px 8px 8px 28px}.remote.lcd .dpad .right{right:10px;border-radius:8px 28px 28px 8px}
+.remote.lcd .dpad .ok{left:48px;top:48px;width:60px;height:60px;border-radius:50%;font-size:14px}
+.remote.led .dpad{width:160px;height:160px;background:#111214}
+.remote.led .dpad .rk{background:linear-gradient(180deg,#fff,#e6e6e3);box-shadow:0 2px 0 #77787a;color:#111;font-size:13px}
+.remote.led .dpad .up,.remote.led .dpad .down{left:40px;width:80px;height:38px}.remote.led .dpad .up{top:2px;border-radius:40px 40px 12px 12px}.remote.led .dpad .down{bottom:2px;border-radius:12px 12px 40px 40px}
+.remote.led .dpad .left,.remote.led .dpad .right{top:40px;width:38px;height:80px}.remote.led .dpad .left{left:2px;border-radius:40px 12px 12px 40px}.remote.led .dpad .right{right:2px;border-radius:12px 40px 40px 12px}
+.remote.led .dpad .ok{left:50px;top:50px;width:60px;height:60px;border-radius:50%;box-shadow:0 0 0 5px #111214,0 2px 0 6px #303236;font-size:10px;font-weight:500;letter-spacing:.02em}
+@media(min-width:901px){.play>.screen-col{position:sticky;top:calc(var(--nav-h) + 16px)}}
 .side-note{font-size:13.5px;color:var(--mut)}
 .side-note p{margin:0 0 8px}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
@@ -331,7 +376,7 @@ footer p{margin:0;max-width:640px}
       </div>
     </div>
     <div>
-      <div class="tv" id="heroTv" data-model="led"><div class="scr"><img id="heroImg" alt="" src="assets/sunplus/manta-led4202-main-menu-english.png"></div><span class="brandmark">MANTA</span><span class="led on"></span></div>
+      <div class="tv" id="heroTv" data-model="led"><div class="scr"><img id="heroImg" alt="" src="assets/sunplus/manta-led4202-main-menu-english.png"></div><span class="brandmark"></span><span class="led on"></span></div>
       <div class="stand" aria-hidden="true"></div>
       <div class="tvcap"><span id="heroCap">Sunplus LED4202: main menu</span></div>
       <div class="dots" id="heroDots" role="tablist" aria-label="Hero frames"></div>
@@ -364,25 +409,15 @@ footer p{margin:0;max-width:640px}
     <div class="screen-col">
       <div class="tv" id="pTv" data-model="led" tabindex="0" aria-label="TV screen. Focus it and use your keyboard: arrows, Enter, M for menu, Esc for exit, S for source.">
         <div class="scr"><img id="pImg" alt="Captured firmware frame"><div class="msg" id="pMsg" hidden></div><div class="toast" id="pToast" role="status"></div></div>
-        <span class="brandmark">MANTA</span><span class="led on" id="pLed"></span>
+        <span class="brandmark"></span><span class="led on" id="pLed"></span>
       </div>
       <div class="stand" aria-hidden="true"></div>
       <div class="tvcap"><span id="pCap" aria-live="polite">&nbsp;</span><span id="pChip"></span></div>
       <div class="trail" id="pTrail"></div>
     </div>
     <div class="remote-wrap">
-      <div class="remote" id="remote" aria-label="Remote control">
-        <div class="row"><button class="rk pwr" data-k="POWER" aria-label="Power">⏻</button><span></span><button class="rk" data-k="SOURCE">SOURCE</button></div>
-        <div class="row"><button class="rk" data-k="MENU">MENU</button><button class="rk" data-k="INFO">INFO</button><button class="rk" data-k="EXIT">EXIT</button></div>
-        <div class="dpad">
-          <button class="rk up" data-k="UP" aria-label="Up">▲</button>
-          <button class="rk left" data-k="LEFT" aria-label="Left">◀</button>
-          <button class="rk ok" data-k="OK">OK</button>
-          <button class="rk right" data-k="RIGHT" aria-label="Right">▶</button>
-          <button class="rk down" data-k="DOWN" aria-label="Down">▼</button>
-        </div>
-        <span class="lbl">MANTA</span>
-      </div>
+      <div class="remote led" id="remote" role="group" aria-label="Remote control"></div>
+      <button class="btn remote-toggle" id="remoteToggle" type="button">Show full remote</button>
       <div class="side-note" id="pNote"></div>
     </div>
   </div>
@@ -406,7 +441,7 @@ footer p{margin:0;max-width:640px}
         <input id="bSeek" type="range" min="0" value="0" aria-label="Boot position">
       </div>
       <div class="term" id="term" aria-live="off"></div>
-      <div class="tv" id="bTv" data-model="led"><div class="scr"><img id="bImg" alt="" hidden><div class="msg" id="bOff">screen off</div></div><span class="brandmark">MANTA</span><span class="led" id="bLed"></span></div>
+      <div class="tv" id="bTv" data-model="led"><div class="scr"><img id="bImg" alt="" hidden><div class="msg" id="bOff">screen off</div></div><span class="brandmark"></span><span class="led" id="bLed"></span></div>
       <div class="stand" aria-hidden="true"></div>
       <div class="tvcap"><span id="bCap">press play</span><span id="bChip"></span></div>
     </div>
@@ -522,7 +557,7 @@ footer p{margin:0;max-width:640px}
 </main>
 
 <footer><div class="wrap">
-  <p>Firmware images and bitmaps belong to their respective owners and are shown for interoperability and preservation research. If you hold rights to something here and want it removed, open an issue.</p>
+  <p>Firmware images and bitmaps belong to their respective owners and are shown for interoperability and preservation research. Manta and the Manta logos are trademarks of their owner. This is an independent project and is not affiliated with or endorsed by Manta. If you hold rights to something here and want it removed, open an issue.</p>
   <p><a href="https://github.com/vthreex/manta-emulator">GitHub</a> · <a href="https://github.com/vthreex/manta-emulator/releases">Releases</a> · <a href="#top">Back to top</a></p>
 </div></footer>
 
@@ -561,7 +596,8 @@ if('IntersectionObserver' in window){
 }
 
 /* ---------- TV model (LCD4214 for MStar, LED4202 for Sunplus) ---------- */
-function model(id,m){const tv=document.getElementById(id);tv.dataset.model=m;const st=tv.nextElementSibling;if(st&&st.classList.contains('stand'))st.dataset.model=m}
+const LOGO={lcd:'assets/brand/manta-logo-diamond-light.png',led:'assets/brand/manta-wordmark-light.png'};
+function model(id,m){const tv=document.getElementById(id);tv.dataset.model=m;const bm=tv.querySelector('.brandmark');if(bm)bm.innerHTML=`<img src="${LOGO[m]}" alt="Manta">`;const st=tv.nextElementSibling;if(st&&st.classList.contains('stand'))st.dataset.model=m}
 ['heroTv','pTv','bTv'].forEach(id=>model(id,'led'));
 
 /* ---------- image swap without flicker ---------- */
@@ -625,17 +661,79 @@ const MSCREENS=[
   ['assets/ui/12_factory_setting_root.png','Factory menu'],['assets/ui/13_factory_adc_adjust.png','ADC adjust'],['assets/ui/14_factory_wb_adjust.png','White balance'],
   ['assets/ui/15_hotel_menu.png','Hotel menu'],['assets/ui/16_lock_password_dialog.png','Lock dialog'],['assets/ui/menu-raw-fc.png','Picture menu (raw 0xFC)']
 ];
+/* remotes: [press name, face, label above, extra class]; '' = empty cell */
+const I=(d,stroke)=>`<svg viewBox="0 0 24 24" ${stroke?'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"':'fill="currentColor"'} aria-hidden="true"><path d="${d}"/></svg>`;
+const IC={
+  pwr:I('M12 3v8M7.1 6.3a7.5 7.5 0 1 0 9.8 0',1), mute:I('M4 9h4l5-4v14l-5-4H4zM16.5 9.5l5 5M21.5 9.5l-5 5',1),
+  play:I('M8 5v14l11-7z'), pause:I('M7 5h4v14H7zM13 5h4v14h-4z'), stop:I('M7 7h10v10H7z'),
+  prev:I('M6 5h2.5v14H6zM9 12l10-7v14z'), next:I('M15.5 5H18v14h-2.5zM5 5l10 7-10 7z'),
+  rew:I('M11.5 5v14L2 12zM21.5 5v14L12 12z'), ff:I('M2.5 5L12 12l-9.5 7zM12.5 5l9.5 7-9.5 7z'), pp:I('M3 5l8 7-8 7zM14 5h3v14h-3zM19 5h3v14h-3z'),
+  clock:I('M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 7v5l3 2',1), recall:I('M4 10a7 6 0 0 1 13-2l1 2M20 14a7 6 0 0 1-13 2l-1-2M18 5v5h-5M6 19v-5h5',1),
+  ttx:I('M4 6h16M4 10h16M4 14h16M4 18h10',1), refresh:I('M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5',1),
+  up:I('M12 6l7 11H5z'), down:I('M12 18L5 7h14z'), left:I('M6 12l11-7v14z'), right:I('M18 12L7 19V5z')
+};
+const DPAD=ok=>[['UP',IC.up,'up'],['LEFT',IC.left,'left'],['OK',ok,'ok'],['RIGHT',IC.right,'right'],['DOWN',IC.down,'down']];
+const REMOTES={
+ lcd:{logo:'assets/brand/manta-logo-diamond-light.png',core:[0,5,10,11],rows:[
+  {center:['POWER',IC.pwr,'','pwr']},
+  [['WIDE','16:9','WIDE'],['SMART S','SMART S'],['SMART P','SMART P'],['MUTE',IC.mute,'MUTE']],
+  [['1','1','ABC','num'],['2','2','DEF','num'],['3','3','GHI','num'],['TTX LIST',IC.ttx]],
+  [['4','4','JKL','num'],['5','5','MNO','num'],['6','6','PQR','num'],['3D','3D']],
+  [['7','7','STU','num'],['8','8','VWX','num'],['9','9','YZ-','num'],['0','0','','num']],
+  [['INFO','INFO'],['SLEEP',IC.clock],['RECALL',IC.recall],['L/R','L/R']],
+  [['INDEX',IC.play,'INDEX'],['ZOOM',IC.pause,'ZOOM'],['REVEAL',IC.stop,'REVEAL'],['TTX',IC.refresh,'TTX']],
+  [['HOLD',IC.prev,'HOLD'],['LIST',IC.next,'LIST'],['LANGUAGE',IC.rew,'LANGUAGE'],['RADIO',IC.ff,'RADIO']],
+  {cls:'colours',keys:[['REC','','REC','red'],['SUBTITLE','','SUBTITLE','green'],['FAV','','FAV','yellow'],['EPG','','EPG','blue']]},
+  [['VOL-','VOL−'],['VOL+','VOL+'],['CH-','CH−'],['CH+','CH+']],
+  [['MENU','MENU'],'','',['SOURCE','SOURCE']],
+  {dpad:DPAD('OK')}
+ ]},
+ led:{core:[0,6,7,8],rows:[
+  [['POWER',IC.pwr,'','pwr'],'',['MUTE',IC.mute,'','mute']],
+  [['1','1'],['2','2'],['3','3']],[['4','4'],['5','5'],['6','6']],[['7','7'],['8','8'],['9','9']],
+  [['DTV/ATV','','DTV/ATV'],['0','0'],['RECALL',IC.recall]],
+  [['P.MODE','','P.MODE'],['S.MODE','','S.MODE'],['SLEEP','','SLEEP']],
+  [['MENU','','MENU','small'],'',['SOURCE','','SOURCE','small']],
+  {dpad:DPAD('ENTER')},
+  [['EXIT','','EXIT','small'],'',['DISPLAY','','DISPLAY','small']],
+  {rockers:true},
+  [['FAV/LIST','','FAV/LIST'],['REC','','REC'],['FREEZE','','FREEZE']],
+  {panel:[
+   [['GUIDE',IC.rew,'GUIDE'],['ASPECT',IC.ff,'ASPECT'],['CANCEL',IC.prev,'CANCEL'],['SUB PG',IC.next,'SUB PG']],
+   [['INDEX',IC.stop,'INDEX'],['TIMESHIFT',IC.pp,'TIMESHIFT'],['TV/RADIO','','TV/RADIO'],['SUBTITLE','','SUBTITLE']],
+   [['REVEAL','','REVEAL'],['SIZE','','SIZE'],['HOLD','','HOLD'],['TEXT','','TEXT']],
+   [['RED','','RED','red'],['GREEN','','GREEN','green'],['YELLOW','','YELLOW','yellow'],['CYAN','','CYAN','cyan']]]}
+ ]}
+};
+const keyBtn=(k,face,cls)=>`<button type="button" class="rk ${cls||''}" data-k="${esc(k)}" aria-label="${esc(k)}">${face}</button>`;
+const cell=c=>c?`<div class="cell"><span class="kl">${esc(c[2]||'')}</span>${keyBtn(c[0],c[1],c[3])}</div>`:'<div class="cell gap"></div>';
+let fullRemote=false;
+function buildRemote(m){
+  const R=REMOTES[m],el=$('#remote');el.className='remote '+m+(fullRemote?'':' compact');
+  const rows=r=>r.map(row=>{
+    if(Array.isArray(row))return `<div class="row">${row.map(cell).join('')}</div>`;
+    if(row.center)return `<div class="row" style="grid-template-columns:1fr">${keyBtn(row.center[0],row.center[1],row.center[3])}</div>`;
+    if(row.keys)return `<div class="row ${row.cls||''}">${row.keys.map(cell).join('')}</div>`;
+    if(row.dpad)return `<div class="dpad">${row.dpad.map(d=>keyBtn(d[0],d[1],d[2])).join('')}</div>`;
+    if(row.panel)return `<div class="panel">${rows(row.panel)}</div>`;
+    if(row.rockers)return `<div class="row"><div class="rocker">${keyBtn('VOL+','+')}<span>VOL</span>${keyBtn('VOL-','−')}</div><div class="mid"><span class="kl">MTS</span>${keyBtn('MTS','')}<span class="kl">RECLIST</span>${keyBtn('RECLIST','')}</div><div class="rocker">${keyBtn('CH+','+')}<span>CH</span>${keyBtn('CH-','−')}</div></div>`;
+    return '';
+  }).join('');
+  el.innerHTML=rows(R.rows)+(R.logo?`<img class="logo" src="${R.logo}" alt="Manta">`:'');
+  [...el.children].forEach((c,i)=>{if(R.core.includes(i))c.classList.add('core')});
+  $('#remoteToggle').textContent=fullRemote?'Show compact remote':'Show full remote';
+}
 let toastT=null;
 function toast(t){const el=$('#pToast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1600)}
 function addTrail(k,ok){trail.push([k,ok]);if(trail.length>14)trail.shift();
   $('#pTrail').innerHTML=(trail.length?'<span>Keys:</span>':'')+trail.map(([k,o])=>`<span class="k${o?'':' no'}">${esc(k)}</span>`).join('')}
-function flash(k){const b=document.querySelector(`.rk[data-k="${k}"]`);if(b){b.classList.add('hit');setTimeout(()=>b.classList.remove('hit'),120)}}
+function flash(k){const b=document.querySelector(`#remote .rk[data-k="${CSS.escape(k)}"]`);if(b){b.classList.add('hit');setTimeout(()=>b.classList.remove('hit'),120)}}
 function updateKeys(){
-  $$('.rk[data-k]').forEach(b=>{
+  $$('#remote .rk[data-k]').forEach(b=>{
     const k=b.dataset.k;let ok;
     if(plat==='sunplus')ok=!!(T&&cur&&edges[cur]&&edges[cur][k]);
     else ok=!!MS[k];
-    b.classList.toggle('dis',!ok);b.title=ok?'':'Not recorded from this screen';
+    b.classList.toggle('live',ok);b.title=ok?`${k}: recorded from this screen`:`${k}: not recorded from this screen`;
   });
 }
 function showSun(h){
@@ -661,12 +759,12 @@ function press(k){
 function showMs(src,cap){swap($('#pImg'),src,cap);$('#pCap').textContent=cap;$$('#pNote .screens button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===src))}
 function stopTour(){clearInterval(tourTimer);tourTimer=null;const b=$('#tourBtn');if(b)b.textContent='▶ Play recorded session'}
 function setPlat(p){
-  plat=p;stopTour();trail=[];$('#pTrail').innerHTML='';model('pTv',p==='sunplus'?'led':'lcd');
+  plat=p;stopTour();trail=[];$('#pTrail').innerHTML='';model('pTv',p==='sunplus'?'led':'lcd');buildRemote(p==='sunplus'?'led':'lcd');
   $$('[data-plat]').forEach(b=>b.setAttribute('aria-selected',b.dataset.plat===p));
   $('#pMsg').hidden=true;
   if(p==='sunplus'){
     $('#pChip').innerHTML=chip('real','firmware-drawn frames');
-    $('#pNote').innerHTML=`<p>Keyboard: click the TV or the remote, then use <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>, <kbd>Enter</kbd> (OK), <kbd>M</kbd> (menu), <kbd>Esc</kbd> (exit), <kbd>S</kbd> (source).</p><p>Try <b>MENU</b> first, then the arrows. Greyed-out items, such as Brightness in Dynamic mode, are skipped by the firmware itself.</p><p>The grey surround is the empty OSD plane. There is no video plane yet, and placement on the panel is a guess.</p><div class="tools"><button class="btn" id="tourBtn" type="button">▶ Play recorded session</button><button class="btn" id="resetBtn" type="button">Reset</button></div>`;
+    $('#pNote').innerHTML=`<p>Keyboard: click the TV or the remote, then use <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>, <kbd>Enter</kbd> (OK), <kbd>M</kbd> (menu), <kbd>Esc</kbd> (exit), <kbd>S</kbd> (source).</p><p>Keys with a <b style="color:#5eb8ff">blue ring</b> were pressed from this screen in the recording. Try <b>MENU</b> first, then the arrows. Greyed-out items, such as Brightness in Dynamic mode, are skipped by the firmware itself.</p><p>The grey surround is the empty OSD plane. There is no video plane yet, and placement on the panel is a guess.</p><div class="tools"><button class="btn" id="tourBtn" type="button">▶ Play recorded session</button><button class="btn" id="resetBtn" type="button">Reset</button></div>`;
     if(!T){$('#pMsg').hidden=false;$('#pMsg').textContent='recorded session data not found';$('#pImg').hidden=true;updateKeys();return}
     showSun(T.start);
     $('#resetBtn').onclick=()=>{stopTour();trail=[];$('#pTrail').innerHTML='';showSun(T.start)};
@@ -681,13 +779,14 @@ function setPlat(p){
     };
   }else{
     $('#pChip').innerHTML=chip('real','captured frames');
-    $('#pNote').innerHTML=`<p>These MStar screens are captured states, not a recorded sequence. Only POWER, MENU, SOURCE and INFO are linked. Pick any screen directly:</p><div class="screens">${MSCREENS.map(s=>`<button type="button" data-s="${s[0]}" aria-pressed="false">${esc(s[1])}</button>`).join('')}</div>`;
+    $('#pNote').innerHTML=`<p>These MStar screens are captured states, not a recorded sequence. Only POWER, MENU, SOURCE and INFO (ringed in blue) are linked. Pick any screen directly:</p><div class="screens">${MSCREENS.map(s=>`<button type="button" data-s="${s[0]}" aria-pressed="false">${esc(s[1])}</button>`).join('')}</div>`;
     $('#pNote .screens').onclick=e=>{const b=e.target.closest('button');if(!b)return;const s=MSCREENS.find(x=>x[0]===b.dataset.s);showMs(s[0],s[1])};
     showMs(MS.POWER[0],MS.POWER[1]);updateKeys();
   }
 }
 $('#remote').addEventListener('click',e=>{const b=e.target.closest('.rk');if(!b)return;if(tourTimer)stopTour();press(b.dataset.k)});
 $$('[data-plat]').forEach(b=>b.onclick=()=>setPlat(b.dataset.plat));
+$('#remoteToggle').onclick=()=>{fullRemote=!fullRemote;buildRemote(plat==='sunplus'?'led':'lcd');updateKeys()};
 const KB={ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT',Enter:'OK',Escape:'EXIT',m:'MENU',M:'MENU',s:'SOURCE',S:'SOURCE',i:'INFO',I:'INFO',p:'POWER',P:'POWER'};
 $('#try .play').addEventListener('keydown',e=>{
   const k=KB[e.key];if(!k||e.ctrlKey||e.metaKey||e.altKey)return;
