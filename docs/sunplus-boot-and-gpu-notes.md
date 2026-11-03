@@ -43,5 +43,12 @@ the real device's boot log matches ours up to the DirectFB "Default 0.3" line.
 Two corrections made the recorded 88-command FIFO produce real UI: (1) surfaces are 8 bits per pixel palette indices (LUT8), tightly packed rows of
 `width` bytes; (2) for blits regs 0x50/0x51/0x56 are the SOURCE and 0x60/0x61/0x66 the DESTINATION (positions only fit this way; clipped pixels dropped
 from 851,190 to 0). Result: the surface at 0x04e815d0 (390x165) is the firmware's "no channels" dialog: a black header with the red title "ЦТВ"
-(DTV) and a blue body "Нет каналов" (no channels, Russian localisation). See evidence/sunplus/no-channels-dialog-false-colour.png (placeholder palette:
+(DTV) and a blue body "Нет каналов" (no channels, Russian localisation). See evidence/sunplus/no-channels-dialog-false-colour.png (placeholder palette, superseded:
 the real CLUT is not located yet; this is layout only). The dialog is composited onto the 1216x660 OSD buffer at 0x04a7aa00 at (453,200).
+
+### Palette found
+The OSD region descriptors (table at 0x8085df78, 24 x 12 bytes {handle, descriptor, ..}) hold the CLUT pointer at descriptor+0xc (set by
+`DRV_OSD_SetClutPtr` = 0x80dc5544, flag +0x10): 256 x (A,R,G,B) bytes at 0x85b217b0 / 0x85b22780 / 0x85b23750 (identical in the three windows; entry 0 = transparent
+magenta key, 1..~200 grey gradient, 228 orange (255,193,30), 255 light grey A=205). `tools/sunplus/render_surface.py` uses it:
+evidence/sunplus/no-channels-dialog.png is the dialog in the firmware's own colours. (The 256-entry table written through 0xBFFEA1C8/1CC/1D0/1D4 is a
+smooth colour ramp loaded once by a video module, not the OSD palette.) `DRV_OSD_SetWindow`-like 0x80dc606c is called as (window 2, 1320, 1366, 750, 768).
