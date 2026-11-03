@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Every Screen · Manta Emulator</title>
+<meta name="description" content="Every screen the original Manta TV firmware drew during an automatic key-by-key exploration in the emulator, with the key path to each one.">
+<meta name="theme-color" content="#0b0f14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='6' width='26' height='17' rx='2' fill='%230b0f14' stroke='%235eb8ff' stroke-width='2.5'/%3E%3Cpath d='M11 28h10' stroke='%235eb8ff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#0b0f14;--panel:#141a22;--panel2:#1a222c;--line:#263140;--line2:#33414f;--text:#e7edf3;--mut:#93a1b0;--dim:#6b7887;--acc:#5eb8ff;--acc-ink:#04111f;--acc-soft:rgba(94,184,255,.12);--warn:#f2b25c;--warn-soft:rgba(242,178,92,.12);--good:#56d364;--nav-h:58px}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f5f7fa;--panel:#fff;--panel2:#f1f4f8;--line:#d7dee6;--line2:#c3ccd6;--text:#18202a;--mut:#56626f;--dim:#7b8794;--acc:#0a66c2;--acc-ink:#fff;--acc-soft:rgba(10,102,194,.09);--warn:#9a6200;--warn-soft:rgba(154,98,0,.09);--good:#1a7f37}}
+:root[data-theme="light"]{--bg:#f5f7fa;--panel:#fff;--panel2:#f1f4f8;--line:#d7dee6;--line2:#c3ccd6;--text:#18202a;--mut:#56626f;--dim:#7b8794;--acc:#0a66c2;--acc-ink:#fff;--acc-soft:rgba(10,102,194,.09);--warn:#9a6200;--warn-soft:rgba(154,98,0,.09);--good:#1a7f37}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:hidden}
+img{max-width:100%;display:block}[hidden]{display:none!important}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+code,.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}@media(max-width:600px){.wrap{padding:0 16px}}
+.top{position:sticky;top:0;z-index:50;height:var(--nav-h);background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top .wrap{height:100%;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--text);white-space:nowrap}
+.brand:hover{text-decoration:none}
+.brand .logo{width:28px;height:20px;border-radius:4px;border:2px solid var(--text);position:relative}
+.brand .logo::after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:2px;margin-left:-5px;background:var(--text)}
+.top .sp{flex:1}
+.top a.back{font-size:14px;color:var(--mut)}
+h1{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:34px 0 10px;letter-spacing:-.015em}
+.lead{color:var(--mut);max-width:780px;margin:0 0 18px}
+.notice{border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);background:var(--warn-soft);border-radius:12px;padding:10px 14px;font-size:14px;margin:0 0 18px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px;position:sticky;top:var(--nav-h);z-index:20;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;color:var(--mut);font:inherit;font-size:14px;font-weight:600;padding:7px 13px;border-radius:8px;cursor:pointer}
+.seg button[aria-selected=true]{background:var(--panel);color:var(--text);box-shadow:0 0 0 1px var(--line)}
+.search{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:0 12px}
+.search input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:inherit;font-size:14.5px;padding:9px 0;outline:none}
+.search:focus-within{border-color:var(--acc)}
+.count{color:var(--mut);font-size:13.5px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.tile{all:unset;cursor:zoom-in;display:block;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;transition:border-color .15s,transform .15s}
+.tile:hover{border-color:var(--line2);transform:translateY(-2px)}
+.tile:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tile .th{aspect-ratio:16/9;background:#000;display:grid;place-items:center;overflow:hidden}
+.tile .th img{width:100%;height:100%;object-fit:contain}
+.tile .cap{padding:7px 10px 9px;font-size:12px;line-height:1.35;color:var(--mut);word-break:break-word}
+.tile .cap b{color:var(--text);font-weight:700;margin-right:6px}
+.more{display:flex;justify-content:center;margin:20px 0}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+.btn:hover{border-color:var(--line2)}
+/* viewer */
+.vw{position:fixed;inset:0;z-index:100;background:rgba(4,6,9,.94);display:none;flex-direction:column}
+.vw.open{display:flex}
+.vw .head{display:flex;align-items:center;gap:10px;padding:10px 14px;color:#d7dee6;border-bottom:1px solid #1e2833}
+.vw .head .t{flex:1;min-width:0;font-size:14px}
+.vw .head .t b{color:#fff}
+.vw .head button{border:1px solid #33414f;background:#141a22;color:#e7edf3;border-radius:9px;height:36px;min-width:36px;padding:0 10px;cursor:pointer;font:inherit;font-size:14px}
+.vw .body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:0}
+@media(max-width:860px){.vw .body{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}}
+.vw .pic{display:grid;place-items:center;padding:14px;min-height:0}
+.vw .pic img{max-width:100%;max-height:100%;object-fit:contain;background:#000;border-radius:4px}
+.vw .side{border-left:1px solid #1e2833;padding:14px;overflow:auto;color:#cfd8e1;font-size:13.5px}
+@media(max-width:860px){.vw .side{border-left:0;border-top:1px solid #1e2833;max-height:42vh}}
+.vw .side h4{margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8a96a3}
+.path{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
+.k{font:600 11.5px/1 ui-monospace,Consolas,monospace;padding:5px 7px;border-radius:6px;background:#1a222c;border:1px solid #2a3542;color:#e7edf3}
+.keys{display:flex;flex-wrap:wrap;gap:6px}
+.keys button{font:600 12px/1 ui-monospace,Consolas,monospace;padding:7px 9px;border-radius:7px;border:1px solid #33414f;background:#141a22;color:#e7edf3;cursor:pointer}
+.keys button:hover{border-color:#5eb8ff}
+.keys button.same{opacity:.45}
+.vw .note{color:#8a96a3;font-size:12.5px;margin-top:14px}
+footer{border-top:1px solid var(--line);margin-top:50px;padding:24px 0 36px;color:var(--mut);font-size:13.5px}
+</style>
+</head>
+<body>
+<nav class="top"><div class="wrap">
+  <a class="brand" href="./"><span class="logo" aria-hidden="true"></span><span>Manta Emulator</span></a>
+  <span class="sp"></span>
+  <a class="back" href="./#try">← Back to the showcase</a>
+</div></nav>
+
+<main class="wrap">
+  <h1>Every screen</h1>
+  <p class="lead">An automatic explorer pressed every remote key on every screen it reached and kept each new screen the original firmware drew. Each screenshot below shows the key path that leads to it from the start screen. Open one to follow its keys to the next screens.</p>
+  <div class="notice" id="note"></div>
+
+  <div class="bar">
+    <div class="seg" role="tablist" aria-label="Platform">
+      <button role="tab" aria-selected="true" data-p="sunplus">Sunplus LED4202</button>
+      <button role="tab" aria-selected="false" data-p="mstar">MStar LCD4214</button>
+    </div>
+    <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Filter by keys, e.g. MENU DOWN OK" aria-label="Filter screens by key path"></label>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="more"><button class="btn" id="more" type="button" hidden>Show more</button></div>
+</main>
+
+<footer><div class="wrap">Screens come from automated runs of the emulator. Firmware and its artwork belong to their owners. Manta and the Manta logos are trademarks of their owner; this is an independent project, not affiliated with or endorsed by Manta.</div></footer>
+
+<div class="vw" id="vw" role="dialog" aria-modal="true" aria-label="Screen viewer">
+  <div class="head">
+    <button id="vBack" type="button" aria-label="Back" title="Back (Backspace)">←</button>
+    <div class="t" id="vTitle"></div>
+    <button id="vPrev" type="button" aria-label="Previous screen" title="Previous (←)">‹</button>
+    <button id="vNext" type="button" aria-label="Next screen" title="Next (→)">›</button>
+    <button id="vClose" type="button" aria-label="Close" title="Close (Esc)">✕</button>
+  </div>
+  <div class="body">
+    <div class="pic"><img id="vImg" alt=""></div>
+    <div class="side">
+      <h4>Key path from the start screen</h4><div class="path" id="vPath"></div>
+      <h4>Press a key (recorded from this screen)</h4><div class="keys" id="vKeys"></div>
+      <div class="note" id="vNote"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+const NOTES={
+  sunplus:'<b>Sunplus LED4202:</b> the OSD plane drawn by the unmodified firmware (exploratory GPU model). The grey surround is the empty OSD plane; there is no video plane and the panel placement is a guess. Keys are the firmware\'s own UI events. Runs that died on a key (a known race in the key-injection host call) are listed in atlas.json and not shown as screens.',
+  mstar:'<b>MStar LCD4214:</b> GOP windows drawn by the unmodified firmware, composed by the emulator\'s diagnostic preview with its labelled exploratory options: generated colour-bar test picture behind the OSD, menu auto-exit disabled (<code>--exploratory-menu-no-autoexit</code>, the emulator\'s time scale is uncalibrated). Black areas are outside the enabled windows\' extent (not composed). Screens whose slider values were changed more than three times in one page are not explored further. Images are 680 px WebP at quality 90 (the noisy test picture does not compress losslessly); the exact frames are kept with the run data.'
+};
+const data={};let plat='sunplus',list=[],shown=0,cur=null,hist=[];
+const PAGE=120;
+async function load(p){
+  if(!data[p]){const r=await fetch('assets/atlas/'+p+'/atlas.json');data[p]=await r.json();data[p].byId=Object.fromEntries(data[p].screens.map(s=>[s.id,s]))}
+  return data[p];
+}
+function tile(s){return `<button class="tile" type="button" data-id="${s.id}"><div class="th"><img src="assets/atlas/${plat}/${s.file}" alt="Screen ${s.id}" loading="lazy" decoding="async"></div><div class="cap"><b>#${s.id}</b>${esc(s.path.join(' ')||'start screen')}</div></button>`}
+function render(reset){
+  const D=data[plat],q=$('#q').value.trim().toUpperCase().split(/\s+/).filter(Boolean);
+  if(reset){list=D.screens.filter(s=>{if(!q.length)return true;const p=s.path.join(' ').toUpperCase();let i=0;for(const w of q){const j=p.indexOf(w,i);if(j<0)return false;i=j+w.length}return true});shown=0;$('#grid').innerHTML=''}
+  const add=list.slice(shown,shown+PAGE);shown+=add.length;
+  $('#grid').insertAdjacentHTML('beforeend',add.map(tile).join(''));
+  $('#more').hidden=shown>=list.length;
+  $('#count').textContent=`${list.length} of ${D.screens.length} screens · ${D.transitions} transitions recorded`;
+}
+async function setPlat(p){
+  plat=p;$$('[data-p]').forEach(b=>b.setAttribute('aria-selected',b.dataset.p===p));$('#note').innerHTML=NOTES[p];
+  $('#grid').innerHTML='<p class="count">loading…</p>';await load(p);render(true);
+}
+function show(id,push){
+  const D=data[plat],s=D.byId[id];if(!s)return;
+  if(push&&cur!=null&&cur!==id)hist.push(cur);cur=id;
+  $('#vImg').src='assets/atlas/'+plat+'/'+s.file;$('#vImg').alt='Screen '+id;
+  $('#vTitle').innerHTML=`<b>#${id}</b> · ${esc(D.title||plat)}`;
+  $('#vPath').innerHTML=s.path.length?s.path.map(k=>`<span class="k">${esc(k)}</span>`).join(''):'<span class="k">start screen</span>';
+  const ks=Object.entries(s.next).sort((a,b)=>a[0].localeCompare(b[0]));
+  $('#vKeys').innerHTML=ks.length?ks.map(([k,t])=>`<button type="button" data-to="${t}" class="${t===id?'same':''}" title="${t===id?'no visible change':'go to #'+t}">${esc(k)}${t===id?'':' → #'+t}</button>`).join(''):'<span style="color:#8a96a3">No keys were recorded from this screen (not expanded).</span>';
+  $('#vNote').textContent=`Keys that leave the screen unchanged are dimmed. ${ks.length} keys recorded from here.`;
+  $('#vBack').disabled=!hist.length;
+}
+function open(id){hist=[];cur=null;$('#vw').classList.add('open');document.body.style.overflow='hidden';show(id,false);$('#vClose').focus()}
+function close(){$('#vw').classList.remove('open');document.body.style.overflow='';$('#vImg').removeAttribute('src');const t=document.querySelector(`.tile[data-id="${cur}"]`);if(t)t.focus()}
+function step(d){const i=list.findIndex(s=>s.id===cur);const n=list[(i+d+list.length)%list.length];if(n)show(n.id,true)}
+$('#grid').onclick=e=>{const t=e.target.closest('.tile');if(t)open(+t.dataset.id)};
+$('#more').onclick=()=>render(false);
+$('#vKeys').onclick=e=>{const b=e.target.closest('button');if(b)show(+b.dataset.to,true)};
+$('#vBack').onclick=()=>{if(hist.length)show(hist.pop(),false)};
+$('#vPrev').onclick=()=>step(-1);$('#vNext').onclick=()=>step(1);$('#vClose').onclick=close;
+document.addEventListener('keydown',e=>{if(!$('#vw').classList.contains('open'))return;
+  if(e.key==='Escape')close();else if(e.key==='ArrowLeft')step(-1);else if(e.key==='ArrowRight')step(1);else if(e.key==='Backspace'){e.preventDefault();$('#vBack').click()}});
+let qt=null;$('#q').addEventListener('input',()=>{clearTimeout(qt);qt=setTimeout(()=>render(true),150)});
+$$('[data-p]').forEach(b=>b.onclick=()=>setPlat(b.dataset.p));
+// infinite scroll
+if('IntersectionObserver' in window)new IntersectionObserver(es=>{if(es[0].isIntersecting&&!$('#more').hidden)render(false)},{rootMargin:'600px'}).observe($('#more'));
+const want=new URLSearchParams(location.search).get('p');setPlat(want==='mstar'?'mstar':'sunplus');
+})();
+</script>
+</body>
+</html>

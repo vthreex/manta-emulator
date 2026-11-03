@@ -434,6 +434,9 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   Ar mach(find(sections, "machine").bytes.data(), find(sections, "machine").bytes.size());
   // machine section first: it carries the TLB install log needed before the CPU context is restored.
   ioClass(mach, *this);
+  if (!options_.gopFrameHistory.empty()) {   // host-side diagnostic only: a run's frame history starts empty (the state's own history would hide an unchanged first frame and use up the 128-frame cap)
+    historyChecksum_ = 0; historyFrames_ = 0; historyIndex_.clear();
+  }
   if (tlbwrSeen_) throw SnapshotError("snapshot taken after a TLBWR: random TLB replacement cannot be replayed");
   // 1. replay the guest's TLBWI installs (hooks gated), then 2. restore the CPU context over the resulting TLB.
   if (!tlbInstalls_.empty()) {
