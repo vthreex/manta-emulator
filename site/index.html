@@ -95,14 +95,44 @@ h1 em{font-style:normal;color:var(--acc)}
 .stat span{color:var(--mut);font-size:13.5px;line-height:1.4;display:block;margin-top:4px}
 
 /* tv */
-.tv{position:relative;background:var(--tv-bezel);border-radius:14px;padding:10px 10px 14px;box-shadow:var(--shadow),inset 0 0 0 1px var(--tv-edge)}
-.tv .scr{position:relative;aspect-ratio:16/9;background:#000;border-radius:4px;overflow:hidden}
+/* Two drawn sets, modelled on the real products (no photos used):
+   lcd = Manta LCD4214: thick glossy piano-black bezel, light swoosh along the top edge, silver inner frame, logo with a diamond mark, chrome neck, oval base.
+   led = Manta LED4202: thin black bezel, logo strip at the bottom, black slotted pedestal on a flat base. */
+.tv{position:relative;box-shadow:var(--shadow)}
+.tv .scr{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
 .tv .scr img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .25s ease}
 .tv .scr img.fade{opacity:0}
-.tv .led{position:absolute;right:18px;bottom:5px;width:5px;height:5px;border-radius:50%;background:#e5484d;box-shadow:0 0 6px #e5484d}
-.tv .led.on{background:#3ad36a;box-shadow:0 0 6px #3ad36a}
-.tv .brandmark{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);font-size:8px;letter-spacing:.3em;color:#58606a;font-weight:700}
-.tv-stand{width:34%;height:12px;margin:0 auto;background:linear-gradient(var(--tv-edge),var(--tv-bezel));clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);border-radius:0 0 6px 6px}
+.tv .scr::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2}
+.tv .led{position:absolute;width:3px;height:3px;border-radius:50%;background:#d23b3b;box-shadow:0 0 4px #d23b3b}
+.tv .led.on{background:#7cc4ff;box-shadow:0 0 5px #7cc4ff}
+.tv .brandmark{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.35em;font-weight:800;white-space:nowrap;line-height:1;pointer-events:none}
+.stand{position:relative;margin:0 auto;pointer-events:none}
+.stand::before,.stand::after{content:"";position:absolute;left:50%;transform:translateX(-50%)}
+
+.tv[data-model=lcd]{border-radius:1.6%/2.8%;padding:3.6% 3.8% 5.4%;
+  background:linear-gradient(103deg,rgba(255,255,255,.26) 0,rgba(255,255,255,.16) 54%,rgba(255,255,255,0) 58%) top/100% 3.2% no-repeat,
+             linear-gradient(180deg,#2a2c30 0%,#111214 26%,#070708 100%);
+  box-shadow:var(--shadow),inset 0 0 0 1px #3c3f44,inset 0 1px 0 rgba(255,255,255,.3)}
+.tv[data-model=lcd] .scr{box-shadow:0 0 0 1px #5d6168,0 0 0 2px #1b1c1f}
+.tv[data-model=lcd] .scr::after{background:linear-gradient(118deg,rgba(255,255,255,.11) 0,rgba(255,255,255,.04) 36%,rgba(255,255,255,0) 36.3%)}
+.tv[data-model=lcd] .brandmark{bottom:1.7%;font-size:clamp(6px,1.05vw,11px);letter-spacing:.16em;color:#d3d6da}
+.tv[data-model=lcd] .brandmark::before{content:"";width:1.1em;height:.62em;background:#d3d6da;clip-path:polygon(0 50%,38% 0,100% 0,62% 50%,100% 100%,38% 100%)}
+.tv[data-model=lcd] .led{left:3.4%;bottom:2.4%}
+.stand[data-model=lcd]{width:100%;height:clamp(18px,3.4vw,34px)}
+.stand[data-model=lcd]::before{top:0;width:5.5%;height:62%;background:linear-gradient(90deg,#1e2023,#8d939a 28%,#eef0f2 50%,#848a91 72%,#1e2023);opacity:.92}
+.stand[data-model=lcd]::after{bottom:0;width:47%;height:44%;border-radius:50%;background:linear-gradient(180deg,#33363b,#0a0b0c 55%);border-bottom:2px solid #c4c8cd;box-shadow:0 8px 16px rgba(0,0,0,.35)}
+
+.tv[data-model=led]{border-radius:.5%/.9%;padding:1.1% 1.1% 3.3%;
+  background:linear-gradient(180deg,#17181b,#0b0c0d);box-shadow:var(--shadow),inset 0 0 0 1px #2c2f34,inset 0 1px 0 rgba(255,255,255,.08)}
+.tv[data-model=led] .scr::after{background:linear-gradient(120deg,rgba(255,255,255,.05) 0,rgba(255,255,255,0) 40%)}
+.tv[data-model=led] .brandmark{bottom:.95%;font-size:clamp(5px,.85vw,9px);letter-spacing:.26em;color:#9a9fa6}
+.tv[data-model=led] .led{right:2.2%;bottom:1.4%}
+.stand[data-model=led]{width:100%;height:clamp(18px,3.3vw,34px)}
+.stand[data-model=led]::before{top:0;width:12%;height:74%;
+  background:linear-gradient(90deg,#2a2d31,#1a1c1f 18% 40%,transparent 40% 60%,#1a1c1f 60% 82%,#2a2d31);
+  border-left:1px solid rgba(255,255,255,.12);border-right:1px solid rgba(255,255,255,.12)}
+.stand[data-model=led]::after{bottom:0;width:42%;height:30%;border-radius:3px 3px 8px 8px;background:linear-gradient(180deg,#3a3d42,#16171a 45%,#0b0c0e);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 0 1px rgba(255,255,255,.06),0 8px 16px rgba(0,0,0,.35)}
 .scr .msg{position:absolute;inset:0;display:grid;place-items:center;color:#4a535d;font-size:14px;text-align:center;padding:16px}
 .toast{position:absolute;left:50%;top:12px;transform:translate(-50%,-6px);background:rgba(10,14,20,.88);color:#e7edf3;font-size:13px;padding:7px 12px;border-radius:8px;border:1px solid #33414f;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -301,8 +331,8 @@ footer p{margin:0;max-width:640px}
       </div>
     </div>
     <div>
-      <div class="tv" id="heroTv"><div class="scr"><img id="heroImg" alt="" src="assets/sunplus/manta-led4202-main-menu-english.png"></div><span class="brandmark">MANTA</span><span class="led on"></span></div>
-      <div class="tv-stand" aria-hidden="true"></div>
+      <div class="tv" id="heroTv" data-model="led"><div class="scr"><img id="heroImg" alt="" src="assets/sunplus/manta-led4202-main-menu-english.png"></div><span class="brandmark">MANTA</span><span class="led on"></span></div>
+      <div class="stand" aria-hidden="true"></div>
       <div class="tvcap"><span id="heroCap">Sunplus LED4202: main menu</span></div>
       <div class="dots" id="heroDots" role="tablist" aria-label="Hero frames"></div>
     </div>
@@ -332,11 +362,11 @@ footer p{margin:0;max-width:640px}
 
   <div class="play">
     <div class="screen-col">
-      <div class="tv" id="pTv" tabindex="0" aria-label="TV screen. Focus it and use your keyboard: arrows, Enter, M for menu, Esc for exit, S for source.">
+      <div class="tv" id="pTv" data-model="led" tabindex="0" aria-label="TV screen. Focus it and use your keyboard: arrows, Enter, M for menu, Esc for exit, S for source.">
         <div class="scr"><img id="pImg" alt="Captured firmware frame"><div class="msg" id="pMsg" hidden></div><div class="toast" id="pToast" role="status"></div></div>
         <span class="brandmark">MANTA</span><span class="led on" id="pLed"></span>
       </div>
-      <div class="tv-stand" aria-hidden="true"></div>
+      <div class="stand" aria-hidden="true"></div>
       <div class="tvcap"><span id="pCap" aria-live="polite">&nbsp;</span><span id="pChip"></span></div>
       <div class="trail" id="pTrail"></div>
     </div>
@@ -376,7 +406,8 @@ footer p{margin:0;max-width:640px}
         <input id="bSeek" type="range" min="0" value="0" aria-label="Boot position">
       </div>
       <div class="term" id="term" aria-live="off"></div>
-      <div class="tv"><div class="scr"><img id="bImg" alt="" hidden><div class="msg" id="bOff">screen off</div></div><span class="brandmark">MANTA</span><span class="led" id="bLed"></span></div>
+      <div class="tv" id="bTv" data-model="led"><div class="scr"><img id="bImg" alt="" hidden><div class="msg" id="bOff">screen off</div></div><span class="brandmark">MANTA</span><span class="led" id="bLed"></span></div>
+      <div class="stand" aria-hidden="true"></div>
       <div class="tvcap"><span id="bCap">press play</span><span id="bChip"></span></div>
     </div>
   </div>
@@ -529,6 +560,10 @@ if('IntersectionObserver' in window){
   navLinks.forEach(a=>{const s=document.querySelector(a.getAttribute('href'));if(s)io.observe(s)});
 }
 
+/* ---------- TV model (LCD4214 for MStar, LED4202 for Sunplus) ---------- */
+function model(id,m){const tv=document.getElementById(id);tv.dataset.model=m;const st=tv.nextElementSibling;if(st&&st.classList.contains('stand'))st.dataset.model=m}
+['heroTv','pTv','bTv'].forEach(id=>model(id,'led'));
+
 /* ---------- image swap without flicker ---------- */
 const cache={};
 function preload(src){if(src&&!cache[src]){const i=new Image();i.src=src;cache[src]=i}return cache[src]}
@@ -552,7 +587,7 @@ HERO.forEach(h=>preload(h[0]));
 function hero(i){
   hi=(i+HERO.length)%HERO.length;const img=$('#heroImg');
   img.classList.add('fade');
-  setTimeout(()=>{img.src=HERO[hi][0];img.alt=HERO[hi][1];$('#heroCap').textContent=HERO[hi][1];img.classList.remove('fade')},220);
+  setTimeout(()=>{model('heroTv',HERO[hi][0].includes('/sunplus/')?'led':'lcd');img.src=HERO[hi][0];img.alt=HERO[hi][1];$('#heroCap').textContent=HERO[hi][1];img.classList.remove('fade')},220);
   $$('#heroDots button').forEach((b,k)=>b.setAttribute('aria-current',k===hi));
 }
 const heroAuto=()=>{clearInterval(heroT);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)heroT=setInterval(()=>hero(hi+1),4500)};
@@ -626,7 +661,7 @@ function press(k){
 function showMs(src,cap){swap($('#pImg'),src,cap);$('#pCap').textContent=cap;$$('#pNote .screens button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===src))}
 function stopTour(){clearInterval(tourTimer);tourTimer=null;const b=$('#tourBtn');if(b)b.textContent='▶ Play recorded session'}
 function setPlat(p){
-  plat=p;stopTour();trail=[];$('#pTrail').innerHTML='';
+  plat=p;stopTour();trail=[];$('#pTrail').innerHTML='';model('pTv',p==='sunplus'?'led':'lcd');
   $$('[data-plat]').forEach(b=>b.setAttribute('aria-selected',b.dataset.plat===p));
   $('#pMsg').hidden=true;
   if(p==='sunplus'){
@@ -702,7 +737,7 @@ $('#bReset').onclick=()=>{bstop();pos=0;brender()};
 $('#bSeek').oninput=e=>{bstop();pos=+e.target.value;brender()};
 $('#stages').onclick=e=>{const s=e.target.closest('.stage');if(!s)return;bstop();const i=+s.dataset.i,f=flat();
   let end=f.length;for(let k=0;k<f.length;k++){if(f[k].i>i){end=k;break}}pos=end;brender()};
-$$('[data-boot]').forEach(b=>b.onclick=()=>{$$('[data-boot]').forEach(x=>x.setAttribute('aria-selected',x===b));bp=b.dataset.boot;bstop();pos=0;brender()});
+$$('[data-boot]').forEach(b=>b.onclick=()=>{$$('[data-boot]').forEach(x=>x.setAttribute('aria-selected',x===b));bp=b.dataset.boot;model('bTv',bp==='sunplus'?'led':'lcd');bstop();pos=0;brender()});
 brender();
 
 /* ---------- gallery + lightbox ---------- */
