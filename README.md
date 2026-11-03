@@ -7,7 +7,7 @@ Booting the **real, unmodified firmware** of Manta televisions in software and w
 | **MStar MSD309** (Titania4, MIPS) | Manta LCD4214 | original firmware boots, the real ZUI draws the OSD, MENU / SOURCE / INFO / factory / hotel / lock menus, USB player, virtual remote |
 | **Sunplus SPHE8600** (MIPS + DSP ASE, eCos + DirectFB) | Manta LED4202, Shivaki STV-24LED14 | kernel boot, SPI-flash model, application starts, DirectFB 1.1.0 initialises; real OSD menu renders and is navigable (exploratory GPU model) |
 
-**[Interactive showcase page](https://vthreex.github.io/manta-emulator/)** (illustrative boot walkthrough and clickable remote built from real captured frames) | **[Releases](../../releases)** | [Architecture notes](docs/sunplus-sphe8600-architecture.md) | [Firmware images and hashes](firmware/README.md)
+**[Interactive showcase page](https://vthreex.github.io/manta-emulator/)** (a remote you can press: it replays a recorded Sunplus menu session frame by frame, plus a boot walkthrough and a gallery of captured frames) | **[Releases](../../releases)** | [Architecture notes](docs/sunplus-sphe8600-architecture.md) | [Firmware images and hashes](firmware/README.md)
 
 ## Gallery (real frames from the emulator)
 
@@ -20,7 +20,11 @@ Booting the **real, unmodified firmware** of Manta televisions in software and w
 | ![DTV banner](evidence/ui-states-session10/17_dtv_channel_banner.png) | ![Lock dialog](evidence/ui-states-session10/16_lock_password_dialog.png) | ![NO SIGNAL](evidence/no-signal-dialog-moved-s13.png) |
 | Digital TV banner | Lock password dialog | NO SIGNAL dialog drawn by the original ZUI |
 
-Sunplus boot logos (recovered from the flash images) and the 632-bitmap OSD atlas are on the showcase page.
+| ![Sunplus main menu](evidence/sunplus/manta-led4202-main-menu-english.png) | ![Sunplus tabs](evidence/sunplus/manta-menu-tabs-sound-feature-setup.png) | ![Sunplus CI message](evidence/sunplus/dtv-source-ci-module-message.png) |
+|---|---|---|
+| Sunplus LED4202: main menu | Sound / Feature / Setup tabs | "CI Module is initializing" after selecting DTV |
+
+Sunplus boot logos (recovered from the flash images), the 632-bitmap OSD atlas and the recorded menu session are on the showcase page.
 
 ## Highlights
 

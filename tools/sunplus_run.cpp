@@ -296,6 +296,7 @@ int main(int argc, char** argv) {
       const uint64_t b0 = m.blocks;
       uc_err ce = uc_emu_start(m.eng.handle, c.fn, pc, 0, 5000000);
       std::printf("host call %08x(%08x,%08x) at idle wake %llu: %s, %llu blocks, v0=%08x\n", c.fn, c.a0, c.a1, (unsigned long long)idles, ce == UC_ERR_OK ? "ok" : uc_strerror(ce), (unsigned long long)(m.blocks - b0), m.eng.reg(UC_MIPS_REG_V0));
+      std::fflush(stdout);   // drivers (menu_viewer, tour recorders) wait for this line to know a queued key was delivered
       for (int k = 0; k < nids; ++k) m.eng.reg(ids[k], saved[k]);
       if (!m.stop.empty()) break;
     }

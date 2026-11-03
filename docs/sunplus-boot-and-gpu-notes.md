@@ -108,4 +108,17 @@ DOWN in the sidebar goes Picture -> Sound -> Feature -> Setup -> Picture (the di
 ### Key injection must not block (live-window crash)
 Keys are delivered by a host call that borrows the idle thread and runs the firmware's event post (`0x80cee834`). If a key arrives while another thread holds the event/GPU lock (menu redraw),
 the post blocks, the scheduler switches away from the borrowed scratch stack and the emulator dies ("Invalid memory read" in the host call, then CPU exception at pc 0): seen in a live session as
-three keys within ~70 ticks. `--cmd-file` keys are now queued and delivered only after >1.5M blocks without a GPU kick and >1.5M blocks after the previous key; the viewer keeps the runner log.
+three keys within ~70 ticks. `--cmd-file` keys are now queued and delivered only after a quiet window without a GPU kick and since the previous key (`SUNPLUS_KEY_QUIET`, default 400,000 blocks; a burst of 17 keys survives); the viewer keeps the runner log.
+
+### Recorded menu sessions (showcase data)
+`tools/sunplus/record_tour.py KEYS TAG` drives the live runner through `menu_viewer.Session` and records every step as (OSD frame before, key, OSD frame after), with frames deduplicated by content hash.
+It waits for the runner's `host call` line, which is flushed now, so it knows the queued key was actually delivered. It then waits until three shots in a row are identical, and re-checks a no-op after 4 s, because some redraws start late.
+`tools/sunplus/export_tour.py TAG...` merges tours into `site/assets/sunplus/tour/`. The frames are saved as lossless palette PNGs, which is exact because they come from an 8-bit CLUT plane, and the transition list goes to `tour.js`.
+The blank start screen hides state: after the menu closes, reopening lags by about one key. So only each tour's first step out of it is kept.
+Behaviour that was observed (all of it firmware behaviour, not emulator logic):
+- With Picture Mode = Dynamic, Brightness to Tint and Aspect Ratio are greyed out, and DOWN jumps from Picture Mode to Colour Temperature. Picture Mode = User unlocks them.
+- RIGHT/LEFT on a numeric item (Balance, Brightness, Contrast, Colour) replaces the menu with a bottom slider bar. DOWN in the slider moves on to the next item's slider.
+- Feature > Language opens a sub-page (OSD Language, Preferred Subtitle, Preferred Audio, DTV/ATV Teletext Language).
+- MENU from inside a tab's item list closes the whole menu.
+- Selecting DTV in the source list shows the firmware message "CI Module is initializing ..." (evidence/sunplus/dtv-source-ci-module-message.png).
+  The other inputs show only a small banner at the top right, and Media decodes as noise because it uses a pixel format that is not modelled.
