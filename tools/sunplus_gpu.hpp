@@ -33,20 +33,23 @@ struct SunplusGpu {
   }
   void fill(uint32_t flags) {
     (void)flags; Surf d = surface(0x60, 0x66); if (!d.ok) { ++unsupported; return; }
-    const int x = sx12(reg[0x80] >> 12), y = sx12(reg[0x80]), w = sx12(reg[0x81] >> 12), h = sx12(reg[0x81]);
+    const int x = sx12(reg[0x80] >> 12), y = sx12(reg[0x80]), w = sx12(reg[0x81] >> 12) + 1, h = sx12(reg[0x81]) + 1;   // rectangle sizes are stored as (width-1, height-1)
     const uint8_t c = color();
     for (int j = 0; j < h; ++j) for (int i = 0; i < w; ++i) { const int px_ = x + i, py = y + j; if (px_ < 0 || py < 0 || px_ >= d.w || py >= d.h) { ++clipped; continue; } *px(d, px_, py) = c; }
   }
   void blit(uint32_t flags, bool stretch) {
-    Surf s = surface(0x50, 0x56), d = surface(0x60, 0x66); if (!d.ok || !s.ok)   /* regs 0x50/51/56 = SOURCE, 0x60/61/66 = DESTINATION (positions only fit this way) */ { ++unsupported; return; }
-    const int sxp = sx12(reg[0x90] >> 12), syp = sx12(reg[0x90]), sw = sx12(reg[0x91] >> 12), sh = sx12(reg[0x91]);
-    const int dx = sx12(reg[0x92] >> 12), dy = sx12(reg[0x92]);
-    const int dw = stretch ? sx12(reg[0x94] >> 12) : sw, dh = stretch ? sx12(reg[0x94]) : sh;
+    Surf s = surface(0x50, 0x56), d = surface(0x60, 0x66); if (!d.ok || !s.ok) { ++unsupported; return; }   /* regs 0x50/51/56 = SOURCE, 0x60/61/66 = DESTINATION (positions only fit this way) */
+    const int sxp = sx12(reg[0x90] >> 12), syp = sx12(reg[0x90]), sw = sx12(reg[0x91] >> 12) + 1, sh = sx12(reg[0x91]) + 1;   // source rect: (x,y) and (width-1,height-1)
+    const int cx0 = sx12(reg[0x75] >> 12), cy0 = sx12(reg[0x75]), cx1 = sx12(reg[0x76] >> 12), cy1 = sx12(reg[0x76]);       // destination clip rect, inclusive end coordinates
+    int dx, dy, dw, dh;
+    if (stretch) { dx = cx0; dy = cy0; dw = cx1 - cx0 + 1; dh = cy1 - cy0 + 1; }   // stretch: the clip rect IS the destination rect (e.g. a 1-px slice stretched across a button)
+    else { dx = sx12(reg[0x92] >> 12); dy = sx12(reg[0x92]); dw = sw; dh = sh; }
     const bool key = flags & 0x08; const uint8_t ck = uint8_t(reg[0x71] & 0xff);
     if (dw <= 0 || dh <= 0 || sw <= 0 || sh <= 0) return;
     for (int j = 0; j < dh; ++j) for (int i = 0; i < dw; ++i) {
       const int ox = dx + i, oy = dy + j, ix = sxp + (stretch ? i * sw / dw : i), iy = syp + (stretch ? j * sh / dh : j);
       if (ox < 0 || oy < 0 || ox >= d.w || oy >= d.h || ix < 0 || iy < 0 || ix >= s.w || iy >= s.h) { ++clipped; continue; }
+      if (!stretch && (ox < cx0 || ox > cx1 || oy < cy0 || oy > cy1)) { ++clipped; continue; }
       const uint8_t p = *px(s, ix, iy); if (key && p == ck) continue; *px(d, ox, oy) = p;
     }
   }
