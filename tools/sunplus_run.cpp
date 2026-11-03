@@ -47,7 +47,7 @@ struct M {
   std::map<uint32_t, std::pair<uint32_t, uint64_t>> zeroReads; std::vector<uint32_t> zeroOrder;
   bool readback = false, unknownZero = false; uint64_t pollLimit = 300000, maxBlocks = 0, blocks = 0; uint32_t cpi = 1;
   std::deque<uint32_t> ring; std::string stop; std::map<uint32_t, int> watch; std::vector<std::string> watchLog;
-  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; std::vector<uint8_t> bestScreen; uint64_t bestNz = 0, bestKick = 0; std::map<uint32_t, std::pair<uint32_t, uint64_t>> thr; std::map<uint32_t, uint32_t> thrPrev; SunplusGpu gpu; bool gpuOn = false; uint32_t gpuLastWp = 0; uint64_t gpuKicks = 0; int uartPcLog = 0; bool irqClearReq = false; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint32_t consecAddr = 0xFFFFFFFF; uint64_t consecCount = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
+  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; std::deque<char> rxq; std::vector<std::pair<uint64_t, std::string>> uartIn; std::vector<uint8_t> bestScreen; uint64_t bestNz = 0, bestKick = 0; std::map<uint32_t, std::pair<uint32_t, uint64_t>> thr; std::map<uint32_t, uint32_t> thrPrev; SunplusGpu gpu; bool gpuOn = false; uint32_t gpuLastWp = 0; uint64_t gpuKicks = 0; int uartPcLog = 0; bool irqClearReq = false; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint32_t consecAddr = 0xFFFFFFFF; uint64_t consecCount = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
   uint32_t lastBlock() const { return ring.empty() ? 0 : ring.back(); }
 };
 
@@ -58,7 +58,8 @@ static uint32_t regValue(M& m, uint32_t off, unsigned size) {
   if (m.sfFn && addr == m.sfReg) { if (m.blocks - m.sfLast < 3000) val = m.sfExpect[0] | (m.sfExpect[1] << 4) | (m.sfExpect[2] << 8) | (m.sfExpect[3] << 12); else val = m.sfDefault * 0x1111u; }
   else if (m.pendLeft > 0 && base == m.pendReg) { val = m.pendBit; m.pendLeft = 0; m.irqClearReq = true; }   // EXPLORATORY injected interrupt source (pending register returns the vector's bit for a few reads)
   else if (!m.flash.empty() && base >= 0xB00 && base < 0xB40) { val = m.written.count(base) ? m.written[base] : 0; if (base == 0xB08) val &= ~0x80u; }   // SPI flash controller: command done instantly (busy bit clear)
-  else if (addr == UART_STAT) val = 0x41;                        // bit0 TX ready + bit6 TX idle (modelled from the firmware's own polls)
+  else if (addr == UART_DATA && !m.rxq.empty()) { val = uint8_t(m.rxq.front()); m.rxq.pop_front(); }   // EXPLORATORY UART receive (serial monitor input, --uart-in)
+  else if (addr == UART_STAT) val = 0x41 | (m.rxq.empty() ? 0u : 2u);                        // bit0 TX ready + bit6 TX idle (modelled from the firmware's own polls)
   else if (auto h = m.hyp.find(addr); h != m.hyp.end()) { val = h->second.value & h->second.mask; ++m.hypUsed[addr]; }
   else if (m.readback && m.written.count(base)) {
     val = m.written[base]; ++m.readbackUsed;
@@ -137,6 +138,7 @@ static void onBlock(uc_engine*, uint64_t addr, uint32_t size, void* user) {
   M& m = *static_cast<M*>(user);
   m.ring.push_back(uint32_t(addr)); if (m.ring.size() > 600) m.ring.pop_front();
   ++m.blocks;
+  if (!m.uartIn.empty() && m.blocks >= m.uartIn.front().first) { for (char c : m.uartIn.front().second) m.rxq.push_back(c); m.uartIn.erase(m.uartIn.begin()); }
 #ifdef _WIN32
   { static const uint64_t hcStart = std::getenv("SUNPLUS_HEAPCHECK") ? std::strtoull(std::getenv("SUNPLUS_HEAPCHECK"), nullptr, 0) : 0; static bool hcDone = false;   // debugging aid: find the first block after which the host heap is corrupt
     if (hcStart && !hcDone && m.blocks >= hcStart && !HeapValidate(GetProcessHeap(), 0, nullptr)) { hcDone = true; std::printf("HEAP CORRUPT detected at block %llu (block %08x)\n", (unsigned long long)m.blocks, uint32_t(addr)); std::fflush(stdout); } }
@@ -204,6 +206,7 @@ int main(int argc, char** argv) {
     else if (a == "--state-follow") { std::string s = argv[++i]; auto c = s.find(':'); m.sfFn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); m.sfReg = uint32_t(std::strtoul(s.c_str() + c + 1, nullptr, 0)) & 0x1FFFFFFF; }
     else if (a == "--dump") { uint32_t ad = uint32_t(std::strtoul(argv[++i], nullptr, 0)); uint32_t ln = uint32_t(std::strtoul(argv[++i], nullptr, 0)); dumps.push_back({ad, ln}); }
     else if (a == "--save-ram") saveRam = argv[++i];
+    else if (a == "--uart-in") { std::string t = argv[++i]; size_t at = t.rfind('@'); uint64_t blk = at == std::string::npos ? 0 : std::strtoull(t.c_str() + at + 1, nullptr, 0); std::string txt = at == std::string::npos ? t : t.substr(0, at); for (char& c : txt) if (c == '|') c = '\r'; m.uartIn.push_back({blk, txt}); }   // EXPLORATORY: feed TEXT@BLOCKS to the UART receiver ('|' = Enter)
     else if (a == "--gpu") m.gpuOn = true;   // EXPLORATORY: execute SUNPLUS GPU FIFO commands (tools/sunplus_gpu.hpp)
     else if (a == "--peek") peeks.push_back(uint32_t(std::strtoul(argv[++i], nullptr, 0)));
     else if (a == "--call") { std::string s = argv[++i]; HostCall c{}; auto p1 = s.find(':'), p2 = s.find(':', p1 + 1), at = s.find('@'); c.fn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); c.a0 = uint32_t(std::strtoul(s.c_str() + p1 + 1, nullptr, 0)); c.a1 = uint32_t(std::strtoul(s.c_str() + p2 + 1, nullptr, 0)); c.at = std::strtoull(s.c_str() + at + 1, nullptr, 0); calls.push_back(c); }
