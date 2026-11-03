@@ -38,8 +38,15 @@ class Session:
         while not os.path.exists(path + '.done'):
             if time.time() - t0 > timeout or self.proc.poll() is not None: return None
             time.sleep(0.05)
-        raw = open(path, 'rb').read(); pal = open(path + '.pal', 'rb').read() if os.path.exists(path + '.pal') else bytes(1024)
-        return render(raw, pal)
+        try:
+            raw = open(path, 'rb').read(); pal = open(path + '.pal', 'rb').read() if os.path.exists(path + '.pal') else bytes(1024)
+            if len(raw) != W * H or len(pal) != 1024: return None
+            im = render(raw, pal)
+        except Exception: return None
+        for ext in ('', '.pal', '.done'):
+            try: os.remove(path + ext)
+            except OSError: pass
+        return im
     def close(self):
         try: self.proc.kill()
         except Exception: pass
@@ -74,10 +81,13 @@ def run_gui(args):
     root.bind('<Key>', onkey)
     def tick():
         if s.proc.poll() is not None: status.config(text='emulator exited'); return
-        im = s.shot(timeout=2)
-        if im is not None:
-            ph = ImageTk.PhotoImage(im); lbl.configure(image=ph); lbl.image = ph
-        root.after(200, tick)
+        try:
+            im = s.shot(timeout=2)
+            if im is not None:
+                ph = ImageTk.PhotoImage(im); lbl.configure(image=ph); lbl.image = ph
+        except Exception as ex:
+            status.config(text='refresh error: %s' % ex)
+        root.after(250, tick)
     root.after(1000, tick)
     root.protocol('WM_DELETE_WINDOW', lambda: (s.close(), root.destroy())); root.mainloop()
 

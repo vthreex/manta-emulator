@@ -109,7 +109,7 @@ static void mmioWrite(uc_engine*, uint64_t off, unsigned size, uint64_t value, v
   if (uint32_t(off) == 0x3590 && (std::getenv("SUNPLUS_GPU_TRACE") || m.gpuOn)) {   // debugging aid: dump the SUNPLUS GPU command words (reg<<24|data; 0xA0000000|n = execute n) between the previous and the new FIFO write pointer
     const uint32_t base = m.written.count(0x358C) ? m.written[0x358C] << 10 : 0, wp = uint32_t(v) & 0xffff; ++m.gpuKicks;
     if (std::getenv("SUNPLUS_GPU_TRACE")) { if (std::getenv("SUNPLUS_KICK_TIME")) std::fprintf(stderr, "kicktime %llu blocks %llu\n", (unsigned long long)m.gpuKicks, (unsigned long long)m.blocks); std::printf("gpu kick %llu: fifo base %08x wp %04x (prev %04x):", (unsigned long long)m.gpuKicks, base, wp, m.gpuLastWp); }
-    for (uint32_t a = m.gpuLastWp; a != wp && base; a = (a + 4) & 0xffff) { uint32_t w = 0; m.eng.read(base + a, &w, 4); if (std::getenv("SUNPLUS_GPU_TRACE")) std::printf(" %08x", w); if (m.gpuOn) m.gpu.push(w); if (((a - m.gpuLastWp) & 0xffff) > 0x1000) break; }
+    for (uint32_t a = m.gpuLastWp; a != wp && base; a = (a + 4) & 0xffff) { uint32_t w = 0; m.eng.read(base + (a & 0x7fff), &w, 4);   /* ring is 0x8000 bytes; bit 15 of the pointers is the lap flag */ if (std::getenv("SUNPLUS_GPU_TRACE")) std::printf(" %08x", w); if (m.gpuOn) m.gpu.push(w); if (((a - m.gpuLastWp) & 0xffff) > 0x1000) break; }
     std::printf("\n"); m.gpuLastWp = wp;
     if (const char* bs = std::getenv("SUNPLUS_BEST_SCREEN")) {   // debugging aid: SUNPLUS_BEST_SCREEN=addr,w,h keeps the buffer state with the most non-zero pixels seen after any GPU kick (saved by SUNPLUS_BEST_FILE at exit)
       unsigned long ba = 0, bw = 0, bh = 0; if (std::sscanf(bs, "%lx,%lu,%lu", &ba, &bw, &bh) == 3 && ba + bw * bh <= m.ram.size()) {

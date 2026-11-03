@@ -97,3 +97,10 @@ Session evidence: evidence/sunplus/manta-menu-navigation-session.png (boot, MENU
 Tools: `sunplus_run --cmd-file F --realtime-after N --key-fn ADDR` polls F for `key 0xHEX` / `shot PATH` lines (dumps the OSD buffer and CLUT); `tools/sunplus/menu_viewer.py` drives it
 (headless `--script "wait 75,key MENU,shot x.png,..."` verified; the Tk window mode is untested). The OSD buffer 0x04a17a00 (1216x660) and CLUT 0x85cbf4b8 are specific to the Manta image/config.
 Not modelled yet: display scan-out registers (placement is a guess), video plane behind the OSD, IR hardware (keys are injected as events), persistence of changed settings.
+
+### GPU FIFO wrap fix and the other tabs
+The command ring is 0x8000 bytes; bit 15 of the write pointer (0xBFFE3590) is a lap flag. The first capture read ring offsets up to 0xFFFF, so after the ring wrapped it fed stray memory to the GPU
+(7 bogus "commands") and silently lost real ones (515 -> 995 blits for the same session) - visible as black patches and a stuck sidebar. Fixed by masking the read address with 0x7fff.
+With it every tab renders cleanly (evidence/sunplus/manta-menu-tabs-sound-feature-setup.png): Sound (Sound Mode Speech, Bass 40, Treble 60, Balance 0, Surround Off, AVL On, SPDIF PCM),
+Feature (Lock, Language, Clock, Sleep Timer, Auto Power Off, Hearing Impaired, CI Info, PVR/Timeshift), Setup (OSD Timer 15 Seconds, Auto SCART, PC Setup, Blue Screen, Home Mode, Reset TV Setting, Software Upgrade).
+DOWN in the sidebar goes Picture -> Sound -> Feature -> Setup -> Picture (the disabled Channel tab is skipped).
