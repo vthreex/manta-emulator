@@ -12,6 +12,7 @@
 //   --unknown-zero   (EXPLORATORY) every other register read returns 0; each distinct address is listed in the report
 // The register window uses uc_mmio_map callbacks (memory hooks mis-handle stores in branch delay slots in this Unicorn).
 #include "cpu/engine.hpp"
+#include "sunplus_gpu.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -46,7 +47,7 @@ struct M {
   std::map<uint32_t, std::pair<uint32_t, uint64_t>> zeroReads; std::vector<uint32_t> zeroOrder;
   bool readback = false, unknownZero = false; uint64_t pollLimit = 300000, maxBlocks = 0, blocks = 0; uint32_t cpi = 1;
   std::deque<uint32_t> ring; std::string stop; std::map<uint32_t, int> watch; std::vector<std::string> watchLog;
-  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint32_t gpuLastWp = 0; uint64_t gpuKicks = 0; int uartPcLog = 0; bool irqClearReq = false; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint32_t consecAddr = 0xFFFFFFFF; uint64_t consecCount = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
+  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; SunplusGpu gpu; bool gpuOn = false; uint32_t gpuLastWp = 0; uint64_t gpuKicks = 0; int uartPcLog = 0; bool irqClearReq = false; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint32_t consecAddr = 0xFFFFFFFF; uint64_t consecCount = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
   uint32_t lastBlock() const { return ring.empty() ? 0 : ring.back(); }
 };
 
@@ -101,10 +102,10 @@ static void mmioWrite(uc_engine*, uint64_t off, unsigned size, uint64_t value, v
   m.rbReads[base] = 0; m.consecAddr = 0xFFFFFFFF;
   if (size == 4) m.written[base] = v;
   else { const unsigned sh = (off & 3) * 8; m.written[base] = (m.written[base] & ~(mask << sh)) | (v << sh); }
-  if (uint32_t(off) == 0x3590 && std::getenv("SUNPLUS_GPU_TRACE")) {   // debugging aid: dump the SUNPLUS GPU command words (reg<<24|data; 0xA0000000|n = execute n) between the previous and the new FIFO write pointer
+  if (uint32_t(off) == 0x3590 && (std::getenv("SUNPLUS_GPU_TRACE") || m.gpuOn)) {   // debugging aid: dump the SUNPLUS GPU command words (reg<<24|data; 0xA0000000|n = execute n) between the previous and the new FIFO write pointer
     const uint32_t base = m.written.count(0x358C) ? m.written[0x358C] << 10 : 0, wp = uint32_t(v) & 0xffff; ++m.gpuKicks;
-    std::printf("gpu kick %llu: fifo base %08x wp %04x (prev %04x):", (unsigned long long)m.gpuKicks, base, wp, m.gpuLastWp);
-    for (uint32_t a = m.gpuLastWp; a != wp && base; a = (a + 4) & 0xffff) { uint32_t w = 0; m.eng.read(base + a, &w, 4); std::printf(" %08x", w); if (((a - m.gpuLastWp) & 0xffff) > 0x1000) break; }
+    if (std::getenv("SUNPLUS_GPU_TRACE")) std::printf("gpu kick %llu: fifo base %08x wp %04x (prev %04x):", (unsigned long long)m.gpuKicks, base, wp, m.gpuLastWp);
+    for (uint32_t a = m.gpuLastWp; a != wp && base; a = (a + 4) & 0xffff) { uint32_t w = 0; m.eng.read(base + a, &w, 4); if (std::getenv("SUNPLUS_GPU_TRACE")) std::printf(" %08x", w); if (m.gpuOn) m.gpu.push(w); if (((a - m.gpuLastWp) & 0xffff) > 0x1000) break; }
     std::printf("\n"); m.gpuLastWp = wp;
     if (const char* sk = std::getenv("SUNPLUS_STOP_AT_KICK")) if (m.gpuKicks >= std::strtoull(sk, nullptr, 0)) { m.stop = "stop at gpu kick (debug)"; uc_emu_stop(m.eng.handle); }
   }
@@ -197,6 +198,7 @@ int main(int argc, char** argv) {
     else if (a == "--state-follow") { std::string s = argv[++i]; auto c = s.find(':'); m.sfFn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); m.sfReg = uint32_t(std::strtoul(s.c_str() + c + 1, nullptr, 0)) & 0x1FFFFFFF; }
     else if (a == "--dump") { uint32_t ad = uint32_t(std::strtoul(argv[++i], nullptr, 0)); uint32_t ln = uint32_t(std::strtoul(argv[++i], nullptr, 0)); dumps.push_back({ad, ln}); }
     else if (a == "--save-ram") saveRam = argv[++i];
+    else if (a == "--gpu") m.gpuOn = true;   // EXPLORATORY: execute SUNPLUS GPU FIFO commands (tools/sunplus_gpu.hpp)
     else if (a == "--peek") peeks.push_back(uint32_t(std::strtoul(argv[++i], nullptr, 0)));
     else if (a == "--call") { std::string s = argv[++i]; HostCall c{}; auto p1 = s.find(':'), p2 = s.find(':', p1 + 1), at = s.find('@'); c.fn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); c.a0 = uint32_t(std::strtoul(s.c_str() + p1 + 1, nullptr, 0)); c.a1 = uint32_t(std::strtoul(s.c_str() + p2 + 1, nullptr, 0)); c.at = std::strtoull(s.c_str() + at + 1, nullptr, 0); calls.push_back(c); }
     else if (a == "--snap-after") m.trigText = argv[++i];
@@ -233,6 +235,7 @@ int main(int argc, char** argv) {
   std::memcpy(m.ram.data() + loadAt, kernel.data(), std::min(kernel.size(), ramBytes - loadAt));
   m.eng.mapShared(0, ramBytes, m.ram.data());
   m.eng.setBacking(m.ram.data(), ramBytes);
+  m.gpu.ram = m.ram.data(); m.gpu.ramSize = ramBytes;
   if (xip && !m.flash.empty()) { size_t sz = (m.flash.size() + 0xfff) & ~size_t(0xfff); m.flash.resize(sz, 0xFF); m.eng.mapShared(xip, sz, m.flash.data(), UC_PROT_READ | UC_PROT_EXEC); }   // EXPLORATORY: SPI flash mapped for execute-in-place
   if (mapIop) m.eng.map(0x1FFC0000, 0x20000);                // EXPLORATORY: IOP data window read by 'Get IOP Data' (0x200 bytes, contents unknown -> zeros)
   if (mapIop) for (auto& [off, val] : iopSets) m.eng.write(0x1FFC0000 + off, &val, 4);
@@ -296,6 +299,7 @@ int main(int argc, char** argv) {
   if (m.hotN) { std::vector<std::pair<uint64_t, uint32_t>> v; for (auto& [a, n] : m.hot) v.push_back({n, a}); std::sort(v.rbegin(), v.rend()); std::printf("hot blocks:"); for (size_t k = 0; k < v.size() && k < m.hotN; ++k) std::printf(" %08x:%llu", v[k].second, (unsigned long long)v[k].first); std::printf("\n"); }
   if (coverHi) { std::printf("covered blocks %08x..%08x:", coverLo, coverHi); for (auto& [a, n] : m.hot) if (a >= coverLo && a < coverHi) std::printf(" %08x:%llu", a, (unsigned long long)n); std::printf("\n"); }
   if (m.spHi) { std::printf("thread blocks (sp %08x..%08x), oldest..newest:", m.spLo, m.spHi); for (uint32_t x : m.spRing) std::printf(" %08x", x); std::printf("\n"); }
+  if (m.gpuOn) std::printf("gpu: cmd0 %llu cmd3 %llu cmd5 %llu other(1,2,4) %llu/%llu/%llu unsupported %llu clipped px %llu\n", (unsigned long long)m.gpu.executed[0], (unsigned long long)m.gpu.executed[3], (unsigned long long)m.gpu.executed[5], (unsigned long long)m.gpu.executed[1], (unsigned long long)m.gpu.executed[2], (unsigned long long)m.gpu.executed[4], (unsigned long long)m.gpu.unsupported, (unsigned long long)m.gpu.clipped);
   std::printf("last injected vector: %#x (injections %llu)\n", m.lastVec, (unsigned long long)m.irqInjected);
   if (m.stop.rfind("stuck polling", 0) == 0 && m.lastBlock()) { uint8_t cb[96]; m.eng.read(m.lastBlock() & 0x1FFFFFFF, cb, sizeof cb); std::printf("stuck-code %08x:", m.lastBlock()); for (uint8_t x : cb) std::printf("%02x", x); std::printf("\n"); }
   m.idleWakes = idles;

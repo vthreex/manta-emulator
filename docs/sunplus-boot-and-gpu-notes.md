@@ -29,3 +29,12 @@ and a DSP-capable core (`--cpu 24kec`). Requires the patched Unicorn (`tools/pat
 ## Debug switches added to the runner (environment variables)
 `SUNPLUS_UART_PC`, `SUNPLUS_WATCH_RING`, `SUNPLUS_WATCH_FROM`, `SUNPLUS_STOP_AT_PC`, `SUNPLUS_READ_TRACE=lo:hi`, `SUNPLUS_SPI_TRACE=lo:hi`,
 `SUNPLUS_GPU_TRACE`, `SUNPLUS_STOP_AT_KICK`, `SUNPLUS_HEAPCHECK`, `SUNPLUS_FLUSH_TB_IDLES`; plus `--save-ram FILE` (registers + RAM).
+
+## GPU model status (tools/sunplus_gpu.hpp, `--gpu`, exploratory)
+Surface convention derived from the driver: base = ((reg[base+1]&0xffff)<<16 | reg[base]&0xffff) & 0x0fffffff, tightly packed ARGB8888,
+dims reg = (width-1)<<12 | (height-1); pairs are (x:hi12, y:lo12) and (w:hi12, h:lo12). Dst of blits = regs 50/51/56, src = 60/61/66 (fill uses 60/61/66 as its dst),
+rect/position regs 90 (src x,y) 91 (w,h) 92 (dst x,y) 94 (stretch dst w,h), fill rect 80/81, colour 73/74, colour key 71.
+With the menu/source host calls the firmware issues only 88 GPU commands (15 fill, 62 blit, 11 stretch) in the whole 2.5G-block run; all source
+surfaces are still empty at that point, so the rendered output is flat fill colour. The GPU is therefore not the first missing piece: the app is
+idle before it draws the real UI. Public searches (Sunplus site, mikrocontroller.net repair thread, GPL/driver searches) found no register documentation;
+the real device's boot log matches ours up to the DirectFB "Default 0.3" line.
