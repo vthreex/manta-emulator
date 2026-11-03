@@ -154,7 +154,7 @@ function show(id,push){
   $('#vPath').innerHTML=s.path.length?s.path.map(k=>`<span class="k">${esc(k)}</span>`).join(''):'<span class="k">start screen</span>';
   const ks=Object.entries(s.next).sort((a,b)=>a[0].localeCompare(b[0]));
   $('#vKeys').innerHTML=ks.length?ks.map(([k,t])=>`<button type="button" data-to="${t}" class="${t===id?'same':''}" title="${t===id?'no visible change':'go to #'+t}">${esc(k)}${t===id?'':' → #'+t}</button>`).join(''):'<span style="color:#8a96a3">No keys were recorded from this screen (not expanded).</span>';
-  $('#vNote').textContent=`Keys that leave the screen unchanged are dimmed. ${ks.length} keys recorded from here.`;
+  $('#vNote').textContent=`Keys that leave the screen unchanged are dimmed. ${ks.length} keys recorded from here.`+(s.extra?` This screen comes from a run with the extra labelled option ${s.extra.join(' ')}.`:'');
   $('#vBack').disabled=!hist.length;
 }
 function open(id){hist=[];cur=null;$('#vw').classList.add('open');document.body.style.overflow='hidden';show(id,false);$('#vClose').focus()}

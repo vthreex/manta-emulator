@@ -565,6 +565,7 @@ footer p{margin:0;max-width:640px}
 </div>
 
 <script src="assets/sunplus/tour/tour.js"></script>
+<script src="assets/mstar/remote.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -626,27 +627,25 @@ $('#heroDots').onclick=e=>{const b=e.target.closest('button');if(!b)return;hero(
 $('#heroImg').alt=HERO[0][1];heroAuto();
 
 /* ---------- playground ---------- */
-const T=window.TOUR||null;
-if(T&&T.files){   // exploration data: numeric screen ids, images from the every-screen atlas
-  const S=x=>String(x);T.start=S(T.start);T.steps=T.steps.map(([a,k,b])=>[S(a),k,S(b)]);T.playback=(T.playback||[]).map(([a,k,b])=>[S(a),k,S(b)]);
+const DATA={sunplus:window.TOUR||null,mstar:window.TOUR_MS||null};
+function prep(D){   // normalise ids, per-screen steps, shortest key path from the start to every screen (captions)
+  if(!D||D.ready)return D;
+  if(D.files){const S=x=>String(x);D.start=S(D.start);D.steps=D.steps.map(([a,k,b])=>[S(a),k,S(b)]);D.playback=(D.playback||[]).map(([a,k,b])=>[S(a),k,S(b)])}
+  const cnt={};D.edges={};
+  D.steps.forEach(([a,k,b])=>{cnt[a]=cnt[a]||{};cnt[a][k]=cnt[a][k]||{};cnt[a][k][b]=(cnt[a][k][b]||0)+1});
+  for(const a in cnt){D.edges[a]={};for(const k in cnt[a]){D.edges[a][k]=Object.entries(cnt[a][k]).sort((x,y)=>y[1]-x[1])[0][0]}}
+  D.path={[D.start]:[]};const q=[D.start];
+  const ORDER=[...new Set(['MENU','SOURCE','EXIT','OK','UP','DOWN','LEFT','RIGHT','VOL+','VOL-','INFO','POWER',...D.steps.map(x=>x[1])])];
+  while(q.length){const a=q.shift();for(const k of ORDER){const b=D.edges[a]&&D.edges[a][k];if(b&&!(b in D.path)){D.path[b]=D.path[a].concat(k);q.push(b)}}}
+  D.ready=true;return D;
 }
+let T=null,edges={};
+if(DATA.sunplus)$('#statFrames').textContent=Object.keys(DATA.sunplus.frames).length;
 const frameSrc=h=>T&&T.files?T.files[h]:'assets/sunplus/tour/'+h+'.png';
-let edges={}, plat='sunplus', cur=null, trail=[], tourTimer=null, hist=[];   // hist: every key since boot/reset (null after a playback jump)
+let plat='sunplus', cur=null, trail=[], tourTimer=null, hist=[], dig=null;   // hist: every key since boot/reset (null after a playback jump); dig: typed digit code
 // next screen: the exact recorded key sequence wins (screens can hide state); otherwise the per-screen recorded step
 const nextOf=k=>{if(T&&T.paths&&hist){const e=T.paths[hist.concat(k).join(' ')];if(e!=null)return String(e)}return edges[cur]&&edges[cur][k]};
-if(T){
-  // edges[h][key] = most frequent target
-  const cnt={};
-  T.steps.forEach(([a,k,b])=>{cnt[a]=cnt[a]||{};cnt[a][k]=cnt[a][k]||{};cnt[a][k][b]=(cnt[a][k][b]||0)+1});
-  // when the same key from the same frame was recorded with different results, a visible change beats "nothing happened" (a late redraw can look like a no-op)
-  for(const a in cnt){edges[a]={};for(const k in cnt[a]){edges[a][k]=Object.entries(cnt[a][k]).sort((x,y)=>((y[0]!==a)-(x[0]!==a))||(y[1]-x[1]))[0][0]}}
-  $('#statFrames').textContent=Object.keys(T.frames).length;
-  // shortest key path from boot to every frame, used as its caption
-  T.path={[T.start]:[]};const q=[T.start];
-  const ORDER=[...new Set(['MENU','SOURCE','EXIT','OK','UP','DOWN','LEFT','RIGHT','VOL+','VOL-','INFO','POWER',...T.steps.map(s=>s[1])])];
-  while(q.length){const a=q.shift();for(const k of ORDER){const b=edges[a]&&edges[a][k];if(b&&!(b in T.path)){T.path[b]=T.path[a].concat(k);q.push(b)}}}
-}
-const pathText=h=>{const p=T.path&&T.path[h];if(!p)return'reached in the recorded session';if(!p.length)return'after boot, no key pressed';return'shortest path: '+(p.length>7?'… '+p.slice(-6).join(' → '):p.join(' → '))};
+const pathText=h=>{const p=T&&T.path&&T.path[h];if(!p)return'reached in the recorded exploration';if(!p.length)return'start screen, no key pressed';return'shortest path: '+(p.length>7?'… '+p.slice(-6).join(' → '):p.join(' → '))};
 const MS={
   POWER:['assets/ui/1_no_signal_blue_on.png','No signal (after boot)'],
   MENU:['assets/ui/5_menu_setup_blue_on.png','MENU: option page'],
@@ -731,13 +730,12 @@ function flash(k){const b=document.querySelector(`#remote .rk[data-k="${CSS.esca
 function updateKeys(){
   $$('#remote .rk[data-k]').forEach(b=>{
     const k=b.dataset.k;let ok;
-    if(plat==='sunplus')ok=!!(T&&cur&&nextOf(k));
-    else ok=!!MS[k];
+    ok=T?!!(cur&&nextOf(k)):!!MS[k];
     b.classList.toggle('live',ok);b.title=ok?`${k}: recorded from this screen`:`${k}: not recorded from this screen`;
   });
 }
 function showSun(h){
-  cur=h;swap($('#pImg'),frameSrc(h),'Sunplus frame');
+  cur=h;swap($('#pImg'),frameSrc(h),(plat==='sunplus'?'Sunplus':'MStar')+' firmware screen');
   const m=$('#pMsg');m.hidden=h!==T.start;m.innerHTML='<span>Nothing on the OSD yet.<br>Press <b>MENU</b> or <b>SOURCE</b>.</span>';m.style.color='#a7b2bd';
   const n=T.frames[h];$('#pCap').textContent=`Frame ${n+1}/${Object.keys(T.frames).length} · ${pathText(h)}`;$('#pCap').title='Shortest recorded key path from boot to this frame';
   // preload neighbours
@@ -746,10 +744,16 @@ function showSun(h){
 }
 function press(k){
   flash(k);
-  if(plat==='sunplus'){
-    if(!T)return;
+  if(T){
+    if(T.macros&&Object.keys(T.macros).length&&/^\d$/.test(k)){   // a typed launch code (8202 factory, 4578 hotel) was recorded as one key from the screen where typing began
+      if(!dig)dig={from:cur,hist:hist?hist.slice():null,buf:''};
+      dig.buf+=k;const code=Object.keys(T.macros).find(c=>dig.buf.endsWith(c));
+      if(code){const keep=[cur,hist];cur=dig.from;hist=dig.hist;const nx=nextOf(T.macros[code]);
+        if(nx){if(hist)hist.push(T.macros[code]);dig=null;addTrail(k,true);toast(`code ${code} typed`);showSun(nx);return}
+        cur=keep[0];hist=keep[1];}
+    }else dig=null;
     const nx=nextOf(k);
-    if(!nx){toast(`${k}: not recorded from this screen`);addTrail(k,false);return}
+    if(!nx){if(!dig)toast(`${k}: not recorded from this screen`);addTrail(k,!!dig);return}
     if(hist)hist.push(k);addTrail(k,true);showSun(nx);
   }else{
     const f=MS[k];if(!f){toast(`${k}: no captured transition for MStar`);addTrail(k,false);return}
@@ -762,10 +766,13 @@ function setPlat(p){
   plat=p;stopTour();trail=[];hist=[];$('#pTrail').innerHTML='';model('pTv',p==='sunplus'?'led':'lcd');buildRemote(p==='sunplus'?'led':'lcd');
   $$('[data-plat]').forEach(b=>b.setAttribute('aria-selected',b.dataset.plat===p));
   $('#pMsg').hidden=true;
-  if(p==='sunplus'){
+  T=prep(DATA[p]);edges=T?T.edges:{};dig=null;
+  if(T){
     $('#pChip').innerHTML=chip('real','firmware-drawn frames');
-    $('#pNote').innerHTML=`<p>Keyboard: click the TV or the remote, then use <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>, <kbd>Enter</kbd> (OK), <kbd>M</kbd> (menu), <kbd>Esc</kbd> (exit), <kbd>S</kbd> (source).</p><p>Keys with a <b style="color:#5eb8ff">blue ring</b> were pressed from this screen in the recording. Try <b>MENU</b> first, then the arrows. Greyed-out items, such as Brightness in Dynamic mode, are skipped by the firmware itself.</p><p>The grey surround is the empty OSD plane. There is no video plane yet, and placement on the panel is a guess.</p><div class="tools"><button class="btn" id="tourBtn" type="button">▶ Play recorded session</button><button class="btn" id="resetBtn" type="button">Reset</button></div>`;
-    if(!T){$('#pMsg').hidden=false;$('#pMsg').textContent='recorded session data not found';$('#pImg').hidden=true;updateKeys();return}
+    const kb=`<p>Keyboard: click the TV or the remote, then use <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>, <kbd>Enter</kbd> (OK), <kbd>M</kbd> (menu), <kbd>Esc</kbd> (exit), <kbd>S</kbd> (source), digits.</p><p>Keys with a <b style="color:#5eb8ff">blue ring</b> were pressed from this screen by the automatic explorer (${T.screens} screens). Try <b>MENU</b> first, then the arrows.</p>`;
+    const sp=`<p>Greyed-out items, such as Brightness in Dynamic mode, are skipped by the firmware itself. The grey surround is the empty OSD plane; there is no video plane and the placement on the panel is a guess.</p>`;
+    const ms=`<p>Behind the OSD: the control centre's generated colour-bar test picture (labelled exploratory option); black areas are outside the OSD windows' extent. Menu auto-exit is disabled (exploratory). Type <b>8202</b> in the menu for the factory menu, <b>4578</b> for the hotel menu. VOL+/VOL− and TTX are behavioural matches of raw IR codes (volume bar up/down, "No Teletext").</p>`;
+    $('#pNote').innerHTML=kb+(p==='sunplus'?sp:ms)+`<p>Closing the menu and reopening it in an order the explorer never recorded behaves like a freshly booted TV.</p><div class="tools"><button class="btn" id="tourBtn" type="button">▶ Play recorded session</button><button class="btn" id="resetBtn" type="button">Reset</button></div>`;
     showSun(T.start);
     $('#resetBtn').onclick=()=>{stopTour();trail=[];hist=[];$('#pTrail').innerHTML='';showSun(T.start)};
     $('#tourBtn').onclick=()=>{
@@ -778,7 +785,7 @@ function setPlat(p){
         const [a,k,b]=P[i++];if(a!==cur){showSun(a);hist=a===T.start?[]:null}flash(k);addTrail(k,true);if(hist)hist.push(k);showSun(b);
       },1100);
     };
-  }else{
+  }else{   // fallback without exploration data: captured screens
     $('#pChip').innerHTML=chip('real','captured frames');
     $('#pNote').innerHTML=`<p>These MStar screens are captured states, not a recorded sequence. Only POWER, MENU, SOURCE and INFO (ringed in blue) are linked. Pick any screen directly:</p><div class="screens">${MSCREENS.map(s=>`<button type="button" data-s="${s[0]}" aria-pressed="false">${esc(s[1])}</button>`).join('')}</div>`;
     $('#pNote .screens').onclick=e=>{const b=e.target.closest('button');if(!b)return;const s=MSCREENS.find(x=>x[0]===b.dataset.s);showMs(s[0],s[1])};
@@ -787,7 +794,7 @@ function setPlat(p){
 }
 $('#remote').addEventListener('click',e=>{const b=e.target.closest('.rk');if(!b)return;if(tourTimer)stopTour();press(b.dataset.k)});
 $$('[data-plat]').forEach(b=>b.onclick=()=>setPlat(b.dataset.plat));
-const KB={ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT',Enter:'OK',Escape:'EXIT',m:'MENU',M:'MENU',s:'SOURCE',S:'SOURCE',i:'INFO',I:'INFO',p:'POWER',P:'POWER'};
+const KB={0:'0',1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT',Enter:'OK',Escape:'EXIT',m:'MENU',M:'MENU',s:'SOURCE',S:'SOURCE',i:'INFO',I:'INFO',p:'POWER',P:'POWER'};
 $('#try .play').addEventListener('keydown',e=>{
   const k=KB[e.key];if(!k||e.ctrlKey||e.metaKey||e.altKey)return;
   if(e.target.tagName==='BUTTON'&&e.key==='Enter')return;   // a focused button already clicks on Enter

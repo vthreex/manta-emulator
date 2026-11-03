@@ -46,11 +46,15 @@ def hotkeys():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--snapshot', required=True); ap.add_argument('--out', required=True)
+    ap.add_argument('--root', default='', help='comma-separated keys: explore from the screen this key path reaches (e.g. MENU,CODE 8202 (factory))')
+    ap.add_argument('--extra', default='', help='extra emulator options for every run (labelled in graph.json), e.g. --exploratory-ge-line')
     ap.add_argument('--parallel', type=int, default=6); ap.add_argument('--max-depth', type=int, default=9); ap.add_argument('--max-states', type=int, default=900)
     a = ap.parse_args()
     out = Path(a.out).resolve(); (out / 'frames').mkdir(parents=True, exist_ok=True); (out / 'runs').mkdir(exist_ok=True)
     st = Settings(); st.emulator = emulator_candidates()[0]; st.snapshot = str(Path(a.snapshot).resolve())
     prog, args = build_command(st, 'sweep')
+    args = args + a.extra.split()
+    root = [k for k in a.root.split(',') if k]
     for flag in ('--frontend-shm', '--preview-interval-log2', '--preview-max-fps'):
         if flag in args: i = args.index(flag); del args[i:i + 2]
     def cmd(extra, budget):
@@ -86,14 +90,14 @@ def main():
 
     gpath = out / 'graph.json'
     G = json.loads(gpath.read_text()) if gpath.exists() else {'start': None, 'nodes': {}, 'edges': [], 'tried': [], 'failed': []}
-    G['profile_args'] = args; G['snapshot'] = st.snapshot; G['hotkeys'] = sorted(hot); G['gap_dispatches'] = GAP
+    G['profile_args'] = args; G['extra_options'] = a.extra.split(); G['root'] = root; G['snapshot'] = st.snapshot; G['hotkeys'] = sorted(hot); G['gap_dispatches'] = GAP
     tried = {tuple(x) for x in G['tried']}
     if G['start'] is None:
-        h, im = run([], 'boot'); im.save(out / 'frames' / (h + '.png')); G['start'] = h; G['nodes'][h] = {'path': [], 'depth': 0}
+        h, im = run(root, 'boot'); im.save(out / 'frames' / (h + '.png')); G['start'] = h; G['nodes'][h] = {'path': root, 'depth': 0}
     n_run = len(list((out / 'runs').iterdir()))
     with ThreadPoolExecutor(a.parallel) as pool:
         while True:
-            menu = next((h for h, n in G['nodes'].items() if n['path'] == ['MENU']), None)
+            menu = next((h for h, n in G['nodes'].items() if n['path'] == root + ['MENU']), None)
             todo = []
             for h, n in sorted(G['nodes'].items(), key=lambda x: x[1]['depth']):
                 p = n['path']

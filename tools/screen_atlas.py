@@ -33,8 +33,10 @@ for h in order:
     f = 'screens/%04d.webp' % ids[h]
     if a.quality: im.save(os.path.join(a.out, f), 'WEBP', quality=a.quality, method=4)   # lossy (for noisy video-plane backgrounds)
     else: im.save(os.path.join(a.out, f), 'WEBP', lossless=True, method=4)          # lossless: the pixels are the captured frame (after the resize)
-    entries.append({'id': ids[h], 'file': f, 'hash': h, 'path': G['nodes'][h]['path'], 'next': nxt[h]})
-meta = {k: G[k] for k in ('hotkeys', 'crashes', 'failed', 'snapshot', 'gap_dispatches') if k in G}
+    e = {'id': ids[h], 'file': f, 'hash': h, 'path': G['nodes'][h]['path'], 'next': nxt[h]}
+    if G['nodes'][h].get('extra_options'): e['extra'] = G['nodes'][h]['extra_options']   # merged branch screens: options that run needed
+    entries.append(e)
+meta = {k: G[k] for k in ('hotkeys', 'crashes', 'failed', 'snapshot', 'gap_dispatches', 'merged') if k in G}
 if 'snapshot' in meta: meta['snapshot'] = ntpath.basename(meta['snapshot'])   # no local paths in published data
 json.dump({'title': a.title, 'encoding': ('webp lossy q%d' % a.quality) if a.quality else 'webp lossless', 'screens': entries, 'transitions': len(G['edges']), 'meta': meta}, open(os.path.join(a.out, 'atlas.json'), 'w'), indent=0)
 # contact sheets: 5 x 6 per sheet
