@@ -74,3 +74,9 @@ other CLUT entries than the table used here (dark text on dark), so colours ther
   that is stretched (nearest) over it. For ordinary blits 0x75/0x76 are the destination clip rectangle and 0x92 the destination position.
 * Result: evidence/sunplus/manta-led4202-main-menu.png is the complete "Картина" menu (silver sidebar buttons with the selected one in blue, rounded black title capsule, blue value pills,
   greyed disabled entry, scroll arrows, hint bar). The earlier "broken" look (dark unreadable labels, missing separators) was the missing 1-px stretch slices.
+
+## Language: it is the saved COUNTRY setting in the user's own flash dump
+The Manta dump stores the system settings (0x1d bytes) at flash 0x3e6da2: `00 00 0b 0d 0d 0c 05 00 00 31 01 ...`. Byte 2 is the country index (0x0b = 11). Firmware 0x8126cdd4 reads it,
+maps it through a jump table (0x80f8df54) to a language code, and 0x81244030 maps the code to a language id (11 -> code 0x78 -> language 7 = Russian; unmatched codes such as index 1 -> English).
+So the Russian UI is what this TV was actually set to (country Russia), not an emulator default. `tools/sunplus/set_country.py IN OUT 1` writes a copy with country 1 (user data only);
+booted with it the menu is English (evidence/sunplus/manta-led4202-main-menu-english.png). No firmware code is patched.
