@@ -104,3 +104,8 @@ The command ring is 0x8000 bytes; bit 15 of the write pointer (0xBFFE3590) is a 
 With it every tab renders cleanly (evidence/sunplus/manta-menu-tabs-sound-feature-setup.png): Sound (Sound Mode Speech, Bass 40, Treble 60, Balance 0, Surround Off, AVL On, SPDIF PCM),
 Feature (Lock, Language, Clock, Sleep Timer, Auto Power Off, Hearing Impaired, CI Info, PVR/Timeshift), Setup (OSD Timer 15 Seconds, Auto SCART, PC Setup, Blue Screen, Home Mode, Reset TV Setting, Software Upgrade).
 DOWN in the sidebar goes Picture -> Sound -> Feature -> Setup -> Picture (the disabled Channel tab is skipped).
+
+### Key injection must not block (live-window crash)
+Keys are delivered by a host call that borrows the idle thread and runs the firmware's event post (`0x80cee834`). If a key arrives while another thread holds the event/GPU lock (menu redraw),
+the post blocks, the scheduler switches away from the borrowed scratch stack and the emulator dies ("Invalid memory read" in the host call, then CPU exception at pc 0): seen in a live session as
+three keys within ~70 ticks. `--cmd-file` keys are now queued and delivered only after >1.5M blocks without a GPU kick and >1.5M blocks after the previous key; the viewer keeps the runner log.

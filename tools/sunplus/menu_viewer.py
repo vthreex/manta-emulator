@@ -23,7 +23,8 @@ def start(args, workdir):
            '--iop-set', '0x1eec=0x98000000', '--iop-set', '0x0=0', '--iop-set', '0x8=1', '--irq-vec', '0x48', '--poll-limit', '50000000', '--max-idle', '400000000',
            '--max-blocks', '400000000000', '--gpu', '--cmd-file', cmdfile, '--realtime-after', str(args.realtime_after)]
     if args.hyp: cmd += ['--hyp', args.hyp]
-    p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    log = open(os.path.join(workdir, 'runner.log'), 'wb')
+    p = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, env=env)
     return p, cmdfile
 
 class Session:
@@ -67,7 +68,12 @@ def run_script(args):
                 im = s.shot()
                 if im is None: print('shot failed'); break
                 im.save(arg); print('saved', arg)
-    finally: s.close()
+    finally:
+        rc = s.proc.poll(); s.close()
+        print('runner exit code:', rc)
+        try:
+            txt = open(os.path.join(s.dir, 'runner.log'), 'rb').read().decode('latin1'); print('runner log tail:', txt[-600:].replace(chr(10), ' | '))
+        except Exception as ex: print('no log', ex)
 
 def run_gui(args):
     import tkinter as tk
