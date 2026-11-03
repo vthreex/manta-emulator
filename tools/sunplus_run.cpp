@@ -24,6 +24,8 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <thread>
+#include <chrono>
 #include <vector>
 #ifdef _WIN32
 #include <windows.h>
@@ -187,7 +189,7 @@ int main(int argc, char** argv) {
 #ifdef _WIN32
   SetUnhandledExceptionFilter(crashFilter);
 #endif
-  uint64_t maxIdle = 2000000; bool fmt = false; uint32_t xip = 0; std::string uartOut; std::string saveRam; uint32_t ramMb = 128; bool mapIop = false; uint32_t loadAt = 0x400; size_t nwrites = 60;
+  std::string cmdFile; uint32_t keyFn = 0x80cee834; uint64_t rtAfter = 0, cmdLinesDone = 0; uint64_t maxIdle = 2000000; bool fmt = false; uint32_t xip = 0; std::string uartOut; std::string saveRam; uint32_t ramMb = 128; bool mapIop = false; uint32_t loadAt = 0x400; size_t nwrites = 60;
   for (int i = 2; i < argc; ++i) {
     std::string a = argv[i];
     if (a == "--readback") m.readback = true;
@@ -207,6 +209,9 @@ int main(int argc, char** argv) {
     else if (a == "--dump") { uint32_t ad = uint32_t(std::strtoul(argv[++i], nullptr, 0)); uint32_t ln = uint32_t(std::strtoul(argv[++i], nullptr, 0)); dumps.push_back({ad, ln}); }
     else if (a == "--save-ram") saveRam = argv[++i];
     else if (a == "--uart-in") { std::string t = argv[++i]; size_t at = t.rfind('@'); uint64_t blk = at == std::string::npos ? 0 : std::strtoull(t.c_str() + at + 1, nullptr, 0); std::string txt = at == std::string::npos ? t : t.substr(0, at); for (char& c : txt) if (c == '|') c = '\r'; m.uartIn.push_back({blk, txt}); }   // EXPLORATORY: feed TEXT@BLOCKS to the UART receiver ('|' = Enter)
+    else if (a == "--cmd-file") cmdFile = argv[++i];   // EXPLORATORY: poll FILE for lines "key HEX" (host call of the key function) and "shot PATH" (dump OSD buffer + palette)
+    else if (a == "--key-fn") keyFn = uint32_t(std::strtoul(argv[++i], nullptr, 0));
+    else if (a == "--realtime-after") rtAfter = std::strtoull(argv[++i], nullptr, 0);   // sleep ~10 ms per idle wake-up (one timer tick) from this wake-up on
     else if (a == "--gpu") m.gpuOn = true;   // EXPLORATORY: execute SUNPLUS GPU FIFO commands (tools/sunplus_gpu.hpp)
     else if (a == "--peek") peeks.push_back(uint32_t(std::strtoul(argv[++i], nullptr, 0)));
     else if (a == "--call") { std::string s = argv[++i]; HostCall c{}; auto p1 = s.find(':'), p2 = s.find(':', p1 + 1), at = s.find('@'); c.fn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); c.a0 = uint32_t(std::strtoul(s.c_str() + p1 + 1, nullptr, 0)); c.a1 = uint32_t(std::strtoul(s.c_str() + p2 + 1, nullptr, 0)); c.at = std::strtoull(s.c_str() + at + 1, nullptr, 0); calls.push_back(c); }
@@ -262,7 +267,20 @@ int main(int argc, char** argv) {
     uint32_t dist = cmp - cnt; if (!dist) dist = 1;
     if (!m.trigText.empty() && m.snap.empty() && m.uart.find(m.trigText) != std::string::npos) m.snap.assign(m.ring.begin(), m.ring.end());
     m.eng.tickCount(dist); ++idles;
+    if (const char* di = std::getenv("SUNPLUS_DUMP_IDLES")) {   // debugging aid: SUNPLUS_DUMP_IDLES=n1,n2,.. with SUNPLUS_BEST_SCREEN=addr,w,h and SUNPLUS_DUMP_PREFIX writes the OSD buffer at those idle wake-ups
+      for (const char* q = di; *q;) { char* e2 = nullptr; const uint64_t n = std::strtoull(q, &e2, 0); if (n == idles) { unsigned long ba = 0, bw = 0, bh = 0; const char* bs = std::getenv("SUNPLUS_BEST_SCREEN"); const char* pf = std::getenv("SUNPLUS_DUMP_PREFIX"); if (bs && pf && std::sscanf(bs, "%lx,%lu,%lu", &ba, &bw, &bh) == 3 && ba + bw * bh <= m.ram.size()) { std::ofstream o(std::string(pf) + std::to_string(n) + ".bin", std::ios::binary); o.write(reinterpret_cast<const char*>(m.ram.data() + ba), std::streamsize(bw * bh)); } } if (!e2 || e2 == q) break; q = *e2 == ',' ? e2 + 1 : e2; } }
     if (const char* fe = std::getenv("SUNPLUS_FLUSH_TB_IDLES")) { const uint64_t k = std::strtoull(fe, nullptr, 0); if (k && idles % k == 0) uc_ctl_flush_tb(m.eng.handle); }   // debugging aid for the host-side translation crash
+    if (rtAfter && idles >= rtAfter) std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    if (!cmdFile.empty() && idles % 4 == 0) {   // command file: new lines are executed in order
+      std::ifstream cf(cmdFile); std::string line; uint64_t ln = 0;
+      while (std::getline(cf, line)) { if (ln++ < cmdLinesDone) continue; cmdLinesDone = ln;
+        while (!line.empty() && (line.back() == 13 || line.back() == 32)) line.pop_back();
+        if (line.rfind("key ", 0) == 0) { HostCall hc{}; hc.fn = keyFn; hc.a0 = uint32_t(std::strtoul(line.c_str() + 4, nullptr, 0)); hc.a1 = 0; hc.at = idles; calls.push_back(hc); }
+        else if (line.rfind("shot ", 0) == 0) { const std::string path = line.substr(5); unsigned long ba = 0, bw = 0, bh = 0; const char* bs = std::getenv("SUNPLUS_BEST_SCREEN"); const char* pa = std::getenv("SUNPLUS_PALETTE_ADDR");
+          if (bs && std::sscanf(bs, "%lx,%lu,%lu", &ba, &bw, &bh) == 3 && ba + bw * bh <= m.ram.size()) { { std::ofstream o(path, std::ios::binary); o.write(reinterpret_cast<const char*>(m.ram.data() + ba), std::streamsize(bw * bh)); }
+            if (pa) { const unsigned long pp = std::strtoul(pa, nullptr, 16) & 0x1fffffff; std::ofstream o(path + ".pal", std::ios::binary); if (pp + 1024 <= m.ram.size()) o.write(reinterpret_cast<const char*>(m.ram.data() + pp), 1024); }
+            { std::ofstream o(path + ".done", std::ios::binary); o << idles; } } } }
+    }
     for (auto& c : calls) if (!c.done && idles == c.at) {   // EXPLORATORY host call: run the firmware function to completion on a scratch stack with interrupts masked, then resume the idle loop
       c.done = true;
       uint32_t saved[40]; const int ids[] = {UC_MIPS_REG_A0, UC_MIPS_REG_A1, UC_MIPS_REG_A2, UC_MIPS_REG_A3, UC_MIPS_REG_V0, UC_MIPS_REG_V1, UC_MIPS_REG_RA, UC_MIPS_REG_SP, UC_MIPS_REG_PC, UC_MIPS_REG_CP0_STATUS, UC_MIPS_REG_S0, UC_MIPS_REG_S1, UC_MIPS_REG_S2, UC_MIPS_REG_S3, UC_MIPS_REG_S4, UC_MIPS_REG_S5, UC_MIPS_REG_S6, UC_MIPS_REG_S7, UC_MIPS_REG_FP, UC_MIPS_REG_T0, UC_MIPS_REG_T1, UC_MIPS_REG_T2, UC_MIPS_REG_T3, UC_MIPS_REG_T4, UC_MIPS_REG_T5, UC_MIPS_REG_T6, UC_MIPS_REG_T7, UC_MIPS_REG_T8, UC_MIPS_REG_T9, UC_MIPS_REG_GP};

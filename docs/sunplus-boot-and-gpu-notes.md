@@ -80,3 +80,20 @@ The Manta dump stores the system settings (0x1d bytes) at flash 0x3e6da2: `00 00
 maps it through a jump table (0x80f8df54) to a language code, and 0x81244030 maps the code to a language id (11 -> code 0x78 -> language 7 = Russian; unmatched codes such as index 1 -> English).
 So the Russian UI is what this TV was actually set to (country Russia), not an emulator default. `tools/sunplus/set_country.py IN OUT 1` writes a copy with country 1 (user data only);
 booted with it the menu is English (evidence/sunplus/manta-led4202-main-menu-english.png). No firmware code is patched.
+
+## MILESTONE 3: the Manta menu is navigable
+Key events are posted with the firmware's own event entry (Manta: `0x80cee834(event, 0)`, the equivalent of Shivaki's `0x80d42c34`; reached from a host call on the idle thread).
+Found by sweeping event ids 0x1001..0x10a0 and diffing the OSD buffer (`SUNPLUS_DUMP_IDLES`, `navprobe`): 
+| key | event | evidence |
+| --- | --- | --- |
+| MENU | 0x1021 | opens the main menu (+291 GPU draws) |
+| UP / DOWN | 0x1018 / 0x1019 | move the focus ring (from "Picture Mode" both reach "Colour Temperature": the only other enabled row) / move the list highlight |
+| LEFT / RIGHT | 0x101a / 0x101b | focus back to the sidebar / into the settings pane |
+| OK | 0x101c | opens the "Dynamic / Standard / Mild / User" list; second OK selects |
+| EXIT | 0x1043 | clears the OSD buffer (closes the menu after the OSD timeout/animation) |
+| POWER | 0x1017 | enters the firmware's power-off path ("Wait turn off power") |
+Other ids draw dialogs: 0x103f "DTV / Database Empty", 0x1069 "CH 001" banner, 0x10a0 "Flip Mode has been changed, Confirm to flip?" (OK / Cancel).
+Session evidence: evidence/sunplus/manta-menu-navigation-session.png (boot, MENU, RIGHT, OK, DOWN, OK, EXIT). Selecting "Standard" makes the firmware apply its preset (Brightness 55 -> 50).
+Tools: `sunplus_run --cmd-file F --realtime-after N --key-fn ADDR` polls F for `key 0xHEX` / `shot PATH` lines (dumps the OSD buffer and CLUT); `tools/sunplus/menu_viewer.py` drives it
+(headless `--script "wait 75,key MENU,shot x.png,..."` verified; the Tk window mode is untested). The OSD buffer 0x04a17a00 (1216x660) and CLUT 0x85cbf4b8 are specific to the Manta image/config.
+Not modelled yet: display scan-out registers (placement is a guess), video plane behind the OSD, IR hardware (keys are injected as events), persistence of changed settings.
