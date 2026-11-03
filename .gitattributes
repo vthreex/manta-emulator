@@ -7,3 +7,5 @@ evidence/ge-gop-uart.raw binary
 evidence/tsp-uart.raw binary
 evidence/or1k-uart.raw binary
 evidence/avd-symbolic-tables-uart.raw binary
+# in-browser emulator inputs: keep the bytes exactly as tested (no line-ending conversion)
+site/live/** -text

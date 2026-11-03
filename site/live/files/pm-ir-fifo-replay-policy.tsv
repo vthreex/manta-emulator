@@ -1,0 +1,35 @@
+# INVALID observations only; no hardware values, masks, branches, or PCs supplied
+0x804fb278 0x1f225900 1 0x804fb05c 0x684 911ac037ce784d2e1bd4185863872f560773bd17500584dc5da37230b99c72b4
+# Original LBU / ANDI FF / SB unchanged to identical ChipTop byte; all bits INVALID
+0x805040e0 0x1f203c4d 1 0x805040e0 12 491d4e08894f75263425d18d1d7157cddbb676c46a22cbf291819e6e7f9c3f6c
+# Saved AVD register high nibble; original reset/restore path, unknown bits retain exact origins
+0x805044e8 0x1f206bb1 1 0x805044dc 0x70 cabe8e96bad955f4ca9a889d8bbf4585165ef672d904f6067f6aacde9a27088e
+# Independent low nibble must remain INVALID alongside saved high nibble
+0x80504534 0x1f206bb1 1 0x8050450c 0x40 06e7dacb033ee98f735a822d61337374b874bee601c17cbd6aa5bffca314068e
+# Original AFEC full status read retains all unimplemented status INVALID; actual caller extracts bit14
+0x80503018 0x1f206b98 2 0x80503000 0x28 a4175f3d04609c541ba9813eae61b4a375d1c07c6333dea50c1a8c66d876b51e
+# Exact original COMB masked restore with external invalid preserved fields
+0x805f8824 0x1f206d1c 2 0x805f8810 0x38 804c10d36b871cd260ad00933c822bf06bd85d8a7a0b1b94756c422e6f834248
+# DLC gain restore joins previous INVALID high-byte gain and fresh low control
+0x805e0d50 0x1f205e50 2 0x805e0d28 0x50 141709f296ce20c7320e3c486a5c22db68c0bcbdad40fa7f9827cd34d510e4f3
+# Original audio masked setter combines prior saved INVALID mode with fresh same-byte sample
+0x804f935c 0x1f225dd8 1 0x804f9310 0x78 adb1d4e08cc8744847334c12aa5e78e24b85c9a4c890b0e69719020c3e6fad90
+# Original SIF masked restore keeps saved control and fresh-byte unknowns invalid
+0x804f93c4 0x1f225a5c 1 0x804f9388 0x64 b0cfe334df7350c22b7b094b88c3f9df01d5b8427e838df0b313987055c32083
+# Original clock mux snapshots and same-field restores; no clock-ready value supplied
+0x805fd41c 0x1f201751 1 0x805fd3d4 0x1cc 67abbedbfe90d5146ec6db1bb4f84406e1a2fb9c841f0b53483e71e131840e8d
+0x805fd424 0x1f201754 1 0x805fd3d4 0x1cc 67abbedbfe90d5146ec6db1bb4f84406e1a2fb9c841f0b53483e71e131840e8d
+0x805fd4dc 0x1f201751 1 0x805fd3d4 0x1cc 67abbedbfe90d5146ec6db1bb4f84406e1a2fb9c841f0b53483e71e131840e8d
+0x805fd518 0x1f201754 1 0x805fd3d4 0x1cc 67abbedbfe90d5146ec6db1bb4f84406e1a2fb9c841f0b53483e71e131840e8d
+0x805fd558 0x1f201751 1 0x805fd3d4 0x1cc 67abbedbfe90d5146ec6db1bb4f84406e1a2fb9c841f0b53483e71e131840e8d
+0x805fd588 0x1f201754 1 0x805fd3d4 0x1cc 67abbedbfe90d5146ec6db1bb4f84406e1a2fb9c841f0b53483e71e131840e8d
+# Original IR capture-ring activity observation; first unknown status predicate still stops
+0x80527f14 0x1f206e41 1 0x80527f0c 0x14 5e32f14cfa506f90150b22b3d4d5d0c74d62af5019a2de94027808c33c000f89
+# Original SAR channel2 sample remains INVALID through its cache; first unknown use must stop
+0x804f1470 0x1f002838 1 0x804f1464 0x1c 38b1204987877747e9e7c041891cc46d1da4cfeb367e75e5fc962ba7cc33eb32
+# Original PM IR FIFO status; INVALID until reset/queue producer established, first unknown branch stops
+0x804f1b9c 0x1f007b59 1 0x804f1b80 0x58 54d8c47fd249a43e4989a7027a3aa2f63449882283cdb222a14aed57b59f7ca1
+0x80609a38	0x1f007b59	1	0x80609a24	0x1c	707959645149600791c14ad63ef567c95cf291276d064badd4b250b0061275b1
+0x80509d34	0x1f224644	1	0x80509d10	0x48	40f40f8687c4fe560abfb068a7fb93555d0fdaf2173b099084688cdee364706f
+0x80509d38	0x1f22465d	1	0x80509d10	0x48	40f40f8687c4fe560abfb068a7fb93555d0fdaf2173b099084688cdee364706f
+0x80509d3c	0x1f224650	2	0x80509d10	0x48	40f40f8687c4fe560abfb068a7fb93555d0fdaf2173b099084688cdee364706f

@@ -1,0 +1,41 @@
+# FUNCTION  RAWBYTE  evidence
+# Raw bytes are the decoded command bytes the emulated PM IR FIFO hands to the original firmware (logical IR_KEY 3DA9).
+# A function without an entry cannot be delivered (no invented codes). Fill in only evidence-backed values; see docs/ir-input-path.md.
+# Digits: raw 0x01..0x09 -> app codes 0x11..0x19, raw 0x45 -> app 0x10 (docs/ir-raw-to-app-key-table.tsv); the original handler 8046DA24..8046DB2C computes value*10+(app-0x10).
+DIGIT_1	0x01	app 0x11 = digit 1 (8046DA24 numeric entry; run s15: raw 1 -> app 0x11 -> OSD 17 digit banner)
+DIGIT_2	0x02	app 0x12 = digit 2 (static: table 0x8061773C + 8046DA24)
+DIGIT_3	0x03	app 0x13 = digit 3 (static + run s15)
+DIGIT_4	0x04	app 0x14 = digit 4 (static + run s15)
+DIGIT_5	0x05	app 0x15 = digit 5 (static + run s15)
+DIGIT_6	0x06	app 0x16 = digit 6 (static + run s15)
+DIGIT_7	0x07	app 0x17 = digit 7 (static + run s15)
+DIGIT_8	0x08	app 0x18 = digit 8 (static + run s15)
+DIGIT_9	0x09	app 0x19 = digit 9 (static + run s15)
+DIGIT_0	0x45	app 0x10 = digit 0 (static: table 0x8061773C, raw 0x45; not yet exercised in a connected run)
+MENU	0xFC	BEHAVIOURAL: app 0x29; the original firmware opens its main menu (OSD 1, Picture page, first item highlighted, four-arrow hint) - runs m1/m2/m3, evidence/menu-diagnostic/, docs/ir-key-sweep.md
+DOWN	0x0E	BEHAVIOURAL: app 0x0B; with the menu open the highlight moves one item down (Picture Mode -> Color Temperature -> Aspect Ratio) - runs m2/m3
+LEFT	0x10	BEHAVIOURAL: app 0x0C; with the menu open the page tab moves left (Picture -> Lock, wrapping because the antenna tab is disabled) - run m2
+RIGHT	0x11	BEHAVIOURAL: app 0x0F; with the menu open the page tab moves right (Picture -> Sound -> Setup, Lock -> Picture) - runs m2/m3
+OK	0x0D	BEHAVIOURAL: app 0x0D; with the menu open on Picture it opens the item panel (rows with slider bars) - run m2
+EXIT	0x20	CANDIDATE: app 0x09; with the menu open the original code hides OSD 1 and shows OSD 2 (the NO SIGNAL screen) about 2.4M dispatches after the key - run m4; only one raw byte tested in that position per run, name is behavioural
+INFO	0x16	CANDIDATE: app 0x1b; closes the menu and shows OSD 3 (the bottom source/info bar) - runs m5 and kb3/u16; could equally be a SOURCE-info key
+MUTE	0x0F	BEHAVIOURAL: app 0x1a; closes the menu and shows OSD 14 with the crossed-out speaker icon - run kb4/u0f (frame crop in evidence/menu-diagnostic/)
+SLEEP	0x17	BEHAVIOURAL: app 0x25; shows OSD 14 with a moon-and-star icon - run kb3/u17
+UP	0x0B	BEHAVIOURAL: app 0x07 (stub jumps to 8046A984, the arrow-key class path); with the menu open after one DOWN the highlight returns to the first item (frame identical to the post-MENU frame) - run kb6/u0b
+
+SOURCE_AV1	0x4E	BEHAVIOURAL: app 0x62; direct source key, original 8048710C(id 7) shows the source banner "AV 1" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE_SVIDEO	0xF3	BEHAVIOURAL: app 0x63; direct source key, original 8048710C(id 9) shows the source banner "S-Video" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE_YPBPR	0xEF	BEHAVIOURAL: app 0x5f; direct source key, original 8048710C(id 3) shows the source banner "YPBPR" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE_VGA	0xF5	BEHAVIOURAL: app 0x60; direct source key, original 8048710C(id 4) shows the source banner "VGA" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE_HDMI1	0xF7	BEHAVIOURAL: app 0x61; direct source key, original 8048710C(id 5) shows the source banner "HDMI1" (docs/source-switching.md; needs the opt-in hypotheses listed there to complete)
+SOURCE	0x41	BEHAVIOURAL: opens the original Input Source list (DTV, ATV, AV 1, AV 2, S-Video, SCART, YPBPR, HDMI1, HDMI2, VGA, USB; OK: ENTER) with the current source highlighted; handler 8046AE40 stores code 0x20 when bit 3 of 0x806C0868 is set; UP/DOWN move the highlight and OK calls 8048710C(id) (docs/source-switching.md)
+POWER	0x0A	CANDIDATE: app 0x08; 804A4368 re-injects app 8 and hides the OSD, ~37M dispatches later the original reaches the reset/standby routine 8040468C (docs/ir-key-semantics.md, runs m2/m3)
+WIDE	0x0C	CANDIDATE: app 0x82; shows OSD 14 with an overlapped-windows icon (aspect/zoom style banner), kb3/u0c; the remote's 16:9/WIDE key
+SMART_S	0x1A	CANDIDATE: app 0x04; shows OSD 14 with a music-note icon (sound mode banner), kb3/u1a; the remote's SMART S key
+SMART_P	0x42	CANDIDATE: app 0x21; shows OSD 14 with a monitor icon (picture mode banner), kb3/u42; the remote's SMART P key
+LANGUAGE	0x19	BEHAVIOURAL (DTV channel-banner state): app 0x1e; the original firmware opens its "Audio Languages" popup (OSD 0xA, rows = audio tracks, "OK: ENTER") - evidence/key-sweep-dtv, sheet_01
+LIST	0x1D	BEHAVIOURAL (DTV state): app 0x37; the original firmware opens the "Channel List" popup (OSD 9: TVP1, TVP2, ...) - evidence/key-sweep-dtv, sheet_01
+FAV	0x57	BEHAVIOURAL (DTV state): app 0x2f; opens the "Favorite List" popup (OSD 9) - evidence/key-sweep-dtv, sheet_02
+EPG	0x4A	CANDIDATE (DTV state): app 0x26 opens the "PROGRAMME GUIDE" (OSD 0x10); raw 0x54 (app 0x30) opens the same screen, so one of the two is the EPG key - evidence/key-sweep-dtv, sheet_02
+SUBTITLE	0x5B	CANDIDATE (DTV state): app 0x1d opens the "Subtitle Languages" popup (OSD 0xB); raw 0x71 has the same app code and raw 0xF4 (app 0x1f) opens the same popup - evidence/key-sweep-dtv, sheet_03
+TTX	0x12	BEHAVIOURAL (DTV state): app 0x31; the original firmware shows its "No Teletext" notice (OSD 0xF) - evidence/key-sweep-dtv, sheet_01

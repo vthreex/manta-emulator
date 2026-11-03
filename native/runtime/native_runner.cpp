@@ -150,12 +150,12 @@ void NativeAccess::finish(uint32_t pc, bool fatal) {
   std::cout << s << "\nUART: " << m.riu_.uart << '\n';
 }
 
-int nativeRun(Msd309Machine& machine) {
-  NativeAccess a(machine);
+// Takeover from the snapshot: restore it, load the CPU state into the native CPU, wire bus, hooks and host pages. Shared by the blocking run (nativeRun)
+// and the browser build's step-wise session (MANTA_WEB), which resumes run_guest in slices from the page's frame loop.
+static uint32_t nativeTakeover(NativeAccess& a, CPU& c, MachineBus& bus, Runner& runner, RunHooks& hooks) {
   if (a.options.loadState.empty()) throw std::runtime_error("--native-cpu needs --load-state (the native CPU takes over from a saved machine state)");
   if (a.cpi() < 2) throw std::runtime_error("--native-cpu needs --exploratory-cpi >= 2");
   a.restore();
-  CPU c;
   c.ram = a.dram.data();
   c.ram_size = uint32_t(a.dram.size());
   for (int i = 0; i < 32; ++i) c.r[i] = a.cpu.reg(UC_MIPS_REG_0 + i);
@@ -173,10 +173,7 @@ int nativeRun(Msd309Machine& machine) {
   c.prev_count = c.count_off;
   c.ip7 = (a.cpu.reg(UC_MIPS_REG_CP0_CAUSE) >> 15) & 1;
   c.ext_irq = a.irqLines();
-  MachineBus bus(a);
   c.bus = &bus;
-  Runner runner{a, 0};
-  RunHooks hooks;
   hooks.after_run = after_run;
   hooks.ctx = &runner;
   runner.pages.testOskAt = a.options.exploratoryOskTestAt;
@@ -201,6 +198,16 @@ int nativeRun(Msd309Machine& machine) {
     }
     hooks.trace_base = a.dispatches;
   }
+  return pc;
+}
+
+int nativeRun(Msd309Machine& machine) {
+  NativeAccess a(machine);
+  CPU c;
+  MachineBus bus(a);
+  Runner runner{a, 0};
+  RunHooks hooks;
+  uint32_t pc = nativeTakeover(a, c, bus, runner, hooks);
   uint64_t limit = a.options.limit ? a.options.limit : UINT64_MAX;
   uint64_t budget = limit > a.dispatches ? limit - a.dispatches : 1;
   run_guest(c, pc, budget, &hooks);
@@ -216,3 +223,65 @@ int nativeRun(Msd309Machine& machine) {
                (unsigned long long)c.timer_irqs, (unsigned long long)c.ext_irqs, (unsigned long long)c.exceptions);
   return 2;
 }
+
+#ifdef MANTA_WEB
+// Browser build (Emscripten, no threads): the page's frame loop calls manta_step() for a slice of guest instructions, pushes remote functions with
+// manta_key() and reads the latest published GOP preview frame (composed like the Linux presenter: guest pixels, else the video-plane colour, else
+// the neutral checker) with manta_frame_*. Same machine, same recompiled firmware, same options as the desktop build.
+#include <emscripten/emscripten.h>
+#include <memory>
+namespace {
+struct WebSession {
+  NativeAccess a; CPU c; MachineBus bus; Runner runner; RunHooks hooks; uint32_t pc = 0; bool done = false;
+  explicit WebSession(Msd309Machine& m) : a(m), bus(a), runner{a, 0} {}
+};
+WebSession* web = nullptr;
+std::vector<uint8_t> webRgba;
+uint32_t webW = 0, webH = 0;
+uint64_t webSeq = 0;
+}
+void webStart(Msd309Machine& machine) {
+  web = new WebSession(machine);
+  web->pc = nativeTakeover(web->a, web->c, web->bus, web->runner, web->hooks);
+}
+extern "C" {
+// Runs about n more guest instructions. 0 = running, 1 = the guest stopped (budget, fatal or a machine stop), -1 = no session.
+EMSCRIPTEN_KEEPALIVE int manta_step(double n) {
+  if (!web) return -1;
+  if (web->done) return 1;
+  run_guest(web->c, web->pc, web->c.icount + uint64_t(n), &web->hooks);
+  web->pc = web->c.last_pc;
+  if (web->c.halt || web->a.stopped || web->c.fatal) {
+    web->done = true;
+    web->bus.sync(web->c, web->pc);
+    web->a.finish(web->pc, web->c.fatal);
+  }
+  return web->done ? 1 : 0;
+}
+EMSCRIPTEN_KEEPALIVE double manta_dispatches() { return web ? double(web->a.dispatches) : 0.0; }
+// Remote function name as used by the desktop build ("MENU", "UP", "DIGIT_8", "raw=0x15", ...).
+EMSCRIPTEN_KEEPALIVE void manta_key(const char* function) {
+  if (web && web->a.options.previewStore) web->a.options.previewStore->remote->push(function);
+}
+// Composes the latest published frame into RGBA if it is new; returns its sequence number (0 = none yet).
+EMSCRIPTEN_KEEPALIVE double manta_frame_update() {
+  if (!web || !web->a.options.previewStore) return 0;
+  auto f = web->a.options.previewStore->latest();
+  if (!f || f->empty()) return double(webSeq);
+  if (f->sequence == webSeq) return double(webSeq);
+  webSeq = f->sequence; webW = f->width; webH = f->height;
+  webRgba.resize(size_t(webW) * webH * 4);
+  for (uint32_t y = 0; y < webH; ++y) for (uint32_t x = 0; x < webW; ++x) {
+    const size_t i = size_t(y) * webW + x;
+    const uint32_t rgb = f->covered[i] ? (f->bgra[i] & 0xffffffu) : !f->planeBgra.empty() ? (f->planeBgra[i] & 0xffffffu)
+                       : f->planeActive ? f->planeRgb : ((((x >> 4) ^ (y >> 4)) & 1) ? 0x505050u : 0x383838u);
+    uint8_t* o = &webRgba[i * 4];
+    o[0] = uint8_t(rgb >> 16); o[1] = uint8_t(rgb >> 8); o[2] = uint8_t(rgb); o[3] = 255;
+  }
+  return double(webSeq);
+}
+EMSCRIPTEN_KEEPALIVE uint8_t* manta_frame_rgba() { return webRgba.data(); }
+EMSCRIPTEN_KEEPALIVE int manta_frame_width() { return int(webW); }
+EMSCRIPTEN_KEEPALIVE int manta_frame_height() { return int(webH); }
+}
+#endif

@@ -2,7 +2,7 @@ name: Deploy showcase to GitHub Pages
 on:
   push:
     branches: [master]
-    paths: ['site/**', '.github/workflows/pages.yml']
+    paths: ['site/**', 'firmware/manta-lcd4214-original.bin', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Firmware for the in-browser emulator (site/live)
+        run: cp firmware/manta-lcd4214-original.bin site/live/firmware.bin
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

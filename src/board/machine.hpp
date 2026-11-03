@@ -26,6 +26,7 @@
 namespace manta { class Msd309Machine; }
 struct NativeAccess;   // native port helper with access to the machine's internals (native/runtime/native_runner.cpp)
 int nativeRun(manta::Msd309Machine&);   // defined only in the native port (native/runtime/native_runner.cpp)
+void webStart(manta::Msd309Machine&);   // browser build only (MANTA_WEB): take over from the snapshot, then run in slices via manta_step()
 namespace manta {
 struct Options {
   std::string opaqueReadPolicy;

@@ -17,3 +17,6 @@ dist/
 # firmware images that are deliberately included
 !firmware/sunplus-shivaki-stv-24led14.bin
 !firmware/sunplus-manta-led4202-cv9202h.bin
+
+# in-browser emulator: the firmware is copied from firmware/ by the Pages workflow at deploy (not stored twice)
+site/live/firmware.bin

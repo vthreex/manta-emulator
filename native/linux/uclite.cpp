@@ -36,12 +36,12 @@ extern "C" {
 uc_err uc_open(uc_arch, uc_mode, uc_engine** out) { *out = new uc_struct; return UC_ERR_OK; }
 uc_err uc_close(uc_engine* uc) { delete uc; return UC_ERR_OK; }
 const char* uc_strerror(uc_err e) { return e == UC_ERR_OK ? "OK" : e == UC_ERR_ARG ? "Invalid argument (UC_ERR_ARG)" : e == UC_ERR_READ_UNMAPPED ? "Invalid memory read (UC_ERR_READ_UNMAPPED)" : "uclite: CPU emulation is not available in this build"; }
-uc_err uc_mem_map(uc_engine* uc, uint64_t a, size_t n, uint32_t) { Region r; r.begin = a; r.size = n; r.own.assign(n, 0); r.ptr = r.own.data(); uc->regions.push_back(std::move(r)); return UC_ERR_OK; }
-uc_err uc_mem_map_ptr(uc_engine* uc, uint64_t a, size_t n, uint32_t, void* p) { Region r; r.begin = a; r.size = n; r.ptr = static_cast<uint8_t*>(p); uc->regions.push_back(std::move(r)); return UC_ERR_OK; }
-uc_err uc_mmio_map(uc_engine* uc, uint64_t a, size_t n, uc_cb_mmio_read_t rd, void* ru, uc_cb_mmio_write_t wr, void* wu) {
+uc_err uc_mem_map(uc_engine* uc, uint64_t a, uint64_t n, uint32_t) { Region r; r.begin = a; r.size = n; r.own.assign(n, 0); r.ptr = r.own.data(); uc->regions.push_back(std::move(r)); return UC_ERR_OK; }
+uc_err uc_mem_map_ptr(uc_engine* uc, uint64_t a, uint64_t n, uint32_t, void* p) { Region r; r.begin = a; r.size = n; r.ptr = static_cast<uint8_t*>(p); uc->regions.push_back(std::move(r)); return UC_ERR_OK; }
+uc_err uc_mmio_map(uc_engine* uc, uint64_t a, uint64_t n, uc_cb_mmio_read_t rd, void* ru, uc_cb_mmio_write_t wr, void* wu) {
   Region r; r.begin = a; r.size = n; r.rd = rd; r.rdUser = ru; r.wr = wr; r.wrUser = wu; uc->regions.push_back(std::move(r)); return UC_ERR_OK;
 }
-uc_err uc_mem_read(uc_engine* uc, uint64_t a, void* out, size_t n) {
+uc_err uc_mem_read(uc_engine* uc, uint64_t a, void* out, uint64_t n) {
   auto* r = find(uc, a, n);
   if (!r) return UC_ERR_READ_UNMAPPED;
   if (r->ptr) { std::memcpy(out, r->ptr + (a - r->begin), n); return UC_ERR_OK; }
@@ -49,7 +49,7 @@ uc_err uc_mem_read(uc_engine* uc, uint64_t a, void* out, size_t n) {
   for (size_t i = 0; i < n; ++i) o[i] = uint8_t(r->rd(uc, a + i - r->begin, 1, r->rdUser));
   return UC_ERR_OK;
 }
-uc_err uc_mem_write(uc_engine* uc, uint64_t a, const void* in, size_t n) {
+uc_err uc_mem_write(uc_engine* uc, uint64_t a, const void* in, uint64_t n) {
   auto* r = find(uc, a, n);
   if (!r) return UC_ERR_WRITE_UNMAPPED;
   if (r->ptr) { std::memcpy(r->ptr + (a - r->begin), in, n); return UC_ERR_OK; }
@@ -60,6 +60,7 @@ uc_err uc_mem_write(uc_engine* uc, uint64_t a, const void* in, size_t n) {
 uc_err uc_reg_read(uc_engine* uc, int id, void* v) { auto it = uc->regs.find(id); uint32_t x = it == uc->regs.end() ? 0 : it->second; std::memcpy(v, &x, 4); return UC_ERR_OK; }
 uc_err uc_reg_write(uc_engine* uc, int id, const void* v) { uint32_t x; std::memcpy(&x, v, 4); uc->regs[id] = x; return UC_ERR_OK; }
 uc_err uc_hook_add(uc_engine*, uc_hook* h, int, void*, void*, uint64_t, uint64_t, ...) { *h = 0; return UC_ERR_OK; }
+uc_err uc_hook_del(uc_engine*, uc_hook) { return UC_ERR_OK; }   // no hooks are ever installed (the browser linker keeps references the Linux --gc-sections dropped)
 // Snapshot restore replays the guest TLB installs through a short MIPS routine; the native runtime has no TLB (it hard-wires the one observed kseg2 mapping, see
 // native_runner.cpp MachineBus), so nothing needs to execute: report success. Never used to run guest code in this build.
 uc_err uc_emu_start(uc_engine*, uint64_t, uint64_t, uint64_t, size_t) { return UC_ERR_OK; }

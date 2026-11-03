@@ -102,6 +102,8 @@ h1 em{font-style:normal;color:var(--acc)}
 .tv .scr{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
 .tv .scr img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .25s ease}
 .tv .scr img.fade{opacity:0}
+.tv .scr canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:auto}
+.live-bar{height:6px;border-radius:3px;background:var(--panel2);overflow:hidden;margin:8px 0}.live-bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
 .tv .scr::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2}
 .tv .led{position:absolute;width:3px;height:3px;border-radius:50%;background:#d23b3b;box-shadow:0 0 4px #d23b3b}
 .tv .led.on{background:#7cc4ff;box-shadow:0 0 5px #7cc4ff}
@@ -399,12 +401,13 @@ footer p{margin:0;max-width:640px}
   <div class="seg" role="tablist" aria-label="Platform">
     <button role="tab" aria-selected="true" data-plat="sunplus">Sunplus SPHE8600<small>Manta LED4202</small></button>
     <button role="tab" aria-selected="false" data-plat="mstar">MStar MSD309<small>Manta LCD4214</small></button>
+    <button role="tab" aria-selected="false" data-plat="live">Live firmware<small>MStar, running in your browser</small></button>
   </div>
 
   <div class="play">
     <div class="screen-col">
       <div class="tv" id="pTv" data-model="led" tabindex="0" aria-label="TV screen. Focus it and use your keyboard: arrows, Enter, M for menu, Esc for exit, S for source.">
-        <div class="scr"><img id="pImg" alt="Captured firmware frame"><div class="msg" id="pMsg" hidden></div><div class="toast" id="pToast" role="status"></div></div>
+        <div class="scr"><img id="pImg" alt="Captured firmware frame"><canvas id="pCanvas" hidden></canvas><div class="msg" id="pMsg" hidden></div><div class="toast" id="pToast" role="status"></div></div>
         <span class="brandmark"></span><span class="led on" id="pLed"></span>
       </div>
       <div class="stand" aria-hidden="true"></div>
@@ -730,7 +733,7 @@ function flash(k){const b=document.querySelector(`#remote .rk[data-k="${CSS.esca
 function updateKeys(){
   $$('#remote .rk[data-k]').forEach(b=>{
     const k=b.dataset.k;let ok;
-    ok=T?!!(cur&&nextOf(k)):!!MS[k];
+    ok=plat==='live'?(LIVE_RAW[k]!=null&&!!(live&&live.ready)):T?!!(cur&&nextOf(k)):!!MS[k];
     b.classList.toggle('live',ok);b.title=ok?`${k}: recorded from this screen`:`${k}: not recorded from this screen`;
   });
 }
@@ -744,6 +747,11 @@ function showSun(h){
 }
 function press(k){
   flash(k);
+  if(plat==='live'){
+    const r=LIVE_RAW[k];if(!live||!live.ready){toast('Start the live firmware first');return}
+    if(r==null){toast(`${k}: no raw code known for this key`);addTrail(k,false);return}
+    live.worker.postMessage({type:'key',fn:'raw=0x'+r.toString(16).padStart(2,'0')});addTrail(k,true);return;
+  }
   if(T){
     if(T.macros&&Object.keys(T.macros).length&&/^\d$/.test(k)){   // a typed launch code (8202 factory, 4578 hotel) was recorded as one key from the screen where typing began
       if(!dig)dig={from:cur,hist:hist?hist.slice():null,buf:''};
@@ -762,11 +770,45 @@ function press(k){
 }
 function showMs(src,cap){swap($('#pImg'),src,cap);$('#pCap').textContent=cap;$$('#pNote .screens button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===src))}
 function stopTour(){clearInterval(tourTimer);tourTimer=null;const b=$('#tourBtn');if(b)b.textContent='▶ Play recorded session'}
+/* ---------- live firmware (MStar, WebAssembly) ---------- */
+// remote button -> raw IR byte delivered through the emulated PM IR FIFO (configs/input/ir-keymap.tsv evidence; VOL/TTX are behavioural matches)
+const LIVE_RAW={MENU:0xfc,UP:0x0b,DOWN:0x0e,LEFT:0x10,RIGHT:0x11,OK:0x0d,EXIT:0x20,SOURCE:0x41,INFO:0x16,POWER:0x0a,MUTE:0x0f,SLEEP:0x17,WIDE:0x0c,'SMART S':0x1a,'SMART P':0x42,
+  LANGUAGE:0x19,LIST:0x1d,FAV:0x57,EPG:0x4a,SUBTITLE:0x5b,'VOL+':0x15,'VOL-':0x1c,TTX:0x12,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'0':0x45};
+let live=null;
+function liveStop(){if(live){live.worker.terminate();live=null}$('#pCanvas').hidden=true}
+function liveStart(){
+  if(live)return;
+  const cv=$('#pCanvas'),ctx=cv.getContext('2d');let frames=0,t0=performance.now(),lastD=0,lastT=performance.now();
+  live={worker:new Worker('live/worker.js'),ready:false};
+  const bar=$('#liveBar i'),st=$('#liveStatus');const got={};
+  live.worker.onmessage=e=>{const m=e.data;
+    if(m.type==='progress'){got[m.label]=[m.got,m.total];const g=Object.values(got).reduce((a,x)=>a+x[0],0),t=Object.values(got).reduce((a,x)=>a+(x[1]||x[0]),0);
+      bar.style.width=(t?Math.min(100,100*g/t):0)+'%';st.textContent=m.label==='starting'?'Starting the firmware…':`Downloading ${m.label}… ${(g/1e6).toFixed(0)} MB`}
+    else if(m.type==='ready'){live.ready=true;bar.style.width='100%';st.textContent='Running. Press MENU.';$('#pMsg').hidden=true;cv.hidden=false;$('#pImg').hidden=true;updateKeys()}
+    else if(m.type==='frame'){if(cv.width!==m.w||cv.height!==m.h){cv.width=m.w;cv.height=m.h}ctx.putImageData(new ImageData(new Uint8ClampedArray(m.buf),m.w,m.h),0,0);frames++}
+    else if(m.type==='stats'){const now=performance.now();if(now-lastT>1000){const mips=(m.dispatches-lastD)/(now-lastT)/1000;if(lastD)$('#pCap').textContent=`Live: ${mips.toFixed(1)} M instructions/s · ${(frames*1000/(now-t0)).toFixed(0)} frames/s`;lastD=m.dispatches;lastT=now;frames=0;t0=now}}
+    else if(m.type==='stopped'){st.textContent='The emulated machine stopped (see the console).'}
+    else if(m.type==='error'){st.textContent='Error: '+m.message}
+    else if(m.type==='log'){console.log('[emulator]',m.s)}};
+  live.worker.postMessage({type:'start',base:new URL('live/',location.href).href});
+}
 function setPlat(p){
+  if(p!=='live')liveStop();
   plat=p;stopTour();trail=[];hist=[];$('#pTrail').innerHTML='';model('pTv',p==='sunplus'?'led':'lcd');buildRemote(p==='sunplus'?'led':'lcd');
   $$('[data-plat]').forEach(b=>b.setAttribute('aria-selected',b.dataset.plat===p));
   $('#pMsg').hidden=true;
-  T=prep(DATA[p]);edges=T?T.edges:{};dig=null;
+  if(p==='live'){
+    T=null;edges={};$('#pImg').hidden=true;$('#pChip').innerHTML=chip('real','live firmware');
+    $('#pMsg').hidden=false;$('#pMsg').innerHTML='<span>The original MStar firmware will run here,<br>live, in your browser.</span>';$('#pMsg').style.color='#a7b2bd';
+    $('#pCap').textContent='Not started';
+    $('#pNote').innerHTML=`<p><b>The real firmware, not recordings.</b> The MStar firmware is statically recompiled to C++, and together with the emulator's machine model it is compiled to WebAssembly. It starts from a saved machine state and runs in a background thread of this page.</p>
+      <p>Download: about 85 MB (emulator ~38 MB, save state ~38 MB, firmware 8 MB). Speed depends on your computer.</p>
+      <div class="tools"><button class="btn pri" id="liveGo" type="button">▶ Start live firmware</button></div><div class="live-bar" id="liveBar"><i></i></div><p id="liveStatus" class="small"></p>
+      <p>Same labelled options as the desktop control centre (generated test picture behind the OSD, menu auto-exit disabled). Keys go in as raw IR bytes through the emulated IR receiver.</p>`;
+    $('#liveGo').onclick=()=>{$('#liveGo').disabled=true;liveStart()};
+    updateKeys();return;
+  }
+  T=prep(DATA[p]);edges=T?T.edges:{};dig=null;$('#pCanvas').hidden=true;
   if(T){
     $('#pChip').innerHTML=chip('real','firmware-drawn frames');
     const kb=`<p>Keyboard: click the TV or the remote, then use <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>, <kbd>Enter</kbd> (OK), <kbd>M</kbd> (menu), <kbd>Esc</kbd> (exit), <kbd>S</kbd> (source), digits.</p><p>Keys with a <b style="color:#5eb8ff">blue ring</b> were pressed from this screen by the automatic explorer (${T.screens} screens). Try <b>MENU</b> first, then the arrows.</p>`;

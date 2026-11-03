@@ -661,6 +661,10 @@ static int appMain(const std::vector<std::string> &args) {
       }
     o.stateFingerprint = stateFingerprint(args, o.stateCanonical);
     auto previewStore = o.previewStore;
+#ifdef MANTA_WEB
+    // browser build: the machine outlives main(); the page's frame loop drives it through manta_step() (native/runtime/native_runner.cpp)
+    if (o.nativeCpu) { webStart(*new manta::Msd309Machine(std::move(flash), o)); return 0; }
+#endif
     manta::Msd309Machine machine(std::move(flash), o);
 #ifdef MANTA_NATIVE_RUNNER
     if (o.nativeCpu) { if (headless) return nativeRun(machine); }
