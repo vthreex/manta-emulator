@@ -52,3 +52,10 @@ The OSD region descriptors (table at 0x8085df78, 24 x 12 bytes {handle, descript
 magenta key, 1..~200 grey gradient, 228 orange (255,193,30), 255 light grey A=205). `tools/sunplus/render_surface.py` uses it:
 evidence/sunplus/no-channels-dialog.png is the dialog in the firmware's own colours. (The 256-entry table written through 0xBFFEA1C8/1CC/1D0/1D4 is a
 smooth colour ramp loaded once by a video module, not the OSD palette.) `DRV_OSD_SetWindow`-like 0x80dc606c is called as (window 2, 1320, 1366, 750, 768).
+
+## UI event sweep (host call `0x80d42c34(event,0)` at idle wake 60000, V2 config, 330M blocks, GPU model on)
+Of 164 event ids 0x109d..0x1140 most change nothing (GPU stays at the base 88 commands); these draw more: 0x109f 0x10a0 (52 fill / 154 blit / 32 stretch, the largest) 0x10a1..0x10a4 0x10a7 0x10a9
+0x10ab 0x10ac 0x10b5 0x1120 0x1121 0x1129..0x112b. Event 0x10a0 draws a menu-style window (806x517 at 0x04e4c480: ruled list rows and the hint bar "Enter Ввод / Exit Выход / Menu Назад")
+and a red "ПО не найдено" ("software not found") line: the USB software-update screen. See evidence/sunplus/menu-window-event-10a0.png.
+Strings: "Нет каналов"/"ЦТВ" (ISO-8859-5 at 0x80fcb57c/0x80fc69bc) is the DTV no-channels popup; "Нет сигнала" (no signal, 0x80f383d4 in the Russian table) is used for
+non-DTV sources, which the emulated TV does not select (boots to DTV).
