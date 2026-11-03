@@ -38,3 +38,10 @@ With the menu/source host calls the firmware issues only 88 GPU commands (15 fil
 surfaces are still empty at that point, so the rendered output is flat fill colour. The GPU is therefore not the first missing piece: the app is
 idle before it draws the real UI. Public searches (Sunplus site, mikrocontroller.net repair thread, GPL/driver searches) found no register documentation;
 the real device's boot log matches ours up to the DirectFB "Default 0.3" line.
+
+## MILESTONE: the original firmware's own UI is drawn (GPU model corrected)
+Two corrections made the recorded 88-command FIFO produce real UI: (1) surfaces are 8 bits per pixel palette indices (LUT8), tightly packed rows of
+`width` bytes; (2) for blits regs 0x50/0x51/0x56 are the SOURCE and 0x60/0x61/0x66 the DESTINATION (positions only fit this way; clipped pixels dropped
+from 851,190 to 0). Result: the surface at 0x04e815d0 (390x165) is the firmware's "no channels" dialog: a black header with the red title "ЦТВ"
+(DTV) and a blue body "Нет каналов" (no channels, Russian localisation). See evidence/sunplus/no-channels-dialog-false-colour.png (placeholder palette:
+the real CLUT is not located yet; this is layout only). The dialog is composited onto the 1216x660 OSD buffer at 0x04a7aa00 at (453,200).
