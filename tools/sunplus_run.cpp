@@ -46,7 +46,7 @@ struct M {
   std::map<uint32_t, std::pair<uint32_t, uint64_t>> zeroReads; std::vector<uint32_t> zeroOrder;
   bool readback = false, unknownZero = false; uint64_t pollLimit = 300000, maxBlocks = 0, blocks = 0; uint32_t cpi = 1;
   std::deque<uint32_t> ring; std::string stop; std::map<uint32_t, int> watch; std::vector<std::string> watchLog;
-  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; bool irqClearReq = false; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint32_t consecAddr = 0xFFFFFFFF; uint64_t consecCount = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
+  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; int uartPcLog = 0; bool irqClearReq = false; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint32_t consecAddr = 0xFFFFFFFF; uint64_t consecCount = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
   uint32_t lastBlock() const { return ring.empty() ? 0 : ring.back(); }
 };
 
@@ -85,13 +85,18 @@ static uint32_t regValue(M& m, uint32_t off, unsigned size) {
 
 static uint64_t mmioRead(uc_engine*, uint64_t off, unsigned size, void* user) {
   M& m = *static_cast<M*>(user);
-  try { return regValue(m, uint32_t(off), size); }
+  try {
+    const uint64_t v = regValue(m, uint32_t(off), size);
+    static const char* rt = std::getenv("SUNPLUS_READ_TRACE");   // debugging aid: SUNPLUS_READ_TRACE=lo:hi logs every register read between those block counts
+    if (rt) { static const uint64_t lo = std::strtoull(rt, nullptr, 0), hi = std::strchr(rt, ':') ? std::strtoull(std::strchr(rt, ':') + 1, nullptr, 0) : 0; if (m.blocks >= lo && m.blocks <= hi) std::printf("rd %08x = %08x size %u block %08x blocks=%llu\n", REG_BASE + uint32_t(off), uint32_t(v), size, m.lastBlock(), (unsigned long long)m.blocks); }
+    return v;
+  }
   catch (const Stop&) { uc_emu_stop(m.eng.handle); return 0; }
 }
 static void mmioWrite(uc_engine*, uint64_t off, unsigned size, uint64_t value, void* user) {
   M& m = *static_cast<M*>(user);
   const uint32_t addr = REG_BASE + uint32_t(off);
-  if (addr == UART_DATA) { m.uart.push_back(char(value & 0xff)); return; }
+  if (addr == UART_DATA) { m.uart.push_back(char(value & 0xff)); if (std::getenv("SUNPLUS_UART_PC") && m.uartPcLog < 12 && (value & 0xff) == uint8_t(std::getenv("SUNPLUS_UART_PC")[0])) { ++m.uartPcLog; std::printf("uart '%c' from block %08x ra=%08x sp=%08x", char(value & 0xff), m.lastBlock(), m.eng.reg(UC_MIPS_REG_RA), m.eng.reg(UC_MIPS_REG_SP)); std::printf(" ring:"); { size_t n = m.ring.size(); for (size_t k = n > 24 ? n - 24 : 0; k < n; ++k) std::printf(" %08x", m.ring[k]); } std::printf("\n"); } return; }   // SUNPLUS_UART_PC=c: log where character c is printed from
   const uint32_t mask = size >= 4 ? 0xFFFFFFFFu : ((1u << (8 * size)) - 1), v = uint32_t(value) & mask, base = uint32_t(off) & ~3u;
   m.rbReads[base] = 0; m.consecAddr = 0xFFFFFFFF;
   if (size == 4) m.written[base] = v;
@@ -105,6 +110,8 @@ static void mmioWrite(uc_engine*, uint64_t off, unsigned size, uint64_t value, v
       const uint32_t a = ((m.written[0xB10] & 0xff) << 16) | (m.written[0xB0C] & 0xffff);
       uint32_t w = 0xFFFFFFFFu; if (a + 4 <= m.flash.size()) std::memcpy(&w, m.flash.data() + a, 4);
       setData(w); ++m.spiReads;
+      static const char* st = std::getenv("SUNPLUS_SPI_TRACE");   // debugging aid: SUNPLUS_SPI_TRACE=lo:hi logs flash reads between those block counts
+      if (st) { static const uint64_t lo = std::strtoull(st, nullptr, 0), hi = std::strchr(st, ':') ? std::strtoull(std::strchr(st, ':') + 1, nullptr, 0) : 0; if (m.blocks >= lo && m.blocks <= hi) std::printf("spi read %06x = %08x block %08x blocks=%llu\n", a, w, m.lastBlock(), (unsigned long long)m.blocks); }
     } else if (op == 0x05) setData(0);                               // read status register: not busy, not write-protected
     else ++m.spiOther;                                               // write enable / program / erase etc. are accepted and ignored (read-only flash)
   }
@@ -125,7 +132,7 @@ static void onBlock(uc_engine*, uint64_t addr, uint32_t size, void* user) {
   if (m.hotN) ++m.hot[uint32_t(addr)];
   if (m.sfFn && uint32_t(addr) == m.sfFn) { m.sfExpect[m.eng.reg(UC_MIPS_REG_A0) & 3] = m.eng.reg(UC_MIPS_REG_A1) & 0xf; ++m.sfUses; m.sfLast = m.blocks; }   // EXPLORATORY state-follow: the wait function's expected state is what the status register reports
   if (addr >= m.appBase && addr < m.appEnd) { if (!m.appBlocks++) m.appFirst = uint32_t(addr); m.appLast = uint32_t(addr); }
-  if (!m.watch.empty()) { auto w = m.watch.find(uint32_t(addr)); if (w != m.watch.end() && w->second > 0) { --w->second; char t[320]; std::snprintf(t, sizeof t, "watch %08x blocks=%llu a0=%08x a1=%08x a2=%08x a3=%08x v0=%08x v1=%08x s0=%08x s1=%08x s2=%08x s3=%08x s4=%08x ra=%08x sp=%08x gp=%08x", uint32_t(addr), (unsigned long long)m.blocks, m.eng.reg(UC_MIPS_REG_A0), m.eng.reg(UC_MIPS_REG_A1), m.eng.reg(UC_MIPS_REG_A2), m.eng.reg(UC_MIPS_REG_A3), m.eng.reg(UC_MIPS_REG_V0), m.eng.reg(UC_MIPS_REG_V1), m.eng.reg(UC_MIPS_REG_S0), m.eng.reg(UC_MIPS_REG_S1), m.eng.reg(UC_MIPS_REG_S2), m.eng.reg(UC_MIPS_REG_S3), m.eng.reg(UC_MIPS_REG_S4), m.eng.reg(UC_MIPS_REG_RA), m.eng.reg(UC_MIPS_REG_SP), m.eng.reg(UC_MIPS_REG_GP)); m.watchLog.push_back(t); } }
+  if (!m.watch.empty()) { auto w = m.watch.find(uint32_t(addr)); if (w != m.watch.end() && w->second > 0) { --w->second; char t[320]; std::snprintf(t, sizeof t, "watch %08x blocks=%llu a0=%08x a1=%08x a2=%08x a3=%08x v0=%08x v1=%08x s0=%08x s1=%08x s2=%08x s3=%08x s4=%08x ra=%08x sp=%08x gp=%08x", uint32_t(addr), (unsigned long long)m.blocks, m.eng.reg(UC_MIPS_REG_A0), m.eng.reg(UC_MIPS_REG_A1), m.eng.reg(UC_MIPS_REG_A2), m.eng.reg(UC_MIPS_REG_A3), m.eng.reg(UC_MIPS_REG_V0), m.eng.reg(UC_MIPS_REG_V1), m.eng.reg(UC_MIPS_REG_S0), m.eng.reg(UC_MIPS_REG_S1), m.eng.reg(UC_MIPS_REG_S2), m.eng.reg(UC_MIPS_REG_S3), m.eng.reg(UC_MIPS_REG_S4), m.eng.reg(UC_MIPS_REG_RA), m.eng.reg(UC_MIPS_REG_SP), m.eng.reg(UC_MIPS_REG_GP)); std::string line = t; if (std::getenv("SUNPLUS_WATCH_RING")) { line += " ring:"; size_t n = m.ring.size(); for (size_t k = n > 16 ? n - 16 : 0; k + 1 < n; ++k) { char b[12]; std::snprintf(b, sizeof b, " %08x", m.ring[k]); line += b; } } m.watchLog.push_back(line); } }
   if (m.cpi) m.eng.tickCount((size / 4) * m.cpi);          // CP0 Count advances with executed instructions; the patched engine raises the timer interrupt
   if (m.maxBlocks && m.blocks >= m.maxBlocks) { m.stop = "block budget"; uc_emu_stop(m.eng.handle); }
   if (addr < 0x400 && m.blocks > 10) { char b[64]; std::snprintf(b, sizeof b, "execution at low address %08x", uint32_t(addr)); m.stop = b; uc_emu_stop(m.eng.handle); }

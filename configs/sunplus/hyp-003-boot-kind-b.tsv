@@ -1,0 +1,16 @@
+# Exploratory hypotheses for the Sunplus SPHE8600 bring-up. Each line: ADDR VALUE [MASK] # why. NONE of these is observed hardware.
+0xBFFE0018 0x0000001f   # clock multiplier: 8005b2b0 returns ((reg & 0x3f)+1) * 6,750,000 Hz. 0x1f -> 216 MHz (bracket 0x1b -> 189 MHz)
+0xBFFE1448 or 0x00002000   # handshake: 8007da0c sets bit12 (start) then 8007da10 polls bit13 until 1 (done). Hypothesis: done reads 1.
+# (superseded by the --flash SPI model) 0xBFFE0B08 clear 0x00000080   # thermal sensor: 80060078 writes the command, 8006007c polls bit7 until it clears (busy). Hypothesis: conversion completes at once.
+0xBFFE0434 or 0x00008800   # 8005a8d8 polls bit15 (prints a "w" per ~6.4M-instruction delay, 10000 tries) and 8005ac1c polls bit11. Hypothesis: ready/lock bits read 1. 8005ac1c polls bit11 after each ~6.4M-instruction delay (up to 0x79 tries, dumping registers each time). Hypothesis: ready/lock bit reads 1.
+# (withdrawn: with a working flash driver this made the handler power off) 0xBFFE042C 0x0000ECD5   # 8004c55c compares the low 16 bits with 0xECD5; equal -> s2=1 (no power-off). Hypothesis: standby-domain magic that says 'normal cold start'. Without it the handler takes PowerCtl(0).
+0xBFFE006C 0x00000001   # 'standby_status_dtv Grp 0,27' (firmware's own label). 8005a7d8 returns (reg==0); 0 sends the platform init to PowerCtl(0). Hypothesis: nonzero = normal run (wake already done).
+0xBFFE0D04 clear 0x00000100   # application poll (8007d1fc, loop at 80dec2b0): waits for bit8 to clear (engine busy). Hypothesis: operation completes immediately.
+0xBFFE36E8 or 0x00000200   # application poll at 80c75448: waits for bit9 (done) then writes 0x4000 to 0xBFFE36E4 (ack). Hypothesis: operation done.
+0xBFFE36F4 or 0x00000040   # AUTO-POLL (exploratory): loop at block 80c754bc waits for mask set; assumed to exit
+0xBFFE83DC or 0x00000080   # AUTO-POLL (exploratory): loop at block 80d5ed08 waits for mask set; assumed to exit
+0xBFFE3598 or 0x00000002   # AUTO-POLL (exploratory): loop at block 8016c978 waits for mask set; assumed to exit
+0xBFFE1D80 or 0x80000000   # I2C master transaction (routine 80dd8b2c): polls bit31 = done, times out after 1 s and retries. Hypothesis: transfer completes immediately.
+0xBFFE50D0 clear 0x00000001   # module code at 85bae1e8 writes 1 to start a transfer and polls bit0 until it clears. Hypothesis: busy bit self-clears (done).
+0xBFFE50E0 clear 0x00000200   # module code at 85bae56c writes 0x200 then polls bit9 until it clears (busy). Hypothesis: self-clearing, completes immediately.
+0xBFFE0000	0x00000001	# EXPLORATORY boot-kind probe: 8004c214 compares this register with IOP[0] then IOP[8] (A: equal IOP[0]; B: equal IOP[8])
