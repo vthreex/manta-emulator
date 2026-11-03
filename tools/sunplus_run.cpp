@@ -24,6 +24,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 using namespace manta;
 
 static constexpr uint32_t REG_BASE = 0x1FFE0000, REG_SIZE = 0x20000, UART_DATA = REG_BASE + 0x900, UART_STAT = REG_BASE + 0x904;
@@ -43,21 +46,22 @@ struct M {
   std::map<uint32_t, std::pair<uint32_t, uint64_t>> zeroReads; std::vector<uint32_t> zeroOrder;
   bool readback = false, unknownZero = false; uint64_t pollLimit = 300000, maxBlocks = 0, blocks = 0; uint32_t cpi = 1;
   std::deque<uint32_t> ring; std::string stop; std::map<uint32_t, int> watch; std::vector<std::string> watchLog;
-  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
+  std::vector<uint8_t> flash; uint32_t spiId9f = 0x001740EF, spiId90 = 0x000017EF; int lastVec = -1; uint32_t pendReg = 0, pendBit = 0; int pendLeft = 0; bool irqClearReq = false; uint64_t irqInjected = 0; std::string trigText; bool trigSeen = false; std::vector<uint32_t> snap; uint32_t spLo = 0, spHi = 0; std::deque<uint32_t> spRing; size_t hotN = 0; std::map<uint32_t, uint64_t> hot; uint32_t sfDefault = 4; uint64_t sfLast = 0; uint32_t sfFn = 0, sfReg = 0; uint32_t sfExpect[4] = {0,0,0,0}; uint64_t sfUses = 0; uint32_t consecAddr = 0xFFFFFFFF; uint64_t consecCount = 0; std::map<uint32_t, uint64_t> rbReads; uint64_t idleWakes = 0; uint64_t appBlocks = 0; uint32_t appFirst = 0, appLast = 0; uint32_t appBase = 0x809e2400, appEnd = 0x83000000; uint64_t spiReads = 0, spiIds = 0, spiOther = 0; std::map<uint32_t, uint64_t> spiOps;
   uint32_t lastBlock() const { return ring.empty() ? 0 : ring.back(); }
 };
 
 static uint32_t regValue(M& m, uint32_t off, unsigned size) {
   const uint32_t base = off & ~3u, addr = REG_BASE + base;
   uint32_t val;
+  const uint64_t consec = (base == m.consecAddr) ? ++m.consecCount : (m.consecAddr = base, m.consecCount = 1);   // consecutive reads of the same register (no other register access in between)
   if (m.sfFn && addr == m.sfReg) { if (m.blocks - m.sfLast < 3000) val = m.sfExpect[0] | (m.sfExpect[1] << 4) | (m.sfExpect[2] << 8) | (m.sfExpect[3] << 12); else val = m.sfDefault * 0x1111u; }
-  else if (m.pendLeft > 0 && base == m.pendReg) { val = m.pendBit; m.pendLeft = 0; m.eng.setIrqLines(0); }   // EXPLORATORY injected interrupt source (pending register returns the vector's bit for a few reads)
+  else if (m.pendLeft > 0 && base == m.pendReg) { val = m.pendBit; m.pendLeft = 0; m.irqClearReq = true; }   // EXPLORATORY injected interrupt source (pending register returns the vector's bit for a few reads)
   else if (!m.flash.empty() && base >= 0xB00 && base < 0xB40) { val = m.written.count(base) ? m.written[base] : 0; if (base == 0xB08) val &= ~0x80u; }   // SPI flash controller: command done instantly (busy bit clear)
   else if (addr == UART_STAT) val = 0x41;                        // bit0 TX ready + bit6 TX idle (modelled from the firmware's own polls)
   else if (auto h = m.hyp.find(addr); h != m.hyp.end()) { val = h->second.value & h->second.mask; ++m.hypUsed[addr]; }
   else if (m.readback && m.written.count(base)) {
     val = m.written[base]; ++m.readbackUsed;
-    uint64_t& rc = m.rbReads[base]; if (++rc >= m.pollLimit) {   // the firmware keeps re-reading a register it wrote itself and nothing changes it: report like an unknown-register poll
+    uint64_t& rc = m.rbReads[base]; ++rc; if (consec >= m.pollLimit) {   // the firmware keeps re-reading a register it wrote itself and nothing changes it: report like an unknown-register poll
       char t[200]; std::snprintf(t, sizeof t, "stuck polling %08x (%llu reads of the unknown-zero value) first near block %08x now block %08x", addr | 0xA0000000u, (unsigned long long)rc, m.lastBlock(), m.lastBlock());
       m.stop = t; throw Stop{t};
     }
@@ -66,7 +70,7 @@ static uint32_t regValue(M& m, uint32_t off, unsigned size) {
     auto it = m.zeroReads.find(base);
     if (it == m.zeroReads.end()) { it = m.zeroReads.emplace(base, std::make_pair(m.lastBlock(), uint64_t(0))).first; m.zeroOrder.push_back(base); }
     val = 0;
-    if (++it->second.second >= m.pollLimit) {
+    ++it->second.second; if (consec >= m.pollLimit) {
       char b[200]; std::snprintf(b, sizeof b, "stuck polling %08x (%llu reads of the unknown-zero value) first near block %08x now block %08x", addr | 0xA0000000u, (unsigned long long)it->second.second, it->second.first, m.lastBlock());
       m.stop = b; throw Stop{b};
     }
@@ -89,7 +93,7 @@ static void mmioWrite(uc_engine*, uint64_t off, unsigned size, uint64_t value, v
   const uint32_t addr = REG_BASE + uint32_t(off);
   if (addr == UART_DATA) { m.uart.push_back(char(value & 0xff)); return; }
   const uint32_t mask = size >= 4 ? 0xFFFFFFFFu : ((1u << (8 * size)) - 1), v = uint32_t(value) & mask, base = uint32_t(off) & ~3u;
-  m.rbReads[base] = 0;
+  m.rbReads[base] = 0; m.consecAddr = 0xFFFFFFFF;
   if (size == 4) m.written[base] = v;
   else { const unsigned sh = (off & 3) * 8; m.written[base] = (m.written[base] & ~(mask << sh)) | (v << sh); }
   if (!m.flash.empty() && uint32_t(off) == 0xB08) {                // SPI command: [opcode:8][flags:8]; address in 0B0C (low 16) / 0B10 (bits 16..23); data back in 0B14 (low 16) / 0B18 (high 16)
@@ -112,6 +116,11 @@ static void onBlock(uc_engine*, uint64_t addr, uint32_t size, void* user) {
   M& m = *static_cast<M*>(user);
   m.ring.push_back(uint32_t(addr)); if (m.ring.size() > 600) m.ring.pop_front();
   ++m.blocks;
+#ifdef _WIN32
+  { static const uint64_t hcStart = std::getenv("SUNPLUS_HEAPCHECK") ? std::strtoull(std::getenv("SUNPLUS_HEAPCHECK"), nullptr, 0) : 0; static bool hcDone = false;   // debugging aid: find the first block after which the host heap is corrupt
+    if (hcStart && !hcDone && m.blocks >= hcStart && !HeapValidate(GetProcessHeap(), 0, nullptr)) { hcDone = true; std::printf("HEAP CORRUPT detected at block %llu (block %08x)\n", (unsigned long long)m.blocks, uint32_t(addr)); std::fflush(stdout); } }
+#endif
+  if (m.irqClearReq) { m.irqClearReq = false; m.eng.setIrqLines(0); }   // deassert outside the MMIO callback (writing CP0 state mid-instruction crashed DSP cores)
   if (m.spHi) { uint32_t sp = m.eng.reg(UC_MIPS_REG_SP); if (sp >= m.spLo && sp < m.spHi) { m.spRing.push_back(uint32_t(addr)); if (m.spRing.size() > 400) m.spRing.pop_front(); } }
   if (m.hotN) ++m.hot[uint32_t(addr)];
   if (m.sfFn && uint32_t(addr) == m.sfFn) { m.sfExpect[m.eng.reg(UC_MIPS_REG_A0) & 3] = m.eng.reg(UC_MIPS_REG_A1) & 0xf; ++m.sfUses; m.sfLast = m.blocks; }   // EXPLORATORY state-follow: the wait function's expected state is what the status register reports
@@ -133,6 +142,13 @@ static std::vector<uint8_t> load(const char* p) {
   return {std::istreambuf_iterator<char>(f), {}};
 }
 
+static M* gCrashM = nullptr;
+#ifdef _WIN32
+static LONG WINAPI crashFilter(EXCEPTION_POINTERS*) {   // host crash inside the engine: show the last guest blocks that were executed
+  if (gCrashM) { std::printf("HOST CRASH after %llu blocks; last guest blocks:", (unsigned long long)gCrashM->blocks); size_t n = gCrashM->ring.size(); for (size_t k = n > 40 ? n - 40 : 0; k < n; ++k) std::printf(" %08x", gCrashM->ring[k]); std::printf("\n"); std::fflush(stdout); }
+  return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
 int main(int argc, char** argv) {
   if (argc < 2) { std::fprintf(stderr, "usage: sunplus_run KERNEL.bin [--hyp FILE] [--readback] [--unknown-zero] [--map-iop] [--max-blocks N] [--poll-limit N] [--cpi N] [--ram-mb N]\n"); return 2; }
   for (int i = 2; i < argc; ++i) if (std::string(argv[i]) == "--cpu-fmt") Engine::cpuModel = UC_CPU_MIPS32_M14K;
@@ -142,7 +158,11 @@ int main(int argc, char** argv) {
   }   // EXPLORATORY: fixed-mapping MMU core (user addresses -> physical +0x40000000 when ERL=0)
   std::vector<std::pair<uint32_t, uint32_t>> iopSets;   // EXPLORATORY: words preset in the IOP data window (offset=value)
   uint32_t coverLo = 0, coverHi = 0; std::vector<std::pair<uint32_t, uint32_t>> dumps; std::vector<uint32_t> peeks; std::vector<HostCall> calls; std::set<int> irqExcl; bool irqAuto = false; std::vector<int> irqVecs; int irqVec = -1; uint32_t irqMask = 0;   // EXPLORATORY: external interrupt lines IP2..IP6 (bit0 = IP2) asserted at every idle wake-up
-  M m; uint64_t maxIdle = 2000000; bool fmt = false; uint32_t xip = 0; std::string uartOut; uint32_t ramMb = 128; bool mapIop = false; uint32_t loadAt = 0x400; size_t nwrites = 60;
+  M m; gCrashM = &m;
+#ifdef _WIN32
+  SetUnhandledExceptionFilter(crashFilter);
+#endif
+  uint64_t maxIdle = 2000000; bool fmt = false; uint32_t xip = 0; std::string uartOut; std::string saveRam; uint32_t ramMb = 128; bool mapIop = false; uint32_t loadAt = 0x400; size_t nwrites = 60;
   for (int i = 2; i < argc; ++i) {
     std::string a = argv[i];
     if (a == "--readback") m.readback = true;
@@ -160,6 +180,7 @@ int main(int argc, char** argv) {
     else if (a == "--state-default") m.sfDefault = uint32_t(std::strtoul(argv[++i], nullptr, 0)) & 0xf;
     else if (a == "--state-follow") { std::string s = argv[++i]; auto c = s.find(':'); m.sfFn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); m.sfReg = uint32_t(std::strtoul(s.c_str() + c + 1, nullptr, 0)) & 0x1FFFFFFF; }
     else if (a == "--dump") { uint32_t ad = uint32_t(std::strtoul(argv[++i], nullptr, 0)); uint32_t ln = uint32_t(std::strtoul(argv[++i], nullptr, 0)); dumps.push_back({ad, ln}); }
+    else if (a == "--save-ram") saveRam = argv[++i];
     else if (a == "--peek") peeks.push_back(uint32_t(std::strtoul(argv[++i], nullptr, 0)));
     else if (a == "--call") { std::string s = argv[++i]; HostCall c{}; auto p1 = s.find(':'), p2 = s.find(':', p1 + 1), at = s.find('@'); c.fn = uint32_t(std::strtoul(s.c_str(), nullptr, 0)); c.a0 = uint32_t(std::strtoul(s.c_str() + p1 + 1, nullptr, 0)); c.a1 = uint32_t(std::strtoul(s.c_str() + p2 + 1, nullptr, 0)); c.at = std::strtoull(s.c_str() + at + 1, nullptr, 0); calls.push_back(c); }
     else if (a == "--snap-after") m.trigText = argv[++i];
@@ -213,6 +234,7 @@ int main(int argc, char** argv) {
     uint32_t dist = cmp - cnt; if (!dist) dist = 1;
     if (!m.trigText.empty() && m.snap.empty() && m.uart.find(m.trigText) != std::string::npos) m.snap.assign(m.ring.begin(), m.ring.end());
     m.eng.tickCount(dist); ++idles;
+    if (const char* fe = std::getenv("SUNPLUS_FLUSH_TB_IDLES")) { const uint64_t k = std::strtoull(fe, nullptr, 0); if (k && idles % k == 0) uc_ctl_flush_tb(m.eng.handle); }   // debugging aid for the host-side translation crash
     for (auto& c : calls) if (!c.done && idles == c.at) {   // EXPLORATORY host call: run the firmware function to completion on a scratch stack with interrupts masked, then resume the idle loop
       c.done = true;
       uint32_t saved[40]; const int ids[] = {UC_MIPS_REG_A0, UC_MIPS_REG_A1, UC_MIPS_REG_A2, UC_MIPS_REG_A3, UC_MIPS_REG_V0, UC_MIPS_REG_V1, UC_MIPS_REG_RA, UC_MIPS_REG_SP, UC_MIPS_REG_PC, UC_MIPS_REG_CP0_STATUS, UC_MIPS_REG_S0, UC_MIPS_REG_S1, UC_MIPS_REG_S2, UC_MIPS_REG_S3, UC_MIPS_REG_S4, UC_MIPS_REG_S5, UC_MIPS_REG_S6, UC_MIPS_REG_S7, UC_MIPS_REG_FP, UC_MIPS_REG_T0, UC_MIPS_REG_T1, UC_MIPS_REG_T2, UC_MIPS_REG_T3, UC_MIPS_REG_T4, UC_MIPS_REG_T5, UC_MIPS_REG_T6, UC_MIPS_REG_T7, UC_MIPS_REG_T8, UC_MIPS_REG_T9, UC_MIPS_REG_GP};
@@ -247,6 +269,11 @@ int main(int argc, char** argv) {
       m.eng.setIrqLines(1u << line);
     }
     e = m.eng.run(m.eng.reg(UC_MIPS_REG_PC), 0);
+  }
+  if (!saveRam.empty()) {   // debugging aid: GPRs, PC, HI/LO, Status/Count/Compare then all RAM, so a host-side Unicorn crash can be replayed standalone
+    std::ofstream o(saveRam, std::ios::binary); uint32_t r[38]; for (int k = 0; k < 32; ++k) r[k] = m.eng.reg(UC_MIPS_REG_0 + k);
+    r[32] = m.eng.reg(UC_MIPS_REG_PC); r[33] = m.eng.reg(UC_MIPS_REG_HI); r[34] = m.eng.reg(UC_MIPS_REG_LO); r[35] = m.eng.reg(UC_MIPS_REG_CP0_STATUS); r[36] = m.eng.reg(UC_MIPS_REG_CP0_COUNT); r[37] = m.eng.reg(UC_MIPS_REG_CP0_COMPARE);
+    o.write(reinterpret_cast<char*>(r), sizeof r); o.write(reinterpret_cast<char*>(m.ram.data()), std::streamsize(m.ram.size()));
   }
   for (uint32_t pk : peeks) { uint32_t v = 0; m.eng.read(pk & 0x1FFFFFFF, &v, 4); std::printf("peek %08x = %08x\n", pk, v); }
   for (auto& [ad, ln] : dumps) { std::vector<uint8_t> buf(ln); m.eng.read(ad & 0x1FFFFFFF, buf.data(), ln); std::printf("dump %08x:", ad); for (uint32_t k = 0; k < ln; ++k) std::printf("%02x", buf[k]); std::printf("\n"); }
