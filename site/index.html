@@ -175,62 +175,58 @@ h3{font-size:18px;line-height:1.3;margin:0 0 8px}
 /* Remotes, drawn after the sets' own remotes. lcd = Manta LCD4214 remote (grey keys, labels above, coloured row, dark d-pad ring, logo at the foot);
    led = LED4202 remote (white pill keys, red power + green mute, VOL/CH rockers, media key panel). Keys with a blue ring were pressed from the current screen in the recording. */
 .remote{position:relative;margin:0 auto;user-select:none;-webkit-user-select:none;font-family:system-ui,"Segoe UI",Arial,sans-serif}
-.remote .row{display:grid;gap:7px 8px;margin-bottom:8px;align-items:end}
-.remote .cell{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:0}
-.remote .kl{font-size:7.5px;font-weight:700;letter-spacing:.02em;color:#e9ecef;text-align:center;white-space:nowrap;line-height:1;min-height:7.5px}
+.remote .row{display:grid;gap:4px 6px;margin-bottom:5px;align-items:end}
+.remote .cell{display:flex;flex-direction:column;align-items:stretch;gap:1px;min-width:0}
+.remote .kl{font-size:6.5px;font-weight:700;letter-spacing:.02em;color:#e9ecef;text-align:center;white-space:nowrap;line-height:1;min-height:6.5px}
 .rk{position:relative;border:0;cursor:pointer;font:700 10px/1 system-ui,"Segoe UI",Arial,sans-serif;display:grid;place-items:center;padding:0;transition:filter .12s,transform .05s}
-.rk svg{width:11px;height:11px;display:block}
+.rk svg{width:9px;height:9px;display:block}
 .rk:hover{filter:brightness(1.12)}
 .rk:active,.rk.hit{transform:translateY(1px);filter:brightness(.9)}
 .rk.live{box-shadow:0 0 0 2px #5eb8ff,0 0 10px rgba(94,184,255,.55)!important}
 .remote .gap{visibility:hidden}
-.remote.compact>:not(.core):not(.logo){display:none}
-.remote.compact .logo{margin-top:14px}
-.remote.compact.lcd{border-radius:44px 44px 56px 56px/34px 34px 70px 70px}
-.remote-toggle{align-self:center;padding:6px 14px;font-size:13.5px}
 
-.remote.lcd{width:214px;padding:22px 16px 30px;border-radius:44px 44px 70px 70px/34px 34px 120px 120px;
+.remote.lcd{width:184px;padding:16px 13px 20px;border-radius:44px 44px 70px 70px/34px 34px 120px 120px;
   background:linear-gradient(90deg,#0b0b0c,#1c1d1f 14%,#1a1b1d 86%,#0b0b0c);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08)}
 .remote.lcd .row{grid-template-columns:repeat(4,minmax(0,1fr))}
-.remote.lcd .rk{height:21px;border-radius:5px;color:#fff;background:linear-gradient(180deg,#a2a6ab,#7b8086);box-shadow:0 2px 0 #3a3c40,inset 0 1px 0 rgba(255,255,255,.35);font-size:9.5px}
-.remote.lcd .rk.num{font-size:13px}
-.remote.lcd .rk.pwr{width:62px;height:28px;margin:0 auto;border-radius:50%/60%;background:radial-gradient(circle at 50% 35%,#ff5a4f,#d8261c 70%);box-shadow:0 2px 0 #6e1410}
-.remote.lcd .rk.pwr svg{width:14px;height:14px}
+.remote.lcd .rk{height:16px;border-radius:4px;color:#fff;background:linear-gradient(180deg,#a2a6ab,#7b8086);box-shadow:0 2px 0 #3a3c40,inset 0 1px 0 rgba(255,255,255,.35);font-size:8px}
+.remote.lcd .rk.num{font-size:10.5px}
+.remote.lcd .rk.pwr{width:50px;height:22px;margin:0 auto;border-radius:50%/60%;background:radial-gradient(circle at 50% 35%,#ff5a4f,#d8261c 70%);box-shadow:0 2px 0 #6e1410}
+.remote.lcd .rk.pwr svg{width:12px;height:12px}
 .remote.lcd .rk.red{background:linear-gradient(#ff4b3e,#d9241a)}.remote.lcd .rk.green{background:linear-gradient(#22c08a,#0f9466)}
 .remote.lcd .rk.yellow{background:linear-gradient(#ffe03a,#e8bd00)}.remote.lcd .rk.blue{background:linear-gradient(#45b1f0,#1c8bd6)}
 .remote.lcd .colours{margin-top:4px}
-.remote.lcd .logo{display:block;width:62%;margin:26px auto 0;opacity:.95}
+.remote.lcd .logo{display:block;width:60%;margin:16px auto 0;opacity:.95}
 
-.remote.led{width:222px;padding:20px 16px 26px;border-radius:30px 30px 20px 20px;
+.remote.led{width:188px;padding:15px 13px 18px;border-radius:30px 30px 20px 20px;
   background:linear-gradient(90deg,#101112,#202124 12%,#1d1e21 88%,#101112);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08)}
 .remote.led .row{grid-template-columns:repeat(3,minmax(0,1fr))}
-.remote.led .rk{height:22px;border-radius:11px;color:#222;background:linear-gradient(180deg,#ffffff,#e4e4e1);box-shadow:0 2px 0 #77787a,inset 0 -1px 0 rgba(0,0,0,.08);font-size:13px}
-.remote.led .rk.small{height:17px;width:70%;justify-self:center;margin:0 auto}
-.remote.led .rk.pwr{background:linear-gradient(#ff5d4b,#df2e1d);color:#fff;width:76%;margin:0 auto;height:24px}
-.remote.led .rk.mute{background:linear-gradient(#3fcf63,#1f9e3e);color:#fff;width:76%;margin:0 auto;height:24px}
-.remote.led .panel{border:1px solid #3a3c40;border-radius:6px;padding:7px 6px 2px;margin-top:4px;background:rgba(255,255,255,.02)}
-.remote.led .panel .row{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px 6px}
-.remote.led .panel .rk{height:15px;font-size:9px}
-.remote.led .panel .kl{font-size:6.5px}
+.remote.led .rk{height:16px;border-radius:8px;color:#222;background:linear-gradient(180deg,#ffffff,#e4e4e1);box-shadow:0 2px 0 #77787a,inset 0 -1px 0 rgba(0,0,0,.08);font-size:10.5px}
+.remote.led .rk.small{height:13px;width:70%;justify-self:center;margin:0 auto}
+.remote.led .rk.pwr{background:linear-gradient(#ff5d4b,#df2e1d);color:#fff;width:76%;margin:0 auto;height:18px}
+.remote.led .rk.mute{background:linear-gradient(#3fcf63,#1f9e3e);color:#fff;width:76%;margin:0 auto;height:18px}
+.remote.led .panel{border:1px solid #3a3c40;border-radius:6px;padding:5px 5px 1px;margin-top:3px;background:rgba(255,255,255,.02)}
+.remote.led .panel .row{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px 5px;margin-bottom:3px}
+.remote.led .panel .rk{height:12px;font-size:8px}
+.remote.led .panel .kl{font-size:5.8px}
 .remote.led .rk.red{background:linear-gradient(#ff5d4b,#df2e1d)}.remote.led .rk.green{background:linear-gradient(#3fcf63,#1f9e3e)}
 .remote.led .rk.yellow{background:linear-gradient(#ffe34a,#efc400)}.remote.led .rk.cyan{background:linear-gradient(#3aa0f2,#1673d6)}
-.remote.led .rocker{display:flex;flex-direction:column;width:34px;margin:0 auto;border-radius:17px;background:linear-gradient(180deg,#fff,#e4e4e1);box-shadow:0 2px 0 #77787a;overflow:hidden}
-.remote.led .rocker .rk{height:28px;border-radius:0;background:transparent;box-shadow:none;font-size:16px;font-weight:500}
-.remote.led .rocker span{font-size:9px;color:#333;text-align:center;line-height:12px}
-.remote.led .mid{display:flex;flex-direction:column;gap:3px;justify-content:center}
+.remote.led .rocker{display:flex;flex-direction:column;width:28px;margin:0 auto;border-radius:17px;background:linear-gradient(180deg,#fff,#e4e4e1);box-shadow:0 2px 0 #77787a;overflow:hidden}
+.remote.led .rocker .rk{height:21px;border-radius:0;background:transparent;box-shadow:none;font-size:13px;font-weight:500}
+.remote.led .rocker span{font-size:7.5px;color:#333;text-align:center;line-height:9px}
+.remote.led .mid{display:flex;flex-direction:column;gap:2px;justify-content:center}
 
-.dpad{position:relative;margin:10px auto 14px;border-radius:50%}
+.dpad{position:relative;margin:6px auto 8px;border-radius:50%}
 .dpad .rk{position:absolute}
-.remote.lcd .dpad{width:156px;height:156px;background:radial-gradient(circle,#2b2c2f 60%,#1e1f21);box-shadow:inset 0 2px 4px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.06)}
+.remote.lcd .dpad{width:118px;height:118px;background:radial-gradient(circle,#2b2c2f 60%,#1e1f21);box-shadow:inset 0 2px 4px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.06)}
 .remote.lcd .dpad .rk{border-radius:10px;background:linear-gradient(180deg,#a7abb0,#80858b);box-shadow:0 2px 0 #3a3c40;font-size:12px;color:#fff}
-.remote.lcd .dpad .up,.remote.lcd .dpad .down{left:46px;width:64px;height:30px}.remote.lcd .dpad .up{top:10px;border-radius:28px 28px 8px 8px}.remote.lcd .dpad .down{bottom:10px;border-radius:8px 8px 28px 28px}
-.remote.lcd .dpad .left,.remote.lcd .dpad .right{top:46px;width:30px;height:64px}.remote.lcd .dpad .left{left:10px;border-radius:28px 8px 8px 28px}.remote.lcd .dpad .right{right:10px;border-radius:8px 28px 28px 8px}
-.remote.lcd .dpad .ok{left:48px;top:48px;width:60px;height:60px;border-radius:50%;font-size:14px}
-.remote.led .dpad{width:160px;height:160px;background:#111214}
+.remote.lcd .dpad .up,.remote.lcd .dpad .down{left:35px;width:48px;height:23px}.remote.lcd .dpad .up{top:7px;border-radius:28px 28px 8px 8px}.remote.lcd .dpad .down{bottom:7px;border-radius:8px 8px 28px 28px}
+.remote.lcd .dpad .left,.remote.lcd .dpad .right{top:35px;width:23px;height:48px}.remote.lcd .dpad .left{left:7px;border-radius:28px 8px 8px 28px}.remote.lcd .dpad .right{right:7px;border-radius:8px 28px 28px 8px}
+.remote.lcd .dpad .ok{left:36px;top:36px;width:46px;height:46px;border-radius:50%;font-size:11px}
+.remote.led .dpad{width:120px;height:120px;background:#111214}
 .remote.led .dpad .rk{background:linear-gradient(180deg,#fff,#e6e6e3);box-shadow:0 2px 0 #77787a;color:#111;font-size:13px}
-.remote.led .dpad .up,.remote.led .dpad .down{left:40px;width:80px;height:38px}.remote.led .dpad .up{top:2px;border-radius:40px 40px 12px 12px}.remote.led .dpad .down{bottom:2px;border-radius:12px 12px 40px 40px}
-.remote.led .dpad .left,.remote.led .dpad .right{top:40px;width:38px;height:80px}.remote.led .dpad .left{left:2px;border-radius:40px 12px 12px 40px}.remote.led .dpad .right{right:2px;border-radius:12px 40px 40px 12px}
-.remote.led .dpad .ok{left:50px;top:50px;width:60px;height:60px;border-radius:50%;box-shadow:0 0 0 5px #111214,0 2px 0 6px #303236;font-size:10px;font-weight:500;letter-spacing:.02em}
+.remote.led .dpad .up,.remote.led .dpad .down{left:30px;width:60px;height:29px}.remote.led .dpad .up{top:2px;border-radius:40px 40px 12px 12px}.remote.led .dpad .down{bottom:2px;border-radius:12px 12px 40px 40px}
+.remote.led .dpad .left,.remote.led .dpad .right{top:30px;width:29px;height:60px}.remote.led .dpad .left{left:2px;border-radius:40px 12px 12px 40px}.remote.led .dpad .right{right:2px;border-radius:12px 40px 40px 12px}
+.remote.led .dpad .ok{left:38px;top:38px;width:44px;height:44px;border-radius:50%;box-shadow:0 0 0 4px #111214,0 2px 0 5px #303236;font-size:8px;font-weight:500;letter-spacing:.02em}
 @media(min-width:901px){.play>.screen-col{position:sticky;top:calc(var(--nav-h) + 16px)}}
 .side-note{font-size:13.5px;color:var(--mut)}
 .side-note p{margin:0 0 8px}
@@ -417,7 +413,6 @@ footer p{margin:0;max-width:640px}
     </div>
     <div class="remote-wrap">
       <div class="remote led" id="remote" role="group" aria-label="Remote control"></div>
-      <button class="btn remote-toggle" id="remoteToggle" type="button">Show full remote</button>
       <div class="side-note" id="pNote"></div>
     </div>
   </div>
@@ -707,7 +702,7 @@ const REMOTES={
 };
 const keyBtn=(k,face,cls)=>`<button type="button" class="rk ${cls||''}" data-k="${esc(k)}" aria-label="${esc(k)}">${face}</button>`;
 const cell=c=>c?`<div class="cell"><span class="kl">${esc(c[2]||'')}</span>${keyBtn(c[0],c[1],c[3])}</div>`:'<div class="cell gap"></div>';
-let fullRemote=false;
+let fullRemote=true;
 function buildRemote(m){
   const R=REMOTES[m],el=$('#remote');el.className='remote '+m+(fullRemote?'':' compact');
   const rows=r=>r.map(row=>{
@@ -721,7 +716,6 @@ function buildRemote(m){
   }).join('');
   el.innerHTML=rows(R.rows)+(R.logo?`<img class="logo" src="${R.logo}" alt="Manta">`:'');
   [...el.children].forEach((c,i)=>{if(R.core.includes(i))c.classList.add('core')});
-  $('#remoteToggle').textContent=fullRemote?'Show compact remote':'Show full remote';
 }
 let toastT=null;
 function toast(t){const el=$('#pToast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1600)}
@@ -786,7 +780,6 @@ function setPlat(p){
 }
 $('#remote').addEventListener('click',e=>{const b=e.target.closest('.rk');if(!b)return;if(tourTimer)stopTour();press(b.dataset.k)});
 $$('[data-plat]').forEach(b=>b.onclick=()=>setPlat(b.dataset.plat));
-$('#remoteToggle').onclick=()=>{fullRemote=!fullRemote;buildRemote(plat==='sunplus'?'led':'lcd');updateKeys()};
 const KB={ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT',Enter:'OK',Escape:'EXIT',m:'MENU',M:'MENU',s:'SOURCE',S:'SOURCE',i:'INFO',I:'INFO',p:'POWER',P:'POWER'};
 $('#try .play').addEventListener('keydown',e=>{
   const k=KB[e.key];if(!k||e.ctrlKey||e.metaKey||e.altKey)return;
