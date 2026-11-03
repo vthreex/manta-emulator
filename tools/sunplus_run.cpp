@@ -281,7 +281,8 @@ int main(int argc, char** argv) {
             if (pa) { const unsigned long pp = std::strtoul(pa, nullptr, 16) & 0x1fffffff; std::ofstream o(path + ".pal", std::ios::binary); if (pp + 1024 <= m.ram.size()) o.write(reinterpret_cast<const char*>(m.ram.data() + pp), 1024); }
             { std::ofstream o(path + ".done", std::ios::binary); o << idles; } } } }
     }
-    if (!m.pendingKeys.empty() && m.blocks - m.lastKickBlocks > 1500000 && m.blocks - m.lastKeyBlocks > 1500000) {   // keys are injected only when the firmware has been quiet (no GPU drawing) and not too soon after the previous key: the host call borrows the idle thread and must not block on a lock another thread holds
+    static const uint64_t keyQuiet = std::getenv("SUNPLUS_KEY_QUIET") ? std::strtoull(std::getenv("SUNPLUS_KEY_QUIET"), nullptr, 0) : 400000;
+    if (!m.pendingKeys.empty() && m.blocks - m.lastKickBlocks > keyQuiet && m.blocks - m.lastKeyBlocks > keyQuiet) {   // keys are injected only when the firmware has been quiet (no GPU drawing) and not too soon after the previous key: the host call borrows the idle thread and must not block on a lock another thread holds
       HostCall hc{}; hc.fn = keyFn; hc.a0 = m.pendingKeys.front(); hc.a1 = 0; hc.at = idles; calls.push_back(hc); m.pendingKeys.pop_front(); m.lastKeyBlocks = m.blocks; }
     for (auto& c : calls) if (!c.done && idles == c.at) {   // EXPLORATORY host call: run the firmware function to completion on a scratch stack with interrupts masked, then resume the idle loop
       c.done = true;

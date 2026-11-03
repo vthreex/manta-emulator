@@ -132,10 +132,18 @@ code{background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:.92em}
 <div class="gallery" id="gallery"></div>
 
 <h2 id="sunplus">The second platform: Sunplus SPHE8600</h2>
-<p class="lead" style="font-size:16px">Newer Manta LED sets (and the Shivaki STV-24LED14) use a Sunplus MIPS SoC running eCos with DirectFB — a completely different machine. The emulator boots it through the kernel, the flash driver and into the application's start-up assistant; the display path is still being reverse-engineered.</p>
+<p class="lead" style="font-size:16px">Newer Manta LED sets (and the Shivaki STV-24LED14) use a Sunplus MIPS SoC running eCos with DirectFB — a completely different machine. The emulator boots it through the kernel and flash driver into the application, decodes the GPU command FIFO and palette, and renders the real OSD menu, which can be navigated with the firmware's own key events.</p>
 <div class="two">
   <figure style="margin:0"><img src="assets/sunplus/manta-led4202-boot-logo.jpg" alt="Manta LED4202 boot logo"><figcaption style="color:var(--mut);font-size:13px">Manta LED4202 boot logo (recovered from the flash image)</figcaption></figure>
   <figure style="margin:0"><img src="assets/sunplus/shivaki-boot-logo.jpg" alt="Shivaki boot logo"><figcaption style="color:var(--mut);font-size:13px">Shivaki STV-24LED14 boot logo</figcaption></figure>
+</div>
+<h3 style="margin-top:22px">The real menu, navigated</h3>
+<p style="color:var(--mut);font-size:15px">Frames below are drawn by the unmodified firmware; the emulator only executes its GPU commands (exploratory model: LUT8 surfaces, fill/blit/stretch, colour key) and shows the result. Placement on the panel is a guess; keys are injected as the firmware's event ids (MENU 0x1021, arrows 0x1018-0x101b, OK 0x101c, EXIT 0x1043, SOURCE 0x1047).</p>
+<div class="two">
+  <figure style="margin:0"><img src="assets/sunplus/manta-led4202-main-menu-english.png" alt="Main menu, English"><figcaption style="color:var(--mut);font-size:13px">Main menu (English)</figcaption></figure>
+  <figure style="margin:0"><img src="assets/sunplus/manta-menu-tabs-sound-feature-setup.png" alt="Sound, Feature and Setup tabs"><figcaption style="color:var(--mut);font-size:13px">Sound / Feature / Setup tabs</figcaption></figure>
+  <figure style="margin:0"><img src="assets/sunplus/manta-menu-navigation-session.png" alt="Navigation session"><figcaption style="color:var(--mut);font-size:13px">A navigation session</figcaption></figure>
+  <figure style="margin:0"><img src="assets/sunplus/manta-menu-after-selecting-standard.png" alt="After selecting a value"><figcaption style="color:var(--mut);font-size:13px">Selecting a value</figcaption></figure>
 </div>
 <h3 style="margin-top:22px">OSD bitmap atlas — recovered from the application image</h3>
 <p style="color:var(--mut);font-size:15px">632 bitmaps are described by a table of 24-byte descriptors (data pointer, palette pointer, size, 8 bpp). The sheet is a contact sheet of the decoded images (a minority still decode as noise: different row stride/format — not solved).</p>
@@ -145,7 +153,7 @@ code{background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:.92em}
 <div class="tablewrap"><table>
 <tr><th>Platform</th><th>What works</th><th>Not yet</th></tr>
 <tr><td><b>MStar MSD309</b> (Manta LCD4214)</td><td>Original firmware boots; the real ZUI draws the OSD; GOP scan-out; MENU / SOURCE / INFO / factory / hotel / lock menus; USB player (emulated stick); virtual remote; Qt control centre; save states.</td><td>Some GE blend/filter details are labelled hypotheses; live TV picture is synthetic; peripheral coverage is partial.</td></tr>
-<tr><td><b>Sunplus SPHE8600</b> (Manta LED4202, Shivaki)</td><td>eCos kernel boot, flash driver + SPI controller model, ~3 MB application load, DirectFB 1.1.0 start-up, interrupt controller decoded, OSD bitmap extraction.</td><td>No pixels on screen yet: OSD scan-out registers and real IR input are not modelled.</td></tr>
+<tr><td><b>Sunplus SPHE8600</b> (Manta LED4202, Shivaki)</td><td>eCos kernel boot, flash driver + SPI controller model, application load, DirectFB 1.1.0 start-up, GPU FIFO + palette decoded, real OSD menu rendered and navigable (Picture / Sound / Feature / Setup, language change, source list).</td><td>Display scan-out placement, video plane, real IR hardware and settings persistence are not modelled; "No signal" text not yet reproduced.</td></tr>
 </table></div>
 <p style="color:var(--mut);font-size:15px">Ground rules: never patch the original firmware, never fabricate register responses in strict mode, keep hypotheses opt-in and labelled, keep diagnostic results separate from connected-boot progress and from displayed pixels.</p>
 

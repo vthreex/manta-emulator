@@ -13,7 +13,7 @@ usage: python menu_viewer.py --runner sunplus_run.exe --kernel lzma_059070.bin -
 import argparse, os, subprocess, sys, time, tempfile
 from PIL import Image
 
-KEYS = {'MENU': 0x1021, 'UP': 0x1018, 'DOWN': 0x1019, 'LEFT': 0x101a, 'RIGHT': 0x101b, 'OK': 0x101c, 'EXIT': 0x1043, 'POWER': 0x1017}
+KEYS = {'MENU': 0x1021, 'UP': 0x1018, 'DOWN': 0x1019, 'LEFT': 0x101a, 'RIGHT': 0x101b, 'OK': 0x101c, 'EXIT': 0x1043, 'POWER': 0x1017, 'SOURCE': 0x1047, 'VOLUP': 0x101f, 'VOLDOWN': 0x1020}
 W, H = 1216, 660
 
 def start(args, workdir):
@@ -72,7 +72,7 @@ def run_script(args):
         rc = s.proc.poll(); s.close()
         print('runner exit code:', rc)
         try:
-            txt = open(os.path.join(s.dir, 'runner.log'), 'rb').read().decode('latin1'); print('runner log tail:', txt[-600:].replace(chr(10), ' | '))
+            txt = open(os.path.join(s.dir, 'runner.log'), 'rb').read().decode('latin1'); lines = [ln for ln in txt.splitlines() if ln.split(':')[0].split(' ')[0] in ('stop', 'pc=', 'regs', 'last', 'host')]; print('runner stop lines:', lines[-6:]); print('runner log tail:', txt[-300:].replace(chr(10), ' | '))
         except Exception as ex: print('no log', ex)
 
 def run_gui(args):
@@ -80,7 +80,7 @@ def run_gui(args):
     from PIL import ImageTk
     s = Session(args); root = tk.Tk(); root.title('Sunplus OSD (exploratory)'); lbl = tk.Label(root); lbl.pack()
     status = tk.Label(root, text='booting... (about a minute); then press M for MENU', anchor='w'); status.pack(fill='x')
-    keymap = {'m': 'MENU', 'Up': 'UP', 'Down': 'DOWN', 'Left': 'LEFT', 'Right': 'RIGHT', 'Return': 'OK', 'Escape': 'EXIT', 'p': 'POWER'}
+    keymap = {'m': 'MENU', 'Up': 'UP', 'Down': 'DOWN', 'Left': 'LEFT', 'Right': 'RIGHT', 'Return': 'OK', 'Escape': 'EXIT', 'p': 'POWER', 's': 'SOURCE', 'plus': 'VOLUP', 'minus': 'VOLDOWN'}
     def onkey(e):
         k = keymap.get(e.keysym) or keymap.get(e.char)
         if k: s.key(k); status.config(text='sent %s' % k)

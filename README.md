@@ -5,7 +5,7 @@ Booting the **real, unmodified firmware** of Manta televisions in software and w
 | platform | sets | status |
 |---|---|---|
 | **MStar MSD309** (Titania4, MIPS) | Manta LCD4214 | original firmware boots, the real ZUI draws the OSD, MENU / SOURCE / INFO / factory / hotel / lock menus, USB player, virtual remote |
-| **Sunplus SPHE8600** (MIPS + DSP ASE, eCos + DirectFB) | Manta LED4202, Shivaki STV-24LED14 | kernel boot, SPI-flash model, application starts, DirectFB 1.1.0 initialises; display scan-out in progress |
+| **Sunplus SPHE8600** (MIPS + DSP ASE, eCos + DirectFB) | Manta LED4202, Shivaki STV-24LED14 | kernel boot, SPI-flash model, application starts, DirectFB 1.1.0 initialises; real OSD menu renders and is navigable (exploratory GPU model) |
 
 **[Interactive showcase page](https://vthreex.github.io/manta-emulator/)** (illustrative boot walkthrough and clickable remote built from real captured frames) | **[Releases](../../releases)** | [Architecture notes](docs/sunplus-sphe8600-architecture.md) | [Firmware images and hashes](firmware/README.md)
 
