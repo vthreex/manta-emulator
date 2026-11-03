@@ -10145,7 +10145,11 @@
 "UP": 764,
 "DOWN": 765,
 "LEFT": 250,
-"RIGHT": 766
+"RIGHT": 766,
+"OK": 427,
+"EXIT": 427,
+"SOURCE": 3,
+"INFO": 14
 }
 },
 {
@@ -10161,7 +10165,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 428,
+"UP": 767,
+"DOWN": 251,
+"LEFT": 768,
+"RIGHT": 769,
+"OK": 428,
+"EXIT": 428,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 429,
@@ -10191,7 +10205,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 430,
+"UP": 770,
+"DOWN": 252,
+"LEFT": 771,
+"RIGHT": 772,
+"OK": 430,
+"EXIT": 430,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 431,
@@ -10221,7 +10245,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 432,
+"UP": 773,
+"DOWN": 774,
+"LEFT": 775,
+"RIGHT": 253,
+"OK": 432,
+"EXIT": 432,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 433,
@@ -10236,7 +10270,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 433,
+"UP": 776,
+"DOWN": 777,
+"LEFT": 253,
+"RIGHT": 778,
+"OK": 433,
+"EXIT": 433,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 434,
@@ -10251,7 +10295,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 434,
+"UP": 437,
+"DOWN": 254,
+"LEFT": 779,
+"RIGHT": 780,
+"OK": 434,
+"EXIT": 434,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 435,
@@ -10296,7 +10350,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 437,
+"UP": 255,
+"DOWN": 434,
+"LEFT": 781,
+"RIGHT": 782,
+"OK": 437,
+"EXIT": 437,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 438,
@@ -10341,7 +10405,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 440,
+"UP": 443,
+"DOWN": 257,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 440,
+"EXIT": 440,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 441,
@@ -10356,7 +10430,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 441,
+"UP": 783,
+"DOWN": 266,
+"LEFT": 784,
+"RIGHT": 257,
+"OK": 441,
+"EXIT": 441,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 442,
@@ -10371,7 +10455,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 442,
+"UP": 785,
+"DOWN": 273,
+"LEFT": 257,
+"RIGHT": 786,
+"OK": 442,
+"EXIT": 442,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 443,
@@ -10386,7 +10480,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 443,
+"UP": 258,
+"DOWN": 440,
+"LEFT": 787,
+"RIGHT": 788,
+"OK": 443,
+"EXIT": 443,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 444,
@@ -10401,7 +10505,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 444,
+"UP": 395,
+"DOWN": 789,
+"LEFT": 790,
+"RIGHT": 258,
+"OK": 444,
+"EXIT": 444,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 445,
@@ -10416,7 +10530,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 445,
+"UP": 404,
+"DOWN": 791,
+"LEFT": 258,
+"RIGHT": 792,
+"OK": 445,
+"EXIT": 445,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 446,
@@ -10431,7 +10555,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 446,
+"UP": 793,
+"DOWN": 259,
+"LEFT": 794,
+"RIGHT": 795,
+"OK": 446,
+"EXIT": 446,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 447,
@@ -10446,7 +10580,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 447,
+"UP": 259,
+"DOWN": 796,
+"LEFT": 797,
+"RIGHT": 798,
+"OK": 447,
+"EXIT": 447,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 448,
@@ -10476,7 +10620,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 449,
+"UP": 452,
+"DOWN": 261,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 449,
+"EXIT": 449,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 450,
@@ -10491,7 +10645,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 450,
+"UP": 799,
+"DOWN": 267,
+"LEFT": 800,
+"RIGHT": 261,
+"OK": 450,
+"EXIT": 450,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 451,
@@ -10506,7 +10670,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 451,
+"UP": 801,
+"DOWN": 274,
+"LEFT": 261,
+"RIGHT": 802,
+"OK": 451,
+"EXIT": 451,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 452,
@@ -10521,7 +10695,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 452,
+"UP": 262,
+"DOWN": 449,
+"LEFT": 803,
+"RIGHT": 804,
+"OK": 452,
+"EXIT": 452,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 453,
@@ -10536,7 +10720,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 453,
+"UP": 396,
+"DOWN": 805,
+"LEFT": 806,
+"RIGHT": 262,
+"OK": 453,
+"EXIT": 453,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 454,
@@ -10551,7 +10745,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 454,
+"UP": 405,
+"DOWN": 807,
+"LEFT": 262,
+"RIGHT": 808,
+"OK": 454,
+"EXIT": 454,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 455,
@@ -10566,7 +10770,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 455,
+"UP": 809,
+"DOWN": 263,
+"LEFT": 810,
+"RIGHT": 811,
+"OK": 455,
+"EXIT": 455,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 456,
@@ -10581,7 +10795,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 456,
+"UP": 263,
+"DOWN": 812,
+"LEFT": 813,
+"RIGHT": 814,
+"OK": 456,
+"EXIT": 456,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 457,
@@ -10596,7 +10820,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 457,
+"UP": 815,
+"DOWN": 751,
+"LEFT": 816,
+"RIGHT": 264,
+"OK": 457,
+"EXIT": 457,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 458,
@@ -10611,7 +10845,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 458,
+"UP": 817,
+"DOWN": 773,
+"LEFT": 264,
+"RIGHT": 818,
+"OK": 458,
+"EXIT": 458,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 459,
@@ -10626,7 +10870,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 459,
+"UP": 819,
+"DOWN": 820,
+"LEFT": 821,
+"RIGHT": 265,
+"OK": 459,
+"EXIT": 459,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 460,
@@ -10641,7 +10895,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 460,
+"UP": 822,
+"DOWN": 823,
+"LEFT": 265,
+"RIGHT": 824,
+"OK": 460,
+"EXIT": 460,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 461,
@@ -10656,7 +10920,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 461,
+"UP": 266,
+"DOWN": 825,
+"LEFT": 826,
+"RIGHT": 827,
+"OK": 461,
+"EXIT": 461,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 462,
@@ -10686,7 +10960,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 463,
+"UP": 267,
+"DOWN": 828,
+"LEFT": 829,
+"RIGHT": 830,
+"OK": 463,
+"EXIT": 463,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 464,
@@ -10716,7 +11000,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 465,
+"UP": 466,
+"DOWN": 268,
+"LEFT": 831,
+"RIGHT": 832,
+"OK": 465,
+"EXIT": 465,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 466,
@@ -10731,7 +11025,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 466,
+"UP": 269,
+"DOWN": 465,
+"LEFT": 833,
+"RIGHT": 834,
+"OK": 466,
+"EXIT": 466,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 467,
@@ -10806,7 +11110,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 471,
+"UP": 835,
+"DOWN": 754,
+"LEFT": 836,
+"RIGHT": 271,
+"OK": 471,
+"EXIT": 471,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 472,
@@ -10821,7 +11135,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 472,
+"UP": 837,
+"DOWN": 776,
+"LEFT": 271,
+"RIGHT": 838,
+"OK": 472,
+"EXIT": 472,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 473,
@@ -10836,7 +11160,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 473,
+"UP": 839,
+"DOWN": 840,
+"LEFT": 841,
+"RIGHT": 272,
+"OK": 473,
+"EXIT": 473,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 474,
@@ -10851,7 +11185,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 474,
+"UP": 842,
+"DOWN": 843,
+"LEFT": 272,
+"RIGHT": 844,
+"OK": 474,
+"EXIT": 474,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 475,
@@ -10866,7 +11210,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 475,
+"UP": 273,
+"DOWN": 845,
+"LEFT": 846,
+"RIGHT": 847,
+"OK": 475,
+"EXIT": 475,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 476,
@@ -10896,7 +11250,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 477,
+"UP": 274,
+"DOWN": 848,
+"LEFT": 849,
+"RIGHT": 850,
+"OK": 477,
+"EXIT": 477,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 478,
@@ -10926,7 +11290,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 479,
+"UP": 480,
+"DOWN": 275,
+"LEFT": 851,
+"RIGHT": 852,
+"OK": 479,
+"EXIT": 479,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 480,
@@ -10941,7 +11315,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 480,
+"UP": 276,
+"DOWN": 479,
+"LEFT": 853,
+"RIGHT": 854,
+"OK": 480,
+"EXIT": 480,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 481,
@@ -11016,7 +11400,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 485,
+"UP": 855,
+"DOWN": 278,
+"LEFT": 856,
+"RIGHT": 857,
+"OK": 485,
+"EXIT": 485,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 486,
@@ -11031,7 +11425,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 486,
+"UP": 278,
+"DOWN": 858,
+"LEFT": 859,
+"RIGHT": 860,
+"OK": 486,
+"EXIT": 486,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 487,
@@ -11076,7 +11480,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 489,
+"UP": 861,
+"DOWN": 279,
+"LEFT": 862,
+"RIGHT": 863,
+"OK": 489,
+"EXIT": 489,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 490,
@@ -11091,7 +11505,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 490,
+"UP": 279,
+"DOWN": 864,
+"LEFT": 865,
+"RIGHT": 866,
+"OK": 490,
+"EXIT": 490,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 491,
@@ -11121,7 +11545,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 492,
+"UP": 867,
+"DOWN": 280,
+"LEFT": 868,
+"RIGHT": 869,
+"OK": 492,
+"EXIT": 492,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 493,
@@ -11136,7 +11570,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 493,
+"UP": 280,
+"DOWN": 870,
+"LEFT": 871,
+"RIGHT": 872,
+"OK": 493,
+"EXIT": 493,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 494,
@@ -11166,7 +11610,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 495,
+"UP": 873,
+"DOWN": 281,
+"LEFT": 874,
+"RIGHT": 875,
+"OK": 495,
+"EXIT": 495,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 496,
@@ -11181,7 +11635,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 496,
+"UP": 281,
+"DOWN": 876,
+"LEFT": 877,
+"RIGHT": 878,
+"OK": 496,
+"EXIT": 496,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 497,
@@ -11211,7 +11675,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 498,
+"UP": 499,
+"DOWN": 282,
+"LEFT": 879,
+"RIGHT": 880,
+"OK": 498,
+"EXIT": 498,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 499,
@@ -11226,7 +11700,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 499,
+"UP": 283,
+"DOWN": 498,
+"LEFT": 881,
+"RIGHT": 882,
+"OK": 499,
+"EXIT": 499,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 500,
@@ -11331,7 +11815,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 506,
+"UP": 507,
+"DOWN": 286,
+"LEFT": 883,
+"RIGHT": 884,
+"OK": 506,
+"EXIT": 506,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 507,
@@ -11346,7 +11840,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 507,
+"UP": 287,
+"DOWN": 506,
+"LEFT": 885,
+"RIGHT": 886,
+"OK": 507,
+"EXIT": 507,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 508,
@@ -11421,7 +11925,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 512,
+"UP": 887,
+"DOWN": 289,
+"LEFT": 888,
+"RIGHT": 889,
+"OK": 512,
+"EXIT": 512,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 513,
@@ -11436,7 +11950,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 513,
+"UP": 289,
+"DOWN": 890,
+"LEFT": 891,
+"RIGHT": 892,
+"OK": 513,
+"EXIT": 513,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 514,
@@ -11481,7 +12005,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 516,
+"UP": 893,
+"DOWN": 290,
+"LEFT": 894,
+"RIGHT": 895,
+"OK": 516,
+"EXIT": 516,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 517,
@@ -11496,7 +12030,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 517,
+"UP": 290,
+"DOWN": 896,
+"LEFT": 897,
+"RIGHT": 898,
+"OK": 517,
+"EXIT": 517,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 518,
@@ -11526,7 +12070,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 519,
+"UP": 899,
+"DOWN": 291,
+"LEFT": 900,
+"RIGHT": 901,
+"OK": 519,
+"EXIT": 519,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 520,
@@ -11541,7 +12095,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 520,
+"UP": 291,
+"DOWN": 902,
+"LEFT": 903,
+"RIGHT": 904,
+"OK": 520,
+"EXIT": 520,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 521,
@@ -11571,7 +12135,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 522,
+"UP": 523,
+"DOWN": 292,
+"LEFT": 905,
+"RIGHT": 906,
+"OK": 522,
+"EXIT": 522,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 523,
@@ -11586,7 +12160,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 523,
+"UP": 293,
+"DOWN": 522,
+"LEFT": 907,
+"RIGHT": 908,
+"OK": 523,
+"EXIT": 523,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 524,
@@ -11691,7 +12275,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 530,
+"UP": 531,
+"DOWN": 296,
+"LEFT": 909,
+"RIGHT": 910,
+"OK": 530,
+"EXIT": 530,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 531,
@@ -11706,7 +12300,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 531,
+"UP": 297,
+"DOWN": 530,
+"LEFT": 911,
+"RIGHT": 912,
+"OK": 531,
+"EXIT": 531,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 532,
@@ -11942,7 +12546,17 @@
 "OK",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 546,
+"UP": 913,
+"DOWN": 308,
+"LEFT": 546,
+"RIGHT": 546,
+"OK": 546,
+"EXIT": 546,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 547,
@@ -11958,7 +12572,17 @@
 "OK",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 547,
+"UP": 308,
+"DOWN": 914,
+"LEFT": 547,
+"RIGHT": 547,
+"OK": 547,
+"EXIT": 547,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 548,
@@ -11974,7 +12598,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 548,
+"UP": 915,
+"DOWN": 309,
+"LEFT": 55,
+"RIGHT": 18,
+"OK": 201,
+"EXIT": 548,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 549,
@@ -11990,7 +12624,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 549,
+"UP": 310,
+"DOWN": 915,
+"LEFT": 55,
+"RIGHT": 18,
+"OK": 92,
+"EXIT": 549,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 550,
@@ -12006,7 +12650,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 550,
+"UP": 315,
+"DOWN": 312,
+"LEFT": 916,
+"RIGHT": 311,
+"OK": 550,
+"EXIT": 550,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 551,
@@ -12022,7 +12676,17 @@
 "LEFT",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 551,
+"UP": 916,
+"DOWN": 315,
+"LEFT": 917,
+"RIGHT": 312,
+"OK": 551,
+"EXIT": 551,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 552,
@@ -12038,7 +12702,17 @@
 "RIGHT",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 552,
+"UP": 314,
+"DOWN": 317,
+"LEFT": 313,
+"RIGHT": 918,
+"OK": 552,
+"EXIT": 552,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 553,
@@ -12054,7 +12728,17 @@
 "RIGHT",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 553,
+"UP": 317,
+"DOWN": 918,
+"LEFT": 314,
+"RIGHT": 919,
+"OK": 553,
+"EXIT": 553,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 554,
@@ -12102,7 +12786,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 556,
+"UP": 920,
+"DOWN": 318,
+"LEFT": 921,
+"RIGHT": 922,
+"OK": 556,
+"EXIT": 556,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 557,
@@ -12118,7 +12812,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 557,
+"UP": 318,
+"DOWN": 923,
+"LEFT": 924,
+"RIGHT": 925,
+"OK": 557,
+"EXIT": 557,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 558,
@@ -12134,7 +12838,17 @@
 "LEFT",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 558,
+"UP": 926,
+"DOWN": 927,
+"LEFT": 928,
+"RIGHT": 318,
+"OK": 558,
+"EXIT": 558,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 559,
@@ -12150,7 +12864,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 559,
+"UP": 929,
+"DOWN": 319,
+"LEFT": 930,
+"RIGHT": 931,
+"OK": 559,
+"EXIT": 559,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 560,
@@ -12166,7 +12890,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 560,
+"UP": 319,
+"DOWN": 932,
+"LEFT": 933,
+"RIGHT": 934,
+"OK": 560,
+"EXIT": 560,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 561,
@@ -12182,7 +12916,17 @@
 "RIGHT",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 561,
+"UP": 935,
+"DOWN": 936,
+"LEFT": 319,
+"RIGHT": 937,
+"OK": 561,
+"EXIT": 561,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 562,
@@ -12198,7 +12942,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 562,
+"UP": 320,
+"DOWN": 562,
+"LEFT": 938,
+"RIGHT": 939,
+"OK": 562,
+"EXIT": 562,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 563,
@@ -12214,7 +12968,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 563,
+"UP": 940,
+"DOWN": 941,
+"LEFT": 942,
+"RIGHT": 320,
+"OK": 563,
+"EXIT": 563,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 564,
@@ -12230,7 +12994,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 564,
+"UP": 943,
+"DOWN": 944,
+"LEFT": 320,
+"RIGHT": 945,
+"OK": 564,
+"EXIT": 564,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 565,
@@ -12246,7 +13020,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 565,
+"UP": 321,
+"DOWN": 946,
+"LEFT": 947,
+"RIGHT": 948,
+"OK": 565,
+"EXIT": 565,
+"SOURCE": 3,
+"INFO": 61
+}
 },
 {
 "id": 566,
@@ -12278,7 +13062,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 567,
+"UP": 322,
+"DOWN": 567,
+"LEFT": 949,
+"RIGHT": 950,
+"OK": 567,
+"EXIT": 567,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 568,
@@ -12294,7 +13088,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 568,
+"UP": 951,
+"DOWN": 952,
+"LEFT": 953,
+"RIGHT": 322,
+"OK": 568,
+"EXIT": 568,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 569,
@@ -12310,7 +13114,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 569,
+"UP": 954,
+"DOWN": 955,
+"LEFT": 322,
+"RIGHT": 956,
+"OK": 569,
+"EXIT": 569,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 570,
@@ -12326,7 +13140,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 570,
+"UP": 323,
+"DOWN": 957,
+"LEFT": 958,
+"RIGHT": 959,
+"OK": 570,
+"EXIT": 570,
+"SOURCE": 3,
+"INFO": 61
+}
 },
 {
 "id": 571,
@@ -12358,7 +13182,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 572,
+"UP": 960,
+"DOWN": 324,
+"LEFT": 961,
+"RIGHT": 962,
+"OK": 572,
+"EXIT": 572,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 573,
@@ -12374,7 +13208,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 573,
+"UP": 324,
+"DOWN": 963,
+"LEFT": 964,
+"RIGHT": 965,
+"OK": 573,
+"EXIT": 573,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 574,
@@ -12390,7 +13234,17 @@
 "LEFT",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 574,
+"UP": 966,
+"DOWN": 967,
+"LEFT": 968,
+"RIGHT": 324,
+"OK": 574,
+"EXIT": 574,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 575,
@@ -12406,7 +13260,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 575,
+"UP": 969,
+"DOWN": 325,
+"LEFT": 970,
+"RIGHT": 971,
+"OK": 575,
+"EXIT": 575,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 576,
@@ -12422,7 +13286,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 576,
+"UP": 325,
+"DOWN": 972,
+"LEFT": 973,
+"RIGHT": 974,
+"OK": 576,
+"EXIT": 576,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 577,
@@ -12438,7 +13312,17 @@
 "RIGHT",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 577,
+"UP": 975,
+"DOWN": 976,
+"LEFT": 325,
+"RIGHT": 977,
+"OK": 577,
+"EXIT": 577,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 578,
@@ -12454,7 +13338,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 578,
+"UP": 581,
+"DOWN": 326,
+"LEFT": 978,
+"RIGHT": 979,
+"OK": 578,
+"EXIT": 578,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 579,
@@ -12470,7 +13364,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 579,
+"UP": 980,
+"DOWN": 964,
+"LEFT": 981,
+"RIGHT": 326,
+"OK": 579,
+"EXIT": 579,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 580,
@@ -12486,7 +13390,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 580,
+"UP": 982,
+"DOWN": 973,
+"LEFT": 326,
+"RIGHT": 983,
+"OK": 580,
+"EXIT": 580,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 581,
@@ -12502,7 +13416,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 581,
+"UP": 327,
+"DOWN": 578,
+"LEFT": 984,
+"RIGHT": 985,
+"OK": 581,
+"EXIT": 581,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 582,
@@ -12518,7 +13442,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 582,
+"UP": 341,
+"DOWN": 986,
+"LEFT": 987,
+"RIGHT": 327,
+"OK": 582,
+"EXIT": 582,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 583,
@@ -12534,7 +13468,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 583,
+"UP": 350,
+"DOWN": 988,
+"LEFT": 327,
+"RIGHT": 989,
+"OK": 583,
+"EXIT": 583,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 584,
@@ -12550,7 +13494,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 584,
+"UP": 990,
+"DOWN": 328,
+"LEFT": 991,
+"RIGHT": 992,
+"OK": 584,
+"EXIT": 584,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 585,
@@ -12566,7 +13520,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 585,
+"UP": 328,
+"DOWN": 993,
+"LEFT": 994,
+"RIGHT": 995,
+"OK": 585,
+"EXIT": 585,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 586,
@@ -12598,7 +13562,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 587,
+"UP": 590,
+"DOWN": 329,
+"LEFT": 996,
+"RIGHT": 997,
+"OK": 587,
+"EXIT": 587,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 588,
@@ -12614,7 +13588,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 588,
+"UP": 998,
+"DOWN": 965,
+"LEFT": 999,
+"RIGHT": 329,
+"OK": 588,
+"EXIT": 588,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 589,
@@ -12630,7 +13614,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 589,
+"UP": 1000,
+"DOWN": 974,
+"LEFT": 329,
+"RIGHT": 1001,
+"OK": 589,
+"EXIT": 589,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 590,
@@ -12646,7 +13640,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 590,
+"UP": 330,
+"DOWN": 587,
+"LEFT": 1002,
+"RIGHT": 1003,
+"OK": 590,
+"EXIT": 590,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 591,
@@ -12662,7 +13666,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 591,
+"UP": 342,
+"DOWN": 1004,
+"LEFT": 1005,
+"RIGHT": 330,
+"OK": 591,
+"EXIT": 591,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 592,
@@ -12678,7 +13692,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 592,
+"UP": 351,
+"DOWN": 1006,
+"LEFT": 330,
+"RIGHT": 1007,
+"OK": 592,
+"EXIT": 592,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 593,
@@ -12694,7 +13718,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 593,
+"UP": 1008,
+"DOWN": 331,
+"LEFT": 1009,
+"RIGHT": 1010,
+"OK": 593,
+"EXIT": 593,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 594,
@@ -12710,7 +13744,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 594,
+"UP": 331,
+"DOWN": 1011,
+"LEFT": 1012,
+"RIGHT": 1013,
+"OK": 594,
+"EXIT": 594,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 595,
@@ -12742,7 +13786,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 596,
+"UP": 1014,
+"DOWN": 332,
+"LEFT": 1015,
+"RIGHT": 1016,
+"OK": 596,
+"EXIT": 596,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 597,
@@ -12758,7 +13812,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 597,
+"UP": 332,
+"DOWN": 1017,
+"LEFT": 1018,
+"RIGHT": 1019,
+"OK": 597,
+"EXIT": 597,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 598,
@@ -12774,7 +13838,17 @@
 "LEFT",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 598,
+"UP": 1020,
+"DOWN": 1021,
+"LEFT": 1022,
+"RIGHT": 332,
+"OK": 598,
+"EXIT": 598,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 599,
@@ -12790,7 +13864,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 599,
+"UP": 1023,
+"DOWN": 333,
+"LEFT": 1024,
+"RIGHT": 1025,
+"OK": 599,
+"EXIT": 599,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 600,
@@ -12806,7 +13890,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 600,
+"UP": 333,
+"DOWN": 1026,
+"LEFT": 1027,
+"RIGHT": 1028,
+"OK": 600,
+"EXIT": 600,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 601,
@@ -12822,7 +13916,17 @@
 "RIGHT",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 601,
+"UP": 1029,
+"DOWN": 1030,
+"LEFT": 333,
+"RIGHT": 1031,
+"OK": 601,
+"EXIT": 601,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 602,
@@ -12838,7 +13942,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 602,
+"UP": 605,
+"DOWN": 334,
+"LEFT": 1032,
+"RIGHT": 1033,
+"OK": 602,
+"EXIT": 602,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 603,
@@ -12854,7 +13968,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 603,
+"UP": 1034,
+"DOWN": 344,
+"LEFT": 1035,
+"RIGHT": 334,
+"OK": 603,
+"EXIT": 603,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 604,
@@ -12870,7 +13994,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 604,
+"UP": 1036,
+"DOWN": 353,
+"LEFT": 334,
+"RIGHT": 1037,
+"OK": 604,
+"EXIT": 604,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 605,
@@ -12886,7 +14020,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 605,
+"UP": 335,
+"DOWN": 602,
+"LEFT": 1038,
+"RIGHT": 1039,
+"OK": 605,
+"EXIT": 605,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 606,
@@ -12902,7 +14046,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 606,
+"UP": 1015,
+"DOWN": 1040,
+"LEFT": 1041,
+"RIGHT": 607,
+"OK": 606,
+"EXIT": 606,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 607,
@@ -12918,7 +14072,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 607,
+"UP": 1024,
+"DOWN": 1042,
+"LEFT": 606,
+"RIGHT": 1043,
+"OK": 607,
+"EXIT": 607,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 608,
@@ -12934,7 +14098,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 608,
+"UP": 1044,
+"DOWN": 336,
+"LEFT": 1045,
+"RIGHT": 1046,
+"OK": 608,
+"EXIT": 608,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 609,
@@ -12950,7 +14124,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 609,
+"UP": 336,
+"DOWN": 1047,
+"LEFT": 1048,
+"RIGHT": 1049,
+"OK": 609,
+"EXIT": 609,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 610,
@@ -12982,7 +14166,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 611,
+"UP": 614,
+"DOWN": 337,
+"LEFT": 1050,
+"RIGHT": 1051,
+"OK": 611,
+"EXIT": 611,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 612,
@@ -12998,7 +14192,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 612,
+"UP": 1052,
+"DOWN": 345,
+"LEFT": 1053,
+"RIGHT": 337,
+"OK": 612,
+"EXIT": 612,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 613,
@@ -13014,7 +14218,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 613,
+"UP": 1054,
+"DOWN": 354,
+"LEFT": 337,
+"RIGHT": 1055,
+"OK": 613,
+"EXIT": 613,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 614,
@@ -13030,7 +14244,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 614,
+"UP": 338,
+"DOWN": 611,
+"LEFT": 1056,
+"RIGHT": 1057,
+"OK": 614,
+"EXIT": 614,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 615,
@@ -13046,7 +14270,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 615,
+"UP": 1016,
+"DOWN": 1058,
+"LEFT": 1059,
+"RIGHT": 616,
+"OK": 615,
+"EXIT": 615,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 616,
@@ -13062,7 +14296,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 616,
+"UP": 1025,
+"DOWN": 1060,
+"LEFT": 615,
+"RIGHT": 1061,
+"OK": 616,
+"EXIT": 616,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 617,
@@ -13078,7 +14322,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 617,
+"UP": 1062,
+"DOWN": 339,
+"LEFT": 1063,
+"RIGHT": 1064,
+"OK": 617,
+"EXIT": 617,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 618,
@@ -13094,7 +14348,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 618,
+"UP": 339,
+"DOWN": 1065,
+"LEFT": 1066,
+"RIGHT": 1067,
+"OK": 618,
+"EXIT": 618,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 619,
@@ -13126,7 +14390,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 620,
+"UP": 1068,
+"DOWN": 1069,
+"LEFT": 1070,
+"RIGHT": 340,
+"OK": 620,
+"EXIT": 620,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 621,
@@ -13142,7 +14416,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 621,
+"UP": 1071,
+"DOWN": 1072,
+"LEFT": 340,
+"RIGHT": 1073,
+"OK": 621,
+"EXIT": 621,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 622,
@@ -13158,7 +14442,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 622,
+"UP": 1074,
+"DOWN": 341,
+"LEFT": 1075,
+"RIGHT": 1076,
+"OK": 622,
+"EXIT": 622,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 623,
@@ -13190,7 +14484,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 624,
+"UP": 1077,
+"DOWN": 342,
+"LEFT": 1078,
+"RIGHT": 1079,
+"OK": 624,
+"EXIT": 624,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 625,
@@ -13222,7 +14526,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 626,
+"UP": 1080,
+"DOWN": 1081,
+"LEFT": 1082,
+"RIGHT": 627,
+"OK": 626,
+"EXIT": 626,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 627,
@@ -13238,7 +14552,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 627,
+"UP": 1083,
+"DOWN": 1084,
+"LEFT": 626,
+"RIGHT": 1085,
+"OK": 627,
+"EXIT": 627,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 628,
@@ -13254,7 +14578,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 628,
+"UP": 344,
+"DOWN": 1086,
+"LEFT": 1087,
+"RIGHT": 1088,
+"OK": 628,
+"EXIT": 628,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 629,
@@ -13286,7 +14620,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 630,
+"UP": 345,
+"DOWN": 1089,
+"LEFT": 1090,
+"RIGHT": 1091,
+"OK": 630,
+"EXIT": 630,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 631,
@@ -13334,7 +14678,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 633,
+"UP": 636,
+"DOWN": 346,
+"LEFT": 1092,
+"RIGHT": 1093,
+"OK": 633,
+"EXIT": 633,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 634,
@@ -13382,7 +14736,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 636,
+"UP": 347,
+"DOWN": 633,
+"LEFT": 1094,
+"RIGHT": 1095,
+"OK": 636,
+"EXIT": 636,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 637,
@@ -13430,7 +14794,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 639,
+"UP": 1096,
+"DOWN": 1097,
+"LEFT": 1098,
+"RIGHT": 349,
+"OK": 639,
+"EXIT": 639,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 640,
@@ -13446,7 +14820,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 640,
+"UP": 1099,
+"DOWN": 1100,
+"LEFT": 349,
+"RIGHT": 1101,
+"OK": 640,
+"EXIT": 640,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 641,
@@ -13462,7 +14846,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 641,
+"UP": 1102,
+"DOWN": 350,
+"LEFT": 1103,
+"RIGHT": 1104,
+"OK": 641,
+"EXIT": 641,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 642,
@@ -13494,7 +14888,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 643,
+"UP": 1105,
+"DOWN": 351,
+"LEFT": 1106,
+"RIGHT": 1107,
+"OK": 643,
+"EXIT": 643,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 644,
@@ -13526,7 +14930,17 @@
 "DOWN",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 645,
+"UP": 1108,
+"DOWN": 1109,
+"LEFT": 1110,
+"RIGHT": 646,
+"OK": 645,
+"EXIT": 645,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 646,
@@ -13542,7 +14956,17 @@
 "DOWN",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 646,
+"UP": 1111,
+"DOWN": 1112,
+"LEFT": 645,
+"RIGHT": 1113,
+"OK": 646,
+"EXIT": 646,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 647,
@@ -13558,7 +14982,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 647,
+"UP": 353,
+"DOWN": 1114,
+"LEFT": 1115,
+"RIGHT": 1116,
+"OK": 647,
+"EXIT": 647,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 648,
@@ -13590,7 +15024,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 649,
+"UP": 354,
+"DOWN": 1117,
+"LEFT": 1118,
+"RIGHT": 1119,
+"OK": 649,
+"EXIT": 649,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 650,
@@ -13622,7 +15066,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 651,
+"UP": 654,
+"DOWN": 355,
+"LEFT": 1120,
+"RIGHT": 1121,
+"OK": 651,
+"EXIT": 651,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 652,
@@ -13670,7 +15124,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 654,
+"UP": 356,
+"DOWN": 651,
+"LEFT": 1122,
+"RIGHT": 1123,
+"OK": 654,
+"EXIT": 654,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 655,
@@ -13750,7 +15214,17 @@
 "RIGHT",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 659,
+"UP": 360,
+"DOWN": 364,
+"LEFT": 358,
+"RIGHT": 364,
+"OK": 659,
+"EXIT": 659,
+"SOURCE": 1124,
+"INFO": 14
+}
 },
 {
 "id": 660,
@@ -13766,7 +15240,17 @@
 "RIGHT",
 "SOURCE"
 ],
-"next": {}
+"next": {
+"MENU": 660,
+"UP": 1125,
+"DOWN": 1126,
+"LEFT": 660,
+"RIGHT": 660,
+"OK": 61,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 660
+}
 },
 {
 "id": 661,
@@ -13782,7 +15266,17 @@
 "SOURCE",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 661,
+"UP": 1127,
+"DOWN": 359,
+"LEFT": 661,
+"RIGHT": 661,
+"OK": 661,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 661
+}
 },
 {
 "id": 662,
@@ -13798,7 +15292,17 @@
 "SOURCE",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 662,
+"UP": 359,
+"DOWN": 1128,
+"LEFT": 662,
+"RIGHT": 662,
+"OK": 14,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 662
+}
 },
 {
 "id": 663,
@@ -13814,7 +15318,17 @@
 "RIGHT",
 "SOURCE"
 ],
-"next": {}
+"next": {
+"MENU": 663,
+"UP": 1129,
+"DOWN": 1130,
+"LEFT": 663,
+"RIGHT": 663,
+"OK": 61,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 663
+}
 },
 {
 "id": 664,
@@ -13830,7 +15344,17 @@
 "SOURCE",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 664,
+"UP": 1131,
+"DOWN": 361,
+"LEFT": 664,
+"RIGHT": 664,
+"OK": 664,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 664
+}
 },
 {
 "id": 665,
@@ -13846,7 +15370,17 @@
 "SOURCE",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 665,
+"UP": 361,
+"DOWN": 1132,
+"LEFT": 665,
+"RIGHT": 665,
+"OK": 14,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 665
+}
 },
 {
 "id": 666,
@@ -13862,7 +15396,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 666,
+"UP": 1133,
+"DOWN": 362,
+"LEFT": 666,
+"RIGHT": 666,
+"OK": 0,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 666
+}
 },
 {
 "id": 667,
@@ -13878,7 +15422,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 667,
+"UP": 363,
+"DOWN": 1134,
+"LEFT": 667,
+"RIGHT": 667,
+"OK": 667,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 667
+}
 },
 {
 "id": 668,
@@ -13910,7 +15464,17 @@
 "SOURCE",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 669,
+"UP": 1135,
+"DOWN": 365,
+"LEFT": 669,
+"RIGHT": 669,
+"OK": 669,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 669
+}
 },
 {
 "id": 670,
@@ -13926,7 +15490,17 @@
 "SOURCE",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 670,
+"UP": 365,
+"DOWN": 1136,
+"LEFT": 670,
+"RIGHT": 670,
+"OK": 14,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 670
+}
 },
 {
 "id": 671,
@@ -13942,7 +15516,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 671,
+"UP": 1137,
+"DOWN": 366,
+"LEFT": 671,
+"RIGHT": 671,
+"OK": 0,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 671
+}
 },
 {
 "id": 672,
@@ -13958,7 +15542,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 672,
+"UP": 367,
+"DOWN": 1138,
+"LEFT": 672,
+"RIGHT": 672,
+"OK": 672,
+"EXIT": 0,
+"SOURCE": 0,
+"INFO": 672
+}
 },
 {
 "id": 673,
@@ -13974,7 +15568,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 673,
+"UP": 368,
+"DOWN": 378,
+"LEFT": 1139,
+"RIGHT": 1140,
+"OK": 673,
+"EXIT": 673,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 674,
@@ -14070,7 +15674,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 679,
+"UP": 372,
+"DOWN": 380,
+"LEFT": 1141,
+"RIGHT": 1142,
+"OK": 679,
+"EXIT": 679,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 680,
@@ -14166,7 +15780,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 685,
+"UP": 1143,
+"DOWN": 376,
+"LEFT": 1144,
+"RIGHT": 1145,
+"OK": 685,
+"EXIT": 685,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 686,
@@ -14182,7 +15806,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 686,
+"UP": 376,
+"DOWN": 1143,
+"LEFT": 1146,
+"RIGHT": 1147,
+"OK": 686,
+"EXIT": 686,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 687,
@@ -14214,7 +15848,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 688,
+"UP": 1148,
+"DOWN": 377,
+"LEFT": 1149,
+"RIGHT": 1150,
+"OK": 688,
+"EXIT": 688,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 689,
@@ -14230,7 +15874,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 689,
+"UP": 377,
+"DOWN": 1148,
+"LEFT": 1151,
+"RIGHT": 1152,
+"OK": 689,
+"EXIT": 689,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 690,
@@ -14358,7 +16012,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 697,
+"UP": 383,
+"DOWN": 382,
+"LEFT": 1153,
+"RIGHT": 1154,
+"OK": 697,
+"EXIT": 697,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 698,
@@ -14438,7 +16102,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 702,
+"UP": 386,
+"DOWN": 385,
+"LEFT": 1155,
+"RIGHT": 1156,
+"OK": 702,
+"EXIT": 702,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 703,
@@ -14518,7 +16192,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 707,
+"UP": 1157,
+"DOWN": 819,
+"LEFT": 1158,
+"RIGHT": 394,
+"OK": 707,
+"EXIT": 707,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 708,
@@ -14534,7 +16218,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 708,
+"UP": 1159,
+"DOWN": 839,
+"LEFT": 394,
+"RIGHT": 1160,
+"OK": 708,
+"EXIT": 708,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 709,
@@ -14550,7 +16244,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 709,
+"UP": 1161,
+"DOWN": 395,
+"LEFT": 1162,
+"RIGHT": 1163,
+"OK": 709,
+"EXIT": 709,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 710,
@@ -14582,7 +16286,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 711,
+"UP": 1164,
+"DOWN": 396,
+"LEFT": 1165,
+"RIGHT": 1166,
+"OK": 711,
+"EXIT": 711,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 712,
@@ -14614,7 +16328,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 713,
+"UP": 398,
+"DOWN": 745,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 713,
+"EXIT": 713,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 714,
@@ -14646,7 +16370,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 715,
+"UP": 399,
+"DOWN": 767,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 715,
+"EXIT": 715,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 716,
@@ -14678,7 +16412,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 717,
+"UP": 720,
+"DOWN": 400,
+"LEFT": 1167,
+"RIGHT": 1168,
+"OK": 717,
+"EXIT": 717,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 718,
@@ -14726,7 +16470,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 720,
+"UP": 401,
+"DOWN": 717,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 720,
+"EXIT": 720,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 721,
@@ -14774,7 +16528,17 @@
 "UP",
 "LEFT"
 ],
-"next": {}
+"next": {
+"MENU": 723,
+"UP": 1169,
+"DOWN": 822,
+"LEFT": 1170,
+"RIGHT": 403,
+"OK": 723,
+"EXIT": 723,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 724,
@@ -14790,7 +16554,17 @@
 "UP",
 "RIGHT"
 ],
-"next": {}
+"next": {
+"MENU": 724,
+"UP": 1171,
+"DOWN": 842,
+"LEFT": 403,
+"RIGHT": 1172,
+"OK": 724,
+"EXIT": 724,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 725,
@@ -14806,7 +16580,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 725,
+"UP": 1173,
+"DOWN": 404,
+"LEFT": 1174,
+"RIGHT": 1175,
+"OK": 725,
+"EXIT": 725,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 726,
@@ -14838,7 +16622,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 727,
+"UP": 1176,
+"DOWN": 405,
+"LEFT": 1177,
+"RIGHT": 1178,
+"OK": 727,
+"EXIT": 727,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 728,
@@ -14870,7 +16664,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 729,
+"UP": 407,
+"DOWN": 748,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 729,
+"EXIT": 729,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 730,
@@ -14902,7 +16706,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 731,
+"UP": 408,
+"DOWN": 770,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 731,
+"EXIT": 731,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 732,
@@ -14934,7 +16748,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 733,
+"UP": 736,
+"DOWN": 409,
+"LEFT": 1179,
+"RIGHT": 1180,
+"OK": 733,
+"EXIT": 733,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 734,
@@ -14982,7 +16806,17 @@
 "DOWN",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 736,
+"UP": 410,
+"DOWN": 733,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 736,
+"EXIT": 736,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 737,
@@ -15030,7 +16864,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 739,
+"UP": 1181,
+"DOWN": 412,
+"LEFT": 1182,
+"RIGHT": 1183,
+"OK": 739,
+"EXIT": 739,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 740,
@@ -15046,7 +16890,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 740,
+"UP": 412,
+"DOWN": 787,
+"LEFT": 1184,
+"RIGHT": 1185,
+"OK": 740,
+"EXIT": 740,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 741,
@@ -15078,7 +16932,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 742,
+"UP": 1186,
+"DOWN": 413,
+"LEFT": 1187,
+"RIGHT": 1188,
+"OK": 742,
+"EXIT": 742,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 743,
@@ -15094,7 +16958,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 743,
+"UP": 413,
+"DOWN": 803,
+"LEFT": 1189,
+"RIGHT": 1190,
+"OK": 743,
+"EXIT": 743,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 744,
@@ -15126,7 +17000,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 745,
+"UP": 713,
+"DOWN": 414,
+"LEFT": 1191,
+"RIGHT": 1192,
+"OK": 745,
+"EXIT": 745,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 746,
@@ -15174,7 +17058,17 @@
 "UP",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 748,
+"UP": 729,
+"DOWN": 416,
+"LEFT": 1193,
+"RIGHT": 1194,
+"OK": 748,
+"EXIT": 748,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 749,
@@ -15222,7 +17116,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 751,
+"UP": 457,
+"DOWN": 418,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 751,
+"EXIT": 751,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 752,
@@ -15238,7 +17142,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 752,
+"UP": 418,
+"DOWN": 815,
+"LEFT": 1195,
+"RIGHT": 1196,
+"OK": 752,
+"EXIT": 752,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 753,
@@ -15270,7 +17184,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 754,
+"UP": 471,
+"DOWN": 419,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 754,
+"EXIT": 754,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 755,
@@ -15286,7 +17210,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 755,
+"UP": 419,
+"DOWN": 835,
+"LEFT": 1197,
+"RIGHT": 1198,
+"OK": 755,
+"EXIT": 755,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 756,
@@ -15382,7 +17316,17 @@
 "LEFT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 761,
+"UP": 1199,
+"DOWN": 426,
+"LEFT": 1200,
+"RIGHT": 1201,
+"OK": 761,
+"EXIT": 761,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 762,
@@ -15398,7 +17342,17 @@
 "LEFT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 762,
+"UP": 426,
+"DOWN": 788,
+"LEFT": 1202,
+"RIGHT": 1203,
+"OK": 762,
+"EXIT": 762,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 763,
@@ -15430,7 +17384,17 @@
 "RIGHT",
 "UP"
 ],
-"next": {}
+"next": {
+"MENU": 764,
+"UP": 1204,
+"DOWN": 427,
+"LEFT": 1205,
+"RIGHT": 1206,
+"OK": 764,
+"EXIT": 764,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 765,
@@ -15446,7 +17410,17 @@
 "RIGHT",
 "DOWN"
 ],
-"next": {}
+"next": {
+"MENU": 765,
+"UP": 427,
+"DOWN": 804,
+"LEFT": 1207,
+"RIGHT": 1208,
+"OK": 765,
+"EXIT": 765,
+"SOURCE": 3,
+"INFO": 14
+}
 },
 {
 "id": 766,
@@ -15463,9 +17437,9087 @@
 "RIGHT"
 ],
 "next": {}
+},
+{
+"id": 767,
+"file": "screens/0767.webp",
+"hash": "9b2aa74621b5",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 767,
+"UP": 715,
+"DOWN": 428,
+"LEFT": 1209,
+"RIGHT": 1210,
+"OK": 767,
+"EXIT": 767,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 768,
+"file": "screens/0768.webp",
+"hash": "e45ca6a2e836",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 769,
+"file": "screens/0769.webp",
+"hash": "933f6fa5d134",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 770,
+"file": "screens/0770.webp",
+"hash": "282a8dcb75fd",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 770,
+"UP": 731,
+"DOWN": 430,
+"LEFT": 1211,
+"RIGHT": 1212,
+"OK": 770,
+"EXIT": 770,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 771,
+"file": "screens/0771.webp",
+"hash": "15d1f082e1e9",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 772,
+"file": "screens/0772.webp",
+"hash": "8ce42e3dab09",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 773,
+"file": "screens/0773.webp",
+"hash": "ea00b7092911",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {
+"MENU": 773,
+"UP": 458,
+"DOWN": 432,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 773,
+"EXIT": 773,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 774,
+"file": "screens/0774.webp",
+"hash": "1faece3df886",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {
+"MENU": 774,
+"UP": 432,
+"DOWN": 817,
+"LEFT": 1213,
+"RIGHT": 1214,
+"OK": 774,
+"EXIT": 774,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 775,
+"file": "screens/0775.webp",
+"hash": "384c72d3d492",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 776,
+"file": "screens/0776.webp",
+"hash": "56b1bd9ea4bf",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP"
+],
+"next": {
+"MENU": 776,
+"UP": 472,
+"DOWN": 433,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 776,
+"EXIT": 776,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 777,
+"file": "screens/0777.webp",
+"hash": "03ce17f2c4cf",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"MENU": 777,
+"UP": 433,
+"DOWN": 837,
+"LEFT": 1215,
+"RIGHT": 1216,
+"OK": 777,
+"EXIT": 777,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 778,
+"file": "screens/0778.webp",
+"hash": "34a7e5cb5238",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 779,
+"file": "screens/0779.webp",
+"hash": "b7044d7d0681",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 780,
+"file": "screens/0780.webp",
+"hash": "bbc2cb87247c",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 781,
+"file": "screens/0781.webp",
+"hash": "98ae64696570",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 782,
+"file": "screens/0782.webp",
+"hash": "ee3350270084",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 783,
+"file": "screens/0783.webp",
+"hash": "aa4fbab2dad6",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {
+"MENU": 783,
+"UP": 825,
+"DOWN": 441,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 783,
+"EXIT": 783,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 784,
+"file": "screens/0784.webp",
+"hash": "908249fc9fab",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 785,
+"file": "screens/0785.webp",
+"hash": "25c09cf61a25",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {
+"MENU": 785,
+"UP": 845,
+"DOWN": 442,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 785,
+"EXIT": 785,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 786,
+"file": "screens/0786.webp",
+"hash": "eda76a0a54dc",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 787,
+"file": "screens/0787.webp",
+"hash": "aaac5b1e5336",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {
+"MENU": 787,
+"UP": 740,
+"DOWN": 1181,
+"LEFT": 1217,
+"RIGHT": 443,
+"OK": 787,
+"EXIT": 787,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 788,
+"file": "screens/0788.webp",
+"hash": "a89c27b67371",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {
+"MENU": 788,
+"UP": 762,
+"DOWN": 1199,
+"LEFT": 443,
+"RIGHT": 1218,
+"OK": 788,
+"EXIT": 788,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 789,
+"file": "screens/0789.webp",
+"hash": "6a40ac9be229",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {
+"MENU": 789,
+"UP": 444,
+"DOWN": 1161,
+"LEFT": 1219,
+"RIGHT": 1220,
+"OK": 789,
+"EXIT": 789,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 790,
+"file": "screens/0790.webp",
+"hash": "13f712bbdba5",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 791,
+"file": "screens/0791.webp",
+"hash": "e4f9bb69555d",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"MENU": 791,
+"UP": 445,
+"DOWN": 1173,
+"LEFT": 1221,
+"RIGHT": 1222,
+"OK": 791,
+"EXIT": 791,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 792,
+"file": "screens/0792.webp",
+"hash": "fa5353238e9d",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 793,
+"file": "screens/0793.webp",
+"hash": "246b757057db",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 793,
+"UP": 796,
+"DOWN": 446,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 793,
+"EXIT": 793,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 794,
+"file": "screens/0794.webp",
+"hash": "5fe04811b83e",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 795,
+"file": "screens/0795.webp",
+"hash": "b0c2031b1a9e",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 796,
+"file": "screens/0796.webp",
+"hash": "7cb74f6d73b0",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 796,
+"UP": 447,
+"DOWN": 793,
+"LEFT": 1223,
+"RIGHT": 1224,
+"OK": 796,
+"EXIT": 796,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 797,
+"file": "screens/0797.webp",
+"hash": "304baa85a4cb",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 798,
+"file": "screens/0798.webp",
+"hash": "48ec21e65654",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 799,
+"file": "screens/0799.webp",
+"hash": "dbf54e9422d0",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {
+"MENU": 799,
+"UP": 828,
+"DOWN": 450,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 799,
+"EXIT": 799,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 800,
+"file": "screens/0800.webp",
+"hash": "6328a75f616f",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 801,
+"file": "screens/0801.webp",
+"hash": "fc9fdd2c7876",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {
+"MENU": 801,
+"UP": 848,
+"DOWN": 451,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 801,
+"EXIT": 801,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 802,
+"file": "screens/0802.webp",
+"hash": "a22b2c239fc5",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 803,
+"file": "screens/0803.webp",
+"hash": "ce65dbeba235",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {
+"MENU": 803,
+"UP": 743,
+"DOWN": 1186,
+"LEFT": 1225,
+"RIGHT": 452,
+"OK": 803,
+"EXIT": 803,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 804,
+"file": "screens/0804.webp",
+"hash": "9ee4f4a6dab4",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {
+"MENU": 804,
+"UP": 765,
+"DOWN": 1204,
+"LEFT": 452,
+"RIGHT": 1226,
+"OK": 804,
+"EXIT": 804,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 805,
+"file": "screens/0805.webp",
+"hash": "91190743f454",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {
+"MENU": 805,
+"UP": 453,
+"DOWN": 1164,
+"LEFT": 1227,
+"RIGHT": 1228,
+"OK": 805,
+"EXIT": 805,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 806,
+"file": "screens/0806.webp",
+"hash": "b92987b8d07f",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 807,
+"file": "screens/0807.webp",
+"hash": "e7058a5c2bf2",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"MENU": 807,
+"UP": 454,
+"DOWN": 1176,
+"LEFT": 1229,
+"RIGHT": 1230,
+"OK": 807,
+"EXIT": 807,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 808,
+"file": "screens/0808.webp",
+"hash": "0e088de50daa",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 809,
+"file": "screens/0809.webp",
+"hash": "161f7512c174",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 809,
+"UP": 812,
+"DOWN": 455,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 809,
+"EXIT": 809,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 810,
+"file": "screens/0810.webp",
+"hash": "65c96e82f03f",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 811,
+"file": "screens/0811.webp",
+"hash": "9629934b6de2",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 812,
+"file": "screens/0812.webp",
+"hash": "bd74f90df258",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 812,
+"UP": 456,
+"DOWN": 809,
+"LEFT": 1231,
+"RIGHT": 1232,
+"OK": 812,
+"EXIT": 812,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 813,
+"file": "screens/0813.webp",
+"hash": "475a51abc901",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 814,
+"file": "screens/0814.webp",
+"hash": "ffc597253dc1",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 815,
+"file": "screens/0815.webp",
+"hash": "12cb3ac0c5a9",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {
+"MENU": 815,
+"UP": 752,
+"DOWN": 457,
+"LEFT": 1233,
+"RIGHT": 1234,
+"OK": 815,
+"EXIT": 815,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 816,
+"file": "screens/0816.webp",
+"hash": "7292cb18e16c",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 817,
+"file": "screens/0817.webp",
+"hash": "79695d0fafbf",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {
+"MENU": 817,
+"UP": 774,
+"DOWN": 458,
+"LEFT": 1235,
+"RIGHT": 1236,
+"OK": 817,
+"EXIT": 817,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 818,
+"file": "screens/0818.webp",
+"hash": "654b59417581",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 819,
+"file": "screens/0819.webp",
+"hash": "416ff1d9694e",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {
+"MENU": 819,
+"UP": 707,
+"DOWN": 459,
+"LEFT": 1237,
+"RIGHT": 1238,
+"OK": 819,
+"EXIT": 819,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 820,
+"file": "screens/0820.webp",
+"hash": "1cb67b307e3e",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {
+"MENU": 820,
+"UP": 459,
+"DOWN": 1157,
+"LEFT": 1239,
+"RIGHT": 1240,
+"OK": 820,
+"EXIT": 820,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 821,
+"file": "screens/0821.webp",
+"hash": "5e4af9597bea",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 822,
+"file": "screens/0822.webp",
+"hash": "79fa4c140330",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP"
+],
+"next": {
+"MENU": 822,
+"UP": 723,
+"DOWN": 460,
+"LEFT": 1241,
+"RIGHT": 1242,
+"OK": 822,
+"EXIT": 822,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 823,
+"file": "screens/0823.webp",
+"hash": "2e2732024329",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"MENU": 823,
+"UP": 460,
+"DOWN": 1169,
+"LEFT": 1243,
+"RIGHT": 1244,
+"OK": 823,
+"EXIT": 823,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 824,
+"file": "screens/0824.webp",
+"hash": "a898b43b3e7a",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 825,
+"file": "screens/0825.webp",
+"hash": "56080830a3a5",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 825,
+"UP": 461,
+"DOWN": 783,
+"LEFT": 1245,
+"RIGHT": 1246,
+"OK": 825,
+"EXIT": 825,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 826,
+"file": "screens/0826.webp",
+"hash": "96fbf02f64a8",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 827,
+"file": "screens/0827.webp",
+"hash": "0d653dfefac1",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 828,
+"file": "screens/0828.webp",
+"hash": "75df6a9f56d0",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 828,
+"UP": 463,
+"DOWN": 799,
+"LEFT": 1247,
+"RIGHT": 1248,
+"OK": 828,
+"EXIT": 828,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 829,
+"file": "screens/0829.webp",
+"hash": "56a9563bb251",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 830,
+"file": "screens/0830.webp",
+"hash": "13ba36480a2d",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 831,
+"file": "screens/0831.webp",
+"hash": "a7116f67e526",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 832,
+"file": "screens/0832.webp",
+"hash": "71830819058c",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 833,
+"file": "screens/0833.webp",
+"hash": "402592579bbb",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 834,
+"file": "screens/0834.webp",
+"hash": "f0605632bda4",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 835,
+"file": "screens/0835.webp",
+"hash": "726756dac320",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {
+"MENU": 835,
+"UP": 755,
+"DOWN": 471,
+"LEFT": 1249,
+"RIGHT": 1250,
+"OK": 835,
+"EXIT": 835,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 836,
+"file": "screens/0836.webp",
+"hash": "e8635f62e7af",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 837,
+"file": "screens/0837.webp",
+"hash": "a5df2307af76",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {
+"MENU": 837,
+"UP": 777,
+"DOWN": 472,
+"LEFT": 1251,
+"RIGHT": 1252,
+"OK": 837,
+"EXIT": 837,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 838,
+"file": "screens/0838.webp",
+"hash": "0999fe2357ec",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 839,
+"file": "screens/0839.webp",
+"hash": "d6216fe32d4b",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {
+"MENU": 839,
+"UP": 708,
+"DOWN": 473,
+"LEFT": 1253,
+"RIGHT": 1254,
+"OK": 839,
+"EXIT": 839,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 840,
+"file": "screens/0840.webp",
+"hash": "bf4971154a08",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {
+"MENU": 840,
+"UP": 473,
+"DOWN": 1159,
+"LEFT": 1255,
+"RIGHT": 1256,
+"OK": 840,
+"EXIT": 840,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 841,
+"file": "screens/0841.webp",
+"hash": "2129bdc0ace7",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 842,
+"file": "screens/0842.webp",
+"hash": "577ad112ce41",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP"
+],
+"next": {
+"MENU": 842,
+"UP": 724,
+"DOWN": 474,
+"LEFT": 1257,
+"RIGHT": 1258,
+"OK": 842,
+"EXIT": 842,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 843,
+"file": "screens/0843.webp",
+"hash": "c057f56cb53e",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {
+"MENU": 843,
+"UP": 474,
+"DOWN": 1171,
+"LEFT": 1259,
+"RIGHT": 1260,
+"OK": 843,
+"EXIT": 843,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 844,
+"file": "screens/0844.webp",
+"hash": "ebc989b86b68",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 845,
+"file": "screens/0845.webp",
+"hash": "02a8886274d1",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 845,
+"UP": 475,
+"DOWN": 785,
+"LEFT": 1261,
+"RIGHT": 1262,
+"OK": 845,
+"EXIT": 845,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 846,
+"file": "screens/0846.webp",
+"hash": "f1917ec02c49",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 847,
+"file": "screens/0847.webp",
+"hash": "7a14f9a57d3b",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 848,
+"file": "screens/0848.webp",
+"hash": "1257bf83f924",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 848,
+"UP": 477,
+"DOWN": 801,
+"LEFT": 1263,
+"RIGHT": 1264,
+"OK": 848,
+"EXIT": 848,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 849,
+"file": "screens/0849.webp",
+"hash": "25b5b5c6ed32",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 850,
+"file": "screens/0850.webp",
+"hash": "7df77a4493e1",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 851,
+"file": "screens/0851.webp",
+"hash": "b97585fa3c83",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 852,
+"file": "screens/0852.webp",
+"hash": "d50fa7889bb9",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 853,
+"file": "screens/0853.webp",
+"hash": "bf12d2de7d40",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 854,
+"file": "screens/0854.webp",
+"hash": "c64047d65e5d",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 855,
+"file": "screens/0855.webp",
+"hash": "be22b96c6ed7",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 855,
+"UP": 858,
+"DOWN": 485,
+"LEFT": 1265,
+"RIGHT": 1266,
+"OK": 855,
+"EXIT": 855,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 856,
+"file": "screens/0856.webp",
+"hash": "16d0c1ba7c61",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 857,
+"file": "screens/0857.webp",
+"hash": "26b1fffce5fd",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 858,
+"file": "screens/0858.webp",
+"hash": "a9e116c12e1b",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 858,
+"UP": 486,
+"DOWN": 855,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 858,
+"EXIT": 858,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 859,
+"file": "screens/0859.webp",
+"hash": "abab04ffc503",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 860,
+"file": "screens/0860.webp",
+"hash": "cc25559aaf22",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 861,
+"file": "screens/0861.webp",
+"hash": "a63aea9f67b5",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 861,
+"UP": 864,
+"DOWN": 489,
+"LEFT": 1267,
+"RIGHT": 1268,
+"OK": 861,
+"EXIT": 861,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 862,
+"file": "screens/0862.webp",
+"hash": "9e7961b6c120",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 863,
+"file": "screens/0863.webp",
+"hash": "1b6acaf4d44c",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 864,
+"file": "screens/0864.webp",
+"hash": "1aee0eb7d319",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 864,
+"UP": 490,
+"DOWN": 861,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 864,
+"EXIT": 864,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 865,
+"file": "screens/0865.webp",
+"hash": "d3668bb38c14",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 866,
+"file": "screens/0866.webp",
+"hash": "d03680a1a34b",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 867,
+"file": "screens/0867.webp",
+"hash": "b8e025792994",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 867,
+"UP": 870,
+"DOWN": 492,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 867,
+"EXIT": 867,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 868,
+"file": "screens/0868.webp",
+"hash": "9be1a5ab5b39",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 869,
+"file": "screens/0869.webp",
+"hash": "fc1879d1057a",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 870,
+"file": "screens/0870.webp",
+"hash": "5c910a96db48",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 870,
+"UP": 493,
+"DOWN": 867,
+"LEFT": 1269,
+"RIGHT": 1270,
+"OK": 870,
+"EXIT": 870,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 871,
+"file": "screens/0871.webp",
+"hash": "560c10e591e0",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 872,
+"file": "screens/0872.webp",
+"hash": "c5c7b50795a6",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 873,
+"file": "screens/0873.webp",
+"hash": "0cb1cd0b6f84",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 873,
+"UP": 876,
+"DOWN": 495,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 873,
+"EXIT": 873,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 874,
+"file": "screens/0874.webp",
+"hash": "eb559898edb2",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 875,
+"file": "screens/0875.webp",
+"hash": "3395be51771a",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 876,
+"file": "screens/0876.webp",
+"hash": "f564e7ace6a5",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 876,
+"UP": 496,
+"DOWN": 873,
+"LEFT": 1271,
+"RIGHT": 1272,
+"OK": 876,
+"EXIT": 876,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 877,
+"file": "screens/0877.webp",
+"hash": "1f7d867d43bd",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 878,
+"file": "screens/0878.webp",
+"hash": "a27d8d6fb8c9",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 879,
+"file": "screens/0879.webp",
+"hash": "70fb7ef9993a",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 880,
+"file": "screens/0880.webp",
+"hash": "179b4b8def20",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 881,
+"file": "screens/0881.webp",
+"hash": "95b6b61e1ebf",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 882,
+"file": "screens/0882.webp",
+"hash": "1b8acd14f0e8",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 883,
+"file": "screens/0883.webp",
+"hash": "903f86de6c20",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 884,
+"file": "screens/0884.webp",
+"hash": "e7de92f57a23",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 885,
+"file": "screens/0885.webp",
+"hash": "7938056e9a8f",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 886,
+"file": "screens/0886.webp",
+"hash": "2b0de7e0f4d8",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 887,
+"file": "screens/0887.webp",
+"hash": "4d9dcb9eaaa3",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 887,
+"UP": 890,
+"DOWN": 512,
+"LEFT": 1273,
+"RIGHT": 1274,
+"OK": 887,
+"EXIT": 887,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 888,
+"file": "screens/0888.webp",
+"hash": "29188823e1a9",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 889,
+"file": "screens/0889.webp",
+"hash": "7ad1c25dcbc2",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 890,
+"file": "screens/0890.webp",
+"hash": "924949dbda46",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 890,
+"UP": 513,
+"DOWN": 887,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 890,
+"EXIT": 890,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 891,
+"file": "screens/0891.webp",
+"hash": "33c0378bb91a",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 892,
+"file": "screens/0892.webp",
+"hash": "8f44b62fcc5f",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 893,
+"file": "screens/0893.webp",
+"hash": "4241a9d6b439",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 893,
+"UP": 896,
+"DOWN": 516,
+"LEFT": 1275,
+"RIGHT": 1276,
+"OK": 893,
+"EXIT": 893,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 894,
+"file": "screens/0894.webp",
+"hash": "ce7b54713089",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 895,
+"file": "screens/0895.webp",
+"hash": "7b145dddc9d1",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 896,
+"file": "screens/0896.webp",
+"hash": "9320cf9df4b7",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 896,
+"UP": 517,
+"DOWN": 893,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 896,
+"EXIT": 896,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 897,
+"file": "screens/0897.webp",
+"hash": "dd96996ee6eb",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 898,
+"file": "screens/0898.webp",
+"hash": "4d405f7c1a86",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 899,
+"file": "screens/0899.webp",
+"hash": "8dd253b14d58",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {
+"MENU": 899,
+"UP": 902,
+"DOWN": 519,
+"LEFT": 60,
+"RIGHT": 59,
+"OK": 899,
+"EXIT": 899,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 900,
+"file": "screens/0900.webp",
+"hash": "9caec8574704",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 901,
+"file": "screens/0901.webp",
+"hash": "87b321b37f02",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 902,
+"file": "screens/0902.webp",
+"hash": "6be98eba2537",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {
+"MENU": 902,
+"UP": 520,
+"DOWN": 899,
+"LEFT": 1277,
+"RIGHT": 1278,
+"OK": 902,
+"EXIT": 902,
+"SOURCE": 3,
+"INFO": 14
+}
+},
+{
+"id": 903,
+"file": "screens/0903.webp",
+"hash": "4e65824a60e0",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 904,
+"file": "screens/0904.webp",
+"hash": "3e90a8b4ad6f",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 905,
+"file": "screens/0905.webp",
+"hash": "6e1c2715ed03",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 906,
+"file": "screens/0906.webp",
+"hash": "4ca327a4cf5b",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 907,
+"file": "screens/0907.webp",
+"hash": "130ace7c3576",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 908,
+"file": "screens/0908.webp",
+"hash": "8b9aab1e53d4",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 909,
+"file": "screens/0909.webp",
+"hash": "5bad38f311f1",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 910,
+"file": "screens/0910.webp",
+"hash": "9a9bbe7599f6",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 911,
+"file": "screens/0911.webp",
+"hash": "67f7b2bd633b",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 912,
+"file": "screens/0912.webp",
+"hash": "f95d31901c0b",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 913,
+"file": "screens/0913.webp",
+"hash": "280333dc140e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"UP",
+"OK",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 914,
+"file": "screens/0914.webp",
+"hash": "3f7ee5918e19",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"UP",
+"OK",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 915,
+"file": "screens/0915.webp",
+"hash": "c338163a5cfd",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"OK",
+"UP",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 916,
+"file": "screens/0916.webp",
+"hash": "385b24ee560f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"UP",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 917,
+"file": "screens/0917.webp",
+"hash": "7a2b411b7d59",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"UP",
+"OK",
+"UP",
+"LEFT",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 918,
+"file": "screens/0918.webp",
+"hash": "0706ee3557c0",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"UP",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 919,
+"file": "screens/0919.webp",
+"hash": "c7a1c448abe4",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"UP",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 920,
+"file": "screens/0920.webp",
+"hash": "b6c9fb29556c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 921,
+"file": "screens/0921.webp",
+"hash": "1fc85c79049d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 922,
+"file": "screens/0922.webp",
+"hash": "f232a12c2ea6",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 923,
+"file": "screens/0923.webp",
+"hash": "24e2d5e0e1d4",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 924,
+"file": "screens/0924.webp",
+"hash": "7373dfa1863e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 925,
+"file": "screens/0925.webp",
+"hash": "fe10a9b48cab",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 926,
+"file": "screens/0926.webp",
+"hash": "0dfdbaff6d25",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 927,
+"file": "screens/0927.webp",
+"hash": "7041da9b04f7",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 928,
+"file": "screens/0928.webp",
+"hash": "52b213f81693",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"LEFT",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 929,
+"file": "screens/0929.webp",
+"hash": "b5f96a34d07f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 930,
+"file": "screens/0930.webp",
+"hash": "767fc7d6887c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 931,
+"file": "screens/0931.webp",
+"hash": "46235608376d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 932,
+"file": "screens/0932.webp",
+"hash": "eb1c5c76ef42",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 933,
+"file": "screens/0933.webp",
+"hash": "40358203302e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 934,
+"file": "screens/0934.webp",
+"hash": "45fb73287d44",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 935,
+"file": "screens/0935.webp",
+"hash": "9b92ead62072",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 936,
+"file": "screens/0936.webp",
+"hash": "af196e8c03b9",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 937,
+"file": "screens/0937.webp",
+"hash": "5839d3521ab6",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"OK",
+"RIGHT",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 938,
+"file": "screens/0938.webp",
+"hash": "59a90ddfc6fd",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 939,
+"file": "screens/0939.webp",
+"hash": "bec41d3f2f2a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 940,
+"file": "screens/0940.webp",
+"hash": "83c5d1b201ad",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 941,
+"file": "screens/0941.webp",
+"hash": "db71ed440c7b",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 942,
+"file": "screens/0942.webp",
+"hash": "aa2a2606fcbe",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 943,
+"file": "screens/0943.webp",
+"hash": "1e42709685e5",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 944,
+"file": "screens/0944.webp",
+"hash": "a9fe0bc5ecf4",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 945,
+"file": "screens/0945.webp",
+"hash": "ece783277e79",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 946,
+"file": "screens/0946.webp",
+"hash": "a99ee8fb32a5",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 947,
+"file": "screens/0947.webp",
+"hash": "c8b9ad2c77e1",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 948,
+"file": "screens/0948.webp",
+"hash": "e0ecc3ef07b7",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"LEFT",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 949,
+"file": "screens/0949.webp",
+"hash": "af48ea55d69c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 950,
+"file": "screens/0950.webp",
+"hash": "22c71a56b2f2",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 951,
+"file": "screens/0951.webp",
+"hash": "9bc25916b637",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 952,
+"file": "screens/0952.webp",
+"hash": "11aaa3b1957a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 953,
+"file": "screens/0953.webp",
+"hash": "6541052b263f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 954,
+"file": "screens/0954.webp",
+"hash": "967a338ef150",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 955,
+"file": "screens/0955.webp",
+"hash": "e3e58f085451",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 956,
+"file": "screens/0956.webp",
+"hash": "346c203c1cbc",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 957,
+"file": "screens/0957.webp",
+"hash": "02a8a544698d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 958,
+"file": "screens/0958.webp",
+"hash": "17429e669609",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 959,
+"file": "screens/0959.webp",
+"hash": "c47757423d3f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"DOWN",
+"OK",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 960,
+"file": "screens/0960.webp",
+"hash": "df5496a0d98b",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 961,
+"file": "screens/0961.webp",
+"hash": "a84a252a6e92",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 962,
+"file": "screens/0962.webp",
+"hash": "229f76d9fd73",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 963,
+"file": "screens/0963.webp",
+"hash": "527e79229612",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 964,
+"file": "screens/0964.webp",
+"hash": "b51494eee6a3",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 965,
+"file": "screens/0965.webp",
+"hash": "f253c00d9d32",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 966,
+"file": "screens/0966.webp",
+"hash": "ec924bcc965f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 967,
+"file": "screens/0967.webp",
+"hash": "ab085098780c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 968,
+"file": "screens/0968.webp",
+"hash": "8893971f7240",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 969,
+"file": "screens/0969.webp",
+"hash": "a9f3201ef907",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 970,
+"file": "screens/0970.webp",
+"hash": "39f6b72fe46e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 971,
+"file": "screens/0971.webp",
+"hash": "3e5d95169d7c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 972,
+"file": "screens/0972.webp",
+"hash": "db3bc411529d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 973,
+"file": "screens/0973.webp",
+"hash": "c24f447c5b04",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 974,
+"file": "screens/0974.webp",
+"hash": "c8eb55868494",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 975,
+"file": "screens/0975.webp",
+"hash": "f7ded9185893",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 976,
+"file": "screens/0976.webp",
+"hash": "a86ebe4e4d72",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 977,
+"file": "screens/0977.webp",
+"hash": "3cc0ee416897",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 978,
+"file": "screens/0978.webp",
+"hash": "8adeffca7627",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 979,
+"file": "screens/0979.webp",
+"hash": "0bf911dde349",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 980,
+"file": "screens/0980.webp",
+"hash": "04efe97704d5",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 981,
+"file": "screens/0981.webp",
+"hash": "5c90c755566d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 982,
+"file": "screens/0982.webp",
+"hash": "434d13413578",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 983,
+"file": "screens/0983.webp",
+"hash": "89de169bc3d7",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 984,
+"file": "screens/0984.webp",
+"hash": "896a593c9faa",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 985,
+"file": "screens/0985.webp",
+"hash": "992ad1f45068",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 986,
+"file": "screens/0986.webp",
+"hash": "277316cab23a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 987,
+"file": "screens/0987.webp",
+"hash": "184a13b0f0bf",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 988,
+"file": "screens/0988.webp",
+"hash": "d0c0b7774f21",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 989,
+"file": "screens/0989.webp",
+"hash": "4ea302331296",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 990,
+"file": "screens/0990.webp",
+"hash": "e6b27d59805e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 991,
+"file": "screens/0991.webp",
+"hash": "0849da8fcf5f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 992,
+"file": "screens/0992.webp",
+"hash": "86649b3bf59b",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 993,
+"file": "screens/0993.webp",
+"hash": "c3a871d91832",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 994,
+"file": "screens/0994.webp",
+"hash": "6b199683a133",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 995,
+"file": "screens/0995.webp",
+"hash": "c1ebb26d27ac",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"LEFT",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 996,
+"file": "screens/0996.webp",
+"hash": "adf0acf75848",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 997,
+"file": "screens/0997.webp",
+"hash": "1a5b57dba77a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 998,
+"file": "screens/0998.webp",
+"hash": "332c9c1a81a2",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 999,
+"file": "screens/0999.webp",
+"hash": "e94a2406f44f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1000,
+"file": "screens/1000.webp",
+"hash": "27ef0d8fefcb",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1001,
+"file": "screens/1001.webp",
+"hash": "9c14647c862e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1002,
+"file": "screens/1002.webp",
+"hash": "22aeebba15da",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1003,
+"file": "screens/1003.webp",
+"hash": "8ac4239ab703",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1004,
+"file": "screens/1004.webp",
+"hash": "3b98f626ce6d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1005,
+"file": "screens/1005.webp",
+"hash": "27e513c0326b",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1006,
+"file": "screens/1006.webp",
+"hash": "59213dd1e906",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1007,
+"file": "screens/1007.webp",
+"hash": "0fbead0ebb81",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1008,
+"file": "screens/1008.webp",
+"hash": "833813a8f85a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1009,
+"file": "screens/1009.webp",
+"hash": "a569e6e6e888",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1010,
+"file": "screens/1010.webp",
+"hash": "c78d4cd4b15a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1011,
+"file": "screens/1011.webp",
+"hash": "10aa9298f12d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1012,
+"file": "screens/1012.webp",
+"hash": "d2e0c89bd056",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1013,
+"file": "screens/1013.webp",
+"hash": "91b19c3f36de",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"UP",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1014,
+"file": "screens/1014.webp",
+"hash": "0c1b46dfd6d3",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1015,
+"file": "screens/1015.webp",
+"hash": "69cb4a9fb224",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1016,
+"file": "screens/1016.webp",
+"hash": "3b90f6a7a1b9",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1017,
+"file": "screens/1017.webp",
+"hash": "05c0731ce9a4",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1018,
+"file": "screens/1018.webp",
+"hash": "0b0a1f587ac9",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1019,
+"file": "screens/1019.webp",
+"hash": "e31fb9a4622d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1020,
+"file": "screens/1020.webp",
+"hash": "18998bf394c2",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1021,
+"file": "screens/1021.webp",
+"hash": "fbc08510a7f3",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1022,
+"file": "screens/1022.webp",
+"hash": "9feffa610c26",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1023,
+"file": "screens/1023.webp",
+"hash": "f948234ef5ec",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1024,
+"file": "screens/1024.webp",
+"hash": "c6f83798d6cc",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1025,
+"file": "screens/1025.webp",
+"hash": "7df633061cf7",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1026,
+"file": "screens/1026.webp",
+"hash": "1e5f8c1b9171",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1027,
+"file": "screens/1027.webp",
+"hash": "dc31169135e2",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1028,
+"file": "screens/1028.webp",
+"hash": "1f38aa750e9b",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1029,
+"file": "screens/1029.webp",
+"hash": "578532996636",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1030,
+"file": "screens/1030.webp",
+"hash": "4207a2e51e4d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1031,
+"file": "screens/1031.webp",
+"hash": "a1aa968d6e3c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1032,
+"file": "screens/1032.webp",
+"hash": "6b12b923667e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1033,
+"file": "screens/1033.webp",
+"hash": "a23c01ebfcd2",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1034,
+"file": "screens/1034.webp",
+"hash": "1cb3e2388dc1",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1035,
+"file": "screens/1035.webp",
+"hash": "e69fd0c95a92",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1036,
+"file": "screens/1036.webp",
+"hash": "1b89ae09f69f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1037,
+"file": "screens/1037.webp",
+"hash": "dca2b0324f00",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1038,
+"file": "screens/1038.webp",
+"hash": "3a25bb4d312b",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1039,
+"file": "screens/1039.webp",
+"hash": "c65c436dd354",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1040,
+"file": "screens/1040.webp",
+"hash": "71c0009c492a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1041,
+"file": "screens/1041.webp",
+"hash": "b295c06cc140",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1042,
+"file": "screens/1042.webp",
+"hash": "e14c9de1c0e4",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1043,
+"file": "screens/1043.webp",
+"hash": "550e0235b597",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1044,
+"file": "screens/1044.webp",
+"hash": "ca129d5c92e2",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1045,
+"file": "screens/1045.webp",
+"hash": "8b1a19e9bdea",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1046,
+"file": "screens/1046.webp",
+"hash": "97c7c4fd8241",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1047,
+"file": "screens/1047.webp",
+"hash": "8308d667190e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1048,
+"file": "screens/1048.webp",
+"hash": "40f4b6372022",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1049,
+"file": "screens/1049.webp",
+"hash": "cd4b6c90e24f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1050,
+"file": "screens/1050.webp",
+"hash": "2d1c078647e2",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1051,
+"file": "screens/1051.webp",
+"hash": "ee75332a2543",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1052,
+"file": "screens/1052.webp",
+"hash": "bb161b00af7f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1053,
+"file": "screens/1053.webp",
+"hash": "4b0565627590",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1054,
+"file": "screens/1054.webp",
+"hash": "0e39dbb85da0",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1055,
+"file": "screens/1055.webp",
+"hash": "de84a6fad50e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1056,
+"file": "screens/1056.webp",
+"hash": "f4df9de85dc4",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1057,
+"file": "screens/1057.webp",
+"hash": "122304658f4a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1058,
+"file": "screens/1058.webp",
+"hash": "233594b569f3",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1059,
+"file": "screens/1059.webp",
+"hash": "0f5a9aea1aa6",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1060,
+"file": "screens/1060.webp",
+"hash": "d3d3c0fe055a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1061,
+"file": "screens/1061.webp",
+"hash": "ecf38c79898f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1062,
+"file": "screens/1062.webp",
+"hash": "b50debbc9085",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1063,
+"file": "screens/1063.webp",
+"hash": "abfcafb94588",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1064,
+"file": "screens/1064.webp",
+"hash": "5cd6be1c14b1",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1065,
+"file": "screens/1065.webp",
+"hash": "93dd77ac829d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1066,
+"file": "screens/1066.webp",
+"hash": "1d1148e99fb0",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1067,
+"file": "screens/1067.webp",
+"hash": "d854ae69d6fb",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1068,
+"file": "screens/1068.webp",
+"hash": "5c55422ba7f7",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1069,
+"file": "screens/1069.webp",
+"hash": "fd41a120104a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1070,
+"file": "screens/1070.webp",
+"hash": "46b6b8e885e6",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1071,
+"file": "screens/1071.webp",
+"hash": "88aa2ebb67c4",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1072,
+"file": "screens/1072.webp",
+"hash": "d6a6447a7c3c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1073,
+"file": "screens/1073.webp",
+"hash": "cb9e02fcee06",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1074,
+"file": "screens/1074.webp",
+"hash": "4d3c62fe9ab1",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1075,
+"file": "screens/1075.webp",
+"hash": "7c35d558a0ce",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1076,
+"file": "screens/1076.webp",
+"hash": "5d06aed556ca",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1077,
+"file": "screens/1077.webp",
+"hash": "01a5830dea5c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1078,
+"file": "screens/1078.webp",
+"hash": "4d0c80da5962",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1079,
+"file": "screens/1079.webp",
+"hash": "4246fbf9963f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1080,
+"file": "screens/1080.webp",
+"hash": "e359ee19d307",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1081,
+"file": "screens/1081.webp",
+"hash": "4c7622d82ccd",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1082,
+"file": "screens/1082.webp",
+"hash": "41b9aadb07be",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1083,
+"file": "screens/1083.webp",
+"hash": "5fdc8942c97a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1084,
+"file": "screens/1084.webp",
+"hash": "1cd15d8f1f3f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1085,
+"file": "screens/1085.webp",
+"hash": "fde31398e116",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1086,
+"file": "screens/1086.webp",
+"hash": "f7567422ff2b",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1087,
+"file": "screens/1087.webp",
+"hash": "0b27e9a5594e",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1088,
+"file": "screens/1088.webp",
+"hash": "86ea2f36e135",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1089,
+"file": "screens/1089.webp",
+"hash": "6df9021fca04",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1090,
+"file": "screens/1090.webp",
+"hash": "6dd3531f7c98",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1091,
+"file": "screens/1091.webp",
+"hash": "9dcd5e25a781",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1092,
+"file": "screens/1092.webp",
+"hash": "d137eaf3f19d",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1093,
+"file": "screens/1093.webp",
+"hash": "762c48cf7569",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1094,
+"file": "screens/1094.webp",
+"hash": "61060f072bf7",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1095,
+"file": "screens/1095.webp",
+"hash": "c3e576f935e3",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1096,
+"file": "screens/1096.webp",
+"hash": "b8ad99b52f42",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1097,
+"file": "screens/1097.webp",
+"hash": "4d9f3348d888",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1098,
+"file": "screens/1098.webp",
+"hash": "442625c15ce6",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1099,
+"file": "screens/1099.webp",
+"hash": "f81720370455",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1100,
+"file": "screens/1100.webp",
+"hash": "af51c2e23abc",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1101,
+"file": "screens/1101.webp",
+"hash": "962ac1c0a982",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1102,
+"file": "screens/1102.webp",
+"hash": "12a215ec3856",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1103,
+"file": "screens/1103.webp",
+"hash": "b7901e3e7026",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1104,
+"file": "screens/1104.webp",
+"hash": "0cfb1cf35ecd",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1105,
+"file": "screens/1105.webp",
+"hash": "245a462315ec",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1106,
+"file": "screens/1106.webp",
+"hash": "e7cbcbbb5a62",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1107,
+"file": "screens/1107.webp",
+"hash": "990a7b1a7d17",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1108,
+"file": "screens/1108.webp",
+"hash": "ab75829aaa7b",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1109,
+"file": "screens/1109.webp",
+"hash": "798c9522d5d3",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1110,
+"file": "screens/1110.webp",
+"hash": "a32fc3fbd396",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1111,
+"file": "screens/1111.webp",
+"hash": "da6c52817dfb",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1112,
+"file": "screens/1112.webp",
+"hash": "96466998b563",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1113,
+"file": "screens/1113.webp",
+"hash": "6a5df10a3702",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1114,
+"file": "screens/1114.webp",
+"hash": "2b3ac321321a",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1115,
+"file": "screens/1115.webp",
+"hash": "eaaca7835ca1",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1116,
+"file": "screens/1116.webp",
+"hash": "16511d974122",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1117,
+"file": "screens/1117.webp",
+"hash": "be52e9b7d26f",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1118,
+"file": "screens/1118.webp",
+"hash": "efef87257406",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1119,
+"file": "screens/1119.webp",
+"hash": "f86bc8d3c2d1",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1120,
+"file": "screens/1120.webp",
+"hash": "68632f000bd2",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1121,
+"file": "screens/1121.webp",
+"hash": "f502db9e28f0",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1122,
+"file": "screens/1122.webp",
+"hash": "4ae135186f78",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1123,
+"file": "screens/1123.webp",
+"hash": "5cbd7a82d28c",
+"path": [
+"MENU",
+"LEFT",
+"LEFT",
+"OK",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1124,
+"file": "screens/1124.webp",
+"hash": "99701be9113c",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"SOURCE"
+],
+"next": {}
+},
+{
+"id": 1125,
+"file": "screens/1125.webp",
+"hash": "9abc9d841e0d",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"SOURCE",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1126,
+"file": "screens/1126.webp",
+"hash": "038f59e8c263",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"SOURCE",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1127,
+"file": "screens/1127.webp",
+"hash": "b86e0476d0eb",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"DOWN",
+"SOURCE",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1128,
+"file": "screens/1128.webp",
+"hash": "9829a6acab96",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"DOWN",
+"SOURCE",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1129,
+"file": "screens/1129.webp",
+"hash": "2224bc45c620",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"SOURCE",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1130,
+"file": "screens/1130.webp",
+"hash": "68e89a712ef2",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"SOURCE",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1131,
+"file": "screens/1131.webp",
+"hash": "8783382418f0",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"RIGHT",
+"SOURCE",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1132,
+"file": "screens/1132.webp",
+"hash": "2548c1ffb1da",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"RIGHT",
+"SOURCE",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1133,
+"file": "screens/1133.webp",
+"hash": "141efd5287e0",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"SOURCE",
+"UP",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1134,
+"file": "screens/1134.webp",
+"hash": "2257377fa754",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"DOWN",
+"SOURCE",
+"DOWN",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1135,
+"file": "screens/1135.webp",
+"hash": "d2ff37a790b0",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"RIGHT",
+"RIGHT",
+"SOURCE",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1136,
+"file": "screens/1136.webp",
+"hash": "b23b2d412820",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"RIGHT",
+"RIGHT",
+"SOURCE",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1137,
+"file": "screens/1137.webp",
+"hash": "f99257a4059c",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"RIGHT",
+"SOURCE",
+"UP",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1138,
+"file": "screens/1138.webp",
+"hash": "4491a71d55a8",
+"path": [
+"MENU",
+"RIGHT",
+"RIGHT",
+"OK",
+"RIGHT",
+"SOURCE",
+"DOWN",
+"DOWN",
+"DOWN"
+],
+"next": {}
+},
+{
+"id": 1139,
+"file": "screens/1139.webp",
+"hash": "26cfbf177e7f",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1140,
+"file": "screens/1140.webp",
+"hash": "66730866682d",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1141,
+"file": "screens/1141.webp",
+"hash": "a007b321b136",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1142,
+"file": "screens/1142.webp",
+"hash": "3bfeed382013",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1143,
+"file": "screens/1143.webp",
+"hash": "b6f430f7b420",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1144,
+"file": "screens/1144.webp",
+"hash": "7cfc11e125e2",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1145,
+"file": "screens/1145.webp",
+"hash": "5adda283ce94",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1146,
+"file": "screens/1146.webp",
+"hash": "4e088851a032",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1147,
+"file": "screens/1147.webp",
+"hash": "b21f460f24e2",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1148,
+"file": "screens/1148.webp",
+"hash": "1c3d4c8e7eb6",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1149,
+"file": "screens/1149.webp",
+"hash": "5a9e0697cab8",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1150,
+"file": "screens/1150.webp",
+"hash": "7229c7fe3ebd",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1151,
+"file": "screens/1151.webp",
+"hash": "f6a35853426d",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1152,
+"file": "screens/1152.webp",
+"hash": "58f7918a6788",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1153,
+"file": "screens/1153.webp",
+"hash": "0d3c1eef891b",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1154,
+"file": "screens/1154.webp",
+"hash": "aaafa3da6322",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1155,
+"file": "screens/1155.webp",
+"hash": "a1e46f067830",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1156,
+"file": "screens/1156.webp",
+"hash": "886da8ebdd30",
+"path": [
+"MENU",
+"RIGHT",
+"OK",
+"LEFT",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1157,
+"file": "screens/1157.webp",
+"hash": "a65818cd88c7",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1158,
+"file": "screens/1158.webp",
+"hash": "ab7964ce863a",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1159,
+"file": "screens/1159.webp",
+"hash": "d9b77bd05c7c",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1160,
+"file": "screens/1160.webp",
+"hash": "b20b3ad5db83",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1161,
+"file": "screens/1161.webp",
+"hash": "6016a06d6078",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1162,
+"file": "screens/1162.webp",
+"hash": "b5586d7ac86f",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1163,
+"file": "screens/1163.webp",
+"hash": "bb7cb3903a55",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1164,
+"file": "screens/1164.webp",
+"hash": "831612782573",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1165,
+"file": "screens/1165.webp",
+"hash": "d451ab29f7cc",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1166,
+"file": "screens/1166.webp",
+"hash": "51c64b0d535c",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1167,
+"file": "screens/1167.webp",
+"hash": "9d5ea628ea95",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1168,
+"file": "screens/1168.webp",
+"hash": "c15f30892dbf",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"LEFT",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1169,
+"file": "screens/1169.webp",
+"hash": "9e7ddc966f4f",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1170,
+"file": "screens/1170.webp",
+"hash": "5dabc52b9255",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1171,
+"file": "screens/1171.webp",
+"hash": "fce4160526b6",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1172,
+"file": "screens/1172.webp",
+"hash": "06c94979bf69",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1173,
+"file": "screens/1173.webp",
+"hash": "4ca8fa59168c",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1174,
+"file": "screens/1174.webp",
+"hash": "a44f4f4bc772",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1175,
+"file": "screens/1175.webp",
+"hash": "331a6b2332d5",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1176,
+"file": "screens/1176.webp",
+"hash": "79a04f5eb8a3",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1177,
+"file": "screens/1177.webp",
+"hash": "dd37af6b9611",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1178,
+"file": "screens/1178.webp",
+"hash": "291f7ecfa5af",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1179,
+"file": "screens/1179.webp",
+"hash": "aa483b1a6eb8",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1180,
+"file": "screens/1180.webp",
+"hash": "a379a0d65b26",
+"path": [
+"MENU",
+"OK",
+"UP",
+"UP",
+"RIGHT",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1181,
+"file": "screens/1181.webp",
+"hash": "46f140f7168b",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1182,
+"file": "screens/1182.webp",
+"hash": "03ddd6cf6d03",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1183,
+"file": "screens/1183.webp",
+"hash": "0c51c23daa49",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1184,
+"file": "screens/1184.webp",
+"hash": "4e4fb09ec232",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1185,
+"file": "screens/1185.webp",
+"hash": "5fc350a59ff7",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1186,
+"file": "screens/1186.webp",
+"hash": "39db112e8cf9",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1187,
+"file": "screens/1187.webp",
+"hash": "ca98d22ae89c",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1188,
+"file": "screens/1188.webp",
+"hash": "74637618bc41",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1189,
+"file": "screens/1189.webp",
+"hash": "019218156e96",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1190,
+"file": "screens/1190.webp",
+"hash": "0f628a8fa5c9",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1191,
+"file": "screens/1191.webp",
+"hash": "fed4cca72187",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1192,
+"file": "screens/1192.webp",
+"hash": "1f37357a6b58",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1193,
+"file": "screens/1193.webp",
+"hash": "1b4934bf9a42",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1194,
+"file": "screens/1194.webp",
+"hash": "27698b2eb5b4",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1195,
+"file": "screens/1195.webp",
+"hash": "7e78b1116954",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1196,
+"file": "screens/1196.webp",
+"hash": "42c5b6afea77",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1197,
+"file": "screens/1197.webp",
+"hash": "ad02ee137fe5",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1198,
+"file": "screens/1198.webp",
+"hash": "978b6b193273",
+"path": [
+"MENU",
+"OK",
+"UP",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1199,
+"file": "screens/1199.webp",
+"hash": "40ba69072043",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1200,
+"file": "screens/1200.webp",
+"hash": "63c0e1547c8e",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1201,
+"file": "screens/1201.webp",
+"hash": "c324315c66ce",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1202,
+"file": "screens/1202.webp",
+"hash": "bb44d4cd417b",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1203,
+"file": "screens/1203.webp",
+"hash": "aab5b9480dd1",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1204,
+"file": "screens/1204.webp",
+"hash": "a105dfd5d2ec",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP"
+],
+"next": {}
+},
+{
+"id": 1205,
+"file": "screens/1205.webp",
+"hash": "d17edb8facca",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1206,
+"file": "screens/1206.webp",
+"hash": "b9acdc5a381b",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1207,
+"file": "screens/1207.webp",
+"hash": "22ec40131c94",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1208,
+"file": "screens/1208.webp",
+"hash": "214174dc30b8",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1209,
+"file": "screens/1209.webp",
+"hash": "742f25618b06",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1210,
+"file": "screens/1210.webp",
+"hash": "4a211fdb406a",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1211,
+"file": "screens/1211.webp",
+"hash": "bd9c466d5196",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1212,
+"file": "screens/1212.webp",
+"hash": "679249b5bb42",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1213,
+"file": "screens/1213.webp",
+"hash": "0a6253dd23cf",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1214,
+"file": "screens/1214.webp",
+"hash": "9b05be7e2d00",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1215,
+"file": "screens/1215.webp",
+"hash": "1c058479042a",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1216,
+"file": "screens/1216.webp",
+"hash": "72b728563dab",
+"path": [
+"MENU",
+"OK",
+"UP",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1217,
+"file": "screens/1217.webp",
+"hash": "ec7f9fed2965",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1218,
+"file": "screens/1218.webp",
+"hash": "ab83261e646e",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1219,
+"file": "screens/1219.webp",
+"hash": "16092bdadc6f",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1220,
+"file": "screens/1220.webp",
+"hash": "3dcef3415f89",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1221,
+"file": "screens/1221.webp",
+"hash": "c79d990e8497",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1222,
+"file": "screens/1222.webp",
+"hash": "6435f3abd04a",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1223,
+"file": "screens/1223.webp",
+"hash": "0335e028c883",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1224,
+"file": "screens/1224.webp",
+"hash": "c295c4ce69b1",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1225,
+"file": "screens/1225.webp",
+"hash": "e2db5f37ff97",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1226,
+"file": "screens/1226.webp",
+"hash": "41c5b3fefe5b",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1227,
+"file": "screens/1227.webp",
+"hash": "bf3ceb943699",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1228,
+"file": "screens/1228.webp",
+"hash": "706c10c60176",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1229,
+"file": "screens/1229.webp",
+"hash": "b6e6d15bb349",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1230,
+"file": "screens/1230.webp",
+"hash": "b35b27a1a003",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1231,
+"file": "screens/1231.webp",
+"hash": "53aa212f142d",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1232,
+"file": "screens/1232.webp",
+"hash": "d433543a1c18",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"DOWN",
+"RIGHT",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1233,
+"file": "screens/1233.webp",
+"hash": "238add523cb7",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1234,
+"file": "screens/1234.webp",
+"hash": "fb2e10a93f09",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1235,
+"file": "screens/1235.webp",
+"hash": "18cecb23c159",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1236,
+"file": "screens/1236.webp",
+"hash": "13224711f729",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1237,
+"file": "screens/1237.webp",
+"hash": "872e264ff5ae",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1238,
+"file": "screens/1238.webp",
+"hash": "7da4c3bfa978",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1239,
+"file": "screens/1239.webp",
+"hash": "376a18776ff5",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1240,
+"file": "screens/1240.webp",
+"hash": "2439034e05b1",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1241,
+"file": "screens/1241.webp",
+"hash": "37975068fcb6",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1242,
+"file": "screens/1242.webp",
+"hash": "c0c40a742628",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1243,
+"file": "screens/1243.webp",
+"hash": "c722b1d4ccef",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1244,
+"file": "screens/1244.webp",
+"hash": "8af28c7b3ab4",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1245,
+"file": "screens/1245.webp",
+"hash": "8670b1f11a85",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1246,
+"file": "screens/1246.webp",
+"hash": "97ff8295cafc",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1247,
+"file": "screens/1247.webp",
+"hash": "bb80f5d8693f",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1248,
+"file": "screens/1248.webp",
+"hash": "1209ba1fd2bd",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1249,
+"file": "screens/1249.webp",
+"hash": "88cb22f498f7",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1250,
+"file": "screens/1250.webp",
+"hash": "386c2346b145",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1251,
+"file": "screens/1251.webp",
+"hash": "e7158ecfa5cb",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1252,
+"file": "screens/1252.webp",
+"hash": "d62a32d9aab5",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1253,
+"file": "screens/1253.webp",
+"hash": "b8f7cbf9b636",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1254,
+"file": "screens/1254.webp",
+"hash": "0fe472e154aa",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1255,
+"file": "screens/1255.webp",
+"hash": "bb209c7ac42d",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1256,
+"file": "screens/1256.webp",
+"hash": "88b15e87998e",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1257,
+"file": "screens/1257.webp",
+"hash": "f47dc012daf4",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1258,
+"file": "screens/1258.webp",
+"hash": "69201af73050",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1259,
+"file": "screens/1259.webp",
+"hash": "5bd8afca7524",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1260,
+"file": "screens/1260.webp",
+"hash": "66742f0e418d",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1261,
+"file": "screens/1261.webp",
+"hash": "a29e028730aa",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1262,
+"file": "screens/1262.webp",
+"hash": "d6d7a815f1b1",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1263,
+"file": "screens/1263.webp",
+"hash": "c43984a80196",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1264,
+"file": "screens/1264.webp",
+"hash": "b2deba16c048",
+"path": [
+"MENU",
+"OK",
+"DOWN",
+"RIGHT",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1265,
+"file": "screens/1265.webp",
+"hash": "db5ae3d9b515",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1266,
+"file": "screens/1266.webp",
+"hash": "65894ede50e7",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1267,
+"file": "screens/1267.webp",
+"hash": "52ef9ca80b79",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1268,
+"file": "screens/1268.webp",
+"hash": "b2aef1461bda",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1269,
+"file": "screens/1269.webp",
+"hash": "81ca422170de",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1270,
+"file": "screens/1270.webp",
+"hash": "2bf779be6061",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1271,
+"file": "screens/1271.webp",
+"hash": "65337a909970",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1272,
+"file": "screens/1272.webp",
+"hash": "a69c2f6f219b",
+"path": [
+"MENU",
+"OK",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1273,
+"file": "screens/1273.webp",
+"hash": "e87211331529",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1274,
+"file": "screens/1274.webp",
+"hash": "8b6b23eaf2be",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"LEFT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1275,
+"file": "screens/1275.webp",
+"hash": "fee431033139",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1276,
+"file": "screens/1276.webp",
+"hash": "2ea06c49d23a",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT",
+"UP",
+"UP",
+"RIGHT"
+],
+"next": {}
+},
+{
+"id": 1277,
+"file": "screens/1277.webp",
+"hash": "9aface8eade9",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"LEFT"
+],
+"next": {}
+},
+{
+"id": 1278,
+"file": "screens/1278.webp",
+"hash": "089406bc1861",
+"path": [
+"MENU",
+"OK",
+"RIGHT",
+"DOWN",
+"DOWN",
+"LEFT",
+"DOWN",
+"DOWN",
+"RIGHT"
+],
+"next": {}
 }
 ],
-"transitions": 4082,
+"transitions": 6327,
 "meta": {
 "hotkeys": [
 "AV1",

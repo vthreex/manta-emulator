@@ -631,7 +631,9 @@ if(T&&T.files){   // exploration data: numeric screen ids, images from the every
   const S=x=>String(x);T.start=S(T.start);T.steps=T.steps.map(([a,k,b])=>[S(a),k,S(b)]);T.playback=(T.playback||[]).map(([a,k,b])=>[S(a),k,S(b)]);
 }
 const frameSrc=h=>T&&T.files?T.files[h]:'assets/sunplus/tour/'+h+'.png';
-let edges={}, plat='sunplus', cur=null, trail=[], tourTimer=null;
+let edges={}, plat='sunplus', cur=null, trail=[], tourTimer=null, hist=[];   // hist: every key since boot/reset (null after a playback jump)
+// next screen: the exact recorded key sequence wins (screens can hide state); otherwise the per-screen recorded step
+const nextOf=k=>{if(T&&T.paths&&hist){const e=T.paths[hist.concat(k).join(' ')];if(e!=null)return String(e)}return edges[cur]&&edges[cur][k]};
 if(T){
   // edges[h][key] = most frequent target
   const cnt={};
@@ -729,7 +731,7 @@ function flash(k){const b=document.querySelector(`#remote .rk[data-k="${CSS.esca
 function updateKeys(){
   $$('#remote .rk[data-k]').forEach(b=>{
     const k=b.dataset.k;let ok;
-    if(plat==='sunplus')ok=!!(T&&cur&&edges[cur]&&edges[cur][k]);
+    if(plat==='sunplus')ok=!!(T&&cur&&nextOf(k));
     else ok=!!MS[k];
     b.classList.toggle('live',ok);b.title=ok?`${k}: recorded from this screen`:`${k}: not recorded from this screen`;
   });
@@ -746,9 +748,9 @@ function press(k){
   flash(k);
   if(plat==='sunplus'){
     if(!T)return;
-    const nx=edges[cur]&&edges[cur][k];
+    const nx=nextOf(k);
     if(!nx){toast(`${k}: not recorded from this screen`);addTrail(k,false);return}
-    addTrail(k,true);showSun(nx);
+    if(hist)hist.push(k);addTrail(k,true);showSun(nx);
   }else{
     const f=MS[k];if(!f){toast(`${k}: no captured transition for MStar`);addTrail(k,false);return}
     addTrail(k,true);showMs(f[0],f[1]);
@@ -757,7 +759,7 @@ function press(k){
 function showMs(src,cap){swap($('#pImg'),src,cap);$('#pCap').textContent=cap;$$('#pNote .screens button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===src))}
 function stopTour(){clearInterval(tourTimer);tourTimer=null;const b=$('#tourBtn');if(b)b.textContent='▶ Play recorded session'}
 function setPlat(p){
-  plat=p;stopTour();trail=[];$('#pTrail').innerHTML='';model('pTv',p==='sunplus'?'led':'lcd');buildRemote(p==='sunplus'?'led':'lcd');
+  plat=p;stopTour();trail=[];hist=[];$('#pTrail').innerHTML='';model('pTv',p==='sunplus'?'led':'lcd');buildRemote(p==='sunplus'?'led':'lcd');
   $$('[data-plat]').forEach(b=>b.setAttribute('aria-selected',b.dataset.plat===p));
   $('#pMsg').hidden=true;
   if(p==='sunplus'){
@@ -765,15 +767,15 @@ function setPlat(p){
     $('#pNote').innerHTML=`<p>Keyboard: click the TV or the remote, then use <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>, <kbd>Enter</kbd> (OK), <kbd>M</kbd> (menu), <kbd>Esc</kbd> (exit), <kbd>S</kbd> (source).</p><p>Keys with a <b style="color:#5eb8ff">blue ring</b> were pressed from this screen in the recording. Try <b>MENU</b> first, then the arrows. Greyed-out items, such as Brightness in Dynamic mode, are skipped by the firmware itself.</p><p>The grey surround is the empty OSD plane. There is no video plane yet, and placement on the panel is a guess.</p><div class="tools"><button class="btn" id="tourBtn" type="button">▶ Play recorded session</button><button class="btn" id="resetBtn" type="button">Reset</button></div>`;
     if(!T){$('#pMsg').hidden=false;$('#pMsg').textContent='recorded session data not found';$('#pImg').hidden=true;updateKeys();return}
     showSun(T.start);
-    $('#resetBtn').onclick=()=>{stopTour();trail=[];$('#pTrail').innerHTML='';showSun(T.start)};
+    $('#resetBtn').onclick=()=>{stopTour();trail=[];hist=[];$('#pTrail').innerHTML='';showSun(T.start)};
     $('#tourBtn').onclick=()=>{
       if(tourTimer){stopTour();return}
-      trail=[];showSun(T.start);let i=0;
+      trail=[];hist=[];showSun(T.start);let i=0;
       $('#tourBtn').textContent='❚❚ Pause';
       tourTimer=setInterval(()=>{
         const P=T.playback&&T.playback.length?T.playback:T.steps;
         if(i>=P.length){stopTour();return}
-        const [a,k,b]=P[i++];if(a!==cur)showSun(a);flash(k);addTrail(k,true);showSun(b);
+        const [a,k,b]=P[i++];if(a!==cur){showSun(a);hist=a===T.start?[]:null}flash(k);addTrail(k,true);if(hist)hist.push(k);showSun(b);
       },1100);
     };
   }else{
