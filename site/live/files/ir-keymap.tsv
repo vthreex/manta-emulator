@@ -40,3 +40,12 @@ FAV	0x57	BEHAVIOURAL (DTV state): app 0x2f; opens the "Favorite List" popup (OSD
 EPG	0x4A	CANDIDATE (DTV state): app 0x26 opens the "PROGRAMME GUIDE" (OSD 0x10); raw 0x54 (app 0x30) opens the same screen, so one of the two is the EPG key - evidence/key-sweep-dtv, sheet_02
 SUBTITLE	0x5B	CANDIDATE (DTV state): app 0x1d opens the "Subtitle Languages" popup (OSD 0xB); raw 0x71 has the same app code and raw 0xF4 (app 0x1f) opens the same popup - evidence/key-sweep-dtv, sheet_03
 TTX	0x12	BEHAVIOURAL (DTV state): app 0x31; the original firmware shows its "No Teletext" notice (OSD 0xF) - evidence/key-sweep-dtv, sheet_01
+CH+	0x1F	PROVEN: raw 0x1F -> app 2 (handler 8046AD68 when 8040B5D8(2)); the app-key switch (table 0x80617D1C) prints 91_KEY_CHANNEL_PLUS for app 2 (8046E630); in ATV it shows the channel banner
+CH-	0x1E	PROVEN: raw 0x1E -> app 3 (handler 8046ADA4); the app-key switch prints 91_KEY_CHANNEL_MINUS for app 3 (8046E63C); in ATV it shows the channel banner
+VOL+	0x15	PROVEN: app 5, 91_KEY_VOLUME_PLUS (8046E104/8046EBF0); the volume bar goes up
+VOL-	0x1C	PROVEN: app 6, 91_KEY_VOLUME_MINUS (8046E110); the volume bar goes down
+RECALL	0x18	CANDIDATE: app 1, the case that prints 91_KEY_RETURN (8046DE3C); NO SIGNAL: the original 'Not Available' popup (no previous channel); behavioural name
+L/R	0x19	CANDIDATE: app 0x1E, the case that prints 91_KEY_MTS (audio channel / language); same raw as LANGUAGE (DTV audio-language list)
+FAV_ALT	0xF1	BEHAVIOURAL: app 0 shares FAV's case (0x57); ATV: the original 'Favorite List' window
+KEY_LOCK	0xFB	BEHAVIOURAL: app 0xFE; ATV: the original 'Key Lock' password prompt (no button on the LCD4214 remote)
+UART_DEBUG	0xD4	BEHAVIOURAL: app 0x70; toggles the hidden 'UART DEBUG' setting (factory key, not on the remote)

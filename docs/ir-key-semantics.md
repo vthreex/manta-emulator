@@ -74,3 +74,24 @@ popped a key `0x00` (app `0x64`) from the empty FIFO. Any open page treated that
 match -> `804F0724(0x17,5)`), which is why menus, the lock page and ATV manual tuning closed after about a second and why every key seemed to close the menu.
 `Riu::read` now keeps the FIFO model's known status bits under the blanket zero. With the fix no hack is needed: navigation keys keep the menu open,
 EXIT and MENU (0x40) close/return as the firmware decides, and `--exploratory-menu-no-autoexit` is off by default in the control centre.
+
+## Remaining remote keys (2026-11-04, live profile, native sweeps from the NO SIGNAL snapshot)
+Sweep: every raw byte with its own handler (not the default 8046AA64) in four states (NO SIGNAL, ATV, main menu, USB media player drive page),
+screen 30 M dispatches after the key compared with the same state without it (scratchpad sweep_state.py; ~15 s per state).
+The app-key switch at 0x80617D1C (indexed by the app code, 8046DE14) prints debug key names (`91_KEY_*`), which names several cases:
+
+| key | raw | app | evidence |
+|---|---|---|---|
+| CH+ | 0x1F | 2 | prints 91_KEY_CHANNEL_PLUS (8046E630); ATV channel banner — **proven** |
+| CH- | 0x1E | 3 | prints 91_KEY_CHANNEL_MINUS (8046E63C); ATV channel banner — **proven** |
+| VOL+ / VOL- | 0x15 / 0x1C | 5 / 6 | 91_KEY_VOLUME_PLUS/MINUS; volume bar 15 / 13 — **proven** |
+| RECALL (candidate) | 0x18 | 1 | case printing 91_KEY_RETURN; NO SIGNAL 'Not Available' |
+| L/R (candidate) | 0x19 | 0x1E | case printing 91_KEY_MTS (same raw as LANGUAGE) |
+| FAV alias | 0xF1 | 0 | ATV 'Favorite List' (shares FAV's case) |
+| Key Lock | 0xFB | 0xFE | ATV 'Key Lock' password prompt |
+| UART DEBUG | 0xD4 | 0x70 | hidden factory toggle |
+| (unnamed) | 0x4B, 0xF6, 0xF9, 0x54 | 0x5D, 0x5E, 0x5C, 0x30 | 0x4B ATV channel banner; 0xF6 source bar / clears the screen; 0x54 'Not Available' (EPG case) |
+
+Not identifiable in these states (no visible reaction): the teletext/media keys INDEX, ⏸, REVEAL, HOLD, RADIO, 3D, REC and ≡. They need a teletext
+signal or a playing USB file (photo/music decode is not in the browser profile). Candidate raws with own handlers but no reaction: 0x00 0x13 0x14 0x1B
+0x21 0x22 0x43 0x44 0x46 0x47 0x4F 0x51 0x53 0x58 0x59 0x5A 0x5C 0x5F 0x72 0xBD 0xBE 0xC1 0xC3 0xCC-0xCE 0xD2 0xF0 0xF2 0xF8.
