@@ -303,6 +303,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.setPmBudget(o.pm51Budget);
   riu_.tspDmaShift = o.tspDmaShift;
   riu_.exploratoryBdmaMemCopy = o.exploratoryBdmaMemCopy;
+  if (o.exploratoryInputTiming) {
+    const auto& t = *o.exploratoryInputTiming;
+    riu_.inputTiming.on = true; riu_.inputTiming.hperiod = t[0]; riu_.inputTiming.vtotal = t[1]; riu_.inputTiming.sync = uint8_t(t[2]);
+    riu_.inputTiming.window = t[4] || t[6]; riu_.inputTiming.vstart = t[3]; riu_.inputTiming.hstart = t[4]; riu_.inputTiming.vend = t[5]; riu_.inputTiming.hend = t[6];
+  }
   for (auto& [address, mask] : o.selfClearBits) riu_.selfClearBits.push_back({address, mask});
   riu_.zeroUnknownKeepsKnown=o.unverifiedFirmware;
   if(o.exploratoryPmIrRptLatch)riu_.configurePmIrRptLatch();

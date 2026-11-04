@@ -1,4 +1,5 @@
 #include "board/machine.hpp"
+#include "video/hdmi_modes.hpp"
 #include "ui/native_window.hpp"
 #include "ui/frontend_host.hpp"
 #include <filesystem>
@@ -114,6 +115,18 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-atv-picture")o.exploratoryAtvPicture=true;
       else if (a == "--native-cpu")o.nativeCpu=true;
       else if (a == "--native-cold-boot")o.nativeColdBoot=true;
+      else if (a == "--exploratory-input-timing") {   // HPERIOD:VTOTAL:SYNC[:VSTART:HSTART:VEND:HEND] (decimal or 0x hex)
+        auto spec = value(i); std::array<uint16_t,7> t{}; size_t at = 0; int k = 0;
+        for (; k < 7 && at < spec.size(); ++k) { size_t used = 0; t[k] = uint16_t(std::stoul(spec.substr(at), &used, 0)); at += used; if (at < spec.size()) { if (spec[at] != ':') throw std::runtime_error("--exploratory-input-timing needs HPERIOD:VTOTAL:SYNC[:VSTART:HSTART:VEND:HEND]"); ++at; } }
+        if (k != 3 && k != 7) throw std::runtime_error("--exploratory-input-timing needs 3 or 7 fields");
+        o.exploratoryInputTiming = t;
+      }
+      else if (a == "--exploratory-hdmi-signal") {   // MODE like 1920x1080@60, 1920x1080i@60, 1280x720@50 (see manta::hdmiModeTiming)
+        o.exploratoryHdmiSignal = value(i);
+        auto t = manta::hdmiModeTiming(o.exploratoryHdmiSignal);
+        if (!t) throw std::runtime_error("--exploratory-hdmi-signal: unknown mode " + o.exploratoryHdmiSignal + " (" + manta::hdmiModeList() + ")");
+        o.exploratoryInputTiming = *t;
+      }
       else if (a == "--exploratory-atv-signal"){auto kind=value(i);if(kind!="pal")throw std::runtime_error("--exploratory-atv-signal supports only: pal");o.exploratoryAtvSignalPal=true;}
       else if (a == "--gop-history-interval-log2")o.gopHistoryLog2=unsigned(std::min<unsigned long>(40,std::stoul(value(i),nullptr,0)));
       else if (a == "--diagnostic-dram-dump"){o.diagnosticDramDumpAddr=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpSize=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpFile=value(i);}

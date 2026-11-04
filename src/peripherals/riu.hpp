@@ -577,6 +577,31 @@ public:
   bool exploratoryDlcTimeout=false;
   uint64_t exploratoryDisplayClock = 0;
   void configureExploratoryDisplayClock(uint64_t hz) { scaler_.clock(hz); exploratoryDisplayClock=hz; }
+  // EXPLORATORY input-signal timing (--exploratory-input-timing / --exploratory-hdmi-signal): what the scaler IP1 mode detector measures for the
+  // main window (SC bank 1). Layout from the original gatherer 805F2EA0: reg 0x1E high byte (5E79) bit0/bit1 sync polarity, bit3 interlace;
+  // reg 0x1F (5E7C) & 0x1FFF = V total; reg 0x20 (5E80) & 0x3FFF = H period in crystal clocks. The values are generated, not measured hardware.
+  // regs 0x12..0x15 (5E48/4C/50/54, 12 bit, gatherer 805F2FE0): V start, H start, V end, H end of the detected active window (width = Hend-Hstart+1).
+  struct InputTiming { bool on = false; uint16_t hperiod = 0, vtotal = 0; uint8_t sync = 0; bool window = false; uint16_t vstart = 0, hstart = 0, vend = 0, hend = 0; };
+  InputTiming inputTiming;
+  std::optional<uint8_t> inputTimingByte(uint32_t a) const {
+    if (!inputTiming.on || scBank() != 1u) return {};
+    switch (a) {
+    case 0x1f205e79: return inputTiming.sync;
+    case 0x1f205e7c: return uint8_t(inputTiming.vtotal);
+    case 0x1f205e7d: return uint8_t((inputTiming.vtotal >> 8) & 0x1f);
+    case 0x1f205e80: return uint8_t(inputTiming.hperiod);
+    case 0x1f205e81: return uint8_t((inputTiming.hperiod >> 8) & 0x3f);
+    case 0x1f205e48: return inputTiming.window ? std::optional<uint8_t>(uint8_t(inputTiming.vstart)) : std::nullopt;
+    case 0x1f205e49: return inputTiming.window ? std::optional<uint8_t>(uint8_t((inputTiming.vstart >> 8) & 0x0f)) : std::nullopt;
+    case 0x1f205e4c: return inputTiming.window ? std::optional<uint8_t>(uint8_t(inputTiming.hstart)) : std::nullopt;
+    case 0x1f205e4d: return inputTiming.window ? std::optional<uint8_t>(uint8_t((inputTiming.hstart >> 8) & 0x0f)) : std::nullopt;
+    case 0x1f205e50: return inputTiming.window ? std::optional<uint8_t>(uint8_t(inputTiming.vend)) : std::nullopt;
+    case 0x1f205e51: return inputTiming.window ? std::optional<uint8_t>(uint8_t((inputTiming.vend >> 8) & 0x0f)) : std::nullopt;
+    case 0x1f205e54: return inputTiming.window ? std::optional<uint8_t>(uint8_t(inputTiming.hend)) : std::nullopt;
+    case 0x1f205e55: return inputTiming.window ? std::optional<uint8_t>(uint8_t((inputTiming.hend >> 8) & 0x0f)) : std::nullopt;
+    default: return {};
+    }
+  }
   std::optional<unsigned> scBank() const {
     auto it=bytes_.find(0x1f205e00);
     if(it==bytes_.end() || it->second.known!=255) return {};

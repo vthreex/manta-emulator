@@ -102,6 +102,8 @@ struct Options {
   bool exploratoryGeYuvStretch=false;   // EXPLORATORY: nearest stretch for packed YUV422 (GE format 0xE -> 0xE); needs --exploratory-ge-uniform-stretch
   bool exploratoryBdmaCrcMiu=false;     // EXPLORATORY: BDMA CRC32 with a DRAM source (mode 0x330, inferred)
   bool nativeCpu=false;   // native build only (manta_native_full): run the statically recompiled firmware instead of the interpreter (needs --load-state)
+  std::optional<std::array<uint16_t,7>> exploratoryInputTiming;   // EXPLORATORY: HPERIOD,VTOTAL,SYNC[,VSTART,HSTART,VEND,HEND] for the scaler IP1 mode detector (main window)
+  std::string exploratoryHdmiSignal;   // EXPLORATORY: the --exploratory-hdmi-signal mode text, for the summary
   bool nativeColdBoot=false;   // native build only: with --native-cpu and no --load-state, start at the reset vector (recompiled boot ROM, native/tools/gen_boot.py)
   bool exploratoryAtvPicture=false;     // EXPLORATORY preview only: decoded PAL test picture as the video plane (needs --exploratory-atv-signal pal)
   bool exploratoryAtvSignalPal=false;   // EXPLORATORY: PAL input signal for the AVD MCU (see docs/atv-signal-model.md); needs the AVD shared run and no absent-input hypotheses
