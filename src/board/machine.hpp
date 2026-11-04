@@ -104,6 +104,8 @@ struct Options {
   bool exploratoryBdmaCrcMiu=false;     // EXPLORATORY: BDMA CRC32 with a DRAM source (mode 0x330, inferred)
   bool nativeCpu=false;   // native build only (manta_native_full): run the statically recompiled firmware instead of the interpreter (needs --load-state)
   std::optional<std::array<uint16_t,7>> exploratoryInputTiming;   // EXPLORATORY: HPERIOD,VTOTAL,SYNC[,VSTART,HSTART,VEND,HEND] for the scaler IP1 mode detector (main window)
+  bool exploratoryPllTuner = false;
+  std::string exploratoryAtvStations;   // EXPLORATORY: MHZ[=PICTURE.bmp][@LEVEL],... (docs/atv-tuner-model.md)    // EXPLORATORY: PLL tuner slave at 0xC0 on the tuner I2C bus (docs/atv-tuner-model.md)
   std::string exploratoryHdmiSignal;   // EXPLORATORY: the --exploratory-hdmi-signal mode text, for the summary
   std::string exploratoryInputPicture;   // EXPLORATORY: BMP shown as the video of the generated input signal (empty = built-in picture)
   bool nativeColdBoot=false;   // native build only: with --native-cpu and no --load-state, start at the reset vector (recompiled boot ROM, native/tools/gen_boot.py)
@@ -231,7 +233,9 @@ class Msd309Machine {
   void wireUsbBus();
   mutable InputPicture inputPicture_;
   mutable std::vector<uint32_t> processedPicture_;   // inputPicture_ after the firmware-programmed colour pipeline (cache)
-  mutable uint64_t processedKey_ = 0;   // EXPLORATORY: video of the generated input signal
+  mutable uint64_t processedKey_ = 0;
+  mutable std::string loadedPicture_;
+  void setAtvStations(const std::string& spec);   // EXPLORATORY: video of the generated input signal
   void insertUsbImage(const std::string& path);
   void updateIrqLines();
   uint32_t irqLinesApplied_=0;

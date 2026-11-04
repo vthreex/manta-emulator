@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 #include "snapshot/archive.hpp"
 #include "peripherals/pm_ir_fifo.hpp"
 #include "peripherals/vif_zero_input.hpp"
@@ -705,6 +706,19 @@ public:
     // explicit bit15=1 selection in BIST1. Only this bit is defined.
     bytes_[0x1f2025e1] = {0x25, 0x80};
   }
+  // the station's PAL signal also feeds the original AVD program (same model as --exploratory-atv-signal, switched by the tuner)
+  void pllTuner(bool on) { gpio_.tuner.on = on; if (on && !exploratoryAtvSignal_) { atvHTotal_ = 1135; atvFieldLines_[0] = 312; atvFieldLines_[1] = 313; atvFieldSteps_ = 20000; } }
+  bool atvSignalNow() const { return exploratoryAtvSignal_ || atvLockedStation() >= 0; }
+  // EXPLORATORY ATV stations (docs/atv-tuner-model.md): RF picture-carrier frequencies the user places on the "antenna". The tuned RF is
+  // derived from the firmware's own PLL frame (divider x 62.5 kHz - 38.9 MHz IF; checked against the ATV Manual Tuning frequency display).
+  struct AtvStation { double mhz = 0; std::string picture; double level = 1.0; };
+  std::vector<AtvStation> atvStations;
+  double atvTunedMHz() const { const auto& t = gpio_.tuner; if (!t.on || t.lastCount < 2) return -1; return double(((t.last[0] & 0x7f) << 8) | t.last[1]) * 0.0625 - 38.9; }
+  int atvLockedStation(double* offset = nullptr) const {
+    const double f = atvTunedMHz(); if (f < 0) return -1; int best = -1; double bd = 3.0;
+    for (size_t i = 0; i < atvStations.size(); ++i) { double d = std::fabs(f - atvStations[i].mhz); if (d <= bd) { bd = d; best = int(i); } }
+    if (offset && best >= 0) *offset = f - atvStations[size_t(best)].mhz; return best; }
+  GpioI2c::PllTuner& tuner() { return gpio_.tuner; }
   void holdI2cSda(bool enabled) { gpio_.driveLow(0x1f203d05, 4, enabled); }
   void enableCandidateUart() {
     uartEnabled_ = true;

@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <cstdio>
 #include <cstdlib>
+#include <algorithm>
 namespace manta {
 void GpioI2c::driveLow(uint32_t a, uint8_t pins, bool enabled) {
   for (auto &b : buses_)
@@ -71,6 +72,14 @@ void GpioI2c::update(Bus &b) {
     event("i2c_lines", b.input, (scl ? 2 : 0) | (sda ? 1 : 0),
           "resolved pull-up, guest OEN/output and external low driver");
   if (scl && b.scl && sda != b.sda) {
+    if (tuner.on && &b == &buses_[1]) {   // START or STOP ends the slave's part of the transfer
+      if (tuner.selected && !tuner.reading && tuner.count >= 2) {
+        std::copy(tuner.frame, tuner.frame + 6, tuner.last); tuner.lastCount = tuner.count; ++tuner.writes;
+        if (std::getenv("MANTA_I2C_LOG")) std::fprintf(stderr, "TUNER frame %u: %02x %02x %02x %02x (divider %u)\n", tuner.count, tuner.frame[0], tuner.frame[1], tuner.frame[2], tuner.frame[3],
+          unsigned((tuner.frame[0] & 0x7f) << 8 | tuner.frame[1]));
+      }
+      tuner.selected = tuner.reading = false; tuner.count = 0; b.externalLow &= uint8_t(~b.sdaMask);
+    }
     if (!sda) {
       b.active = true;
       b.bits = b.bytes = 0;
@@ -94,6 +103,15 @@ void GpioI2c::update(Bus &b) {
       b.bits = 0;
       b.shift = 0;
     }
+  }
+  if (tuner.on && &b == &buses_[1] && b.active && b.scl && !scl) {   // falling SCL: the slave changes SDA only while SCL is low
+    auto drive = [&](bool low) { if (low) b.externalLow |= b.sdaMask; else b.externalLow &= uint8_t(~b.sdaMask); };
+    if (b.bits == 8) {   // a byte is complete; the next clock is the acknowledge slot
+      if (b.bytes == 0) { tuner.selected = (b.shift & 0xFE) == tuner.address; tuner.reading = b.shift & 1; if (tuner.reading && tuner.selected) ++tuner.reads; drive(tuner.selected); }
+      else if (tuner.selected && !tuner.reading) { if (tuner.count < 6) tuner.frame[tuner.count] = b.shift; ++tuner.count; drive(true); }
+      else drive(false);   // read: the master acknowledges
+    } else if (b.bits == 0 && b.bytes > 0) { drive(false); if (tuner.selected && tuner.reading) drive(!(tuner.status & 0x80)); }
+    else if (tuner.selected && tuner.reading && b.bits < 8) drive(!((tuner.status << b.bits) & 0x80));
   }
   b.scl = scl;
   b.sda = sda;

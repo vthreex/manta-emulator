@@ -209,7 +209,7 @@ void Riu::advanceAvd(uint64_t tick){
         // boundary to ordinary stepping so every observable moment is reached exactly as without the skip.
         auto done=avdMcuCpu_.totalInstructions();
         auto room=avdInstructionBudget-done;
-        if(exploratoryAtvSignal_){
+        if(atvSignalNow()){
           auto next=uint64_t(atvFieldSteps_)*(atvFieldIndex_+1);
           room=std::min<uint64_t>(room,next>done+1?next-done-1:0);
         }
@@ -220,7 +220,7 @@ void Riu::advanceAvd(uint64_t tick){
         }
       }
       avdTick_+=avdDispatchDivider;avdMcuCpu_.step();
-      if(exploratoryAtvSignal_&&avdMcuCpu_.totalInstructions()>=uint64_t(atvFieldSteps_)*(atvFieldIndex_+1)){++atvFieldIndex_;atvEventByte_|=1;}
+      if(atvSignalNow()&&avdMcuCpu_.totalInstructions()>=uint64_t(atvFieldSteps_)*(atvFieldIndex_+1)){++atvFieldIndex_;atvEventByte_|=1;}
     }
   }catch(const VdHardwareBoundary& boundary){
     avdMcuBoundaryReason_=boundary.what();
@@ -706,7 +706,10 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   if(a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99){
     auto bit=0x40u<<(8*(0x1f206b99-a));v&=~bit;
     // EXPLORATORY: a present PAL signal (--exploratory-atv-signal) defines the HSYNC-absent field too (value 0 below)
-    if((exploratoryAvdNoHsync_ && analogDisconnected_) || exploratoryAtvSignal_)v|=bit;
+    if((exploratoryAvdNoHsync_ && analogDisconnected_) || exploratoryAtvSignal_ || atvLockedStation()>=0)v|=bit;
+    if(atvLockedStation()>=0)v|=0xffu<<(8*(0x1f206b99-a));
+  }
+  if(atvLockedStation()>=0){ for(uint32_t at:{0x1f206b98u,0x1f206b8du,0x1f206b90u,0x1f206a04u,0x1f206b89u,0x1f206b8cu,0x1f206b94u,0x1f206bb8u})if(a<=at && uint64_t(a)+n>at)v|=0xffu<<(8*(at-a)); if(a<=0x1f206a01 && uint64_t(a)+n>0x1f206a01)v|=0xf8u<<(8*(0x1f206a01-a)); if(a<=0x1f224471 && uint64_t(a)+n>0x1f224471)v|=1u<<(8*(0x1f224471-a)); if(a<=0x1f224470 && uint64_t(a)+n>0x1f224470)v|=0xffu<<(8*(0x1f224470-a));
   }
   if(a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41){
     auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;
@@ -739,7 +742,12 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   if(inputTiming.on)for(unsigned i=0;i<n;++i)if(inputTimingByte(a+i))v|=0xffu<<(8*i);
   return v;
 }
+namespace { struct ReadHist { std::map<uint32_t,uint64_t> m; bool on=std::getenv("MANTA_READ_HIST")!=nullptr;
+  ~ReadHist(){ if(on) for(auto& [k,v]:m) std::fprintf(stderr,"RH %08x %llu\n",unsigned(k),(unsigned long long)v); } } g_readHist; }
 uint32_t Riu::get(uint32_t a, unsigned n) const {
+  if(g_readHist.on && ((a>=0x1f206800 && a<0x1f207000) || (a>=0x1f224000 && a<0x1f225000))) ++g_readHist.m[a];
+  if(g_readHist.on && a<=0x1f206a01 && a+n>0x1f206a01 && atvLockedStation()>=0) ++g_readHist.m[0x0f000000u|a];
+  if(g_readHist.on && a<=0x1f206a01 && a+n>0x1f206a01) ++g_readHist.m[0x0e000000u|(unsigned(atvTunedMHz()*4+4)&0xffff)|(unsigned(atvStations.size())<<16)];
   if(candidateTsp && a==0x1f202afc && n==2)
     return tsp_.known()?((0xa5a5u&~TspQueue::countStatusMask)|tsp_.status()):0xa5a5;
   if(candidateGe && ge_.initialized() && a==0x1f20501c && n==2)
@@ -784,6 +792,22 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     v|=0x40u<<(8*(0x1f206b99-a));
   else if(exploratoryAvdNoHsync_ && analogDisconnected_ && a<=0x1f206b99 && uint64_t(a)+n>0x1f206b99)
     v&=~(0x40u<<(8*(0x1f206b99-a)));
+  // EXPLORATORY ATV station (docs/atv-tuner-model.md): while the firmware's PLL frame tunes within 0.5 MHz of a user station the analog chain
+  // reports a PAL signal: AFEC status bit14 HSYNC present, published HTotal 1135 (PAL line in 4xfsc clocks, the firmware's own table 80627940),
+  // VIF carrier-recovery lock bit0 = 1, AFEC noise magnitude growing with the tuning offset (scale ASSUMED). Off-station nothing changes.
+  { double off=0; const int st=atvLockedStation(&off);
+    if(st>=0){
+      auto setb=[&](uint32_t at,uint32_t mask,uint32_t val){ if(a<=at && uint64_t(a)+n>at){auto sh=8*(at-a);v=(v&~(mask<<sh))|(val<<sh);} };
+      static const unsigned atvMask=std::getenv("MANTA_ATV_MASK")?unsigned(std::strtoul(std::getenv("MANTA_ATV_MASK"),nullptr,0)):31u;
+      if(atvMask&1)setb(0x1f206a01,0xf8,0x78);   // AFEC 0x3501: bit3 = HSYNC detect (80503028 returns it after writing 0x3504=0x21); high nibble: the original search (80502C1C..80502C38) writes 0x3504=0, waits 20 ms and needs (0x3501 & 0xF0) >= 0x60 (level; 0x70 ASSUMED)
+      if(atvMask&2){   // the block the ORIGINAL AVD program publishes (11C5..11DC) for the PAL model, from tools/avd_signal_probe: 625 lines, HTotal 1135, status 7004
+        setb(0x1f206b89,0xff,0x71); setb(0x1f206b8c,0xff,0x02); static const unsigned e94=std::getenv("MANTA_B94")?unsigned(std::strtoul(std::getenv("MANTA_B94"),nullptr,0)):0x00u, e98=std::getenv("MANTA_B98")?unsigned(std::strtoul(std::getenv("MANTA_B98"),nullptr,0)):0xf005u;   // PAL B/G as MApi_AVD_GetStandard (805021BC) decodes it: 0xC001 present, bit1 0, bit12 50 Hz, FSC field 0
+        setb(0x1f206b94,0xff,e94); setb(0x1f206b98,0xff,e98&0xff); setb(0x1f206b99,0xff,e98>>8); setb(0x1f206bb8,0xff,0x00);}   // VD status: RDY 15, HSYNC 14, interlaced 13, 50 Hz 12, colour lock 10, PAL switch 9 (MStar drvAVD bit names; ASSUMED)
+      if(atvMask&4){setb(0x1f206b8d,0xff,1135&0xff); setb(0x1f206b90,0xff,1135>>8);} if(atvMask&8)setb(0x1f224471,0x01,0x01);
+      { static const double foeSign=std::getenv("MANTA_FOE_SIGN")?std::atof(std::getenv("MANTA_FOE_SIGN")):1.0;   // VIF CR_FOE 0x1F224470: signed carrier offset, 12.5 kHz per LSB (ASSUMED)
+        const int foe=std::clamp(int(std::lround(-off*foeSign*1000.0/12.5)),-127,127); setb(0x1f224470,0xff,uint32_t(uint8_t(int8_t(foe)))); }
+      const double lv=atvStations[size_t(st)].level; if(atvMask&16)setb(0x1f206a04,0xff,uint32_t(std::min(255.0,std::fabs(off)*160.0+(1.0-std::min(1.0,lv))*200.0)));
+    } }
   if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41)
     if(auto captured=irDma_.capturePresent()){
       auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;if(*captured)v|=bit;
@@ -1444,12 +1468,12 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         if(exploratoryAvdSharedRun){
           if(!avdDispatchDivider || !avdInstructionBudget)throw std::runtime_error("invalid AVD diagnostic scheduler configuration");
           avdMcuBus_.event=[this](const auto& k,auto a,auto n,auto v,const auto& d){
-            if(exploratoryAtvSignal_&&k=="avd_event_ack_clear_only")atvEventByte_&=uint8_t(v);
+            if(atvSignalNow()&&k=="avd_event_ack_clear_only")atvEventByte_&=uint8_t(v);
             event(k,a,n,v,d);};
           avdMcuBus_.sharedRead=[this](uint32_t a){
-            if(exploratoryAtvSignal_)if(auto signal=atvSharedRead(a))return *signal;
+            if(atvSignalNow())if(auto signal=atvSharedRead(a))return *signal;
             VdByte v{uint8_t(get(a,1)),uint8_t(knownBits(a,1)),0};
-            if(exploratoryAvdNoSyncEvents_ && a==0x1f206bf8){v.value&=uint8_t(~0x05);v.known|=0x05;}
+            if(exploratoryAvdNoSyncEvents_ && !atvSignalNow() && a==0x1f206bf8){v.value&=uint8_t(~0x05);v.known|=0x05;}
             if(diagnosticAvd11dbBit7_>=0 && a==0x1f206bb5){v.value=uint8_t((v.value&~0x80)|(diagnosticAvd11dbBit7_<<7));v.known|=0x80;}
             return v;};
           avdMcuBus_.sharedWrite=[this](uint32_t a,VdByte v){bytes_[storageKey(a)]={v.value,v.known};};

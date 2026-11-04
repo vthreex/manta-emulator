@@ -23,6 +23,11 @@ class GpioI2c {
   void update(Bus &b);
 
 public:
+  // EXPLORATORY PLL tuner slave on the tuner bus (GPIO pair 2, input 1F203D11): the original firmware writes address 0xC0 + 4 bytes
+  // (DB1 DB2 CB BB, the classic PLL tuner frame) and retries 5x when nobody ACKs. The model ACKs 0xC0/0xC1, keeps the last frame and
+  // answers reads with `status` (bit 6 = FL phase lock in that family; ASSUMPTION, no datasheet for the Manta tuner). Not snapshot state.
+  struct PllTuner { bool on = false; uint8_t address = 0xC0, status = 0x40; uint8_t frame[6]{}; unsigned count = 0; uint32_t writes = 0, reads = 0;
+    uint8_t last[6]{}; unsigned lastCount = 0; bool selected = false, reading = false; } tuner;
   std::function<void(const std::string &, uint32_t, uint32_t, const std::string &)> event;
   void write(uint32_t a, uint8_t v, uint8_t known);
   // An external open-drain participant can pull a line low, never drive high.

@@ -51,6 +51,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.symbolicInit = o.symbolicInit;
   riu_.candidateBdma = o.candidateBdma;
   riu_.gpioI2c = o.gpioI2c;
+  riu_.pllTuner(o.exploratoryPllTuner);
+  if (!o.exploratoryAtvStations.empty()) setAtvStations(o.exploratoryAtvStations);
   riu_.candidateMiu = o.candidateMiu;
   riu_.virtualRtc = o.virtualRtc;
   riu_.candidateUtmi = o.candidateUtmi;
@@ -2490,6 +2492,12 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
 }
 // Virtual remote delivery (emulator thread only). A host function becomes a decoded IR frame in the emulated PM IR FIFO; the original
 // firmware then polls the FIFO itself. Events the receiver cannot take yet (firmware has not enabled it) wait, they are never dropped silently.
+void Msd309Machine::setAtvStations(const std::string& spec) {
+  riu_.atvStations.clear(); size_t at = 0;
+  while (at < spec.size()) { size_t e = spec.find(',', at); if (e == std::string::npos) e = spec.size(); std::string item = spec.substr(at, e - at); at = e + 1;
+    if (item.empty()) continue; Riu::AtvStation s; size_t lv = item.rfind('@'); if (lv != std::string::npos) { s.level = std::stod(item.substr(lv + 1)); item = item.substr(0, lv); }
+    size_t eq = item.find('='); s.mhz = std::stod(item.substr(0, eq)); if (eq != std::string::npos) s.picture = item.substr(eq + 1); riu_.atvStations.push_back(s); }
+}
 void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requestedAt) {
   // EXPLORATORY generated HDMI/DVI input (docs/hdmi-input-model.md), changed at run time like plugging a cable: "hdmi-signal=1920x1080@60" or
   // "hdmi-signal=off"; "input-picture=FILE.bmp" (empty = built-in picture). Not remote keys.
@@ -2504,6 +2512,8 @@ void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requ
     } else irLog_.push_back({dispatches_, function, -1, false, "unknown HDMI mode (" + hdmiModeList() + ")"});
     return;
   }
+  // EXPLORATORY ATV antenna: "atv-stations=MHZ[=PICTURE.bmp][@LEVEL],..." (LEVEL 0..1, default 1; empty = no stations).
+  if (function.rfind("atv-stations=", 0) == 0) { setAtvStations(function.substr(13)); irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY ATV stations"}); return; }
   if (function.rfind("input-picture=", 0) == 0) {
     options_.exploratoryInputPicture = function.substr(14); inputPicture_ = {};
     irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY input picture"});
@@ -2599,7 +2609,9 @@ void Msd309Machine::publishPreviewLive() const {
     }
     if (!options_.videoPlane.empty() && dramBacking_.size() > 0x006fbd85) mix(dramBacking_[0x006fbd85]);
     mix(riu_.geBlendCopies); mix(riu_.geI2Glyphs); mix(riu_.geUniformStretches);
-    if (riu_.inputTiming.on) {   // EXPLORATORY input picture: signal, picture and the firmware registers that place it
+    if (riu_.inputTiming.on || riu_.atvLockedStation() >= 0) {   // EXPLORATORY input picture: signal, picture and the firmware registers that place it
+      { double off = 0; int st = riu_.atvLockedStation(&off); mix(uint64_t(st + 1)); if (st >= 0) { mix(std::hash<std::string>{}(riu_.atvStations[size_t(st)].picture)); mix(uint64_t(int64_t(off * 1000)));
+        mix(dispatches_ >> 22); } }   // the interference changes from frame to frame
       const auto& t = riu_.inputTiming;
       mix(t.hperiod); mix(t.vtotal); mix(t.hstart); mix(t.vstart); mix(t.hend); mix(t.vend); mix(inputPicture_.width); mix(inputPicture_.height);
       mix(std::hash<std::string>{}(options_.exploratoryInputPicture));
@@ -2680,7 +2692,7 @@ void Msd309Machine::publishPreview() const {
     { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }
     frame.label+=" | EXPLORATORY ATV PICTURE: generated PAL colour bars decoded by a host-side decoder model, stretched; NOT scaler/panel output";
   }
-  if(riu_.inputTiming.on){
+  if(riu_.inputTiming.on || riu_.atvLockedStation()>=0){
     // the picture covers the whole panel, also when no OSD window is enabled: grow the frame to the OSD canvas (1360x768, the ZUI's coordinate space)
     constexpr uint32_t CW=1360,CH=768;
     if(frame.width<CW||frame.height<CH){
@@ -2694,8 +2706,12 @@ void Msd309Machine::publishPreview() const {
     // meaning inferred from that write, not verified), inside the main display window (bank 0x10 regs 0x08..0x0B: H start/end, V start/end in panel
     // pixels, relative to the panel data-enable start in regs 0x04/0x06), cropped like the capture window (bank 1 regs 0x04..0x07: V start, H start,
     // V size, H size relative to the input timing). Nearest scaling; no colour processing. Not decoded video, not verified panel output.
+    // ATV (docs/atv-tuner-model.md): the picture of the station the tuner is locked to, through the same scaler/colour path; interference below.
+    double atvOff=0; const int atvSt=riu_.inputTiming.on?-1:riu_.atvLockedStation(&atvOff);
+    const std::string wantPicture = atvSt>=0 ? riu_.atvStations[size_t(atvSt)].picture : options_.exploratoryInputPicture;
+    if(wantPicture!=loadedPicture_){ inputPicture_={}; loadedPicture_=wantPicture; }
     if(inputPicture_.empty()){
-      try{ inputPicture_ = options_.exploratoryInputPicture.empty() ? builtinPicture() : loadBmpPicture(options_.exploratoryInputPicture); }
+      try{ inputPicture_ = wantPicture.empty() ? builtinPicture() : loadBmpPicture(wantPicture); }
       catch(const std::exception& e){ inputPicture_ = builtinPicture(); std::fprintf(stderr,"EXPLORATORY: input picture not loaded (%s); using the built-in picture%c",e.what(),10); }
     }
     auto w16=[&](unsigned bank,unsigned reg,unsigned mask)->std::optional<unsigned>{auto l=riu_.scByte(bank,reg*4),h=riu_.scByte(bank,reg*4+1);unsigned k=l.known|(unsigned(h.known)<<8);if((k&mask)!=mask)return std::nullopt;return (l.value|(unsigned(h.value)<<8))&mask;};
@@ -2709,7 +2725,7 @@ void Msd309Machine::publishPreview() const {
       if(dhs&&dhe&&dvs&&dve&&*dhe>*dhs&&*dve>*dvs){x0=int(*dhs)-int(*phs);x1=int(*dhe)-int(*phs);y0=int(*dvs)-int(*pvs);y1=int(*dve)-int(*pvs);}
       const auto& t=riu_.inputTiming; const double inW=t.hend>t.hstart?t.hend-t.hstart+1:inputPicture_.width, inH=t.vend>t.vstart?t.vend-t.vstart+1:inputPicture_.height;
       double cx=0,cy=0,cw=inW,ch=inH;
-      if(cvs&&chs&&cvz&&chz&&*chz&&*cvz){cx=double(*chs)-t.hstart;cy=double(*cvs)-t.vstart;cw=*chz;ch=*cvz;}
+      if(atvSt<0 && cvs&&chs&&cvz&&chz&&*chz&&*cvz){cx=double(*chs)-t.hstart;cy=double(*cvs)-t.vstart;cw=*chz;ch=*cvz;}
       // Colour pipeline (EXPLORATORY): the source sends RGB; the scaler input converts it to YCbCr (ASSUMPTION: BT.601 full range, Cb/Cr centred at 128);
       // the VOP colour matrix the ORIGINAL firmware programs (bank 0x10 regs 0x26..0x2E, rows R/G/B x columns Cr/Y/Cb, 13-bit sign-magnitude s2.10;
       // enable = reg 0x2F bit0, ASSUMPTION) converts back to RGB. The firmware folds contrast/colour/tint into this matrix (contrast +6 scales every
@@ -2722,7 +2738,7 @@ void Msd309Machine::publishPreview() const {
       uint64_t key=1469598103934665603ull; auto mixk=[&](uint64_t v){key=(key^v)*1099511628211ull;};
       std::array<double,3> bo{};
       for(unsigned i=0;i<3;++i){ auto v=w16(0x0f,0x36+i,0x07ff); bo[i]=v?(double(*v)-1024.0)/4.0:0.0; }
-      mixk(csc); for(double c:m)mixk(uint64_t(int64_t(c*4096))); for(double c:bo)mixk(uint64_t(int64_t(c*16))); mixk(inputPicture_.width); mixk(inputPicture_.height); mixk(std::hash<std::string>{}(options_.exploratoryInputPicture));
+      mixk(csc); for(double c:m)mixk(uint64_t(int64_t(c*4096))); for(double c:bo)mixk(uint64_t(int64_t(c*16))); mixk(inputPicture_.width); mixk(inputPicture_.height); mixk(std::hash<std::string>{}(wantPicture));
       if(processedKey_!=key || processedPicture_.size()!=inputPicture_.bgra.size()){
         processedKey_=key; processedPicture_.resize(inputPicture_.bgra.size());
         auto cl=[](double v){return uint32_t(v<0?0:v>255?255:v+0.5);};
@@ -2757,6 +2773,17 @@ void Msd309Machine::publishPreview() const {
           frame.planeBgra[size_t(y)*frame.width+x]=0xff000000u|((((e2[0]>>16&255)+(e2[1]>>16&255)+1)>>1)<<16)|((((e2[0]>>8&255)+(e2[1]>>8&255)+1)>>1)<<8)|(((e2[0]&255)+(e2[1]&255)+1)>>1); } }
       if(d3) frame.label+=" | EXPLORATORY 3D: both eyes from the firmware's frame-buffer addressing, mixed 50/50 (assumed passive line-interleaved panel output)";
       { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }
+      if(atvSt>=0){   // EXPLORATORY interference: snow + ghost/streak noise growing with the tuning offset and a weak station level (model, not RF physics)
+        const double lv=riu_.atvStations[size_t(atvSt)].level, amt=std::min(1.0,std::fabs(atvOff)*1.6+(1.0-std::min(1.0,lv)));
+        uint64_t rng=(dispatches_>>22)*0x9E3779B97F4A7C15ull+1;
+        auto rnd=[&]{rng^=rng<<13;rng^=rng>>7;rng^=rng<<17;return double(rng&0xffff)/65535.0;};
+        if(amt>0.01)for(uint32_t y=0;y<frame.height;++y){ const double tear=(rnd()<amt*0.05)?(rnd()-0.5)*40*amt:0;
+          for(uint32_t x=0;x<frame.width;++x){ auto& p=frame.planeBgra[size_t(y)*frame.width+x]; if(!(p>>24))continue;
+            const uint32_t sx=uint32_t(std::clamp<int>(int(x)+int(tear),0,int(frame.width)-1)); const uint32_t q=frame.planeBgra[size_t(y)*frame.width+sx];
+            const double sn=rnd()*255, k=amt*amt; auto ch=[&](int sh){return uint32_t(std::clamp(((q>>sh)&255)*(1-k)+sn*k,0.0,255.0));};
+            p=0xff000000u|ch(16)<<16|ch(8)<<8|ch(0); } }
+        frame.label+=" | EXPLORATORY ATV station "+std::to_string(riu_.atvStations[size_t(atvSt)].mhz)+" MHz (tuned by the firmware's PLL frame; interference = model)";
+      } else
       frame.label+=" | EXPLORATORY INPUT PICTURE (generated HDMI/DVI signal) in the firmware's display window; NOT decoded video";
     }
   }
