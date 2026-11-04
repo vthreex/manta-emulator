@@ -825,15 +825,15 @@ async function liveStart(reload,boot){
   L.worker.onmessage=e=>{if(live!==L)return;const m=e.data;
     if(m.type==='progress'){got[m.label]=[m.got,m.total];const g=Object.values(got).reduce((a,x)=>a+x[0],0),t=Object.values(got).reduce((a,x)=>a+(x[1]||x[0]),0);
       bar.style.width=(t?Math.min(100,100*g/t):0)+'%';st.textContent=m.label==='starting'?'Starting the firmware…':`Downloading ${m.label}… ${(g/1e6).toFixed(0)} MB`}
-    else if(m.type==='ready'){L.ready=true;L.beat=performance.now();bar.style.width='100%';st.textContent=L.cold?'Booting from the reset vector… the NO SIGNAL screen appears after about a minute.':'Running. Press MENU.';$('#pMsg').hidden=true;cv.hidden=false;$('#pImg').hidden=true;$('#liveRestart').hidden=false;updateKeys();usbUpdate()}
-    else if(m.type==='frame'){if(cv.width!==m.w||cv.height!==m.h){cv.width=m.w;cv.height=m.h}ctx.putImageData(new ImageData(new Uint8ClampedArray(m.buf),m.w,m.h),0,0);frames++;L.lastFrame=performance.now()}
+    else if(m.type==='ready'){L.ready=true;L.beat=performance.now();bar.style.width='100%';st.textContent=L.cold?'Booting from the reset vector… the NO SIGNAL screen appears after about a minute.':'Running. Press MENU.';$('#pMsg').hidden=!L.dark;cv.hidden=false;$('#pImg').hidden=true;$('#liveRestart').hidden=false;updateKeys();usbUpdate()}
+    else if(m.type==='frame'){if(L.dark){L.dark=false;$('#pMsg').hidden=true;st.textContent='Booted. Press MENU.'}if(cv.width!==m.w||cv.height!==m.h){cv.width=m.w;cv.height=m.h}ctx.putImageData(new ImageData(new Uint8ClampedArray(m.buf),m.w,m.h),0,0);frames++;L.lastFrame=performance.now()}
     else if(m.type==='stats'){L.beat=performance.now();const now=L.beat;if(now-lastT>1000){const mips=(m.dispatches-lastD)/(now-lastT)/1000;if(lastD)$('#pCap').textContent=`Live: ${mips.toFixed(1)} M instructions/s · ${(frames*1000/(now-t0)).toFixed(0)} frames/s`;lastD=m.dispatches;lastT=now;frames=0;t0=now}}
     else if(m.type==='crashed'){liveCrash('The emulator stopped',m.message,false)}
     else if(m.type==='error'){liveCrash('The live firmware could not start',m.message,false)}
     else if(m.type==='reboot'){const ov=m.overlay;liveStop();liveStart(false,{cold:true,overlay:ov,why:m.why,sectors:m.sectors});return}
     else if(m.type==='usb'){if(m.state==='inserted')usbShow('Plugged in. Press SOURCE, choose USB and press OK (reading the stick takes a few seconds). Restart removes it.');else{L.usb=false;usbShow('Plugging in failed: '+(m.message||''));usbUpdate()}}
     else if(m.type==='log'){console.log('[emulator]',m.s)}};
-  const cold=!!(boot&&boot.cold);if(cold){L.cold=true;st.textContent=(boot.why?boot.why[0].toUpperCase()+boot.why.slice(1)+': ':'')+'cold boot from the TV\'s own flash'+(boot.sectors?' ('+boot.sectors+' sectors written by the firmware)':'')+'. This takes about a minute.'}
+  const cold=!!(boot&&boot.cold);if(cold){L.cold=true;L.dark=true;trail=[];hist=[];$('#pTrail').innerHTML='';cv.width=1360;cv.height=768;ctx.fillStyle='#000';ctx.fillRect(0,0,1360,768);cv.hidden=false;$('#pImg').hidden=true;$('#pMsg').hidden=false;$('#pMsg').style.color='#a7b2bd';$('#pMsg').innerHTML='<span>Rebooting…<br>cold boot from the TV\'s own flash</span>';st.textContent=(boot.why?boot.why[0].toUpperCase()+boot.why.slice(1)+': ':'')+'cold boot from the TV\'s own flash'+(boot.sectors?' ('+boot.sectors+' sectors written by the firmware)':'')+'. This takes about a minute.'}
   L.worker.postMessage({type:'start',base:new URL('live/',location.href).href,reload:!!reload,cold,overlay:boot&&boot.overlay||null},boot&&boot.overlay?[boot.overlay]:[]);
 }
 $('#crashRestart').onclick=liveRestart;
