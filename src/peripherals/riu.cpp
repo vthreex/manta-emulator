@@ -2059,7 +2059,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
             "original FLASH-to-MIU0 command 3035; bounded byte addresses; pending memory transfer, provisional 64-tick latency");
       return;
     }
-    if (exploratoryBdmaMemCopy && mode == 0x4040 && dramRead && dramWrite) {
+    // 0x3030 (MStar MSD309 USB updater, 8054685x): source code 0x30 = MIU0 in the low byte, like the destination byte of the original flash copy 0x3035.
+    if (exploratoryBdmaMemCopy && (mode == 0x4040 || mode == 0x3030) && dramRead && dramWrite) {
       // EXPLORATORY (other-board firmware): device code 0x40 in both fields = MIU0 -> MIU0 byte copy, framed like the original flash copy 0x3035
       // (destination repeated in the poly field, seed 0). Inferred from that layout only; not hardware-verified.
       auto destination = get(0x1f201218, 2) | (get(0x1f20121c, 2) << 16);
@@ -2081,7 +2082,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       bdmaPending_ = true;
       bdmaComplete_ = tick + 64;
       event("bdma_mem_copy", src, len, destination,
-            "EXPLORATORY MIU0-to-MIU0 copy (mode 0x4040 inferred from the original 0x3035 field layout); provisional 64-tick latency");
+            mode == 0x3030 ? "EXPLORATORY MIU0-to-MIU0 copy (mode 0x3030 inferred from the original 0x3035 field layout); provisional 64-tick latency"
+                            : "EXPLORATORY MIU0-to-MIU0 copy (mode 0x4040 inferred from the original 0x3035 field layout); provisional 64-tick latency");
       return;
     }
     if (exploratoryBdmaCrcMiu && mode == 0x330 && poly == 0x04c11db7 && dramRead && len && src < 0x08000000 && len <= 0x08000000 - src) {

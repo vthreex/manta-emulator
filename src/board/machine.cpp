@@ -622,7 +622,7 @@ void Msd309Machine::insertUsbImage(const std::string& path) {
   std::ifstream image(path, std::ios::binary);
   if (!image) throw std::runtime_error("cannot open USB pendrive image " + path);
   std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(image)), std::istreambuf_iterator<char>());
-  if (bytes.size() < 64 * 512 || bytes.size() % 512 || bytes.size() > (256ull << 20)) throw std::runtime_error("USB pendrive image must be 32 KiB..256 MiB in whole sectors");
+  if (bytes.size() < 64 * 512 || bytes.size() % 512 || bytes.size() > (2048ull << 20)) throw std::runtime_error("USB pendrive image must be 32 KiB..2 GiB in whole sectors");
   riu_.usbHost.attach(std::move(bytes));
   wireUsbBus();
   riu_.usbHost.adopt([this](int idx) { return riu_.usbStoredByte(idx); });
@@ -2785,6 +2785,7 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"spi_undocumented_samples\": " << riu_.undocumentedSpiSamples()
     << ",\n  \"spi_nor_programs\": " << riu_.spiIsp().nor.programs
     << ",\n  \"spi_nor_erases\": " << riu_.spiIsp().nor.erases
+    << ",\n  \"spi_nor_blocked_by_protection\": " << riu_.spiIsp().nor.blockedByProtection << ",\n  \"spi_nor_status_writes\": " << riu_.spiIsp().nor.statusWrites
     << ",\n  \"spi_nor_programmed_bytes\": " << riu_.spiIsp().nor.programmedBytes
     << ",\n  \"spi_nor_ignored_writes\": " << riu_.spiIsp().nor.ignoredWrites
     << ",\n  \"spi_nor_zero_to_one_requests\": " << riu_.spiIsp().nor.norViolations

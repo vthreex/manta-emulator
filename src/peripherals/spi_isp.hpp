@@ -24,6 +24,7 @@ class SpiIsp {
   // drains when the shifter starts it; the shifter is busy through the opcode/address phase and every queued byte.
   uint64_t shiftEnd_ = 0;
   bool commandSession_ = false;
+  bool soleWren_ = false;   // the selected transaction is exactly one WREN (06) byte sent through SPI_COMMAND
   static bool addressCommand(uint8_t c) { return c == 0x02 || c == 0x20 || c == 0x52 || c == 0xd8; }
 
 public:
@@ -36,7 +37,7 @@ public:
   bool dataReady(uint64_t tick) const { return readPending_ && tick >= readReady_; }
   void endTransaction() {
     if (nor.selected() && busEvent) busEvent("spi_cs", 1);
-    nor.now = nor.writeSupport && shiftEnd_ > lastTick_ ? shiftEnd_ : lastTick_; nor.deselect(); readPending_ = false; commandSession_ = false;
+    nor.now = nor.writeSupport && shiftEnd_ > lastTick_ ? shiftEnd_ : lastTick_; nor.deselect(); readPending_ = false; commandSession_ = false; soleWren_ = false;
   }
   void transmit(uint8_t b, uint64_t tick) {
     if (!nor.selected()) {
@@ -64,6 +65,10 @@ public:
       return;
     }
     if (offset == 0xa8) {
+      // The original block-erase routine 8053CE50 sends WREN through SPI_COMMAND, then 3333 here and D8 + three address bytes through WDATA:
+      // D8 can only start a new command if the WREN transaction ended (CS rise, which also latches WEL) before the data-mode session.
+      if (value == 0x3333 && soleWren_ && nor.selected()) endTransaction();
+      soleWren_ = false;
       trigger_ = value == 0x3333;
       if (!trigger_) endTransaction();
       return;
@@ -80,6 +85,7 @@ public:
       if (tick < commandReady_) { error = "SPI command FIFO overrun"; return; }
       endTransaction();
       transmit(uint8_t(value), tick);
+      soleWren_ = nor.writeSupport && uint8_t(value) == 0x06;
       if (nor.writeSupport && uint8_t(value) == 0x01) {   // WRSR: status byte follows through WDATA
         commandSession_ = true;
         shiftEnd_ = tick + 64;

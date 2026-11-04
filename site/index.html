@@ -800,8 +800,10 @@ function usbWire(){
   const pick=input=>{input.value='';input.onchange=()=>{usbFiles=[...input.files];usbUpdate()};input.click()};
   $('#usbPickFiles').onclick=()=>pick($('#usbFiles'));$('#usbPickDir').onclick=()=>pick($('#usbDir'));
   $('#usbInsert').onclick=async()=>{if(!live||!live.ready||live.usb)return;const L=live;$('#usbInsert').disabled=true;usbShow('Building the stick…');
-    try{const files=[];for(const f of usbFiles)files.push({path:(f.webkitRelativePath?f.webkitRelativePath.split('/').slice(1).join('/'):'')||f.name,data:new Uint8Array(await f.arrayBuffer()),mtime:f.lastModified});
-      const img=buildPendriveImage(files,'MANTA');if(live!==L)return;L.usb=true;L.worker.postMessage({type:'usb',image:img.buffer},[img.buffer]);usbShow('Plugging in…')}
+    try{const files=[];let signed=0;for(const f of usbFiles){const path=(f.webkitRelativePath?f.webkitRelativePath.split('/').slice(1).join('/'):'')||f.name;let data=new Uint8Array(await f.arrayBuffer());
+        if($('#usbMerge')&&$('#usbMerge').checked&&path.split('/').pop().toUpperCase()==='MERGE.BIN'&&!mergeBinOk(data)){data=makeMergeBin(data);signed++}
+        files.push({path,data,mtime:f.lastModified})}
+      const img=buildPendriveImage(files,'MANTA');if(live!==L)return;L.usb=true;L.worker.postMessage({type:'usb',image:img.buffer},[img.buffer]);usbShow('Plugging in…'+(signed?' (MERGE.BIN prepared for the updater)':''))}
     catch(err){usbShow('Could not build the stick: '+(err&&err.message||err));usbUpdate()}};
   usbUpdate()}
 async function liveStart(reload){
@@ -844,7 +846,7 @@ function setPlat(p){
       <p>Download: about 74 MB (emulator ~38 MB, save state ~27 MB, firmware 8 MB). Speed depends on your computer.</p>
       <div class="tools"><button class="btn pri" id="liveGo" type="button">▶ Start live firmware</button><button class="btn" id="liveRestart" type="button" hidden>↻ Restart</button><button class="btn" id="liveReload" type="button" title="Download every file again, bypassing the browser cache (use it after a site update)">⟳ Re-download firmware</button></div><div class="live-bar" id="liveBar"><i></i></div><p id="liveStatus" class="small"></p>
       <p>Nothing is connected to the TV, so it starts on its own NO SIGNAL screen; the background follows the TV's Blue Screen setting. Menus close on their own timeout, as on the TV. Keys go in as raw IR bytes through the emulated IR receiver.</p>
-      <div class="usbbox"><p><b>USB pendrive</b> <span class="chip hyp">exploratory</span> Put your own files (up to 128 MB) on a virtual stick and plug it into the running TV, then press SOURCE and choose USB. The firmware's own USB driver and media player read it. The files stay in your browser; folders are kept.</p><div class="tools"><button class="btn" id="usbPickFiles" type="button">Choose files…</button><button class="btn" id="usbPickDir" type="button">Choose a folder…</button><button class="btn pri" id="usbInsert" type="button" disabled>Plug in</button><input type="file" id="usbFiles" multiple hidden><input type="file" id="usbDir" webkitdirectory multiple hidden></div><p class="small" id="usbInfo">No files chosen.</p></div>`;
+      <div class="usbbox"><p><b>USB pendrive</b> <span class="chip hyp">exploratory</span> Put your own files (up to 128 MB) on a virtual stick and plug it into the running TV, then press SOURCE and choose USB. The firmware's own USB driver and media player read it. The files stay in your browser; folders are kept.</p><div class="tools"><button class="btn" id="usbPickFiles" type="button">Choose files…</button><button class="btn" id="usbPickDir" type="button">Choose a folder…</button><button class="btn pri" id="usbInsert" type="button" disabled>Plug in</button><input type="file" id="usbFiles" multiple hidden><input type="file" id="usbDir" webkitdirectory multiple hidden></div><label class="small" style="display:block;margin:6px 0"><input type="checkbox" id="usbMerge" checked> Software update: if a file is called MERGE.BIN and is a plain firmware dump, cut it to the 0x7E0000 bytes the updater accepts and append the CRC32 it checks (CHANNEL tab, Software Update (USB), from ATV)</label><p class="small" id="usbInfo">No files chosen.</p></div>`;
     $('#liveGo').onclick=()=>{$('#liveGo').disabled=true;liveStart()};
     $('#liveRestart').onclick=liveRestart;
     usbWire();

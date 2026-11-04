@@ -149,6 +149,9 @@ def build_command(st: Settings, shm_name: str):
     # without it the machine stops there ("unsupported BDMA command or bounds")
     if '--exploratory-bdma-crc-miu' not in args:
         args.append('--exploratory-bdma-crc-miu')
+    # after the CRC pass the updater copies the image header to the stack with BDMA mode 0x3030 (MIU0 -> MIU0, EXPLORATORY model)
+    if '--exploratory-bdma-mem-copy' not in args:
+        args.append('--exploratory-bdma-mem-copy')
     fw = st.firmware or str(REPO / 'work' / 'firmware-original.bin')
     args = ['--firmware', fw] + args
     try:

@@ -86,3 +86,19 @@ A profile of a 650M-dispatch headless run showed 97% of the time in the preview 
   files up to 128 MB in total). The worker writes it to the in-memory file system, sends `usb-insert=/data/usb.img` and deletes the file after the device
   model has its copy. Photo/video decode need the coprocessor/JPD/MVOP options, which the browser profile does not include.
 * Firmware updates from a stick also need the SPI NOR write candidate (`--candidate-spi-nor-write`), not in the browser profile yet.
+
+## USB software update runs to "Success." (2026-11-04)
+Path (original menus): SOURCE -> ATV, MENU, CHANNEL tab, `Software Update(USB)`, OK, LEFT/RIGHT. Native run from the NO SIGNAL snapshot with the stick hot-plugged prints:
+`File size: 0x007E0000; Flash size: 0x007E0000 ...`, `Copying image from USB to DRAM`, `CRC32 Integrity Check pass !!`, `Comparing image...`, `Erasing...`, `Writing...`,
+`Verifying...`, **`Success.`**, `Update Time: 9 sec` (3 block erases, 789 page programs into the copy-on-write flash overlay).
+What the original code requires and what had to be modelled:
+* `8045A128`: the file must be called `MERGE.BIN` and be at most `0x7E0000` bytes (flash minus its last 128 KiB); a full 8 MiB dump is refused silently.
+* `80546ABC`: BDMA CRC32 (mode `0x330`, MSB-first, poly `04C11DB7`, seed 0) over the whole file must be **0**, i.e. the file ends with its own big-endian CRC32.
+  A plain dump fails here. `site/live/pendrive.js makeMergeBin` (page checkbox) cuts a dump to `0x7E0000-4` bytes and appends that CRC; `scratchpad sign_merge.py` did the same natively.
+* After the CRC pass the updater copies the 0x50-byte image header with BDMA mode **`0x3030`** (MIU0 -> MIU0, destination repeated in the poly field, seed 0):
+  now accepted by `--exploratory-bdma-mem-copy` (same framing as the original `0x3035`; inferred, not hardware-verified).
+* SPI ISP fix: the block-erase routine `8053CE50` sends WREN (`06`) through SPI_COMMAND, then `3333` to `+A8` and `D8` + three address bytes through WDATA.
+  The model kept the WREN transaction open, so the flash saw `06 D8 a a a` and ignored the erase ("Error: Flash Blanking"). `SpiIsp` now ends a lone WREN
+  transaction (CS rise, WEL latched) when data mode starts; the original sequence proves the boundary (D8 must begin a new command).
+* Live profile adds `--exploratory-bdma-crc-miu` and `--exploratory-bdma-mem-copy`; both are allowed on snapshot load. Summary gains
+  `spi_nor_blocked_by_protection` / `spi_nor_status_writes`.

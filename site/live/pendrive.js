@@ -123,7 +123,27 @@
     img[510] = 0x55; img[511] = 0xaa;
     return img;
   }
+  // The original USB updater (MSD309 firmware, 8045A128 / 80546ABC) accepts MERGE.BIN only if it is at most 0x7E0000 bytes (the flash minus its
+  // last 128 KiB) and the CRC32 of the whole file (MSB-first, poly 04C11DB7, seed 0, computed by BDMA) is 0, i.e. the file ends with its own
+  // big-endian CRC32. This turns a firmware dump into such a file: the first 0x7E0000-4 bytes plus that CRC (what a merge tool appends).
+  const MERGE_MAX = 0x7e0000;
+  let crcTable = null;
+  function crc32msb(data, c) {
+    if (!crcTable) { crcTable = new Uint32Array(256); for (let i = 0; i < 256; i++) { let x = i << 24; for (let j = 0; j < 8; j++) x = (x & 0x80000000) ? ((x << 1) ^ 0x04c11db7) : (x << 1); crcTable[i] = x >>> 0; } }
+    c = c >>> 0;
+    for (let i = 0; i < data.length; i++) c = ((c << 8) ^ crcTable[((c >>> 24) ^ data[i]) & 255]) >>> 0;
+    return c;
+  }
+  function mergeBinOk(data) { return data.length <= MERGE_MAX && data.length >= 4 && crc32msb(data, 0) === 0; }
+  function makeMergeBin(dump) {
+    const body = dump.subarray(0, Math.min(dump.length, MERGE_MAX - 4)), out = new Uint8Array(body.length + 4);
+    out.set(body); const c = crc32msb(body, 0);
+    out[body.length] = c >>> 24; out[body.length + 1] = (c >>> 16) & 255; out[body.length + 2] = (c >>> 8) & 255; out[body.length + 3] = c & 255;
+    return out;
+  }
+  root.mergeBinOk = mergeBinOk;
+  root.makeMergeBin = makeMergeBin;
   root.buildPendriveImage = buildPendriveImage;
   root.PENDRIVE_MAX_BYTES = MAX_FILES_BYTES;
-  if (typeof module !== 'undefined') module.exports = { buildPendriveImage };
+  if (typeof module !== 'undefined') module.exports = { buildPendriveImage, makeMergeBin, mergeBinOk };
 })(typeof self !== 'undefined' ? self : this);
