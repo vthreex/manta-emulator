@@ -24,8 +24,10 @@ Single-threaded on purpose: GitHub Pages cannot send the COOP/COEP headers that 
 ## Configuration
 `site/live/config.json` holds the control-centre live profile (`frontend/emulator_session.py`, `build_command(..., 'live')`) with host paths remapped
 into the wasm file system. The policy files keep their exact relative paths, because those are part of the save state's configuration fingerprint.
-The labelled exploratory options of that profile are in force (e.g. the generated test picture behind the OSD, `--exploratory-menu-no-autoexit`).
-The firmware image is copied from `firmware/` by the Pages workflow at deploy; the save state `site/live/state.snap` is committed.
+No input signal: the profile's generated PAL test signal is replaced by the absent-input options (`analog_input = none`, the default), and the save state is
+the NO SIGNAL checkpoint `no-signal-ready-v2.snap`; the background follows the guest's own Blue Screen setting (`--exploratory-video-plane setting`).
+Labelled option still in force: `--exploratory-menu-no-autoexit`. The firmware image is copied from `firmware/` by the Pages workflow at deploy; the
+save state `site/live/state.snap` is committed.
 
 ## Measured
 Node 24 (Windows, other emulator runs in parallel): 17–43 M guest instructions/s, the same order as the native desktop build. In the browser pane:

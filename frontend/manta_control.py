@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QCombo
                                QToolBar, QVBoxLayout, QWidget)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from emulator_session import (BOARDS, REPO, Session, Settings, board_preset, emulator_candidates, load_keymap_functions, original_sha, sha256_file)  # noqa: E402
+from emulator_session import (BOARDS, REPO, Session, Settings, board_preset, default_snapshot, emulator_candidates, load_keymap_functions, original_sha, sha256_file)  # noqa: E402
 from remote_widget import BINDINGS, KEYS, RemoteWidget  # noqa: E402
 
 VERSION = '1.0.0'
@@ -475,7 +475,7 @@ class MainWindow(QMainWindow):
         self.cb_board.blockSignals(False)
         self.ed_fw.setText(s.firmware)
         self._set_combo(self.cb_mode, s.start_mode)
-        snap = s.snapshot or str(REPO / 'work' / 'checkpoints' / 'atv-boot.snap')
+        snap = s.snapshot or default_snapshot(s)
         i = self.cb_snap.findData(snap)
         if i >= 0:
             self.cb_snap.setCurrentIndex(i)

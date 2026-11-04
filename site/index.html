@@ -802,9 +802,9 @@ function setPlat(p){
     $('#pMsg').hidden=false;$('#pMsg').innerHTML='<span>The original MStar firmware will run here,<br>live, in your browser.</span>';$('#pMsg').style.color='#a7b2bd';
     $('#pCap').textContent='Not started';
     $('#pNote').innerHTML=`<p><b>The real firmware, not recordings.</b> The MStar firmware is statically recompiled to C++, and together with the emulator's machine model it is compiled to WebAssembly. It starts from a saved machine state and runs in a background thread of this page.</p>
-      <p>Download: about 85 MB (emulator ~38 MB, save state ~38 MB, firmware 8 MB). Speed depends on your computer.</p>
+      <p>Download: about 74 MB (emulator ~38 MB, save state ~27 MB, firmware 8 MB). Speed depends on your computer.</p>
       <div class="tools"><button class="btn pri" id="liveGo" type="button">▶ Start live firmware</button></div><div class="live-bar" id="liveBar"><i></i></div><p id="liveStatus" class="small"></p>
-      <p>Same labelled options as the desktop control centre (generated test picture behind the OSD, menu auto-exit disabled). Keys go in as raw IR bytes through the emulated IR receiver.</p>`;
+      <p>Nothing is connected to the TV, so it starts on its own NO SIGNAL screen; the background follows the TV's Blue Screen setting. Labelled option in force: menu auto-exit disabled (the emulator's time scale is uncalibrated). Keys go in as raw IR bytes through the emulated IR receiver.</p>`;
     $('#liveGo').onclick=()=>{$('#liveGo').disabled=true;liveStart()};
     updateKeys();return;
   }

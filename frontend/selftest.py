@@ -4,10 +4,10 @@ import os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from PySide6.QtCore import QCoreApplication, QTimer
 from PySide6.QtGui import QImage
-from emulator_session import Session, Settings, emulator_candidates
+from emulator_session import Session, Settings, default_snapshot, emulator_candidates
 app = QCoreApplication(sys.argv)
 st = Settings(); st.emulator = emulator_candidates()[0]
-st.snapshot = os.path.join(os.path.dirname(st.emulator), '..', 'checkpoints', 'atv-boot.snap')
+st.snapshot = default_snapshot(st)
 s = Session(); t0 = time.time(); n = [0]
 s.log.connect(lambda t: print('LOG', t[:200], flush=True))
 last=[None]

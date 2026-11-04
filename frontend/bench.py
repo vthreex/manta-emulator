@@ -2,10 +2,10 @@
 usage: bench.py [millions] [exe]"""
 import json, os, subprocess, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from emulator_session import Settings, build_command, emulator_candidates, REPO
+from emulator_session import Settings, build_command, default_snapshot, emulator_candidates, REPO
 n = float(sys.argv[1]) if len(sys.argv) > 1 else 400
 st = Settings(); st.emulator = sys.argv[2] if len(sys.argv) > 2 else emulator_candidates()[0]
-st.snapshot = str(REPO / 'work' / 'checkpoints' / 'atv-boot.snap')
+st.snapshot = default_snapshot(st)
 st.cpi = int(os.environ.get('CPI', '16'))
 prog, args = build_command(st, 'x')
 i = args.index('--frontend-shm'); del args[i:i + 2]

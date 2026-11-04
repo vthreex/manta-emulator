@@ -67,7 +67,8 @@ class Settings:
     snapshot: str = ''
     engine: str = 'native'              # native (recompiled stock firmware) | interpreter
     cpi: int = 16                       # guest cycles per instruction (uncalibrated time scale): lower = faster emulation, 16 = the stock setting of the saved states
-    video_plane: str = 'black'          # black | blue | setting | none
+    video_plane: str = 'setting'        # black | blue | setting (the guest's own Blue Screen setting) | none
+    analog_input: str = 'none'          # none: no input signal (NO SIGNAL, the TV with nothing connected) | pal-test: EXPLORATORY generated PAL colour-bar signal
     colour_key: str = 'edge'            # none | edge | full
     menu_stays_open: bool = True
     frame_rate: str = 'smooth'          # smooth | normal | economy
@@ -112,10 +113,34 @@ class Settings:
 FRAME_FPS = {'smooth': 60, 'normal': 30, 'economy': 15, 'minimal': 5}
 
 
+# The profile carries the EXPLORATORY generated PAL test signal (colour bars behind the OSD). With no input connected the analog front end has no
+# HSYNC and no sync events: these are the absent-input options of the NO SIGNAL save states (configs/checkpoints/connected-menu-base.json).
+TEST_SIGNAL_VALUED = ('--exploratory-atv-signal', '--max-avd-instructions')
+TEST_SIGNAL_FLAGS = ('--exploratory-atv-picture',)
+ABSENT_INPUT = ['--exploratory-avd-no-hsync', '--diagnostic-htotal-branch-join', '--exploratory-avd-no-sync-events', '--diagnostic-avd-11db-bit7', '0',
+                '--exploratory-avd-htotal-constant', '0', '--exploratory-avd-noise-constant', '0']
+
+
+def without_test_signal(args):
+    out, i = [], 0
+    while i < len(args):
+        if args[i] in TEST_SIGNAL_VALUED: i += 2; continue
+        if args[i] in TEST_SIGNAL_FLAGS: i += 1; continue
+        out.append(args[i]); i += 1
+    return out + ABSENT_INPUT
+
+
+def default_snapshot(st):
+    """The saved state that matches the analog input setting: NO SIGNAL (no input) or the PAL test-signal boot."""
+    return str(REPO / 'work' / 'checkpoints' / ('atv-boot.snap' if st.analog_input == 'pal-test' else 'no-signal-ready-v2.snap'))
+
+
 def build_command(st: Settings, shm_name: str):
     """Returns (program, args). Hardware/hypothesis flags come from configs/frontend/profile-original.json, unchanged."""
     prof = json.loads((PKG / 'configs' / 'frontend' / 'profile-original.json').read_text())
     args = list(prof['args'])
+    if st.analog_input != 'pal-test':
+        args = without_test_signal(args)
     fw = st.firmware or str(REPO / 'work' / 'firmware-original.bin')
     args = ['--firmware', fw] + args
     try:
