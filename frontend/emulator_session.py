@@ -152,6 +152,9 @@ def build_command(st: Settings, shm_name: str):
     # after the CRC pass the updater copies the image header to the stack with BDMA mode 0x3030 (MIU0 -> MIU0, EXPLORATORY model)
     if '--exploratory-bdma-mem-copy' not in args:
         args.append('--exploratory-bdma-mem-copy')
+    # EXPLORATORY PLL tuner slave on the tuner I2C bus (docs/atv-tuner-model.md); stations come at run time (atv-stations=...)
+    if '--exploratory-pll-tuner' not in args:
+        args.append('--exploratory-pll-tuner')
     fw = st.firmware or str(REPO / 'work' / 'firmware-original.bin')
     args = ['--firmware', fw] + args
     try:

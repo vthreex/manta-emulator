@@ -165,7 +165,8 @@
   "--preview-interval-log2",
   "14",
   "--preview-max-fps",
-  "60"
+  "60",
+  "--exploratory-pll-tuner"
  ],
  "files": {
   "/data/firmware.bin": "firmware.bin",
@@ -182,7 +183,7 @@
   "state.snap": 27430694,
   "files/ir-keymap.tsv": 7884,
   "files/sar-keymap.tsv": 1313,
-  "manta.wasm": 39002714
+  "manta.wasm": 39020938
  },
  "versions": {
   "firmware.bin": "d60645b549a4",
@@ -191,9 +192,9 @@
   "state.snap": "21c632a059a7",
   "files/ir-keymap.tsv": "7a5aba2a8dbb",
   "files/sar-keymap.tsv": "2306b2d48ac3",
-  "manta.wasm": "6c6e66e47bda",
+  "manta.wasm": "b9d9aafb5ec8",
   "manta.js": "8416abc91b86",
-  "worker.js": "99ff2fba6a3f"
+  "worker.js": "209a5b1eda21"
  },
  "snapshot": "no-signal-ready-v2.snap"
 }

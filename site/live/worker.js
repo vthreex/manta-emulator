@@ -141,6 +141,16 @@ self.onmessage = async e => {
     } catch (err) { post({ type: 'log', s: 'hdmi: ' + (err && err.message || err) }); }
     return;
   }
+  // EXPLORATORY antenna: {type:'atv', stations:[{mhz, level, image: ArrayBuffer BMP | null}]} -> atv-stations=MHZ[=FILE][@LEVEL],...
+  if (m.type === 'atv') {
+    if (!M || stopped) return;
+    try {
+      M.FS.mkdirTree('/data'); const parts = [];
+      m.stations.forEach((s, i) => { let item = String(s.mhz); if (s.image) { const f = '/data/atv' + i + '.bmp'; M.FS.writeFile(f, new Uint8Array(s.image)); item += '=' + f; } item += '@' + s.level; parts.push(item); });
+      key('atv-stations=' + parts.join(','));
+    } catch (err) { post({ type: 'log', s: 'atv: ' + (err && err.message || err) }); }
+    return;
+  }
   if (m.type !== 'start' || M || assets) return;
   try {
     const base = m.base; if (m.reload) fetchMode = 'reload';
