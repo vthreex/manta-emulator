@@ -1,5 +1,7 @@
 #include "peripherals/gpio_i2c.hpp"
 #include <stdexcept>
+#include <cstdio>
+#include <cstdlib>
 namespace manta {
 void GpioI2c::driveLow(uint32_t a, uint8_t pins, bool enabled) {
   for (auto &b : buses_)
@@ -83,6 +85,8 @@ void GpioI2c::update(Bus &b) {
       b.shift = uint8_t((b.shift << 1) | (sda ? 1 : 0));
       ++b.bits;
     } else {
+      if (std::getenv("MANTA_I2C_LOG"))   // diagnostic: bus, byte index, value
+        std::fprintf(stderr, "I2C %08x %u %02x\n", unsigned(b.input), b.bytes, b.shift);
       event(b.bytes == 0 ? "i2c_address" : "i2c_byte", b.input, b.shift,
             sda ? "NACK: no attached slave drives SDA"
                 : "ACK-level sampled low; guest drive or external fault, no attached slave");
