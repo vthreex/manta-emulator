@@ -193,7 +193,7 @@
   "files/sar-keymap.tsv": "2306b2d48ac3",
   "manta.wasm": "9eef48f6c399",
   "manta.js": "8416abc91b86",
-  "worker.js": "95fe1134d8d7"
+  "worker.js": "bbd7eaafa822"
  },
  "snapshot": "no-signal-ready-v2.snap"
 }

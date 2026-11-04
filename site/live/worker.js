@@ -1,7 +1,7 @@
 // Runs the browser build of the emulator (manta.js / manta.wasm: the original MStar firmware, statically recompiled, plus the machine model) in a worker
-// so the page stays responsive. Messages in: {type:'start', base}, {type:'key', fn}, {type:'pause', on}, {type:'usb', image} (a FAT32 disk image built
+// so the page stays responsive. Messages in: {type:'start', base, cold, overlay}, {type:'key', fn}, {type:'pause', on}, {type:'reboot-request'}, {type:'usb', image} (a FAT32 disk image built
 // by the page from the visitor's files: written to the in-memory file system and hot-plugged as the EXPLORATORY virtual pendrive).
-// Out: progress, log, ready, frame, stats (heartbeat), crashed {message} (machine stop, wasm trap or uncaught error), error (start failed).
+// Out: progress, log, ready, frame, stats (heartbeat), rebooting {why, sectors}, crashed {message} (machine stop, wasm trap or uncaught error), error (start failed).
 let M = null, usbUnlink = 0, paused = false, lastSeq = 0, stopped = false, lastReason = '', lastNative = '';
 const post = (m, t) => self.postMessage(m, t || []);
 const crashed = msg => { if (stopped) return; stopped = true; post({ type: 'crashed', message: msg }); };
@@ -60,8 +60,10 @@ function loop() {
   setTimeout(loop, 0);
 }
 
-// Reboot = power cycle of the same TV: everything the firmware wrote to its flash (the copy-on-write overlay over the original image) is kept and
-// the page starts a fresh machine that cold-boots from the reset vector with it. RAM, CPU and devices start from scratch; no save state is used.
+// Reboot = power cycle of the same TV: everything the firmware wrote to its flash (the copy-on-write overlay over the original image) is kept and a
+// fresh machine (a new WebAssembly instance, so RAM, CPU and devices start from scratch) cold-boots from the reset vector with it. No save state is
+// used and nothing is downloaded again: the emulator and the files fetched for the first start are kept in memory (assets).
+let assets = null;   // {cfg, base, wasm, files}
 function reboot(why) {
   if (!M) return;
   stopped = true;
@@ -70,9 +72,50 @@ function reboot(why) {
     M.FS.mkdirTree('/data');
     const n = M.lengthBytesUTF8('/data/nvram.cow') + 1, p = M._malloc(n); M.stringToUTF8('/data/nvram.cow', p, n);
     sectors = M._manta_save_flash(p); M._free(p);
-    if (sectors > 0) overlay = M.FS.readFile('/data/nvram.cow').slice().buffer;
+    if (sectors > 0) overlay = M.FS.readFile('/data/nvram.cow').slice();
   } catch (err) { post({ type: 'log', s: 'flash overlay not saved: ' + (err && err.message || err) }); }
-  post({ type: 'reboot', why, overlay, sectors }, overlay ? [overlay] : []);
+  post({ type: 'rebooting', why, sectors });
+  M = null; lastSeq = 0; lastReason = ''; lastNative = ''; usbUnlink = 0;
+  setTimeout(() => boot({ cold: true, overlay }), 0);
+}
+
+async function boot(m) {
+  try {
+    const { cfg, base, files: fetched } = assets;
+    // compiled once from the downloaded bytes; every (re)boot instantiates it from memory (no second fetch, no recompile)
+    if (!assets.module) assets.module = await WebAssembly.compile(assets.wasm);
+    const files = {};
+    // cold boot (m.cold): no save state; the native CPU starts at the reset vector, with the previous session's flash overlay if there is one
+    let args = cfg.args.slice();
+    if (m.cold) {
+      const i = args.indexOf('--load-state'); if (i >= 0) args.splice(i, 2);
+      args = args.filter(a => a !== '--load-state-allow-extra-options');
+      args.push('--native-cold-boot');
+      if (m.overlay) { files['/data/nvram.cow'] = new Uint8Array(m.overlay); args.push('--nvram', '/data/nvram.cow'); }
+    }
+    for (const [dst, data] of Object.entries(fetched)) if (!(m.cold && dst === '/data/state.snap')) files[dst] = data;
+    post({ type: 'progress', label: 'starting', got: 1, total: 1 });
+    if (!self.MantaModule) importScripts(base + 'manta.js');
+    const mod = await self.MantaModule({
+      instantiateWasm: (imports, done) => { WebAssembly.instantiate(assets.module, imports).then(inst => done(inst), err => crashed('wasm instantiation failed: ' + err)); return {}; },
+      print: s => { const r = /"reason":\s*"([^"]*)"/.exec(s); if (r) lastReason = r[1]; },   // the machine summary printed when the run ends
+      printErr: s => { s = String(s); if (/NATIVE STOP|ERROR|unsupported|stopped/i.test(s)) lastNative = s.slice(0, 200); post({ type: 'log', s: s.slice(0, 300) }); },
+      onAbort: what => crashed('the emulator aborted: ' + what),
+    });
+    for (const [dst, data] of Object.entries(files)) {
+      const dir = dst.substring(0, dst.lastIndexOf('/'));
+      if (dir) mod.FS.mkdirTree(dir);
+      mod.FS.writeFile(dst, data);
+    }
+    mod.FS.chdir('/');
+    const rc = mod.callMain(args);
+    if (rc !== 0) throw new Error('the emulator refused to start (exit code ' + rc + ')');
+    M = mod; stopped = false;
+    post({ type: 'ready', dispatches: M._manta_dispatches(), cold: !!m.cold });
+    loop();
+  } catch (err) {
+    post({ type: 'error', message: String(err && err.message || err) });
+  }
 }
 
 self.onmessage = async e => {
@@ -86,43 +129,18 @@ self.onmessage = async e => {
     return;
   }
   if (m.type === 'reboot-request') { if (M && !stopped) reboot('reboot requested'); return; }
-  if (m.type !== 'start' || M) return;
+  if (m.type !== 'start' || M || assets) return;
   try {
     const base = m.base; if (m.reload) fetchMode = 'reload';
     const cfg = await (await fetch(base + 'config.json', { cache: 'no-store' })).json();
-    const v = () => '';   // plain URLs: the browser cache is used until the page's Re-download button asks for fresh copies (fetchMode 'reload')
-    const wasm = await fetchWithProgress(base + 'manta.wasm' + v('manta.wasm'), 'emulator', cfg.sizes && cfg.sizes['manta.wasm']);
+    const wasm = await fetchWithProgress(base + 'manta.wasm', 'emulator', cfg.sizes && cfg.sizes['manta.wasm']);
     const files = {};
-    // cold boot (m.cold): no save state; the native CPU starts at the reset vector, with the previous session's flash overlay if there is one
-    let args = cfg.args.slice();
-    if (m.cold) {
-      const i = args.indexOf('--load-state'); if (i >= 0) args.splice(i, 2);
-      args = args.filter(a => a !== '--load-state-allow-extra-options');
-      args.push('--native-cold-boot');
-      if (m.overlay) { files['/data/nvram.cow'] = new Uint8Array(m.overlay); args.push('--nvram', '/data/nvram.cow'); }
-    }
     for (const [dst, src] of Object.entries(cfg.files)) {
       if (m.cold && dst === '/data/state.snap') continue;
-      files[dst] = await fetchWithProgress(base + src + v(src), src.split('/').pop(), cfg.sizes && cfg.sizes[src]);
+      files[dst] = await fetchWithProgress(base + src, src.split('/').pop(), cfg.sizes && cfg.sizes[src]);
     }
-    post({ type: 'progress', label: 'starting', got: 1, total: 1 });
-    importScripts(base + 'manta.js' + v('manta.js'));
-    M = await self.MantaModule({
-      wasmBinary: wasm,
-      print: s => { const r = /"reason":\s*"([^"]*)"/.exec(s); if (r) lastReason = r[1]; },   // the machine summary printed when the run ends
-      printErr: s => { s = String(s); if (/NATIVE STOP|ERROR|unsupported|stopped/i.test(s)) lastNative = s.slice(0, 200); post({ type: 'log', s: s.slice(0, 300) }); },
-      onAbort: what => crashed('the emulator aborted: ' + what),
-    });
-    for (const [dst, data] of Object.entries(files)) {
-      const dir = dst.substring(0, dst.lastIndexOf('/'));
-      if (dir) M.FS.mkdirTree(dir);
-      M.FS.writeFile(dst, data);
-    }
-    M.FS.chdir('/');
-    const rc = M.callMain(args);
-    if (rc !== 0) throw new Error('the emulator refused to start (exit code ' + rc + ')');
-    post({ type: 'ready', dispatches: M._manta_dispatches() });
-    loop();
+    assets = { cfg, base, wasm, files };
+    await boot(m);
   } catch (err) {
     post({ type: 'error', message: String(err && err.message || err) });
   }
