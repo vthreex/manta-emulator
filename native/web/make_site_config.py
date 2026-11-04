@@ -31,5 +31,13 @@ for k in ('manta.js', 'manta.wasm'): shutil.copyfile(os.path.join(web, k), os.pa
 shutil.copyfile(os.path.join(repo, 'firmware', 'manta-lcd4214-original.bin'), os.path.join(live, 'firmware.bin'))
 shutil.copyfile(snapshot, os.path.join(live, 'state.snap'))
 sizes = {v: os.path.getsize(os.path.join(live, v)) for v in list(files.values()) + ['manta.wasm']}
-json.dump({'args': out, 'files': files, 'sizes': sizes, 'snapshot': os.path.basename(snapshot)}, open(os.path.join(live, 'config.json'), 'w'), indent=1)
-print('site/live ready:', len(out), 'args,', len(files), 'files, %.1f MB to download' % (sum(sizes.values()) / 1e6))
+# content versions (informational: the page reuses the browser cache; its Re-download button fetches fresh copies)
+import hashlib
+def ver(name):
+    h = hashlib.sha256()
+    with open(os.path.join(live, name), 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 20), b''): h.update(chunk)
+    return h.hexdigest()[:12]
+versions = {v: ver(v) for v in list(files.values()) + ['manta.wasm', 'manta.js', 'worker.js']}
+json.dump({'args': out, 'files': files, 'sizes': sizes, 'versions': versions, 'snapshot': os.path.basename(snapshot)}, open(os.path.join(live, 'config.json'), 'w'), indent=1)
+print('site/live ready:', len(out), 'args,', len(files), 'files, %.1f MB to download' % (sum(sizes.values()) / 1e6), versions)

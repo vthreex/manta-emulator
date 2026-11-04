@@ -182,5 +182,16 @@
   "files/sar-keymap.tsv": 1313,
   "manta.wasm": 38450293
  },
+ "versions": {
+  "firmware.bin": "d60645b549a4",
+  "files/pm-ir-fifo-replay-policy.tsv": "07db82416c03",
+  "files/opaque-afec-indirect-port.tsv": "e2e75ef3a76b",
+  "state.snap": "21c632a059a7",
+  "files/ir-keymap.tsv": "ce115a11ef6d",
+  "files/sar-keymap.tsv": "2306b2d48ac3",
+  "manta.wasm": "6ed3b36a682a",
+  "manta.js": "8d64a36097c2",
+  "worker.js": "831aa06e3462"
+ },
  "snapshot": "no-signal-ready-v2.snap"
 }

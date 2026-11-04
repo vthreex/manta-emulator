@@ -7,8 +7,9 @@ const crashed = msg => { if (stopped) return; stopped = true; post({ type: 'cras
 self.addEventListener('error', e => crashed('uncaught error: ' + (e.message || e)));
 self.addEventListener('unhandledrejection', e => crashed('uncaught error: ' + (e.reason && e.reason.message || e.reason)));
 
+let fetchMode = 'default';   // 'reload' = bypass the browser cache (the page's Re-download button)
 async function fetchWithProgress(url, label, total) {
-  const r = await fetch(url);
+  const r = await fetch(url, { cache: fetchMode });
   if (!r.ok) throw new Error(label + ': HTTP ' + r.status);
   const len = +r.headers.get('content-length') || total || 0;
   if (!r.body || !r.body.getReader) { const b = new Uint8Array(await r.arrayBuffer()); post({ type: 'progress', label, got: b.length, total: b.length }); return b; }
@@ -59,13 +60,14 @@ self.onmessage = async e => {
   if (m.type === 'pause') { paused = !!m.on; return; }
   if (m.type !== 'start' || M) return;
   try {
-    const base = m.base;
-    const cfg = await (await fetch(base + 'config.json')).json();
-    const wasm = await fetchWithProgress(base + 'manta.wasm', 'emulator', cfg.sizes && cfg.sizes['manta.wasm']);
+    const base = m.base; if (m.reload) fetchMode = 'reload';
+    const cfg = await (await fetch(base + 'config.json', { cache: 'no-store' })).json();
+    const v = () => '';   // plain URLs: the browser cache is used until the page's Re-download button asks for fresh copies (fetchMode 'reload')
+    const wasm = await fetchWithProgress(base + 'manta.wasm' + v('manta.wasm'), 'emulator', cfg.sizes && cfg.sizes['manta.wasm']);
     const files = {};
-    for (const [dst, src] of Object.entries(cfg.files)) files[dst] = await fetchWithProgress(base + src, src.split('/').pop(), cfg.sizes && cfg.sizes[src]);
+    for (const [dst, src] of Object.entries(cfg.files)) files[dst] = await fetchWithProgress(base + src + v(src), src.split('/').pop(), cfg.sizes && cfg.sizes[src]);
     post({ type: 'progress', label: 'starting', got: 1, total: 1 });
-    importScripts(base + 'manta.js');
+    importScripts(base + 'manta.js' + v('manta.js'));
     M = await self.MantaModule({
       wasmBinary: wasm,
       print: s => { const r = /"reason":\s*"([^"]*)"/.exec(s); if (r) lastReason = r[1]; },   // the machine summary printed when the run ends
