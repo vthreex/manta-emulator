@@ -151,6 +151,7 @@
   "--exploratory-avd-noise-constant",
   "0",
   "--exploratory-ge-line",
+  "--exploratory-bdma-crc-miu",
   "--load-state",
   "/data/state.snap",
   "--load-state-allow-extra-options",

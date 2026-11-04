@@ -145,6 +145,10 @@ def build_command(st: Settings, shm_name: str):
     # commands; without it the machine stops there ("GE raster primitive/mode unsupported")
     if '--exploratory-ge-line' not in args:
         args.append('--exploratory-ge-line')
+    # EXPLORATORY BDMA MIU->CRC32 model (docs/factory-menu.md): the USB software update checks the copied MERGE.BIN with BDMA mode 0x330;
+    # without it the machine stops there ("unsupported BDMA command or bounds")
+    if '--exploratory-bdma-crc-miu' not in args:
+        args.append('--exploratory-bdma-crc-miu')
     fw = st.firmware or str(REPO / 'work' / 'firmware-original.bin')
     args = ['--firmware', fw] + args
     try:
