@@ -51,6 +51,8 @@ struct RunHooks {
   // instead (0 = off). Used to ignore one specific original call site, never a whole function.
   uint32_t redirect_pc = 0, redirect_ra = 0, redirect_a0 = 0, redirect_a1 = 0, redirect_to = 0;
   uint64_t redirect_count = 0;
+  // ...except right after the guest key handler (key_pc, application key code in a1) received one of redirect_unless_keys (e.g. MENU/EXIT)
+  uint32_t key_pc = 0, last_key = 0; uint64_t last_key_icount = 0; uint32_t redirect_unless_keys[4] = {}; int redirect_unless_n = 0; uint64_t redirect_passed = 0;
   EntryHook entry[16];
   unsigned entry_n = 0;
   uint64_t skip_count = 0;

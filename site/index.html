@@ -777,7 +777,7 @@ function showMs(src,cap){swap($('#pImg'),src,cap);$('#pCap').textContent=cap;$$(
 function stopTour(){clearInterval(tourTimer);tourTimer=null;const b=$('#tourBtn');if(b)b.textContent='▶ Play recorded session'}
 /* ---------- live firmware (MStar, WebAssembly) ---------- */
 // remote button -> raw IR byte delivered through the emulated PM IR FIFO (configs/input/ir-keymap.tsv evidence; VOL/TTX are behavioural matches)
-const LIVE_RAW={MENU:0xfc,UP:0x0b,DOWN:0x0e,LEFT:0x10,RIGHT:0x11,OK:0x0d,EXIT:0x20,SOURCE:0x41,INFO:0x16,POWER:0x0a,MUTE:0x0f,SLEEP:0x17,WIDE:0x0c,'SMART S':0x1a,'SMART P':0x42,
+const LIVE_RAW={MENU:0x40,UP:0x0b,DOWN:0x0e,LEFT:0x10,RIGHT:0x11,OK:0x0d,EXIT:0x20,SOURCE:0x41,INFO:0x16,POWER:0x0a,MUTE:0x0f,SLEEP:0x17,WIDE:0x0c,'SMART S':0x1a,'SMART P':0x42,
   LANGUAGE:0x19,LIST:0x1d,FAV:0x57,EPG:0x4a,SUBTITLE:0x5b,'VOL+':0x15,'VOL-':0x1c,TTX:0x12,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'0':0x45};
 let live=null;
 function liveStop(){if(live){clearInterval(live.watch);live.worker.terminate();live=null}$('#pCanvas').hidden=true;$('#pCrash').hidden=true}

@@ -1206,6 +1206,9 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     if (zeroUnknownLog.size() < 4000 || zeroUnknownLog.count(a)) ++zeroUnknownLog[a];
     uint32_t zv = 0, lineValue = 0;
     if (zeroUnknownKeepsKnown) zv = v & knownBits(a, n);   // unverified firmware: bytes the guest itself wrote keep their value inside a partly unknown word read
+    // The PM IR FIFO model owns EMPTY (bit 1) and RPT (bit 0) of status byte 1F007B59. The blanket zero must not override them: a forced 0 there reads as
+    // "FIFO not empty", so every 108 ms IR poll popped a phantom raw 00 key, which closed any open menu page.
+    if (candidatePmIrFifo_ && a <= 0x1f007b59 && uint64_t(a) + n > 0x1f007b59) { unsigned sh = 8 * (0x1f007b59 - a), kb = knownBits(0x1f007b59, 1) & 3; zv = (zv & ~(kb << sh)) | (v & (kb << sh)); }
     if (auto reg = usbLineStateRegister(a, n, &lineValue)) { zv &= ~(0xc0u << (8 * (reg - a))); zv |= lineValue << (8 * (reg - a)); }   // the guest-powered-PHY line-state hypotheses still apply
     if(zeroUnknownKeepsKnown)for(const auto& h:hypothesisBits_)   // unverified firmware: explicit --exploratory-mmio-bits hypotheses still decide the bits they name (the rest of the word stays the blanket zero)
       if(a<=h.address && uint64_t(a)+n>h.address && hypothesisApplies(h)){auto sh=8*(h.address-a);zv=(zv&~(uint32_t(h.mask)<<sh))|(uint32_t(h.value)<<sh);}

@@ -17,7 +17,8 @@ used when software flag mask 1 (DTV source id 28) is set: the sources map to mas
 |---|---|---|---|---|
 | digits 1..9 | 0x01..0x09 | 0x11..0x19 | numeric entry `8046DA24`, OSD 17 banner | **verified** |
 | digit 0 | 0x45 | 0x10 | static (table + `8046DA24`) | static only |
-| MENU | **0xFC** | 0x29 | opens OSD 1 (full-screen menu, Picture page, first item highlighted) | verified by behaviour |
+| MENU | **0x40** | (handler `8046AE60`) | toggles the menu: opens OSD 1 from NO SIGNAL, closes it from the main menu, returns one level from a sub-page (item panel, lock) - the menus' own "MENU: RETURN" hint (2026-11-04, native runs from the NO SIGNAL snapshot) | verified by behaviour |
+| MENU_OPEN | 0xFC | 0x29 | opens OSD 1 (full-screen menu, Picture page, first item highlighted); a second press is ignored | verified by behaviour |
 | DOWN | **0x0E** | 0x0B | highlight Picture Mode -> Color Temperature -> Aspect Ratio (runs m2, m3) | verified by behaviour |
 | LEFT | **0x10** | 0x0C | page tab moves left (Picture -> Lock, antenna tab disabled so it wraps) (m2) | verified by behaviour |
 | RIGHT | **0x11** | 0x0F | page tab moves right: Picture -> Sound -> Setup; Lock -> Picture (m2, m3) | verified by behaviour |
@@ -31,7 +32,7 @@ used when software flag mask 1 (DTV source id 28) is set: the sources map to mas
 | PICTURE mode | 0x42 | 0x21 | OSD 14 with a monitor icon (kb3/u42) | candidate, name unknown |
 | INFO (candidate) | 0x16 | 0x1b | closes the menu and shows OSD 3, the bottom source/info bar (runs m5, kb3/u16) | candidate |
 | UP | **0x0B** | 0x07 | stub jumps to `8046A984` (arrow-key class path); with the menu open and the highlight on the 2nd item it returns to the first (frame byte-identical to the post-MENU frame) - run kb6/u0b | verified by behaviour |
-| (menu closers) | 0x00 (app 0x64), 0x40, 0x58 (0x6B) | | each closes the open menu and returns to the NO SIGNAL screen (kb5/u00, kb6/u40, kb5/u58); user functions unnamed | unidentified |
+| (menu closers) | 0x00 (app 0x64), 0x58 (0x6B) | | each closes the open menu and returns to the NO SIGNAL screen (kb5/u00, kb5/u58); user functions unnamed. Raw 0x00 was also what the emulator itself delivered every 108 ms before the IR status fix below | unidentified |
 | (panels) | 0x15 (app 5), 0x1C (app 6), 0x41, 0xF1 | | open other windows over the menu (kb6); unnamed | unidentified |
 | SOURCE | unidentified | | no raw byte has opened an input-source list (OSD 5..11 side panels) in any run | unidentified |
 | INFO, VOL+/-, CH+/-, MUTE | unidentified | | | unidentified |
@@ -63,3 +64,13 @@ sources of the DTV remote functions show up:
 No visible response in this state (no audio path, no channel data): arrows 0x0B/0x0E/0x10/0x11, 0x13, 0x14, 0x16, 0x18, 0x1B, 0x20..0x22, 0x44, 0x46, 0x4B, 0x4E..0x51, 0x58, 0x59, 0x5C, 0x5F, 0xBD..0xCE,
 0xD2, 0xD4, 0xEF..0xF8 (the source keys act only when they change the source). VOL+/-, CH+/- and the remaining glyph keys (INDEX, ZOOM, REVEAL, HOLD, RADIO), 3D, L/R, REPEAT and the list-icon key therefore remain
 without a proven raw byte; the remote model draws them dotted and `configs/input/ir-keymap.tsv` stays free of guesses.
+
+
+## Phantom raw 00 key (fixed 2026-11-04)
+
+With `--diagnostic-riu-zero-unknown-reads` (part of the NO SIGNAL profile) the blanket zero also replaced the modelled EMPTY bit (bit 1) of the PM IR FIFO status byte
+`1F007B59` (logical `3DAD`). The original IR getter `804F2284` polls it every 108 ms (`804F2474`: `andi 2`, `bnez` = empty); a forced 0 read as "not empty", so each poll
+popped a key `0x00` (app `0x64`) from the empty FIFO. Any open page treated that unknown key as a close request (menu page handler `804CA08C`: none of its windows
+match -> `804F0724(0x17,5)`), which is why menus, the lock page and ATV manual tuning closed after about a second and why every key seemed to close the menu.
+`Riu::read` now keeps the FIFO model's known status bits under the blanket zero. With the fix no hack is needed: navigation keys keep the menu open,
+EXIT and MENU (0x40) close/return as the firmware decides, and `--exploratory-menu-no-autoexit` is off by default in the control centre.

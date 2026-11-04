@@ -12,7 +12,8 @@ DIGIT_7	0x07	app 0x17 = digit 7 (static + run s15)
 DIGIT_8	0x08	app 0x18 = digit 8 (static + run s15)
 DIGIT_9	0x09	app 0x19 = digit 9 (static + run s15)
 DIGIT_0	0x45	app 0x10 = digit 0 (static: table 0x8061773C, raw 0x45; not yet exercised in a connected run)
-MENU	0xFC	BEHAVIOURAL: app 0x29; the original firmware opens its main menu (OSD 1, Picture page, first item highlighted, four-arrow hint) - runs m1/m2/m3, evidence/menu-diagnostic/, docs/ir-key-sweep.md
+MENU	0x40	BEHAVIOURAL: handler 8046AE60 (not a one-code stub); the original firmware toggles its main menu with this code: from NO SIGNAL it opens OSD 1 (Picture page), in the main menu it closes it, in a sub-page (item panel, lock) it returns one level - the menus' own hint MENU: RETURN. Found 2026-11-04 after the phantom raw 00 key was fixed
+MENU_OPEN	0xFC	BEHAVIOURAL: app 0x29; opens the same main menu but never closes or returns (a second press is ignored) - runs m1/m2/m3, evidence/menu-diagnostic/; the earlier MENU mapping
 DOWN	0x0E	BEHAVIOURAL: app 0x0B; with the menu open the highlight moves one item down (Picture Mode -> Color Temperature -> Aspect Ratio) - runs m2/m3
 LEFT	0x10	BEHAVIOURAL: app 0x0C; with the menu open the page tab moves left (Picture -> Lock, wrapping because the antenna tab is disabled) - run m2
 RIGHT	0x11	BEHAVIOURAL: app 0x0F; with the menu open the page tab moves right (Picture -> Sound -> Setup, Lock -> Picture) - runs m2/m3

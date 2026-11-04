@@ -138,8 +138,13 @@ uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks) {
       if (pc != kInjectReturn && (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx])) BADPC(&c, pc);
       if (hooks && hooks->trace_pc[0]) for (int k = 0; k < 4; ++k) if (pc == hooks->trace_pc[k] && (!hooks->trace_reg[k] || c.r[hooks->trace_reg[k]] == hooks->trace_val[k]))
         std::fprintf(stderr, "TRACE pc=%08x dispatch=%llu a0=%x a1=%x a2=%x a3=%x ra=%x sp=%x prev=%x,%x,%x,%x,%x,%x\n", pc, (unsigned long long)(hooks->trace_base + c.icount), c.r[4], c.r[5], c.r[6], c.r[7], c.r[31], c.r[29], c.ring[(c.ring_i - 2) & 63], c.ring[(c.ring_i - 3) & 63], c.ring[(c.ring_i - 4) & 63], c.ring[(c.ring_i - 5) & 63], c.ring[(c.ring_i - 6) & 63], c.ring[(c.ring_i - 7) & 63]);
+      if (hooks && hooks->key_pc && pc == hooks->key_pc) { hooks->last_key = c.r[5]; hooks->last_key_icount = c.icount; }   // application key code of the key being handled
       if (hooks && hooks->redirect_pc && pc == hooks->redirect_pc && c.r[31] == hooks->redirect_ra && c.r[4] == hooks->redirect_a0 && c.r[5] == hooks->redirect_a1) {
-        c.r[2] = 1; pc = hooks->redirect_to; ++hooks->redirect_count; continue;
+        bool pass = false;
+        if (c.icount - hooks->last_key_icount < 20000000u)   // the key was handled within ~0.4 s of firmware time
+          for (int k = 0; k < hooks->redirect_unless_n; ++k) pass |= hooks->last_key == hooks->redirect_unless_keys[k];
+        if (pass) { ++hooks->redirect_passed; hooks->last_key = 0; }
+        else { c.r[2] = 1; pc = hooks->redirect_to; ++hooks->redirect_count; continue; }
       }
       if (hooks && hooks->entry_n && entry_hooked(c, hooks, pc)) { pc = c.r[31]; continue; }
       if (hooks && pc == hooks->skip_pc) { c.r[2] = 0; pc = c.r[31]; ++hooks->skip_count; continue; }   // exploratory skipped function: return to the caller

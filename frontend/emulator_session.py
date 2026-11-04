@@ -70,7 +70,7 @@ class Settings:
     video_plane: str = 'setting'        # black | blue | setting (the guest's own Blue Screen setting) | none
     analog_input: str = 'none'          # none: no input signal (NO SIGNAL, the TV with nothing connected) | pal-test: EXPLORATORY generated PAL colour-bar signal
     colour_key: str = 'edge'            # none | edge | full
-    menu_stays_open: bool = True
+    menu_stays_open: bool = False      # EXPLORATORY --exploratory-menu-no-autoexit; off: since the phantom IR key fix the original menus only close on their own 15 s timeout
     frame_rate: str = 'smooth'          # smooth | normal | economy
     budget_billions: float = 8.0
     nvram: str = ''

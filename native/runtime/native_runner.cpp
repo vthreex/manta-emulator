@@ -182,6 +182,8 @@ static uint32_t nativeTakeover(NativeAccess& a, CPU& c, MachineBus& bus, Runner&
   a.options.remoteFilter = [&runner](const std::string& f) { return runner.pages.onFunction(f); };
   if (a.options.exploratoryMenuNoAutoexit) {
     hooks.redirect_pc = 0x804F0724u; hooks.redirect_ra = 0x804CA098u; hooks.redirect_a0 = 0x17; hooks.redirect_a1 = 5; hooks.redirect_to = 0x804C8624u;
+    // MENU (app key 0x29) and EXIT (app key 0x09) must still close the menu: the original path runs when the key handler 8046A754 last received (a1) one of them
+    hooks.key_pc = 0x8046A754u; hooks.redirect_unless_keys[0] = 0x29; hooks.redirect_unless_keys[1] = 0x09; hooks.redirect_unless_n = 2;
     std::fprintf(stderr, "EXPLORATORY: --exploratory-menu-no-autoexit: the menu page handler's exit request (804F0724(0x17,5) from 804CA098) is ignored (not original behaviour)%c", 10);
   }
   if (a.options.exploratorySkipZuiTimers) {
@@ -216,7 +218,7 @@ int nativeRun(Msd309Machine& machine) {
   a.cpu.reg(UC_MIPS_REG_HI, c.hi);
   a.cpu.reg(UC_MIPS_REG_LO, c.lo);
   if (hooks.skip_pc) std::fprintf(stderr, "EXPLORATORY: skipped calls to %08x: %llu\n", hooks.skip_pc, (unsigned long long)hooks.skip_count);
-  if (hooks.redirect_pc) std::fprintf(stderr, "EXPLORATORY: ignored menu exit requests: %llu%c", (unsigned long long)hooks.redirect_count, 10);
+  if (hooks.redirect_pc) std::fprintf(stderr, "EXPLORATORY: ignored menu exit requests: %llu, passed through after MENU/EXIT: %llu%c", (unsigned long long)hooks.redirect_count, (unsigned long long)hooks.redirect_passed, 10);
   if (std::getenv("MANTA_RING")) { std::fprintf(stderr, "RING (most recent run entries, oldest first):"); for (unsigned i = 0; i < 64; ++i) std::fprintf(stderr, " %08x", c.ring[(c.ring_i + i) & 63]); std::fprintf(stderr, "%c", 10); }
   a.finish(pc, c.fatal);
   std::fprintf(stderr, "native CPU: %llu guest instructions executed natively, %llu timer interrupts, %llu external, %llu exceptions\n", (unsigned long long)c.icount,
@@ -227,7 +229,7 @@ int nativeRun(Msd309Machine& machine) {
 #ifdef MANTA_WEB
 // Browser build (Emscripten, no threads): the page's frame loop calls manta_step() for a slice of guest instructions, pushes remote functions with
 // manta_key() and reads the latest published GOP preview frame (composed like the Linux presenter: guest pixels, else the video-plane colour, else
-// the neutral checker) with manta_frame_*. Same machine, same recompiled firmware, same options as the desktop build.
+// black, padded to the whole panel) with manta_frame_*. Same machine, same recompiled firmware, same options as the desktop build.
 #include <emscripten/emscripten.h>
 #include <memory>
 namespace {
@@ -269,13 +271,21 @@ EMSCRIPTEN_KEEPALIVE double manta_frame_update() {
   auto f = web->a.options.previewStore->latest();
   if (!f || f->empty()) return double(webSeq);
   if (f->sequence == webSeq) return double(webSeq);
-  webSeq = f->sequence; webW = f->width; webH = f->height;
+  // The published frame only spans the enabled GOP windows' extent (from the panel origin). The page always shows the whole 1360x768 panel:
+  // outside that extent the video plane shows (its colour, or black when no plane is active), as on the TV, so a small OSD such as the source
+  // list is never stretched over the screen.
+  constexpr uint32_t kPanelW = 1360, kPanelH = 768;
+  webSeq = f->sequence; webW = std::max<uint32_t>(f->width, kPanelW); webH = std::max<uint32_t>(f->height, kPanelH);
   webRgba.resize(size_t(webW) * webH * 4);
+  const uint32_t outside = f->planeActive ? (f->planeRgb & 0xffffffu) : 0u;
   for (uint32_t y = 0; y < webH; ++y) for (uint32_t x = 0; x < webW; ++x) {
-    const size_t i = size_t(y) * webW + x;
-    const uint32_t rgb = f->covered[i] ? (f->bgra[i] & 0xffffffu) : !f->planeBgra.empty() ? (f->planeBgra[i] & 0xffffffu)
-                       : f->planeActive ? f->planeRgb : ((((x >> 4) ^ (y >> 4)) & 1) ? 0x505050u : 0x383838u);
-    uint8_t* o = &webRgba[i * 4];
+    uint32_t rgb = outside;
+    if (x < f->width && y < f->height) {
+      const size_t i = size_t(y) * f->width + x;
+      rgb = f->covered[i] ? (f->bgra[i] & 0xffffffu) : !f->planeBgra.empty() ? (f->planeBgra[i] & 0xffffffu)
+          : outside;
+    }
+    uint8_t* o = &webRgba[(size_t(y) * webW + x) * 4];
     o[0] = uint8_t(rgb >> 16); o[1] = uint8_t(rgb >> 8); o[2] = uint8_t(rgb); o[3] = 255;
   }
   return double(webSeq);
