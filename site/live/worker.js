@@ -1,7 +1,11 @@
 // Runs the browser build of the emulator (manta.js / manta.wasm: the original MStar firmware, statically recompiled, plus the machine model) in a worker
-// so the page stays responsive. Messages in: {type:'start', base}, {type:'key', fn}, {type:'pause', on}. Out: progress, log, ready, frame, stats, stopped, error.
-let M = null, paused = false, lastSeq = 0, stopped = false;
+// so the page stays responsive. Messages in: {type:'start', base}, {type:'key', fn}, {type:'pause', on}.
+// Out: progress, log, ready, frame, stats (heartbeat), crashed {message} (machine stop, wasm trap or uncaught error), error (start failed).
+let M = null, paused = false, lastSeq = 0, stopped = false, lastReason = '', lastNative = '';
 const post = (m, t) => self.postMessage(m, t || []);
+const crashed = msg => { if (stopped) return; stopped = true; post({ type: 'crashed', message: msg }); };
+self.addEventListener('error', e => crashed('uncaught error: ' + (e.message || e)));
+self.addEventListener('unhandledrejection', e => crashed('uncaught error: ' + (e.reason && e.reason.message || e.reason)));
 
 async function fetchWithProgress(url, label, total) {
   const r = await fetch(url);
@@ -21,26 +25,31 @@ async function fetchWithProgress(url, label, total) {
 }
 
 function key(fn) {
-  if (!M) return;
+  if (!M || stopped) return;
   const n = M.lengthBytesUTF8(fn) + 1, p = M._malloc(n);
   M.stringToUTF8(fn, p, n); M._manta_key(p); M._free(p);
 }
 
 function loop() {
   if (!M || stopped) return;
-  if (paused) { setTimeout(loop, 50); return; }
-  const t0 = performance.now(), d0 = M._manta_dispatches();
+  if (paused) { post({ type: 'stats', dispatches: M._manta_dispatches(), slice: 0, ms: 0 }); setTimeout(loop, 50); return; }
   let r = 0;
-  while (r === 0 && performance.now() - t0 < 25) r = M._manta_step(500000);
-  const seq = M._manta_frame_update();
-  if (seq && seq !== lastSeq) {
-    lastSeq = seq;
-    const w = M._manta_frame_width(), h = M._manta_frame_height(), p = M._manta_frame_rgba();
-    const buf = M.HEAPU8.slice(p, p + w * h * 4).buffer;
-    post({ type: 'frame', w, h, buf, seq }, [buf]);
+  try {
+    const t0 = performance.now(), d0 = M._manta_dispatches();
+    while (r === 0 && performance.now() - t0 < 25) r = M._manta_step(500000);
+    const seq = M._manta_frame_update();
+    if (seq && seq !== lastSeq) {
+      lastSeq = seq;
+      const w = M._manta_frame_width(), h = M._manta_frame_height(), p = M._manta_frame_rgba();
+      const buf = M.HEAPU8.slice(p, p + w * h * 4).buffer;
+      post({ type: 'frame', w, h, buf, seq }, [buf]);
+    }
+    post({ type: 'stats', dispatches: M._manta_dispatches(), slice: M._manta_dispatches() - d0, ms: performance.now() - t0 });
+  } catch (err) {
+    crashed('the emulator crashed: ' + String(err && err.message || err) + (lastNative ? ' (' + lastNative + ')' : ''));
+    return;
   }
-  post({ type: 'stats', dispatches: M._manta_dispatches(), slice: M._manta_dispatches() - d0, ms: performance.now() - t0 });
-  if (r !== 0) { stopped = true; post({ type: 'stopped' }); return; }
+  if (r !== 0) { crashed('the emulated machine stopped' + (lastReason ? ': ' + lastReason : '') + (lastNative ? ' (' + lastNative + ')' : '')); return; }
   setTimeout(loop, 0);
 }
 
@@ -57,7 +66,12 @@ self.onmessage = async e => {
     for (const [dst, src] of Object.entries(cfg.files)) files[dst] = await fetchWithProgress(base + src, src.split('/').pop(), cfg.sizes && cfg.sizes[src]);
     post({ type: 'progress', label: 'starting', got: 1, total: 1 });
     importScripts(base + 'manta.js');
-    M = await self.MantaModule({ wasmBinary: wasm, print: () => {}, printErr: s => post({ type: 'log', s: String(s).slice(0, 300) }) });
+    M = await self.MantaModule({
+      wasmBinary: wasm,
+      print: s => { const r = /"reason":\s*"([^"]*)"/.exec(s); if (r) lastReason = r[1]; },   // the machine summary printed when the run ends
+      printErr: s => { s = String(s); if (/NATIVE STOP|ERROR|unsupported|stopped/i.test(s)) lastNative = s.slice(0, 200); post({ type: 'log', s: s.slice(0, 300) }); },
+      onAbort: what => crashed('the emulator aborted: ' + what),
+    });
     for (const [dst, data] of Object.entries(files)) {
       const dir = dst.substring(0, dst.lastIndexOf('/'));
       if (dir) M.FS.mkdirTree(dir);
