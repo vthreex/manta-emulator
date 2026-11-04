@@ -50,6 +50,21 @@ The picture is not pasted over the screen as-is: it goes through the colour regi
   noise reduction are not applied.
 * Result: Contrast up -> brighter, more saturated picture; Brightness up -> raised black level (the black bar turns grey), as on a real set.
 
+## 3D (key raw `0x00`, only with a signal)
+The 3D key opens the original '3D Set' page: 3D On/Off, 3D Mode (AUTO, side by side, top bottom, line by line, frame alternative), L/R Switch,
+2D to 3D (switches 3D off) and 3D Scene (depth, 2D to 3D only). Register diffs of every setting (write log from 1640 M, same snapshot and keys):
+* Every mode change reloads a scaler table (805F887C) and sets the frame-buffer addressing in SC bank 0x12: regs `0x10/0x11` and `0x12/0x13` =
+  two eye base addresses (units of 2 pixels), `0x16` = line pitch, `0x17` = fetch width; reg `0x03` = `0x202` in every two-eye mode, `0x232` for
+  frame alternative, 0 in 2D. Bank 0x23 regs `0x07/0x08` = horizontal ratio (2^20 = 1:1).
+  * side by side: second eye +960 px, fetch 960 (`0x3C0`), H ratio 0x080001 (1/2).
+  * top bottom: second eye +518,400 units = 540 lines.
+  * line by line: second eye +1 line, pitch 3840 (`0xF00`).
+  * 2D to 3D: second eye +80 px (Scene 5) / +96 px (Scene 6), fetch 1840 / 1824, H ratio 1840/1920: a uniform shift of the same picture.
+* Model (EXPLORATORY): each eye is read at exactly those addresses from the captured frame and scaled into the display window. ASSUMPTION: the
+  panel output interleaves the eyes line by line (passive 3D), which without glasses and at preview size is drawn as a 50/50 mix of both eyes.
+  Frame alternative needs a moving source; a still picture has identical eyes and is drawn like 2D. Not verified panel output.
+* Test pictures: any side-by-side / top-bottom image through "Picture..."; a wrongly chosen mode mixes the wrong halves, as on a real set.
+
 ## Run time and browser
 * Remote functions `hdmi-signal=MODE` / `hdmi-signal=off` (plug / unplug) and `input-picture=FILE.bmp` (empty = built-in), e.g. in `--ir-script`.
 * Live page box "HDMI input": mode list, "Picture..." (any image, converted to a 32-bit BMP in the browser), "Switch to HDMI1" (raw `0xF7`), Plug in / Unplug.

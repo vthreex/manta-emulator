@@ -101,5 +101,5 @@ signal or a playing USB file (photo/music decode is not in the browser profile).
   (raw 0x53 or 0x72), green = 0x1D (raw 0x5B, the green SUBTITLE button), yellow = 0x33 (raw 0xF0), blue = 0x34 (raw 0x47).
 * raw 0x47 in the USB photo list (file selected) -> the original 'Loading...' (playback starts): mapped to INDEX (play).
 * Not resolved: the USB file list's 'Sub Menu' (red dot) did not open for any of the 256 raw bytes in the emulator (file list, folder and file selected,
-  30/40/150 M dispatch windows); REC is mapped to the red candidate 0x53. 3D: no key found; the 3D page (EN_EXE_GOTO_3D_MODE_PAGE_LIST, 804C86F0) is a
-  menu action. INDEX/ZOOM/REVEAL/HOLD/RADIO teletext functions need a teletext signal.
+  30/40/150 M dispatch windows); REC is mapped to the red candidate 0x53. 3D = raw **0x00** (found later with an HDMI signal, see docs/hdmi-input-model.md "3D"): it opens the original '3D Set' page only while a
+  signal is present, which is why no-signal sweeps never saw it. INDEX/ZOOM/REVEAL/HOLD/RADIO teletext functions need a teletext signal.

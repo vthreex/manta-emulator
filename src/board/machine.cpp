@@ -2604,6 +2604,7 @@ void Msd309Machine::publishPreviewLive() const {
       mix(t.hperiod); mix(t.vtotal); mix(t.hstart); mix(t.vstart); mix(t.hend); mix(t.vend); mix(inputPicture_.width); mix(inputPicture_.height);
       mix(std::hash<std::string>{}(options_.exploratoryInputPicture));
       for (unsigned reg : {0x19u, 0x04u, 0x05u, 0x06u, 0x07u, 0x08u, 0x09u, 0x0au, 0x0bu, 0x26u, 0x27u, 0x28u, 0x29u, 0x2au, 0x2bu, 0x2cu, 0x2du, 0x2eu, 0x2fu}) { auto l = riu_.scByte(0x10, reg * 4), hb = riu_.scByte(0x10, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
+      for (unsigned reg : {0x03u, 0x10u, 0x11u, 0x12u, 0x13u, 0x16u, 0x17u}) { auto l = riu_.scByte(0x12, reg * 4), hb = riu_.scByte(0x12, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
       for (unsigned reg : {0x36u, 0x37u, 0x38u}) { auto l = riu_.scByte(0x0f, reg * 4), hb = riu_.scByte(0x0f, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
       for (unsigned reg : {0x02u, 0x04u, 0x05u, 0x06u, 0x07u}) { auto l = riu_.scByte(0x01, reg * 4), hb = riu_.scByte(0x01, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
     } else mix(0x51ab);
@@ -2730,13 +2731,31 @@ void Msd309Machine::publishPreview() const {
           const double Y=0.299*r+0.587*g+0.114*b, Cb=-0.168736*r-0.331264*g+0.5*b, Cr=0.5*r-0.418688*g-0.081312*b;
           processedPicture_[i]=0xff000000u|cl(m[0]*Cr+m[1]*Y+m[2]*Cb+bo[0])<<16|cl(m[3]*Cr+m[4]*Y+m[5]*Cb+bo[1])<<8|cl(m[6]*Cr+m[7]*Y+m[8]*Cb+bo[2]); }
       }
+      // 3D (EXPLORATORY, docs/hdmi-input-model.md "3D"): the firmware programs 3D as frame-buffer addressing in SC bank 0x12 (register diffs of every
+      // 3D Mode, tested): regs 0x10/0x11 and 0x12/0x13 = the two eye base addresses (units of 2 pixels), 0x16 = line pitch, 0x17 = fetch width,
+      // reg 0x03 = 0x202 in every two-eye mode (0x232 frame alternative, 0 in 2D). Side by side: second eye +960 px, fetch 960; top bottom: +540
+      // lines; line by line: +1 line, pitch 3840; 2D to 3D: +16*Scene px, fetch 1920-2*16*Scene. Each eye is read exactly at those addresses and
+      // scaled into the display window. ASSUMPTION: the panel output interleaves the eyes line by line (passive 3D); seen without glasses and at
+      // preview size that is the 50/50 mix drawn here. Frame alternative: a still picture has identical eyes, so it is drawn like 2D.
+      bool d3=false; double oE[2]={0,0}, d3Pitch=cw, d3Fetch=cw, d3Rows=ch;
+      { auto m3=w16(0x12,0x03,0xffff),a0=w16(0x12,0x10,0xffff),a1=w16(0x12,0x11,0x00ff),b0=w16(0x12,0x12,0xffff),b1=w16(0x12,0x13,0x00ff),pt=w16(0x12,0x16,0x1fff),fw=w16(0x12,0x17,0x1fff);
+        if(m3&&(*m3&0x0202)==0x0202&&!(*m3&0x0030)&&a0&&a1&&b0&&b1&&pt&&fw&&*pt&&*fw){
+          const double A=double((*a1<<16)|*a0),B=double((*b1<<16)|*b0),st=std::min(A,B); oE[0]=2*(A-st); oE[1]=2*(B-st);
+          const double mx=std::max(oE[0],oE[1]);
+          if(mx<cw*ch){ d3Pitch=*pt; d3Fetch=std::min<double>(*fw,cw); d3Rows=std::floor((cw*ch-mx)/d3Pitch); d3=d3Rows>=1; } } }
+      auto srcPix=[&](double ix,double iy)->uint32_t{ const unsigned sx=std::min<unsigned>(unsigned(std::max(0.0,ix)*inputPicture_.width/inW),inputPicture_.width-1),
+        sy=std::min<unsigned>(unsigned(std::max(0.0,iy)*inputPicture_.height/inH),inputPicture_.height-1); return processedPicture_[size_t(sy)*inputPicture_.width+sx]; };
       frame.planeBgra.assign(size_t(frame.width)*frame.height,0xff000000u);
       for(uint32_t y=0;y<frame.height;++y){ const double py=(y+0.5)*panelH/frame.height; if(py<y0||py>y1+1)continue;
         for(uint32_t x=0;x<frame.width;++x){ const double px=(x+0.5)*panelW/frame.width; if(px<x0||px>x1+1)continue;
           const double ix=cx+(px-x0)*cw/(x1-x0+1), iy=cy+(py-y0)*ch/(y1-y0+1);
           if(ix<0||iy<0||ix>=inW||iy>=inH)continue;
-          const unsigned sx=std::min<unsigned>(unsigned(ix*inputPicture_.width/inW),inputPicture_.width-1), sy=std::min<unsigned>(unsigned(iy*inputPicture_.height/inH),inputPicture_.height-1);
-          frame.planeBgra[size_t(y)*frame.width+x]=processedPicture_[size_t(sy)*inputPicture_.width+sx]; } }
+          if(!d3){ frame.planeBgra[size_t(y)*frame.width+x]=srcPix(ix,iy); continue; }
+          const double u=(ix-cx)/cw, v=(iy-cy)/ch; uint32_t e2[2];
+          for(int e=0;e<2;++e){ const double col=std::min(d3Fetch-1,std::floor(u*d3Fetch)), row=std::min(d3Rows-1,std::floor(v*d3Rows)), idx=oE[e]+row*d3Pitch+col;
+            const double fy=std::floor(idx/cw), fx=idx-fy*cw; e2[e]=srcPix(cx+fx,cy+std::min(fy,ch-1)); }
+          frame.planeBgra[size_t(y)*frame.width+x]=0xff000000u|((((e2[0]>>16&255)+(e2[1]>>16&255)+1)>>1)<<16)|((((e2[0]>>8&255)+(e2[1]>>8&255)+1)>>1)<<8)|(((e2[0]&255)+(e2[1]&255)+1)>>1); } }
+      if(d3) frame.label+=" | EXPLORATORY 3D: both eyes from the firmware's frame-buffer addressing, mixed 50/50 (assumed passive line-interleaved panel output)";
       { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }
       frame.label+=" | EXPLORATORY INPUT PICTURE (generated HDMI/DVI signal) in the firmware's display window; NOT decoded video";
     }

@@ -49,6 +49,7 @@ L/R	0x19	CANDIDATE: app 0x1E, the case that prints 91_KEY_MTS (audio channel / l
 FAV_ALT	0xF1	BEHAVIOURAL: app 0 shares FAV's case (0x57); ATV: the original 'Favorite List' window
 KEY_LOCK	0xFB	BEHAVIOURAL: app 0xFE; ATV: the original 'Key Lock' password prompt (no button on the LCD4214 remote)
 UART_DEBUG	0xD4	BEHAVIOURAL: app 0x70; toggles the hidden 'UART DEBUG' setting (factory key, not on the remote)
+3D	0x00	PROVEN with an input signal (HDMI1 1080p60 sweep of all keyed raw bytes): raw 0x00 opens the original '3D Set' page (3D, 3D Mode, L/R Switch, 2D to 3D, 3D Scene); no visible effect in NO SIGNAL (3D unavailable without input)
 REC	0x53	CANDIDATE (red key): app 0x1C; the MHEG key forwarder (8045AD20) maps app 0x1C/0x1D/0x33/0x34 to 111_MHEG5_Red/Green/Yellow/Blue; green = app 0x1D = SUBTITLE raw 0x5B (consistent). raw 0x72 is the same app code. In the emulated USB file list it does not open the Sub Menu (not resolved)
 PLAY	0x47	BEHAVIOURAL: app 0x34 (MHEG blue); in the USB photo list with a file selected the original media player shows 'Loading...' (starts the photo) - the INDEX / play key
 YELLOW_ALT	0xF0	CANDIDATE: app 0x33 = MHEG yellow; no visible reaction in the swept states
