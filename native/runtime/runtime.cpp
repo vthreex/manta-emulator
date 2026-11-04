@@ -40,7 +40,9 @@ uint32_t CP0R(CPU* c, unsigned reg, unsigned sel) {
 void CP0W(CPU* c, unsigned reg, unsigned sel, uint32_t v) {
   if (reg == C0_COUNT) { c->count_off = v - uint32_t(c->icount * c->count_per_insn); c->prev_count = v; return; }
   if (reg == C0_COMPARE) { c->cp0[C0_COMPARE][0] = v; c->ip7 = false; return; }
-  if (reg == C0_CAUSE) { c->cp0[C0_CAUSE][0] = (c->cp0[C0_CAUSE][0] & ~(3u << 8)) | (v & (3u << 8)) | (v & (1u << 23)) | (v & (1u << 27)); return; }
+  // Writable Cause bits (MIPS32r2): IP1:0 (software interrupts), IV (23) and DC (27) take the written value; the old code OR-ed IV/DC in and never
+  // cleared them, so the boot ROM's IV=1 (BFC00014) survived the runtime's clears and sent the first timer interrupt to EBase+0x200.
+  if (reg == C0_CAUSE) { const uint32_t w = (3u << 8) | (1u << 23) | (1u << 27); c->cp0[C0_CAUSE][0] = (c->cp0[C0_CAUSE][0] & ~w) | (v & w); return; }
   c->cp0[reg][sel & 7] = v;
 }
 void CP0EI(CPU* c) { c->cp0[C0_STATUS][0] |= ST_IE; }
@@ -101,6 +103,30 @@ static void idle(CPU* c) {
   if (!c->ip7 && d && d < 0x80000000u) c->icount += d / c->count_per_insn + 1;
 }
 
+namespace {
+struct CodeRegion { uint32_t base, words; const uint32_t* index; const RunFn* runs; const char* name; };
+CodeRegion g_regions[8];
+int g_region_n = 0;
+}
+int native_register_region(uint32_t base, uint32_t words, const uint32_t* index, const RunFn* runs, const char* name) {
+  if (g_region_n < 8) g_regions[g_region_n++] = {base, words, index, runs, name};
+  return g_region_n;
+}
+RunFn native_region_fn(uint32_t pc) {
+  if (pc & 3) return nullptr;
+  for (int k = 0; k < g_region_n; ++k) {
+    const CodeRegion& r = g_regions[k];
+    uint32_t i = (pc - r.base) >> 2;
+    if (pc >= r.base && i < r.words && r.index[i]) return r.runs[r.index[i]];
+  }
+  return nullptr;
+}
+// The run function for pc: the main runtime image first (hot path), then the registered boot regions.
+static inline RunFn run_fn(uint32_t pc) {
+  uint32_t idx = (pc - GEN_BASE) >> 2;
+  if (pc >= GEN_BASE && !(pc & 3) && idx < GEN_WORDS && GEN_INDEX[idx]) return GEN_RUNS[GEN_INDEX[idx]];
+  return g_region_n ? native_region_fn(pc) : nullptr;
+}
 static bool entry_hooked(CPU& c, RunHooks* hooks, uint32_t pc) {
   for (unsigned k = 0; k < hooks->entry_n; ++k)
     if (hooks->entry[k].pc == pc && hooks->entry[k].fn(c, hooks->entry[k].ctx)) return true;
@@ -117,10 +143,10 @@ uint32_t call_guest(CPU& c, uint32_t pc, uint32_t a0, uint32_t a1, uint32_t a2, 
   const uint64_t end = c.icount + budget;
   try {
     while (pc != kSentinel && c.icount < end && !c.halt) {
-      uint32_t idx = (pc - GEN_BASE) >> 2;
       if (hooks && hooks->entry_n && entry_hooked(c, hooks, pc)) { pc = c.r[31]; continue; }
-      if (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx]) BADPC(&c, pc);
-      pc = GEN_RUNS[GEN_INDEX[idx]](&c, pc);
+      RunFn fn = run_fn(pc);
+      if (!fn) BADPC(&c, pc);
+      pc = fn(&c, pc);
     }
   } catch (int) {
   }
@@ -134,10 +160,10 @@ uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks) {
   c.hooks = hooks;
   try {
     while (c.icount < limit && !c.halt) {
-      uint32_t idx = (pc - GEN_BASE) >> 2;
-      if (pc != kInjectReturn && (pc < GEN_BASE || (pc & 3) || idx >= GEN_WORDS || !GEN_INDEX[idx])) BADPC(&c, pc);
+      RunFn fn = pc == kInjectReturn ? nullptr : run_fn(pc);
+      if (pc != kInjectReturn && !fn) BADPC(&c, pc);
       if (hooks && hooks->trace_pc[0]) for (int k = 0; k < 4; ++k) if (pc == hooks->trace_pc[k] && (!hooks->trace_reg[k] || c.r[hooks->trace_reg[k]] == hooks->trace_val[k]))
-        std::fprintf(stderr, "TRACE pc=%08x dispatch=%llu a0=%x a1=%x a2=%x a3=%x ra=%x sp=%x prev=%x,%x,%x,%x,%x,%x\n", pc, (unsigned long long)(hooks->trace_base + c.icount), c.r[4], c.r[5], c.r[6], c.r[7], c.r[31], c.r[29], c.ring[(c.ring_i - 2) & 63], c.ring[(c.ring_i - 3) & 63], c.ring[(c.ring_i - 4) & 63], c.ring[(c.ring_i - 5) & 63], c.ring[(c.ring_i - 6) & 63], c.ring[(c.ring_i - 7) & 63]);
+        std::fprintf(stderr, "TRACE pc=%08x dispatch=%llu a0=%x a1=%x a2=%x a3=%x s0=%x s1=%x ra=%x sp=%x prev=%x,%x,%x,%x,%x,%x\n", pc, (unsigned long long)(hooks->trace_base + c.icount), c.r[4], c.r[5], c.r[6], c.r[7], c.r[16], c.r[17], c.r[31], c.r[29], c.ring[(c.ring_i - 2) & 63], c.ring[(c.ring_i - 3) & 63], c.ring[(c.ring_i - 4) & 63], c.ring[(c.ring_i - 5) & 63], c.ring[(c.ring_i - 6) & 63], c.ring[(c.ring_i - 7) & 63]);
       if (hooks && hooks->key_pc && pc == hooks->key_pc) { hooks->last_key = c.r[5]; hooks->last_key_icount = c.icount; }   // application key code of the key being handled
       if (hooks && hooks->redirect_pc && pc == hooks->redirect_pc && c.r[31] == hooks->redirect_ra && c.r[4] == hooks->redirect_a0 && c.r[5] == hooks->redirect_a1) {
         bool pass = false;
@@ -156,7 +182,7 @@ uint64_t run_guest(CPU& c, uint32_t pc, uint64_t limit, RunHooks* hooks) {
         c.injecting = false;
         continue;
       }
-      pc = GEN_RUNS[GEN_INDEX[idx]](&c, pc);
+      pc = fn(&c, pc);
       if (hooks && hooks->after_run) hooks->after_run(c, pc, hooks->ctx);
       if (c.inject.pending && !c.injecting && pc != kInjectReturn) {   // save the interrupted context on the guest stack and call the requested function
         c.inject.pending = false;

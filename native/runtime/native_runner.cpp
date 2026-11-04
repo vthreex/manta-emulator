@@ -39,11 +39,28 @@ struct NativeAccess {
   void preview() { m.publishPreviewLive(); }
   bool previewDue() { return m.previewDue(); }
   void finish(uint32_t pc, bool fatal);
+  void markColdBoot() { m.riu_.nativeColdBoot = true; }
+  // Everything the guest programmed into the flash (copy-on-write sectors over the original image), in the --nvram format.
+  size_t saveFlashOverlay(const std::string& path) { m.flash_.saveOverlay(path); return m.flash_.overlaySectors(); }
+  // The recompiled boot ROM / second stage / runtime were translated from the stock image. A cold boot of a flash whose code areas differ
+  // (an update that replaced code) cannot run on them: returns the first differing flash offset, or -1 when the code areas are unchanged.
+  long codeMismatch() const {
+    const auto& stock = m.flash_.stock();
+    const uint32_t end = std::min<uint32_t>(0x161258u, uint32_t(stock.size()));   // boot ROM, second stage, runtime header + compressed runtime stream
+    for (uint32_t i = 0; i < end; ++i) if (m.flash_.read(i) != stock[i]) return long(i);
+    return -1;
+  }
 };
 
 struct MachineBus : Bus {
   NativeAccess& a;
+  uint64_t* lastIcount = nullptr;   // the runner's clock mark (set by nativeTakeover)
   explicit MachineBus(NativeAccess& access) : a(access) {}
+  // Device time follows the instruction count. Between runs after_run() advances it; a poll loop that stays inside ONE translated run
+  // (the boot ROM's MIU BIST wait at BFC023F0) would otherwise read a frozen clock forever, so every MMIO access brings it up to date.
+  void clock(CPU& c) {
+    if (lastIcount && c.icount > *lastIcount) { a.dispatches += c.icount - *lastIcount; *lastIcount = c.icount; }
+  }
   void sync(CPU& c, uint32_t pc) {
     if (a.cpu.gpr) {
       std::memcpy(a.cpu.gpr, c.r, sizeof c.r);
@@ -71,6 +88,7 @@ struct MachineBus : Bus {
     }
     if (p >= 0x1f000000u && p < 0x1f400000u) {
       sync(c, pc);
+      clock(c);
       uint32_t v = uint32_t(a.mmioRead(p - 0x1f000000u, n));
       if (a.stopped) c.halt = true;
       return v;
@@ -94,6 +112,7 @@ struct MachineBus : Bus {
     }
     if (p >= 0x1f000000u && p < 0x1f400000u) {
       sync(c, pc);
+      clock(c);
       a.mmioWrite(p - 0x1f000000u, n, v);
       if (a.stopped) c.halt = true;
       return;
@@ -153,16 +172,40 @@ void NativeAccess::finish(uint32_t pc, bool fatal) {
 // Takeover from the snapshot: restore it, load the CPU state into the native CPU, wire bus, hooks and host pages. Shared by the blocking run (nativeRun)
 // and the browser build's step-wise session (MANTA_WEB), which resumes run_guest in slices from the page's frame loop.
 static uint32_t nativeTakeover(NativeAccess& a, CPU& c, MachineBus& bus, Runner& runner, RunHooks& hooks) {
-  if (a.options.loadState.empty()) throw std::runtime_error("--native-cpu needs --load-state (the native CPU takes over from a saved machine state)");
+  // Cold boot (--native-cold-boot, no --load-state): the CPU starts at the reset vector like the SoC after power-on or a whole-chip reset and runs the
+  // recompiled boot ROM / second stage (native/tools/gen_boot.py) from whatever the flash holds. Otherwise the native CPU takes over a saved state.
+  const bool cold = a.options.loadState.empty();
+  if (cold && !a.options.nativeColdBoot) throw std::runtime_error("--native-cpu needs --load-state (the native CPU takes over from a saved machine state) or --native-cold-boot");
+  if (cold && !native_region_fn(0xbfc00000u)) throw std::runtime_error("--native-cold-boot needs the recompiled boot ROM (python native/tools/gen_boot.py FIRMWARE.bin)");
+  if (cold) if (long at = a.codeMismatch(); at >= 0) {
+    char msg[160]; std::snprintf(msg, sizeof msg, "the flash holds different code than the recompiled firmware (first difference at flash offset 0x%lx); a cold boot of it needs the interpreter", at);
+    throw std::runtime_error(msg);
+  }
   if (a.cpi() < 2) throw std::runtime_error("--native-cpu needs --exploratory-cpi >= 2");
-  a.restore();
+  if (!cold) a.restore();
   c.ram = a.dram.data();
   c.ram_size = uint32_t(a.dram.size());
-  for (int i = 0; i < 32; ++i) c.r[i] = a.cpu.reg(UC_MIPS_REG_0 + i);
-  std::fprintf(stderr, "native: takeover pc=%08x sp=%08x ra=%08x resumed=%d\n", a.resumed() ? a.resumePc() : a.cpu.reg(UC_MIPS_REG_PC), c.r[29], c.r[31], int(a.resumed()));
+  if (cold) {
+    for (int i = 0; i < 32; ++i) c.r[i] = 0;
+    c.hi = c.lo = 0;
+    c.cp0[12][0] = 0x00400004u;   // Status after reset: BEV | ERL (MIPS32 reset state)
+    c.cp0[13][0] = c.cp0[14][0] = c.cp0[11][0] = 0;
+    c.cp0[15][1] = 0x80000000u;   // EBase reset value
+    c.count_per_insn = a.cpi() / 2;
+    c.count_off = c.prev_count = 0;
+    c.ip7 = 0;
+    c.ext_irq = a.irqLines();
+    c.bus = &bus;
+    a.markColdBoot();   // the RIU models use this where the interpreter would rely on CPU bit provenance
+    std::fprintf(stderr, "native: cold boot at the reset vector bfc00000%c", 10);
+  }
+  if (!cold) for (int i = 0; i < 32; ++i) c.r[i] = a.cpu.reg(UC_MIPS_REG_0 + i);
+  if (!cold) std::fprintf(stderr, "native: takeover pc=%08x sp=%08x ra=%08x resumed=%d\n", a.resumed() ? a.resumePc() : a.cpu.reg(UC_MIPS_REG_PC), c.r[29], c.r[31], int(a.resumed()));
+  uint32_t pc = 0xbfc00000u;
+  if (!cold) {
   c.hi = a.cpu.reg(UC_MIPS_REG_HI);
   c.lo = a.cpu.reg(UC_MIPS_REG_LO);
-  uint32_t pc = a.resumed() ? a.resumePc() : a.cpu.reg(UC_MIPS_REG_PC);
+  pc = a.resumed() ? a.resumePc() : a.cpu.reg(UC_MIPS_REG_PC);
   c.cp0[12][0] = a.cpu.reg(UC_MIPS_REG_CP0_STATUS);
   c.cp0[13][0] = a.cpu.reg(UC_MIPS_REG_CP0_CAUSE);
   c.cp0[14][0] = a.cpu.reg(UC_MIPS_REG_CP0_EPC);
@@ -174,7 +217,9 @@ static uint32_t nativeTakeover(NativeAccess& a, CPU& c, MachineBus& bus, Runner&
   c.ip7 = (a.cpu.reg(UC_MIPS_REG_CP0_CAUSE) >> 15) & 1;
   c.ext_irq = a.irqLines();
   c.bus = &bus;
+  }
   hooks.after_run = after_run;
+  bus.lastIcount = &runner.lastIcount;
   hooks.ctx = &runner;
   runner.pages.testOskAt = a.options.exploratoryOskTestAt;
   runner.pages.attach(hooks);
@@ -293,5 +338,11 @@ EMSCRIPTEN_KEEPALIVE double manta_frame_update() {
 EMSCRIPTEN_KEEPALIVE uint8_t* manta_frame_rgba() { return webRgba.data(); }
 EMSCRIPTEN_KEEPALIVE int manta_frame_width() { return int(webW); }
 EMSCRIPTEN_KEEPALIVE int manta_frame_height() { return int(webH); }
+// Writes the flash overlay (every sector the firmware programmed, e.g. by a USB update) for a cold boot of the same flash (--nvram).
+// Returns the number of modified 4 KiB sectors, or -1 without a session.
+EMSCRIPTEN_KEEPALIVE int manta_save_flash(const char* path) {
+  if (!web) return -1;
+  try { return int(web->a.saveFlashOverlay(path)); } catch (...) { return -2; }
+}
 }
 #endif

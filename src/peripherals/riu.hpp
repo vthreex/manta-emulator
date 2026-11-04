@@ -535,6 +535,7 @@ public:
   bool coproPeekByte(uint32_t a, uint8_t& v) const { auto it = bytes_.find(a); if (it == bytes_.end() || it->second.known != 255) return false; v = it->second.value; return true; }
   void coproPokeByte(uint32_t a, uint8_t v) { bytes_[a] = {v, 255}; }
   UsbHost usbHost;                     // not serialized (EXPLORATORY pendrive model)
+  bool nativeColdBoot=false;           // native cold boot from the reset vector (no CPU bit provenance); set by the native runner
   bool usbDeviceAttachedPort0=false;   // not serialized: re-applied from the options after a restore
   bool exploratoryGeLine=false;   // not serialized: re-applied from the options after a restore
   uint64_t geLines=0,geLinePixels=0;

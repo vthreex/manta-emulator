@@ -113,6 +113,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-bdma-crc-miu")o.exploratoryBdmaCrcMiu=true;
       else if (a == "--exploratory-atv-picture")o.exploratoryAtvPicture=true;
       else if (a == "--native-cpu")o.nativeCpu=true;
+      else if (a == "--native-cold-boot")o.nativeColdBoot=true;
       else if (a == "--exploratory-atv-signal"){auto kind=value(i);if(kind!="pal")throw std::runtime_error("--exploratory-atv-signal supports only: pal");o.exploratoryAtvSignalPal=true;}
       else if (a == "--gop-history-interval-log2")o.gopHistoryLog2=unsigned(std::min<unsigned long>(40,std::stoul(value(i),nullptr,0)));
       else if (a == "--diagnostic-dram-dump"){o.diagnosticDramDumpAddr=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpSize=uint32_t(std::stoul(value(i),nullptr,0));o.diagnosticDramDumpFile=value(i);}

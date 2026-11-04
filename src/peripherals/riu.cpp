@@ -1842,6 +1842,11 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   if(candidateGopPalette && a==0x1f203e14 && n==2 && (gopBank()==0 || gopBank()==3)) {
     auto color=get(0x1f203e0c,2)|(get(0x1f203e10,2)<<16);
     auto known=knownBits(0x1f203e0c,2)|(knownBits(0x1f203e10,2)<<16);
+    // Native cold boot: the interpreter recognises the original read-modify-write of register 5 (8053A210) and keeps the unwritten bits
+    // unknown, so its palette model ignores the write; the native engine has no such provenance. A commit whose colour registers were never
+    // written cannot define an entry: the entry stays undefined (no colour is invented) instead of stopping the machine.
+    if(nativeColdBoot && (v&0x100) && known!=0xffffffffu){event("native_gop_palette_unknown_color_ignored",a,n,v,"native cold boot: palette pulse with never-written colour registers; entry left undefined");}
+    else
     if(palette_.pulse(gopBank(),uint16_t(v),uint16_t(knownBits(a,2)),color,known))
       event("gop_palette_commit",gopBank()*256+(v&255),4,color,"original guest color/index and full register5 write pulse; no invented palette reset values");
   }

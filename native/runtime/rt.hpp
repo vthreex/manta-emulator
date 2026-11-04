@@ -41,6 +41,10 @@ struct CPU {
 };
 
 typedef uint32_t (*RunFn)(CPU*, uint32_t);
+// Extra recompiled code regions (boot ROM at its KSEG1/KSEG0 addresses, the second stage copied to 0x81000000): each generated
+// <prefix>_tables.cpp registers itself at static-initialisation time; the dispatcher consults them when a pc is outside GEN_BASE.
+int native_register_region(uint32_t base, uint32_t words, const uint32_t* index, const RunFn* runs, const char* name);
+RunFn native_region_fn(uint32_t pc);
 // Host extension point (EXPLORATORY features): when a dispatch reaches `pc`, fn(c, ctx) runs first. If it returns true the original guest function is NOT
 // executed: the host has set v0 and the call returns to ra at once. If it returns false the original runs unchanged.
 struct EntryHook { uint32_t pc = 0; bool (*fn)(CPU&, void*) = nullptr; void* ctx = nullptr; };

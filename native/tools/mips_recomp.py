@@ -213,6 +213,10 @@ def main():
     ap.add_argument("--code-end", type=lambda s: int(s, 0), default=0x8060b000)
     ap.add_argument("--entry", type=lambda s: int(s, 0), action="append", default=[])
     ap.add_argument("--files", type=int, default=24)
+    # extra code regions (boot ROM, second stage): own table symbols PREFIX_BASE/_WORDS/_INDEX/_RUNS/_RUN_COUNT, own output directory
+    ap.add_argument("--prefix", default="GEN")
+    # small regions entered through computed jumps (boot ROM): every aligned word in the range is a root
+    ap.add_argument("--all-entries", action="store_true")
     a = ap.parse_args()
     img = open(a.image, "rb").read()
     n = len(img) // 4
@@ -223,7 +227,9 @@ def main():
     W = lambda pc: words[(pc - base) >> 2]
     in_code = lambda pc: base <= pc < code_end and not (pc & 3)
 
-    roots = set(a.entry) | {0x803b0600, 0x803b0180}
+    roots = set(a.entry) | ({0x803b0600, 0x803b0180} if a.prefix == "GEN" else {base})
+    if a.all_entries:
+        roots |= set(range(base, code_end, 4))
     # pointers anywhere in the image that point into the code range (jump tables, callback tables), and every jal target
     for i, w in enumerate(words):
         if in_code(w):
@@ -405,21 +411,25 @@ def main():
                 k += 2   # branch + delay slot
             # run ended without control transfer (data boundary / unsupported): continue at the next address
             lines.append("  return 0x%08xu;\n default: return BADPC(c,pc);\n }\n }\n}" % e)
-        open(os.path.join(a.out, "runs_%02d.cpp" % fi), "w").write("\n".join(lines) + "\n")
+        stem = "runs_%02d.cpp" % fi if a.prefix == "GEN" else "%s_runs_%02d.cpp" % (a.prefix.lower(), fi)
+        open(os.path.join(a.out, stem), "w").write("\n".join(lines) + "\n")
     # tables
     t = [HEAD, "extern uint32_t R_dummy;"]
     t = [HEAD]
-    t.append("const uint32_t GEN_BASE=0x%08xu, GEN_WORDS=%du;" % (base, nwords_code))
+    P = a.prefix
+    t.append("const uint32_t %s_BASE=0x%08xu, %s_WORDS=%du;" % (P, base, P, nwords_code))
     for nme in names:
         t.append("uint32_t %s(CPU*,uint32_t);" % nme)
-    t.append("const RunFn GEN_RUNS[]={0,%s};" % ",".join(names))
-    t.append("const unsigned GEN_RUN_COUNT=%d;" % len(names))
+    t.append("const RunFn %s_RUNS[]={0,%s};" % (P, ",".join(names)))
+    t.append("const unsigned %s_RUN_COUNT=%d;" % (P, len(names)))
     # index table as uint32 array
-    t.append("const uint32_t GEN_INDEX[%d]={" % nwords_code)
+    t.append("const uint32_t %s_INDEX[%d]={" % (P, nwords_code))
     for i in range(0, nwords_code, 16):
         t.append(",".join(str(x) for x in run_index[i:i + 16]) + ",")
     t.append("};")
-    open(os.path.join(a.out, "tables.cpp"), "w").write("\n".join(t) + "\n")
+    if P != "GEN":   # extra region: register with the runtime dispatcher
+        t.append("static const int %s_REGISTERED = native_register_region(%s_BASE, %s_WORDS, %s_INDEX, %s_RUNS, \"%s\");" % (P, P, P, P, P, P))
+    open(os.path.join(a.out, "tables.cpp" if P == "GEN" else "%s_tables.cpp" % P.lower()), "w").write("\n".join(t) + "\n")
     open(os.path.join(a.out, "unsupported.txt"), "w").write("\n".join("%08x %08x" % (k, v) for k, v in sorted(unsup.items())) + "\n")
     print("files:", nf, "runs emitted:", len(names))
 

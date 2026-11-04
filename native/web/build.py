@@ -45,7 +45,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, (os.cpu_count() or
         objs.append(o)
         if err: failed = True; print("FAILED", o); print(err[-3000:])
 if failed: sys.exit(1)
-exports = ["_main", "_manta_step", "_manta_key", "_manta_dispatches", "_manta_frame_update", "_manta_frame_rgba", "_manta_frame_width", "_manta_frame_height", "_malloc", "_free"]
+exports = ["_main", "_manta_step", "_manta_key", "_manta_dispatches", "_manta_frame_update", "_manta_frame_rgba", "_manta_frame_width", "_manta_frame_height", "_manta_save_flash", "_malloc", "_free"]
 link = [emxx, "-o", os.path.join(out, "manta.js")] + objs + ["-fwasm-exceptions", "-O2",
         "-sMODULARIZE=1", "-sEXPORT_NAME=MantaModule", "-sINVOKE_RUN=0", "-sEXIT_RUNTIME=0", "-sENVIRONMENT=web,worker,node",
         "-sALLOW_MEMORY_GROWTH=1", "-sINITIAL_MEMORY=536870912", "-sMAXIMUM_MEMORY=4294967296", "-sSTACK_SIZE=8388608",

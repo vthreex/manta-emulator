@@ -52,8 +52,27 @@ function loop() {
     crashed('the emulator crashed: ' + String(err && err.message || err) + (lastNative ? ' (' + lastNative + ')' : ''));
     return;
   }
-  if (r !== 0) { crashed('the emulated machine stopped' + (lastReason ? ': ' + lastReason : '') + (lastNative ? ' (' + lastNative + ')' : '')); return; }
+  if (r !== 0) {
+    // The firmware's own whole-chip reset (after a USB update): hand the flash to the page for a real cold boot instead of reporting a crash.
+    if (/whole-chip reset/.test(lastReason)) { reboot('the firmware restarted the TV'); return; }
+    crashed('the emulated machine stopped' + (lastReason ? ': ' + lastReason : '') + (lastNative ? ' (' + lastNative + ')' : '')); return;
+  }
   setTimeout(loop, 0);
+}
+
+// Reboot = power cycle of the same TV: everything the firmware wrote to its flash (the copy-on-write overlay over the original image) is kept and
+// the page starts a fresh machine that cold-boots from the reset vector with it. RAM, CPU and devices start from scratch; no save state is used.
+function reboot(why) {
+  if (!M) return;
+  stopped = true;
+  let overlay = null, sectors = 0;
+  try {
+    M.FS.mkdirTree('/data');
+    const n = M.lengthBytesUTF8('/data/nvram.cow') + 1, p = M._malloc(n); M.stringToUTF8('/data/nvram.cow', p, n);
+    sectors = M._manta_save_flash(p); M._free(p);
+    if (sectors > 0) overlay = M.FS.readFile('/data/nvram.cow').slice().buffer;
+  } catch (err) { post({ type: 'log', s: 'flash overlay not saved: ' + (err && err.message || err) }); }
+  post({ type: 'reboot', why, overlay, sectors }, overlay ? [overlay] : []);
 }
 
 self.onmessage = async e => {
@@ -66,6 +85,7 @@ self.onmessage = async e => {
     catch (err) { post({ type: 'usb', state: 'failed', message: String(err && err.message || err) }); }
     return;
   }
+  if (m.type === 'reboot-request') { if (M && !stopped) reboot('reboot requested'); return; }
   if (m.type !== 'start' || M) return;
   try {
     const base = m.base; if (m.reload) fetchMode = 'reload';
@@ -73,7 +93,18 @@ self.onmessage = async e => {
     const v = () => '';   // plain URLs: the browser cache is used until the page's Re-download button asks for fresh copies (fetchMode 'reload')
     const wasm = await fetchWithProgress(base + 'manta.wasm' + v('manta.wasm'), 'emulator', cfg.sizes && cfg.sizes['manta.wasm']);
     const files = {};
-    for (const [dst, src] of Object.entries(cfg.files)) files[dst] = await fetchWithProgress(base + src + v(src), src.split('/').pop(), cfg.sizes && cfg.sizes[src]);
+    // cold boot (m.cold): no save state; the native CPU starts at the reset vector, with the previous session's flash overlay if there is one
+    let args = cfg.args.slice();
+    if (m.cold) {
+      const i = args.indexOf('--load-state'); if (i >= 0) args.splice(i, 2);
+      args = args.filter(a => a !== '--load-state-allow-extra-options');
+      args.push('--native-cold-boot');
+      if (m.overlay) { files['/data/nvram.cow'] = new Uint8Array(m.overlay); args.push('--nvram', '/data/nvram.cow'); }
+    }
+    for (const [dst, src] of Object.entries(cfg.files)) {
+      if (m.cold && dst === '/data/state.snap') continue;
+      files[dst] = await fetchWithProgress(base + src + v(src), src.split('/').pop(), cfg.sizes && cfg.sizes[src]);
+    }
     post({ type: 'progress', label: 'starting', got: 1, total: 1 });
     importScripts(base + 'manta.js' + v('manta.js'));
     M = await self.MantaModule({
@@ -88,7 +119,7 @@ self.onmessage = async e => {
       M.FS.writeFile(dst, data);
     }
     M.FS.chdir('/');
-    const rc = M.callMain(cfg.args);
+    const rc = M.callMain(args);
     if (rc !== 0) throw new Error('the emulator refused to start (exit code ' + rc + ')');
     post({ type: 'ready', dispatches: M._manta_dispatches() });
     loop();
