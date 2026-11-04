@@ -481,17 +481,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     std::ifstream image(o.exploratoryUsbPendrive,std::ios::binary);
     if(!image)throw std::runtime_error("cannot open USB pendrive image "+o.exploratoryUsbPendrive);
     riu_.usbHost.attach(std::vector<uint8_t>((std::istreambuf_iterator<char>(image)),std::istreambuf_iterator<char>()));
-    auto& bus=riu_.usbHost.bus;
-    bus.read=[this](uint32_t a,size_t n){
-      a&=0x1fffffff;   // the driver programs KSEG0/KSEG1 aliases; the MIU decodes the low 29 address bits
-      try{return riu_.dramRead(a,n);}catch(const std::exception& e){throw std::runtime_error(std::string("USB host DMA read of ")+hex(a)+" ("+std::to_string(n)+" bytes): "+e.what());}};
-    bus.write=[this](uint32_t a,std::span<const uint8_t> b){riu_.dramWrite(a&0x1fffffff,b);};
-    bus.event=[this](const std::string& k,uint32_t a,uint32_t n,const std::string& d){event(k,a,n,0,d);};
-    bus.phyPowered=[this](unsigned port){return riu_.usbPhyPowered(port);};
-    bus.storedKnown=[this](uint32_t off){return riu_.usbStoredKnown(off);};
-    bus.storedReg=[this](uint32_t off){
-      if(!riu_.usbStoredKnown(off))throw std::runtime_error("USB host register "+std::to_string(off)+" read by the controller model before the guest defined it");
-      return riu_.usbStoredReg(off);};
+    wireUsbBus();
   }
   if(!o.pm51History.empty() && !o.exploratoryPm51SpiStartup)
     throw std::runtime_error("PM history requires original PM SPI startup experiment");
@@ -611,6 +601,34 @@ void Msd309Machine::updateIrqLines() {
   event("mips_irq_lines", lines, 4, lines, "EXPLORATORY: external interrupt line state toward the MIPS core (IP2=bit0, IP3=bit1)");
 }
 // Run-time wiring of the coprocessor model that is not snapshot state (used when it starts and after a snapshot restore).
+// EXPLORATORY USB pendrive: the controller model's DRAM/PHY/register access.
+void Msd309Machine::wireUsbBus() {
+    auto& bus=riu_.usbHost.bus;
+    bus.read=[this](uint32_t a,size_t n){
+      a&=0x1fffffff;   // the driver programs KSEG0/KSEG1 aliases; the MIU decodes the low 29 address bits
+      try{return riu_.dramRead(a,n);}catch(const std::exception& e){throw std::runtime_error(std::string("USB host DMA read of ")+hex(a)+" ("+std::to_string(n)+" bytes): "+e.what());}};
+    bus.write=[this](uint32_t a,std::span<const uint8_t> b){riu_.dramWrite(a&0x1fffffff,b);};
+    bus.event=[this](const std::string& k,uint32_t a,uint32_t n,const std::string& d){event(k,a,n,0,d);};
+    bus.phyPowered=[this](unsigned port){return riu_.usbPhyPowered(port);};
+    bus.storedKnown=[this](uint32_t off){return riu_.usbStoredKnown(off);};
+    bus.storedReg=[this](uint32_t off){
+      if(!riu_.usbStoredKnown(off))throw std::runtime_error("USB host register "+std::to_string(off)+" read by the controller model before the guest defined it");
+      return riu_.usbStoredReg(off);};
+}
+// EXPLORATORY hot plug ("usb-insert=IMAGE" remote function, the web page's pendrive button): the same device model as --exploratory-usb-pendrive,
+// inserted into a running machine. The model adopts the UHC registers the guest already programmed; the firmware's own driver then sees the attach.
+void Msd309Machine::insertUsbImage(const std::string& path) {
+  if (riu_.usbHost.enabled()) throw std::runtime_error("a USB pendrive is already inserted");
+  std::ifstream image(path, std::ios::binary);
+  if (!image) throw std::runtime_error("cannot open USB pendrive image " + path);
+  std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(image)), std::istreambuf_iterator<char>());
+  if (bytes.size() < 64 * 512 || bytes.size() % 512 || bytes.size() > (256ull << 20)) throw std::runtime_error("USB pendrive image must be 32 KiB..256 MiB in whole sectors");
+  riu_.usbHost.attach(std::move(bytes));
+  wireUsbBus();
+  riu_.usbHost.adopt([this](int idx) { return riu_.usbStoredByte(idx); });
+  riu_.usbDeviceAttachedPort0 = true;
+  if (options_.exploratoryUsbPendrive.empty()) options_.exploratoryUsbPendrive = path;   // summary and snapshots treat it like the option
+}
 void Msd309Machine::attachCopro() {
   const size_t ramSize = std::min<size_t>(dramBacking_.size(), 0x08000000);
   copro_.jpdEnabled = options_.exploratoryCoproJpd;
@@ -2467,6 +2485,11 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
 // Virtual remote delivery (emulator thread only). A host function becomes a decoded IR frame in the emulated PM IR FIFO; the original
 // firmware then polls the FIFO itself. Events the receiver cannot take yet (firmware has not enabled it) wait, they are never dropped silently.
 void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requestedAt) {
+  if (function.rfind("usb-insert=", 0) == 0) {   // EXPLORATORY pendrive hot plug (not a remote key)
+    try { insertUsbImage(function.substr(11)); irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY USB pendrive inserted"}); }
+    catch (const std::exception& e) { irLog_.push_back({dispatches_, function, -1, false, std::string("USB insert failed: ") + e.what()}); }
+    return;
+  }
   // EXPLORATORY local-keypad press (other-board firmware): "sar=CHANNEL.BIN[.HOLD]" drives SAR ADC channel CHANNEL (0/1) into key bin BIN (0..3: the
   // original scan code compares 30 samples against thresholds 32/94/156/212) for HOLD dispatches (default 8 M), then returns it to full scale (no key).
   {

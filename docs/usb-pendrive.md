@@ -74,3 +74,15 @@ Stick with `/MOVIE/*` clips (320x240, 3 s, ffmpeg test sources), media browser M
 
 ## Run speed note (session 12)
 A profile of a 650M-dispatch headless run showed 97% of the time in the preview composer (`collectGopLayers` / `composeGopPreview` plus memcpy), because `--gop-frame-history` composes the full 1920x1080 preview every 2^14 dispatches. `--gop-history-interval-log2 N` (diagnostic, default 14 = unchanged output) makes it coarser; with N=20 the same run took 2.8 min instead of 32 min. Remaining top cost: `codeHook` 17%, preview 12%, OR1K core 6%, `pushRecent` 5%.
+
+## Hot plug and the browser stick (2026-11-04)
+* `usb-insert=IMAGE` (a remote-queue function, e.g. `--ir-script 1302000000:usb-insert=stick.img`, or the web page's **Plug in** button) inserts the same
+  device model into a running machine: `Msd309Machine::insertUsbImage` attaches the image, wires the DMA/PHY bus and `UsbHost::adopt` takes over the UHC
+  registers the guest had already programmed (USBCMD, USBINTR, port power, extension block) while no model was present. One stick per run (no eject yet).
+* From the NO SIGNAL snapshot: insert, SOURCE (0x41), DOWN x5 (USB), OK. The original driver resets the port, enumerates (descriptors, SET_ADDRESS,
+  SET_CONFIGURATION, BOT/SCSI) about 4-5 s of firmware time later, and the media player shows **USB 2.0** with PHOTO / MUSIC / MOVIE / TEXT; TEXT lists the
+  files with their long names (`C:\`, folders, pages). Native run: 239 transactions, 86 SCSI commands, 59 blocks read.
+* `site/live/pendrive.js` builds the image in the browser (same FAT32 layout as `tools/make_pendrive_image.py`, root directory may span several clusters;
+  files up to 128 MB in total). The worker writes it to the in-memory file system, sends `usb-insert=/data/usb.img` and deletes the file after the device
+  model has its copy. Photo/video decode need the coprocessor/JPD/MVOP options, which the browser profile does not include.
+* Firmware updates from a stick also need the SPI NOR write candidate (`--candidate-spi-nor-write`), not in the browser profile yet.

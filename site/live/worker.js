@@ -1,7 +1,8 @@
 // Runs the browser build of the emulator (manta.js / manta.wasm: the original MStar firmware, statically recompiled, plus the machine model) in a worker
-// so the page stays responsive. Messages in: {type:'start', base}, {type:'key', fn}, {type:'pause', on}.
+// so the page stays responsive. Messages in: {type:'start', base}, {type:'key', fn}, {type:'pause', on}, {type:'usb', image} (a FAT32 disk image built
+// by the page from the visitor's files: written to the in-memory file system and hot-plugged as the EXPLORATORY virtual pendrive).
 // Out: progress, log, ready, frame, stats (heartbeat), crashed {message} (machine stop, wasm trap or uncaught error), error (start failed).
-let M = null, paused = false, lastSeq = 0, stopped = false, lastReason = '', lastNative = '';
+let M = null, usbUnlink = 0, paused = false, lastSeq = 0, stopped = false, lastReason = '', lastNative = '';
 const post = (m, t) => self.postMessage(m, t || []);
 const crashed = msg => { if (stopped) return; stopped = true; post({ type: 'crashed', message: msg }); };
 self.addEventListener('error', e => crashed('uncaught error: ' + (e.message || e)));
@@ -46,6 +47,7 @@ function loop() {
       post({ type: 'frame', w, h, buf, seq }, [buf]);
     }
     post({ type: 'stats', dispatches: M._manta_dispatches(), slice: M._manta_dispatches() - d0, ms: performance.now() - t0 });
+    if (usbUnlink && --usbUnlink === 0) { try { M.FS.unlink('/data/usb.img'); } catch (_) {} post({ type: 'usb', state: 'inserted' }); }   // the device model keeps its own copy
   } catch (err) {
     crashed('the emulator crashed: ' + String(err && err.message || err) + (lastNative ? ' (' + lastNative + ')' : ''));
     return;
@@ -58,6 +60,12 @@ self.onmessage = async e => {
   const m = e.data;
   if (m.type === 'key') { key(m.fn); return; }
   if (m.type === 'pause') { paused = !!m.on; return; }
+  if (m.type === 'usb') {
+    if (!M || stopped) return;
+    try { M.FS.mkdirTree('/data'); M.FS.writeFile('/data/usb.img', new Uint8Array(m.image)); key('usb-insert=/data/usb.img'); usbUnlink = 4; }
+    catch (err) { post({ type: 'usb', state: 'failed', message: String(err && err.message || err) }); }
+    return;
+  }
   if (m.type !== 'start' || M) return;
   try {
     const base = m.base; if (m.reload) fetchMode = 'reload';

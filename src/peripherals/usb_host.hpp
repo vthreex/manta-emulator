@@ -240,6 +240,16 @@ public:
   static constexpr uint32_t kBase = 0x1f204800u, kSize = 0x200u;
 
   void attach(std::vector<uint8_t> image) { dev_ = std::make_unique<UsbMassStorage>(std::move(image)); }
+  // Hot plug into a running machine (EXPLORATORY): the model takes over registers the guest already programmed while no model was present.
+  // stored(idx) returns a guest-written UHC byte, or -1 when the guest never defined it (the model default then stays).
+  void adopt(const std::function<int(int)>& stored) {
+    for (int i = 0; i < 4; ++i) if (int b = stored(0x10 + i); b >= 0) cmd_ = (cmd_ & ~(0xffu << (8 * i))) | (uint32_t(b) << (8 * i));
+    cmd_ &= ~0x42u;   // HCRESET / IAAD are self-clearing commands, not state
+    for (int i = 0; i < 4; ++i) if (int b = stored(0x18 + i); b >= 0) intr_ = (intr_ & ~(0xffu << (8 * i))) | (uint32_t(b) << (8 * i));
+    if (int b = stored(0x31); b >= 0) portsc_ = (portsc_ & ~0x1000u) | ((uint32_t(b) << 8) & 0x1000u);   // port power
+    for (int i = 0x34; i < 0x50; ++i) if (int b = stored(i); b >= 0) store_[i] = uint8_t(b);
+    note("usb_pendrive_hotplug", 0, 0, "EXPLORATORY: pendrive inserted into the running machine; guest-programmed UHC registers adopted by the model");
+  }
   bool enabled() const { return dev_ != nullptr; }
   UsbMassStorage* device() const { return dev_.get(); }
   Bus bus;

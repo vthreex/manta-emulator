@@ -223,6 +223,8 @@ class Msd309Machine {
   Copro copro_;
   void startCopro(uint32_t riuAddress);
   void attachCopro();
+  void wireUsbBus();
+  void insertUsbImage(const std::string& path);
   void updateIrqLines();
   uint32_t irqLinesApplied_=0;
   uint64_t coproLoadInspections_=0;

@@ -488,6 +488,7 @@ public:
   uint16_t exploratoryGeFillIgnoredReg00=0;   // EXPLORATORY: reg00 bits assumed not to affect a solid fill
   // stored (guest-written) 16-bit RIU register pair at a UHC byte offset; 0xffff known mask required
   bool usbStoredKnown(uint32_t off) const { return knownBits(UsbHost::kBase+off*2,2)==0xffff && knownBits(UsbHost::kBase+(off+2)*2,2)==0xffff; }
+  int usbStoredByte(int idx) const { uint32_t a=UsbHost::kBase+uint32_t(idx&~1)*2+uint32_t(idx&1); return knownBits(a,1)==0xff?int(get(a,1)):-1; }   // guest-written UHC byte or -1
   uint32_t usbStoredReg(uint32_t off) const { return get(UsbHost::kBase+off*2,2)|(get(UsbHost::kBase+(off+2)*2,2)<<16); }
   // EXPLORATORY multimedia coprocessor (opt-in): shared view of the mailbox window and a notification of MIPS stores to it / to the reset-control byte.
   std::function<void(uint32_t, unsigned, uint32_t)> coproNotify;
