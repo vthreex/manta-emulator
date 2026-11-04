@@ -709,7 +709,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     if((exploratoryAvdNoHsync_ && analogDisconnected_) || exploratoryAtvSignal_ || atvLockedStation()>=0)v|=bit;
     if(atvLockedStation()>=0)v|=0xffu<<(8*(0x1f206b99-a));
   }
-  if(atvLockedStation()>=0){ for(uint32_t at:{0x1f206b98u,0x1f206b8du,0x1f206b90u,0x1f206a04u,0x1f206b89u,0x1f206b8cu,0x1f206b94u,0x1f206bb8u})if(a<=at && uint64_t(a)+n>at)v|=0xffu<<(8*(at-a)); if(a<=0x1f206a01 && uint64_t(a)+n>0x1f206a01)v|=0xf8u<<(8*(0x1f206a01-a)); if(a<=0x1f224471 && uint64_t(a)+n>0x1f224471)v|=1u<<(8*(0x1f224471-a)); if(a<=0x1f224470 && uint64_t(a)+n>0x1f224470)v|=0xffu<<(8*(0x1f224470-a));
+  if(atvLockedStation()>=0){ for(uint32_t at:{0x1f206b98u,0x1f206b8du,0x1f206b90u,0x1f206a04u,0x1f206b89u,0x1f206b8cu,0x1f206b94u,0x1f206bb8u})if(a<=at && uint64_t(a)+n>at)v|=0xffu<<(8*(at-a)); if(a<=0x1f206a01 && uint64_t(a)+n>0x1f206a01)v|=0xffu<<(8*(0x1f206a01-a)); if(a<=0x1f224471 && uint64_t(a)+n>0x1f224471)v|=0xffu<<(8*(0x1f224471-a)); if(a<=0x1f224470 && uint64_t(a)+n>0x1f224470)v|=0xffu<<(8*(0x1f224470-a));
   }
   if(a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41){
     auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;
@@ -805,9 +805,12 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
         setb(0x1f206b94,0xff,e94); setb(0x1f206b98,0xff,e98&0xff); setb(0x1f206b99,0xff,e98>>8); setb(0x1f206bb8,0xff,0x00);}   // VD status: RDY 15, HSYNC 14, interlaced 13, 50 Hz 12, colour lock 10, PAL switch 9 (MStar drvAVD bit names; ASSUMED)
       if(atvMask&4){setb(0x1f206b8d,0xff,1135&0xff); setb(0x1f206b90,0xff,1135>>8);} if(atvMask&8)setb(0x1f224471,0x01,0x01);
       { static const double foeSign=std::getenv("MANTA_FOE_SIGN")?std::atof(std::getenv("MANTA_FOE_SIGN")):1.0;   // VIF CR_FOE 0x1F224470: signed carrier offset, 12.5 kHz per LSB (ASSUMED)
-        const int foe=std::clamp(int(std::lround(-off*foeSign*1000.0/12.5)),-127,127); setb(0x1f224470,0xff,uint32_t(uint8_t(int8_t(foe)))); }
+        const int foe=std::clamp(int(std::lround(-off*foeSign*1000.0/12.5)),-127,127); static const int foeConst=std::getenv("MANTA_FOE_CONST")?int(std::strtol(std::getenv("MANTA_FOE_CONST"),nullptr,0)):-1;
+        setb(0x1f224470,0xff,foeConst>=0?uint32_t(foeConst):uint32_t(uint8_t(int8_t(foe)))); }
       const double lv=atvStations[size_t(st)].level; if(atvMask&16)setb(0x1f206a04,0xff,uint32_t(std::min(255.0,std::fabs(off)*160.0+(1.0-std::min(1.0,lv))*200.0)));
     } }
+  if(g_readHist.on && std::getenv("MANTA_LOCK_TRACE") && a<=0x1f224471 && uint64_t(a)+n>0x1f224471) std::fprintf(stderr,"L %d %.3f %02x\n",atvLockedStation(),atvTunedMHz(),unsigned((v>>(8*(0x1f224471-a)))&0xff));
+  if(g_readHist.on)for(uint32_t at:{0x1f224471u,0x1f224470u})if(a<=at && uint64_t(a)+n>at) ++g_readHist.m[0x0d000000u|((at&0xff)<<12)|(unsigned(n)<<8)|((v>>(8*(at-a)))&0xff)|(atvLockedStation()>=0?0x00100000u:0u)];
   if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41)
     if(auto captured=irDma_.capturePresent()){
       auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;if(*captured)v|=bit;

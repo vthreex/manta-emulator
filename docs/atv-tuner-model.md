@@ -22,6 +22,10 @@ While the programmed RF is within 3 MHz of a station: 3501 = 0x78 (sync bit + le
 original AVD program, VIF lock bit 1, CR_FOE = -(offset)/12.5 kHz, noise byte from offset/level; the AVD MCU shared reads get the PAL model.
 The presenter shows the station picture with snow/tearing from offset/level when the firmware un-mutes.
 
-## Open
-The search still does not store a station and the stored channel's AFC sawtooth never settles: some further condition of the search state
-machine (806BDECC states, 80403940..80403A40) is unmet. Next: follow 803E3488 -> 803E31C4 and 8040C1B0 -> 804F5E00 (must not return 0xF).
+## Result
+ATV Manual Tuning -> Search with a station at 55.25 MHz: the original search detects PAL (80502B80 -> 0x4000), its AFC check (804F2858: CR lock
+1F224471 bit0, then CR_FOE 1F224470 -> class; FOE 0/1 -> class 0x0F = centred) passes, it fine-tunes back to divider 1506 (55.225 MHz), stops and
+shows "Frequency 55.25 MHz" with the picture un-muted (evidence/atv-station-found-55.25MHz.png).
+* The decisive detail: with the live profile's zero-unknown rule a partly known byte reads 0 outright, so the station model marks the whole
+  lock / FOE / 3501 bytes known while tuned to a station.
+* Search state machine: state 806BDECC (jump table 8060F63C), 0x11 = detect (803E34BC), 0x16 = AFC (804039C4), AFC class 806B8E80.

@@ -91,6 +91,8 @@ struct MachineBus : Bus {
       clock(c);
       uint32_t v = uint32_t(a.mmioRead(p - 0x1f000000u, n));
       if (a.stopped) c.halt = true;
+      static const bool lockTrace = std::getenv("MANTA_LOCK_PC") != nullptr;
+      if (lockTrace && p <= 0x1f224471u && p + n > 0x1f224471u) std::fprintf(stderr, "LP %08x %u %08x\n", pc, n, v);
       return v;
     }
     if (p >= 0x1fc00000u || (p >= 0x14000000u && p < 0x14800000u && a.options.candidateSpi)) {   // flash aperture / XIU window (read-only memory in the machine)

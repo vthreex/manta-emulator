@@ -2910,6 +2910,12 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"candidate_bdma\": " << (options_.candidateBdma ? "true" : "false")
     << ",\n  \"diagnostic_init_prefix\": " << (options_.initPrefix ? "true" : "false")
     << ",\n  \"candidate_uart\": " << (options_.candidateUart ? "true" : "false")
+    << [&]{ std::string o; if (const char* e = std::getenv("MANTA_RAM_DUMP")) {   // diagnostic: "ADDR+LEN,..." guest RAM bytes in the summary
+        std::string spec = e; size_t at = 0; o = ",\n  \"ram_dump\": {";
+        while (at < spec.size()) { size_t c = spec.find(',', at); if (c == std::string::npos) c = spec.size(); auto item = spec.substr(at, c - at); at = c + 1;
+          auto plus = item.find('+'); uint32_t a0 = uint32_t(std::stoul(item.substr(0, plus), nullptr, 16)), n = uint32_t(std::stoul(item.substr(plus + 1), nullptr, 16));
+          o += "\"" + item + "\": \""; for (uint32_t i = 0; i < n; ++i) { uint32_t p = (a0 + i) & 0x1fffffff; char b[4]; std::snprintf(b, 4, "%02x", p < dramBacking_.size() ? dramBacking_[p] : 0); o += b; } o += "\",";
+        } o.back() = '}'; } return o; }()
     << ",\n  \"gpio_i2c\": " << (options_.gpioI2c ? "true" : "false")
     << ",\n  \"candidate_miu\": " << (options_.candidateMiu ? "true" : "false")
     << ",\n  \"deferred_diagnostic_reads\": " << deferredReads_
