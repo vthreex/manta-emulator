@@ -141,6 +141,10 @@ def build_command(st: Settings, shm_name: str):
     args = list(prof['args'])
     if st.analog_input != 'pal-test':
         args = without_test_signal(args)
+    # EXPLORATORY axis-aligned GE line model (docs/factory-menu.md): the factory (8202) and hotel (4578) windows draw their frames with GE line
+    # commands; without it the machine stops there ("GE raster primitive/mode unsupported")
+    if '--exploratory-ge-line' not in args:
+        args.append('--exploratory-ge-line')
     fw = st.firmware or str(REPO / 'work' / 'firmware-original.bin')
     args = ['--firmware', fw] + args
     try:

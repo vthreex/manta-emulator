@@ -10,6 +10,7 @@ namespace manta {
 class Flash {
   friend void ioClass(snap::Ar&, Flash&);
   std::vector<uint8_t> stock_;
+  mutable std::string stockDigest_;   // cache of sha256(stock_)
   std::map<uint32_t, std::array<uint8_t, 4096>> sectors_;
   bool wel_ = false;
   bool protected_ = false;

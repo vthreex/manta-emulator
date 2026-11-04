@@ -21,7 +21,7 @@ struct Region {
 };
 struct uc_struct {
   std::vector<Region> regions;
-  std::map<int, uint32_t> regs;
+  uint32_t regs[UC_MIPS_REG_ENDING] = {};   // flat register file: the native CPU syncs all registers to the machine before every MMIO access
 };
 static constexpr size_t kBlob = 11196;
 struct __attribute__((packed)) uc_context { size_t payload; uint8_t blob[kBlob]; };   // packed: uc_context_size() - payload must be the blob offset (snapshot.cpp)
@@ -57,8 +57,8 @@ uc_err uc_mem_write(uc_engine* uc, uint64_t a, const void* in, uint64_t n) {
   for (size_t i = 0; i < n; ++i) r->wr(uc, a + i - r->begin, 1, p[i], r->wrUser);
   return UC_ERR_OK;
 }
-uc_err uc_reg_read(uc_engine* uc, int id, void* v) { auto it = uc->regs.find(id); uint32_t x = it == uc->regs.end() ? 0 : it->second; std::memcpy(v, &x, 4); return UC_ERR_OK; }
-uc_err uc_reg_write(uc_engine* uc, int id, const void* v) { uint32_t x; std::memcpy(&x, v, 4); uc->regs[id] = x; return UC_ERR_OK; }
+uc_err uc_reg_read(uc_engine* uc, int id, void* v) { uint32_t x = (id >= 0 && id < UC_MIPS_REG_ENDING) ? uc->regs[id] : 0; std::memcpy(v, &x, 4); return UC_ERR_OK; }
+uc_err uc_reg_write(uc_engine* uc, int id, const void* v) { if (id < 0 || id >= UC_MIPS_REG_ENDING) return UC_ERR_ARG; std::memcpy(&uc->regs[id], v, 4); return UC_ERR_OK; }
 uc_err uc_hook_add(uc_engine*, uc_hook* h, int, void*, void*, uint64_t, uint64_t, ...) { *h = 0; return UC_ERR_OK; }
 uc_err uc_hook_del(uc_engine*, uc_hook) { return UC_ERR_OK; }   // no hooks are ever installed (the browser linker keeps references the Linux --gc-sections dropped)
 // Snapshot restore replays the guest TLB installs through a short MIPS routine; the native runtime has no TLB (it hard-wires the one observed kseg2 mapping, see

@@ -96,7 +96,8 @@ std::string Flash::overlayDigest() const {
   }
   return sha256(b);
 }
-std::string Flash::stockDigest() const { return sha256(stock_); }
+// The stock image is only set by the constructor and never modified, so its digest is computed once (it is asked for on every composed preview frame).
+std::string Flash::stockDigest() const { if (stockDigest_.empty()) stockDigest_ = sha256(stock_); return stockDigest_; }
 static void u32(std::vector<uint8_t> &b, uint32_t x) {
   for (int i = 0; i < 4; ++i)
     b.push_back(uint8_t(x >> (8 * i)));

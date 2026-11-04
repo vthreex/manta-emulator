@@ -31,8 +31,9 @@ hdr_mtime = max(os.path.getmtime(h) for h in glob.glob(S("src/**/*.hpp"), recurs
 
 def compile_one(src):
     o = os.path.join(obj, os.path.relpath(src, repo).replace(os.sep, "_").replace("/", "_") + ".o")
-    if os.path.exists(o) and os.path.getmtime(o) > max(os.path.getmtime(src), hdr_mtime) and "--force" not in sys.argv: return o, None
     gen = "native" + os.sep + "gen" in src
+    deps = os.path.getmtime(S("native/runtime/rt.hpp")) if gen else hdr_mtime   # the recompiled firmware only includes rt.hpp
+    if os.path.exists(o) and os.path.getmtime(o) > max(os.path.getmtime(src), deps) and "--force" not in sys.argv: return o, None
     # every source, the emu8051 .c files included, is compiled as C++ (as in native/linux/build.py: the 8051 core is called with C++ linkage)
     cmd = [emxx, "-std=c++20", "-x", "c++", "-c", src, "-o", o] + common + inc + (["-O1", "-fno-strict-aliasing", "-w"] if gen else ["-O2", "-w"])
     r = subprocess.run(cmd, capture_output=True, text=True, env=env)

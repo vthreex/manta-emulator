@@ -150,6 +150,7 @@
   "0",
   "--exploratory-avd-noise-constant",
   "0",
+  "--exploratory-ge-line",
   "--load-state",
   "/data/state.snap",
   "--load-state-allow-extra-options",
@@ -180,7 +181,7 @@
   "state.snap": 27430694,
   "files/ir-keymap.tsv": 5638,
   "files/sar-keymap.tsv": 1313,
-  "manta.wasm": 38450293
+  "manta.wasm": 38449859
  },
  "versions": {
   "firmware.bin": "d60645b549a4",
@@ -189,7 +190,7 @@
   "state.snap": "21c632a059a7",
   "files/ir-keymap.tsv": "ce115a11ef6d",
   "files/sar-keymap.tsv": "2306b2d48ac3",
-  "manta.wasm": "6ed3b36a682a",
+  "manta.wasm": "d117c3d243b7",
   "manta.js": "8d64a36097c2",
   "worker.js": "831aa06e3462"
  },
