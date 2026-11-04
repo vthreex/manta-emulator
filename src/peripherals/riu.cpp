@@ -1279,6 +1279,12 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
   advanceTsp(tick);
   advanceVd(tick);
   advanceAvd(tick);
+  // Original whole-chip reset (803BD160, called after a successful USB update): password 0x5168 in 1F001D40/1D44, 1F001CA4 |= 0xC0, then 0x79 to
+  // 1F001CB8 and an endless `j .` waiting for the hardware. The reset itself is not modelled: the machine stops here with an explicit reason.
+  if(a<=0x1f001cb8 && uint64_t(a)+n>0x1f001cb8 && ((v>>(8*(0x1f001cb8-a)))&0xff)==0x79 && get(0x1f001d40,2)==0x5168 && get(0x1f001d44,2)==0x5168){
+    event("whole_chip_reset_request",0x1f001cb8,1,0x79,"original reset sequence (password 5168, 1CA4 |= C0, 1CB8 = 79); the SoC reset is not modelled");
+    stopReason="the firmware requested a whole-chip reset (reboot)";
+  }
   if(candidatePmIrFifo_ && a<=0x1f007b59 && uint64_t(a)+n>0x1f007b59)
     throw std::runtime_error("PM IR FIFO status is hardware-owned, not writable storage");
   if(candidatePmIrFifo_ && a<=0x1f007b51 && uint64_t(a)+n>0x1f007b51)
