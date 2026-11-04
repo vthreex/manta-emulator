@@ -95,3 +95,11 @@ The app-key switch at 0x80617D1C (indexed by the app code, 8046DE14) prints debu
 Not identifiable in these states (no visible reaction): the teletext/media keys INDEX, ⏸, REVEAL, HOLD, RADIO, 3D, REC and ≡. They need a teletext
 signal or a playing USB file (photo/music decode is not in the browser profile). Candidate raws with own handlers but no reaction: 0x00 0x13 0x14 0x1B
 0x21 0x22 0x43 0x44 0x46 0x47 0x4F 0x51 0x53 0x58 0x59 0x5A 0x5C 0x5F 0x72 0xBD 0xBE 0xC1 0xC3 0xCC-0xCE 0xD2 0xF0 0xF2 0xF8.
+
+### Colour and media keys (follow-up)
+* The MHEG key forwarder (8045AD20, strings 111_MHEG5_Red/Green/Yellow/Blue) compares the app code with 0x1C / 0x1D / 0x33 / 0x34: red = app 0x1C
+  (raw 0x53 or 0x72), green = 0x1D (raw 0x5B, the green SUBTITLE button), yellow = 0x33 (raw 0xF0), blue = 0x34 (raw 0x47).
+* raw 0x47 in the USB photo list (file selected) -> the original 'Loading...' (playback starts): mapped to INDEX (play).
+* Not resolved: the USB file list's 'Sub Menu' (red dot) did not open for any of the 256 raw bytes in the emulator (file list, folder and file selected,
+  30/40/150 M dispatch windows); REC is mapped to the red candidate 0x53. 3D: no key found; the 3D page (EN_EXE_GOTO_3D_MODE_PAGE_LIST, 804C86F0) is a
+  menu action. INDEX/ZOOM/REVEAL/HOLD/RADIO teletext functions need a teletext signal.

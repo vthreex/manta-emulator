@@ -180,7 +180,7 @@
   "files/pm-ir-fifo-replay-policy.tsv": 3497,
   "files/opaque-afec-indirect-port.tsv": 8111,
   "state.snap": 27430694,
-  "files/ir-keymap.tsv": 7089,
+  "files/ir-keymap.tsv": 7651,
   "files/sar-keymap.tsv": 1313,
   "manta.wasm": 38982376
  },
@@ -189,7 +189,7 @@
   "files/pm-ir-fifo-replay-policy.tsv": "07db82416c03",
   "files/opaque-afec-indirect-port.tsv": "e2e75ef3a76b",
   "state.snap": "21c632a059a7",
-  "files/ir-keymap.tsv": "e3497c07e69a",
+  "files/ir-keymap.tsv": "b940e3941044",
   "files/sar-keymap.tsv": "2306b2d48ac3",
   "manta.wasm": "9eef48f6c399",
   "manta.js": "8416abc91b86",
