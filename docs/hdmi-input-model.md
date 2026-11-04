@@ -26,7 +26,23 @@ are generated from standard CEA-861 / VESA timings; nothing here is a measuremen
 | 640x480@60 | DVI1 640x480@60Hz |
 | 1920x1080i@60 | DVI1 1080i@60Hz (needs V total = whole frame and the window over both fields; per-field values give 1920x540) |
 
+## Input selection
+The generated timing answers only while the firmware selects the digital input: SC bank 1 reg `0x02` bits 2:0 = 7 (observed HDMI `0x407`/`0x487`,
+AV `0x584`, YPbPr `0x4F0`, VGA `0x80`). On ATV/AV/SCART the TV keeps showing NO SIGNAL.
+
+## Picture (`--exploratory-input-picture FILE.bmp`, default: a built-in generated landscape with a colour-bar strip)
+Once the firmware detects the signal it programs the pipeline itself (bank-resolved write log, HDMI1 1080p60 vs no signal): capture window bank 1 regs
+`0x04`..`0x07` = V 41, H 192, 1080 x 1920; IPM fetch 1920 / 1080 lines (bank 0x12); scaling 1:1 (bank 0x23; the panel LC420WUE is 1920x1080);
+YUV->RGB matrix (banks 0x10 / 0x0F); bank 0x10 reg `0x19` written 0. The presenter (`Msd309Machine::publishPreview`) draws the picture behind the OSD only while
+bank 0x10 reg `0x19` = 0 (main-window mute, meaning inferred from that write), inside the main display window (bank 0x10 regs `0x08`..`0x0B`, panel pixels;
+observed 112..2031 x 0..1079 = the panel DE window regs `0x04`..`0x07`), cropped like the capture window. Nearest scaling, no colour processing.
+Verified behaviour: plug in -> picture, WIDE -> the firmware's aspect modes crop/zoom it, unplug -> the firmware mutes and shows NO SIGNAL again.
+
+## Run time and browser
+* Remote functions `hdmi-signal=MODE` / `hdmi-signal=off` (plug / unplug) and `input-picture=FILE.bmp` (empty = built-in), e.g. in `--ir-script`.
+* Live page box "HDMI input": mode list, "Picture..." (any image, converted to a 32-bit BMP in the browser), "Switch to HDMI1" (raw `0xF7`), Plug in / Unplug.
+  After Restart/Reboot a plugged cable is plugged in again.
+
 ## Not modelled yet
-* HDMI packets (flag 0 / AVI InfoFrame) -> the banner says DVI1, not HDMI1; colour space and video code are not provided.
-* The picture: the firmware programs the scaler for the input, but no video pixels are generated, so the screen behind the OSD stays empty.
-* Hot plug / changing the mode at run time, and the browser settings.
+* HDMI packets (flag 0 / AVI InfoFrame) -> the banner says DVI1, as a real set does for a source that sends no HDMI packets (e.g. a DVI source).
+* Colour processing of the picture (brightness/contrast/colour settings), audio from HDMI, HDCP, and the sub window.

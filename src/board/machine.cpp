@@ -1,3 +1,4 @@
+#include "video/hdmi_modes.hpp"
 #include "board/machine.hpp"
 #include "video/pal_cvbs.hpp"
 #include "profile/sampler.hpp"
@@ -2490,6 +2491,24 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
 // Virtual remote delivery (emulator thread only). A host function becomes a decoded IR frame in the emulated PM IR FIFO; the original
 // firmware then polls the FIFO itself. Events the receiver cannot take yet (firmware has not enabled it) wait, they are never dropped silently.
 void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requestedAt) {
+  // EXPLORATORY generated HDMI/DVI input (docs/hdmi-input-model.md), changed at run time like plugging a cable: "hdmi-signal=1920x1080@60" or
+  // "hdmi-signal=off"; "input-picture=FILE.bmp" (empty = built-in picture). Not remote keys.
+  if (function.rfind("hdmi-signal=", 0) == 0) {
+    const std::string mode = function.substr(12);
+    if (mode == "off") { riu_.inputTiming = {}; irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY HDMI signal removed"}); return; }
+    if (auto t = hdmiModeTiming(mode)) {
+      riu_.inputTiming.on = true; riu_.inputTiming.hperiod = (*t)[0]; riu_.inputTiming.vtotal = (*t)[1]; riu_.inputTiming.sync = uint8_t((*t)[2]);
+      riu_.inputTiming.window = true; riu_.inputTiming.vstart = (*t)[3]; riu_.inputTiming.hstart = (*t)[4]; riu_.inputTiming.vend = (*t)[5]; riu_.inputTiming.hend = (*t)[6];
+      options_.exploratoryHdmiSignal = mode;
+      irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY HDMI signal " + mode});
+    } else irLog_.push_back({dispatches_, function, -1, false, "unknown HDMI mode (" + hdmiModeList() + ")"});
+    return;
+  }
+  if (function.rfind("input-picture=", 0) == 0) {
+    options_.exploratoryInputPicture = function.substr(14); inputPicture_ = {};
+    irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY input picture"});
+    return;
+  }
   if (function.rfind("usb-insert=", 0) == 0) {   // EXPLORATORY pendrive hot plug (not a remote key)
     try { insertUsbImage(function.substr(11)); irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY USB pendrive inserted"}); }
     catch (const std::exception& e) { irLog_.push_back({dispatches_, function, -1, false, std::string("USB insert failed: ") + e.what()}); }
@@ -2580,6 +2599,13 @@ void Msd309Machine::publishPreviewLive() const {
     }
     if (!options_.videoPlane.empty() && dramBacking_.size() > 0x006fbd85) mix(dramBacking_[0x006fbd85]);
     mix(riu_.geBlendCopies); mix(riu_.geI2Glyphs); mix(riu_.geUniformStretches);
+    if (riu_.inputTiming.on) {   // EXPLORATORY input picture: signal, picture and the firmware registers that place it
+      const auto& t = riu_.inputTiming;
+      mix(t.hperiod); mix(t.vtotal); mix(t.hstart); mix(t.vstart); mix(t.hend); mix(t.vend); mix(inputPicture_.width); mix(inputPicture_.height);
+      mix(std::hash<std::string>{}(options_.exploratoryInputPicture));
+      for (unsigned reg : {0x19u, 0x04u, 0x05u, 0x06u, 0x07u, 0x08u, 0x09u, 0x0au, 0x0bu}) { auto l = riu_.scByte(0x10, reg * 4), hb = riu_.scByte(0x10, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
+      for (unsigned reg : {0x02u, 0x04u, 0x05u, 0x06u, 0x07u}) { auto l = riu_.scByte(0x01, reg * 4), hb = riu_.scByte(0x01, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
+    } else mix(0x51ab);
     if (h == liveSignature_) { options_.previewStore->setGuestStatus("MIPS dispatches " + std::to_string(dispatches_)); return; }
     liveSignature_ = h;
   }
@@ -2651,6 +2677,47 @@ void Msd309Machine::publishPreview() const {
     }
     { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }
     frame.label+=" | EXPLORATORY ATV PICTURE: generated PAL colour bars decoded by a host-side decoder model, stretched; NOT scaler/panel output";
+  }
+  if(riu_.inputTiming.on){
+    // the picture covers the whole panel, also when no OSD window is enabled: grow the frame to the OSD canvas (1360x768, the ZUI's coordinate space)
+    constexpr uint32_t CW=1360,CH=768;
+    if(frame.width<CW||frame.height<CH){
+      const uint32_t nw=std::max(frame.width,CW),nh=std::max(frame.height,CH);
+      std::vector<uint32_t> b(size_t(nw)*nh,0u); std::vector<uint8_t> c(size_t(nw)*nh,0);
+      for(uint32_t y=0;y<frame.height;++y)for(uint32_t x=0;x<frame.width;++x){b[size_t(y)*nw+x]=frame.bgra[size_t(y)*frame.width+x];c[size_t(y)*nw+x]=frame.covered[size_t(y)*frame.width+x];}
+      frame.bgra=std::move(b);frame.covered=std::move(c);frame.width=nw;frame.height=nh;frame.planeBgra.clear();
+    }
+    // EXPLORATORY input picture (docs/hdmi-input-model.md): the picture of the generated HDMI/DVI signal, placed by the ORIGINAL firmware's scaler
+    // programming: shown only while the main window is not muted (SC bank 0x10 reg 0x19 = 0, written by the firmware when it detects the signal;
+    // meaning inferred from that write, not verified), inside the main display window (bank 0x10 regs 0x08..0x0B: H start/end, V start/end in panel
+    // pixels, relative to the panel data-enable start in regs 0x04/0x06), cropped like the capture window (bank 1 regs 0x04..0x07: V start, H start,
+    // V size, H size relative to the input timing). Nearest scaling; no colour processing. Not decoded video, not verified panel output.
+    if(inputPicture_.empty()){
+      try{ inputPicture_ = options_.exploratoryInputPicture.empty() ? builtinPicture() : loadBmpPicture(options_.exploratoryInputPicture); }
+      catch(const std::exception& e){ inputPicture_ = builtinPicture(); std::fprintf(stderr,"EXPLORATORY: input picture not loaded (%s); using the built-in picture%c",e.what(),10); }
+    }
+    auto w16=[&](unsigned bank,unsigned reg,unsigned mask)->std::optional<unsigned>{auto l=riu_.scByte(bank,reg*4),h=riu_.scByte(bank,reg*4+1);unsigned k=l.known|(unsigned(h.known)<<8);if((k&mask)!=mask)return std::nullopt;return (l.value|(unsigned(h.value)<<8))&mask;};
+    auto mute=w16(0x10,0x19,0xffff);
+    auto dhs=w16(0x10,0x08,0xfff),dhe=w16(0x10,0x09,0xfff),dvs=w16(0x10,0x0a,0xfff),dve=w16(0x10,0x0b,0xfff);
+    auto phs=w16(0x10,0x04,0xfff),phe=w16(0x10,0x05,0xfff),pvs=w16(0x10,0x06,0xfff),pve=w16(0x10,0x07,0xfff);
+    auto cvs=w16(0x01,0x04,0xfff),chs=w16(0x01,0x05,0xfff),cvz=w16(0x01,0x06,0xfff),chz=w16(0x01,0x07,0xfff);
+    if(mute && *mute==0 && phs && phe && pvs && pve && *phe>*phs && *pve>*pvs){
+      const double panelW=*phe-*phs+1,panelH=*pve-*pvs+1;
+      int x0=0,x1=int(panelW)-1,y0=0,y1=int(panelH)-1;
+      if(dhs&&dhe&&dvs&&dve&&*dhe>*dhs&&*dve>*dvs){x0=int(*dhs)-int(*phs);x1=int(*dhe)-int(*phs);y0=int(*dvs)-int(*pvs);y1=int(*dve)-int(*pvs);}
+      const auto& t=riu_.inputTiming; const double inW=t.hend>t.hstart?t.hend-t.hstart+1:inputPicture_.width, inH=t.vend>t.vstart?t.vend-t.vstart+1:inputPicture_.height;
+      double cx=0,cy=0,cw=inW,ch=inH;
+      if(cvs&&chs&&cvz&&chz&&*chz&&*cvz){cx=double(*chs)-t.hstart;cy=double(*cvs)-t.vstart;cw=*chz;ch=*cvz;}
+      frame.planeBgra.assign(size_t(frame.width)*frame.height,0xff000000u);
+      for(uint32_t y=0;y<frame.height;++y){ const double py=(y+0.5)*panelH/frame.height; if(py<y0||py>y1+1)continue;
+        for(uint32_t x=0;x<frame.width;++x){ const double px=(x+0.5)*panelW/frame.width; if(px<x0||px>x1+1)continue;
+          const double ix=cx+(px-x0)*cw/(x1-x0+1), iy=cy+(py-y0)*ch/(y1-y0+1);
+          if(ix<0||iy<0||ix>=inW||iy>=inH)continue;
+          const unsigned sx=std::min<unsigned>(unsigned(ix*inputPicture_.width/inW),inputPicture_.width-1), sy=std::min<unsigned>(unsigned(iy*inputPicture_.height/inH),inputPicture_.height-1);
+          frame.planeBgra[size_t(y)*frame.width+x]=inputPicture_.bgra[size_t(sy)*inputPicture_.width+sx]; } }
+      { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }
+      frame.label+=" | EXPLORATORY INPUT PICTURE (generated HDMI/DVI signal) in the firmware's display window; NOT decoded video";
+    }
   }
   if(!options_.videoPlane.empty()){
     // EXPLORATORY: the emulator has no video plane. Pixels no enabled GOP window provides (or whose ARGB1555 alpha bit is clear) are shown in a

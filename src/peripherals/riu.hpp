@@ -585,6 +585,8 @@ public:
   InputTiming inputTiming;
   std::optional<uint8_t> inputTimingByte(uint32_t a) const {
     if (!inputTiming.on || scBank() != 1u) return {};
+    // only while the firmware selects the digital (HDMI/DVI) input: bank 1 reg 0x02 bits 2:0 = 7 (observed: HDMI 0x407/0x487, AV 0x584, YPbPr 0x4F0, VGA 0x80)
+    { auto sel = scByte(1, 0x08); if (sel.known & 7) { if ((sel.value & 7) != 7) return {}; } else return {}; }
     switch (a) {
     case 0x1f205e79: return inputTiming.sync;
     case 0x1f205e7c: return uint8_t(inputTiming.vtotal);

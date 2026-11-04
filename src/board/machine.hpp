@@ -1,4 +1,5 @@
 #pragma once
+#include "video/input_picture.hpp"
 #include <chrono>
 #include <functional>
 #include "video/pal_cvbs.hpp"
@@ -104,6 +105,7 @@ struct Options {
   bool nativeCpu=false;   // native build only (manta_native_full): run the statically recompiled firmware instead of the interpreter (needs --load-state)
   std::optional<std::array<uint16_t,7>> exploratoryInputTiming;   // EXPLORATORY: HPERIOD,VTOTAL,SYNC[,VSTART,HSTART,VEND,HEND] for the scaler IP1 mode detector (main window)
   std::string exploratoryHdmiSignal;   // EXPLORATORY: the --exploratory-hdmi-signal mode text, for the summary
+  std::string exploratoryInputPicture;   // EXPLORATORY: BMP shown as the video of the generated input signal (empty = built-in picture)
   bool nativeColdBoot=false;   // native build only: with --native-cpu and no --load-state, start at the reset vector (recompiled boot ROM, native/tools/gen_boot.py)
   bool exploratoryAtvPicture=false;     // EXPLORATORY preview only: decoded PAL test picture as the video plane (needs --exploratory-atv-signal pal)
   bool exploratoryAtvSignalPal=false;   // EXPLORATORY: PAL input signal for the AVD MCU (see docs/atv-signal-model.md); needs the AVD shared run and no absent-input hypotheses
@@ -227,6 +229,7 @@ class Msd309Machine {
   void startCopro(uint32_t riuAddress);
   void attachCopro();
   void wireUsbBus();
+  mutable InputPicture inputPicture_;   // EXPLORATORY: video of the generated input signal
   void insertUsbImage(const std::string& path);
   void updateIrqLines();
   uint32_t irqLinesApplied_=0;

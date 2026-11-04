@@ -121,6 +121,7 @@ static int appMain(const std::vector<std::string> &args) {
         if (k != 3 && k != 7) throw std::runtime_error("--exploratory-input-timing needs 3 or 7 fields");
         o.exploratoryInputTiming = t;
       }
+      else if (a == "--exploratory-input-picture") o.exploratoryInputPicture = value(i);
       else if (a == "--exploratory-hdmi-signal") {   // MODE like 1920x1080@60, 1920x1080i@60, 1280x720@50 (see manta::hdmiModeTiming)
         o.exploratoryHdmiSignal = value(i);
         auto t = manta::hdmiModeTiming(o.exploratoryHdmiSignal);

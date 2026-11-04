@@ -129,6 +129,18 @@ self.onmessage = async e => {
     return;
   }
   if (m.type === 'reboot-request') { if (M && !stopped) reboot('reboot requested'); return; }
+  // EXPLORATORY generated HDMI/DVI input: {type:'hdmi', mode:'1920x1080@60'|'off', image: ArrayBuffer (32-bit BMP) | null = built-in picture}
+  if (m.type === 'hdmi') {
+    if (!M || stopped) return;
+    try {
+      if (m.mode !== 'off') {
+        if (m.image) { M.FS.mkdirTree('/data'); M.FS.writeFile('/data/input.bmp', new Uint8Array(m.image)); key('input-picture=/data/input.bmp'); }
+        else key('input-picture=');
+      }
+      key('hdmi-signal=' + m.mode);
+    } catch (err) { post({ type: 'log', s: 'hdmi: ' + (err && err.message || err) }); }
+    return;
+  }
   if (m.type !== 'start' || M || assets) return;
   try {
     const base = m.base; if (m.reload) fetchMode = 'reload';

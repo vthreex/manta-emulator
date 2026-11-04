@@ -1241,7 +1241,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     event("exploratory_mstar_timer_write",a,n,v,"EXPLORATORY one-shot delay timer register write (assumed layout, not verified hardware)");
     return;
   }
-  if (tick >= writeLogFrom && (writeLog.size() < 6000 || writeLog.count(a))) { auto& s = writeLog[a]; if (!s.count) s.firstPc = pc; ++s.count; s.last = v; s.width = n; }
+  if (tick >= writeLogFrom && (writeLog.size() < 6000 || writeLog.count(storageKey(a)))) { auto& s = writeLog[storageKey(a)]; if (!s.count) s.firstPc = pc; ++s.count; s.last = v; s.width = n; }
   if(fiqModel && a>=0x1f2033b0u && a+n<=0x1f2033c0u){
     for(unsigned i=0;i<n;++i){
       unsigned off=a+i-0x1f2033b0u, reg=off>>2, byte=off&3;
