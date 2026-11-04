@@ -229,7 +229,9 @@ class Msd309Machine {
   void startCopro(uint32_t riuAddress);
   void attachCopro();
   void wireUsbBus();
-  mutable InputPicture inputPicture_;   // EXPLORATORY: video of the generated input signal
+  mutable InputPicture inputPicture_;
+  mutable std::vector<uint32_t> processedPicture_;   // inputPicture_ after the firmware-programmed colour pipeline (cache)
+  mutable uint64_t processedKey_ = 0;   // EXPLORATORY: video of the generated input signal
   void insertUsbImage(const std::string& path);
   void updateIrqLines();
   uint32_t irqLinesApplied_=0;

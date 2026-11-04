@@ -2603,7 +2603,8 @@ void Msd309Machine::publishPreviewLive() const {
       const auto& t = riu_.inputTiming;
       mix(t.hperiod); mix(t.vtotal); mix(t.hstart); mix(t.vstart); mix(t.hend); mix(t.vend); mix(inputPicture_.width); mix(inputPicture_.height);
       mix(std::hash<std::string>{}(options_.exploratoryInputPicture));
-      for (unsigned reg : {0x19u, 0x04u, 0x05u, 0x06u, 0x07u, 0x08u, 0x09u, 0x0au, 0x0bu}) { auto l = riu_.scByte(0x10, reg * 4), hb = riu_.scByte(0x10, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
+      for (unsigned reg : {0x19u, 0x04u, 0x05u, 0x06u, 0x07u, 0x08u, 0x09u, 0x0au, 0x0bu, 0x26u, 0x27u, 0x28u, 0x29u, 0x2au, 0x2bu, 0x2cu, 0x2du, 0x2eu, 0x2fu}) { auto l = riu_.scByte(0x10, reg * 4), hb = riu_.scByte(0x10, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
+      for (unsigned reg : {0x36u, 0x37u, 0x38u}) { auto l = riu_.scByte(0x0f, reg * 4), hb = riu_.scByte(0x0f, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
       for (unsigned reg : {0x02u, 0x04u, 0x05u, 0x06u, 0x07u}) { auto l = riu_.scByte(0x01, reg * 4), hb = riu_.scByte(0x01, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
     } else mix(0x51ab);
     if (h == liveSignature_) { options_.previewStore->setGuestStatus("MIPS dispatches " + std::to_string(dispatches_)); return; }
@@ -2708,13 +2709,34 @@ void Msd309Machine::publishPreview() const {
       const auto& t=riu_.inputTiming; const double inW=t.hend>t.hstart?t.hend-t.hstart+1:inputPicture_.width, inH=t.vend>t.vstart?t.vend-t.vstart+1:inputPicture_.height;
       double cx=0,cy=0,cw=inW,ch=inH;
       if(cvs&&chs&&cvz&&chz&&*chz&&*cvz){cx=double(*chs)-t.hstart;cy=double(*cvs)-t.vstart;cw=*chz;ch=*cvz;}
+      // Colour pipeline (EXPLORATORY): the source sends RGB; the scaler input converts it to YCbCr (ASSUMPTION: BT.601 full range, Cb/Cr centred at 128);
+      // the VOP colour matrix the ORIGINAL firmware programs (bank 0x10 regs 0x26..0x2E, rows R/G/B x columns Cr/Y/Cb, 13-bit sign-magnitude s2.10;
+      // enable = reg 0x2F bit0, ASSUMPTION) converts back to RGB. The firmware folds contrast/colour/tint into this matrix (contrast +6 scales every
+      // coefficient by ~2%, tested), so those menu settings change the picture through its own arithmetic. Brightness is written separately:
+      // bank 0x0F regs 0x36/0x37/0x38 = R/G/B offset (0x3F0 at the default setting, 0x4C8 after +40 steps, tested); ASSUMPTION: 11-bit, 0x400 = no
+      // offset, in 10-bit output units (so /4 at 8 bits), added after the matrix.
+      std::array<double,9> m{}; bool csc=false;
+      { auto en=w16(0x10,0x2f,0x00ff); csc=en && (*en&1);
+        for(unsigned i=0;i<9;++i){ auto c=w16(0x10,0x26+i,0x1fff); if(!c){csc=false;break;} const double mag=double(*c&0x0fff)/1024.0; m[i]=(*c&0x1000)?-mag:mag; } }
+      uint64_t key=1469598103934665603ull; auto mixk=[&](uint64_t v){key=(key^v)*1099511628211ull;};
+      std::array<double,3> bo{};
+      for(unsigned i=0;i<3;++i){ auto v=w16(0x0f,0x36+i,0x07ff); bo[i]=v?(double(*v)-1024.0)/4.0:0.0; }
+      mixk(csc); for(double c:m)mixk(uint64_t(int64_t(c*4096))); for(double c:bo)mixk(uint64_t(int64_t(c*16))); mixk(inputPicture_.width); mixk(inputPicture_.height); mixk(std::hash<std::string>{}(options_.exploratoryInputPicture));
+      if(processedKey_!=key || processedPicture_.size()!=inputPicture_.bgra.size()){
+        processedKey_=key; processedPicture_.resize(inputPicture_.bgra.size());
+        auto cl=[](double v){return uint32_t(v<0?0:v>255?255:v+0.5);};
+        for(size_t i=0;i<inputPicture_.bgra.size();++i){ const uint32_t p=inputPicture_.bgra[i]; const double r=p>>16&255,g=p>>8&255,b=p&255;
+          if(!csc){ processedPicture_[i]=p; continue; }
+          const double Y=0.299*r+0.587*g+0.114*b, Cb=-0.168736*r-0.331264*g+0.5*b, Cr=0.5*r-0.418688*g-0.081312*b;
+          processedPicture_[i]=0xff000000u|cl(m[0]*Cr+m[1]*Y+m[2]*Cb+bo[0])<<16|cl(m[3]*Cr+m[4]*Y+m[5]*Cb+bo[1])<<8|cl(m[6]*Cr+m[7]*Y+m[8]*Cb+bo[2]); }
+      }
       frame.planeBgra.assign(size_t(frame.width)*frame.height,0xff000000u);
       for(uint32_t y=0;y<frame.height;++y){ const double py=(y+0.5)*panelH/frame.height; if(py<y0||py>y1+1)continue;
         for(uint32_t x=0;x<frame.width;++x){ const double px=(x+0.5)*panelW/frame.width; if(px<x0||px>x1+1)continue;
           const double ix=cx+(px-x0)*cw/(x1-x0+1), iy=cy+(py-y0)*ch/(y1-y0+1);
           if(ix<0||iy<0||ix>=inW||iy>=inH)continue;
           const unsigned sx=std::min<unsigned>(unsigned(ix*inputPicture_.width/inW),inputPicture_.width-1), sy=std::min<unsigned>(unsigned(iy*inputPicture_.height/inH),inputPicture_.height-1);
-          frame.planeBgra[size_t(y)*frame.width+x]=inputPicture_.bgra[size_t(sy)*inputPicture_.width+sx]; } }
+          frame.planeBgra[size_t(y)*frame.width+x]=processedPicture_[size_t(sy)*inputPicture_.width+sx]; } }
       { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }
       frame.label+=" | EXPLORATORY INPUT PICTURE (generated HDMI/DVI signal) in the firmware's display window; NOT decoded video";
     }

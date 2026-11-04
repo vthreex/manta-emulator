@@ -35,8 +35,20 @@ Once the firmware detects the signal it programs the pipeline itself (bank-resol
 `0x04`..`0x07` = V 41, H 192, 1080 x 1920; IPM fetch 1920 / 1080 lines (bank 0x12); scaling 1:1 (bank 0x23; the panel LC420WUE is 1920x1080);
 YUV->RGB matrix (banks 0x10 / 0x0F); bank 0x10 reg `0x19` written 0. The presenter (`Msd309Machine::publishPreview`) draws the picture behind the OSD only while
 bank 0x10 reg `0x19` = 0 (main-window mute, meaning inferred from that write), inside the main display window (bank 0x10 regs `0x08`..`0x0B`, panel pixels;
-observed 112..2031 x 0..1079 = the panel DE window regs `0x04`..`0x07`), cropped like the capture window. Nearest scaling, no colour processing.
+observed 112..2031 x 0..1079 = the panel DE window regs `0x04`..`0x07`), cropped like the capture window. Nearest scaling.
 Verified behaviour: plug in -> picture, WIDE -> the firmware's aspect modes crop/zoom it, unplug -> the firmware mutes and shows NO SIGNAL again.
+
+## Colour pipeline (picture settings act through the firmware's own registers)
+The picture is not pasted over the screen as-is: it goes through the colour registers the original firmware programs, so the PICTURE menu changes it.
+* Tested by register diff (write log from the NO SIGNAL snapshot, HDMI1 1080p60, menu setting changed with the virtual remote):
+  * Contrast +40 steps rewrites the VOP matrix bank 0x10 regs `0x26`..`0x2E` (writer 805DD950): `0574 03BF 0000 11A1 03BF 10A7 0000 03BF 066F` ->
+    `058F 03D1 0000 11A9 03D1 10AA 0000 03D1 068F` (every coefficient ~+2%).
+  * Brightness +40 steps writes bank 0x0F regs `0x36`/`0x37`/`0x38` (writer 805DE4FC..805DE50C): `03F0` -> `04C8` each; the matrix is unchanged.
+* Model (ASSUMPTIONS, labelled in the code): input RGB -> YCbCr BT.601 full range (Cb/Cr centred); matrix rows R/G/B x columns Cr/Y/Cb,
+  13-bit sign-magnitude s2.10 (bit 12 = sign; with the base values this is the standard YCbCr->RGB inverse with Y gain 0.94), enable = bank 0x10
+  reg `0x2F` bit 0; brightness = (reg - 0x400) / 4 added to R/G/B after the matrix (11-bit, 10-bit output units). Gamma, DLC, sharpness and
+  noise reduction are not applied.
+* Result: Contrast up -> brighter, more saturated picture; Brightness up -> raised black level (the black bar turns grey), as on a real set.
 
 ## Run time and browser
 * Remote functions `hdmi-signal=MODE` / `hdmi-signal=off` (plug / unplug) and `input-picture=FILE.bmp` (empty = built-in), e.g. in `--ir-script`.
@@ -45,4 +57,5 @@ Verified behaviour: plug in -> picture, WIDE -> the firmware's aspect modes crop
 
 ## Not modelled yet
 * HDMI packets (flag 0 / AVI InfoFrame) -> the banner says DVI1, as a real set does for a source that sends no HDMI packets (e.g. a DVI source).
-* Colour processing of the picture (brightness/contrast/colour settings), audio from HDMI, HDCP, and the sub window.
+* Gamma/DLC/sharpness/noise reduction, audio from HDMI, HDCP, and the sub window. Colour/Tint are folded into the same matrix by the firmware
+  (expected, not yet tested by a register diff).
