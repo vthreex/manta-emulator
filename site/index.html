@@ -812,7 +812,10 @@ function usbWire(){
 async function liveStart(reload,boot){
   if(live)return;
   // cached files are reused; Re-download (reload=true) fetches the worker and every file again, bypassing the cache
-  const wv=reload?'?r='+Date.now():'';
+  // the worker script is fetched with the version hash from the always-fresh config.json, so a site update never runs a stale cached worker
+  let wver='';try{const c=await (await fetch('live/config.json',{cache:'no-store'})).json();if(c.versions&&c.versions['worker.js'])wver='?v='+c.versions['worker.js']}catch(_){}
+  if(live)return;
+  const wv=reload?'?r='+Date.now():wver;
   const cv=$('#pCanvas'),ctx=cv.getContext('2d');let frames=0,t0=performance.now(),lastD=0,lastT=performance.now();
   live={worker:new Worker('live/worker.js'+wv),ready:false,crashed:false,beat:performance.now(),lastFrame:performance.now(),keyAt:0,warned:false,silentKeys:0,firstSilentKey:0};
   const L=live,bar=$('#liveBar i'),st=$('#liveStatus');const got={};
