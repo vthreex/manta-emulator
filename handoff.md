@@ -51,7 +51,11 @@ suite, clock profiles, AVD/VD/PM51 auxiliary suites and four forensics tests PAS
 Full 6,592,741-event ge-blit-cold replay completes at 854,795,171 dispatches;
 all pre-existing summary fields and coverage match exactly. The old standalone
 PM history reference is absent; current replay history is retained locally.
-See evidence/teletext-publish-validation.json. Website publication in progress.
+See evidence/teletext-publish-validation.json. Website publication complete:
+https://vthreex.github.io/manta-emulator/ (source cfe83e2, successful Pages run
+42068994653). Live config contains the new options and WASM version
+03685edd9317; live WASM returns HTTP200 / 39,034,004 bytes. Evidence:
+evidence/teletext-pages-deployment.json. Unrelated Sunplus edits remain local.
 
 Browser build rebuilt with native/web/build.py. Existing site snapshot and
 configuration preserved; two new explicit exploratory options enabled in

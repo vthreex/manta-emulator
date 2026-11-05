@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "url": "https://vthreex.github.io/manta-emulator/",
+  "source_commit": "cfe83e258e5e4d69a097e56a7a7310ca0a6ffc35",
+  "deployment_run": "https://github.com/vthreex/manta-emulator/actions/runs/42068994653",
+  "live_wasm_version": "03685edd9317",
+  "live_wasm_http_status": 200,
+  "live_wasm_size": "39034004"
+}
