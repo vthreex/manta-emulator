@@ -517,6 +517,9 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   // Silently ignoring an added option whose state lives in the serialized device configuration would mislabel the run.
   for (size_t i = 0; i < extraTokens.size(); ++i) {
     const auto& t = extraTokens[i];
+    // Stateless opt-in transfer decoder; palette contents already belong to
+    // the serialized GopPalette. No DMA state or completion bit is seeded.
+    if(t=="--exploratory-gop-palette-dma") { riu_.exploratoryGopPaletteDma=true;continue; }
     if (t.rfind("--", 0) != 0) continue;   // a value token, consumed with its option below
     if (t == "--exploratory-provenance-extensions" || t == "--trace-instructions" || t == "--exploratory-ge-line") continue;
     // Coprocessor / JPD / FIQ / YUV-stretch / zero-unknown diagnostics: all read at run time, none has state in the snapshot (the coprocessor model refuses a snapshot taken

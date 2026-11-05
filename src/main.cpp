@@ -27,6 +27,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
   static const std::set<std::string> flags = {"--exploratory-menu-no-autoexit", "--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--exploratory-fast-jit", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
+    if(args[i]=="--exploratory-gop-indexed-preview")continue; // presentation only
     if (valued.count(args[i])) { ++i; continue; }
     if (flags.count(args[i])) continue;
     canonical += args[i];
@@ -285,6 +286,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--load-state-allow-extra-options")o.loadAllowExtraOptions = true;
       else if (a == "--profile")o.profile = utf8Path(value(i));
       else if (a == "--exploratory-gop-black-colorkey")o.videoPlaneBlackKey = true;
+      else if (a == "--exploratory-gop-indexed-preview")o.exploratoryGopIndexedPreview = true;
       else if (a == "--exploratory-gop-black-colorkey-edge") { o.videoPlaneBlackKey = true; o.videoPlaneBlackKeyEdge = true; }
       else if (a == "--exploratory-video-plane"){
         o.videoPlane = value(i);
@@ -328,6 +330,7 @@ static int appMain(const std::vector<std::string> &args) {
       else if(a=="--or1k-dispatch-divider") {o.orDivider=std::stoull(value(i));if(!o.orDivider || o.orDivider>1024)throw std::runtime_error("OR dispatch divider must be 1..1024");}
       else if(a=="--exploratory-tsp-reset-low") o.exploratoryTspResetLow=true;
       else if(a=="--candidate-gop-palette") o.candidateGopPalette=true;
+      else if(a=="--exploratory-gop-palette-dma") o.exploratoryGopPaletteDma=true;
       else if(a=="--exploratory-ge-reset") o.exploratoryGeReset=true;
       else if(a=="--exploratory-semaphore-idle") o.exploratorySemaphoreIdle=true;
       else if(a=="--exploratory-gop-bank") {
@@ -452,6 +455,8 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--pause-on-mmio")
         o.pauseMmio = uint32_t(std::stoul(value(i), nullptr, 0));
       else if (a == "--help") {
+        std::cout << "--exploratory-gop-palette-dma: original BGRA/index DMA records (MIU1 source and immediate timing assumed)\n"
+                     "--exploratory-gop-indexed-preview: diagnostic I8 preview (uploaded palette assumed ARGB8888)\n";
         std::cout
             << "manta --firmware ORIGINAL.bin [--headless] [--nvram "
                "overlay.cow]\n"

@@ -166,7 +166,9 @@
   "14",
   "--preview-max-fps",
   "60",
-  "--exploratory-pll-tuner"
+  "--exploratory-pll-tuner",
+  "--exploratory-gop-palette-dma",
+  "--exploratory-gop-indexed-preview"
  ],
  "files": {
   "/data/firmware.bin": "firmware.bin",
@@ -183,7 +185,7 @@
   "state.snap": 27430694,
   "files/ir-keymap.tsv": 7884,
   "files/sar-keymap.tsv": 1313,
-  "manta.wasm": 39027356
+  "manta.wasm": 39034004
  },
  "versions": {
   "firmware.bin": "d60645b549a4",
@@ -192,9 +194,9 @@
   "state.snap": "21c632a059a7",
   "files/ir-keymap.tsv": "7a5aba2a8dbb",
   "files/sar-keymap.tsv": "2306b2d48ac3",
-  "manta.wasm": "94b95978feb4",
+  "manta.wasm": "03685edd9317",
   "manta.js": "8416abc91b86",
-  "worker.js": "10c03b0294c8"
+  "worker.js": "a17eb78bb44f"
  },
  "snapshot": "no-signal-ready-v2.snap"
 }

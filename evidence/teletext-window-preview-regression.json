@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "window": [
+    1424,
+    861
+  ],
+  "integer_scale": 22,
+  "red_pixels": 247808,
+  "blue_pixels": 247808,
+  "content_sha256": "66fd6534e24a9677d7df8cd96a4e3ad8e945492335db3e9e1480dcb134958e82"
+}

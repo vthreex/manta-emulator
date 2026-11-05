@@ -20,6 +20,9 @@
 #include "video/ge_i2_glyph.hpp"
 #include "video/ge_blend_copy.hpp"
 #include "video/pal_cvbs.hpp"
+#include "video/vbi_slot.hpp"
+#include "board/dram_range.hpp"
+#include "video/gop_preview.hpp"
 #include <array>
 #include <thread>
 #include <algorithm>
@@ -1115,6 +1118,11 @@ void geQueueTests() {
   require(!bus.stopReason.empty(),"GE unrelated status bits remain invalid");
 }
 void geRectFillTests(){
+  require(manta::mappedDramRange(0x0b68f000,139376,0x08000000,0x08000000,0x10000000),"GE MIU1 backing available");
+  require(!manta::mappedDramRange(0x0b68f000,139376,0x08000000,0,0x08000000),"GE absent MIU1 rejected");
+  require(!manta::mappedDramRange(0x04000000,16,0x04000000,0x08000000,0x10000000),"GE reduced MIU0 hole rejected");
+  require(!manta::mappedDramRange(0x03fffff0,32,0x04000000,0x08000000,0x10000000),"GE transfer across MIU0 hole rejected");
+  require(!manta::mappedDramRange(0x0ffffff0,32,0x08000000,0x08000000,0x10000000),"GE MIU1 overrun rejected");
   using Fill=manta::GeRectFill;
   std::map<unsigned,std::pair<uint16_t,uint16_t>> regs;
   auto set=[&](unsigned index,uint16_t value,uint16_t known=65535){regs[index]={value,known};};
@@ -1155,8 +1163,33 @@ void geRectFillTests(){
   set(0x59,0x80);rejects([&]{Fill::decode(0x30,read);});
   regs=saved;
   for(auto control:{0u,3u,5u,0x401u}){set(0,uint16_t(control));rejects([&]{Fill::decode(0x30,read);});}regs=saved;
+  set(0x34,0x0404);set(0x70,0x0100);set(0x71,0);
+  for(unsigned i=0x72;i<=0x7f;++i)set(i,0);
+  set(0x76,0xfff8);set(0x77,0xf);
+  {auto p=Fill::decode(0x1030,read,true,0,true);
+   require(p.indexed && !p.gradient && (p.color&255)==0,"TEXT gradient has a constant zero index under the explicit I8 hypothesis");}
+  set(0x7e,0xfdef);{auto p=Fill::decode(0x1030,read,true,0,true);
+   require(p.indexed && !p.gradient,"I8 low-byte hypothesis is independent of unused alpha gradients");}
+  rejects([&]{Fill::decode(0x1030,read,true);});
+  set(0x7c,1);rejects([&]{Fill::decode(0x1030,read,true,0,true);});regs=saved;
   set(1,0x10);rejects([&]{Fill::decode(0x30,read);});regs=saved;
-  set(0x27,0x8000);rejects([&]{Fill::decode(0x30,read);});regs=saved;
+  set(0x27,0x1000);rejects([&]{Fill::decode(0x30,read);});regs=saved;
+  // Original TEXT clear: MIU1 selector, format 9, zero colour and overlapping rows.
+  set(0x34,0x0901);set(0x26,0xf000);set(0x27,0x8368);set(0x33,496);
+  set(0x70,0);set(0x71,0);set(0x68,0);set(0x69,0);set(0x6a,495);set(0x6b,279);
+  set(0x55,0);set(0x56,496);set(0x57,0);set(0x58,280);
+  {auto c=Fill::decode(0x30,read);
+   require(c.destination==0x0b68f000 && c.bpp==2,"GE MIU1 bit31 maps to backing bank and zero format9 uses two bytes");
+   const size_t extent=279*496+992;
+   std::vector<uint8_t> bytes(extent+2,0xa5);unsigned rows=0;
+   c.execute([&](uint32_t a,size_t n){return a==c.destination && n==extent;},
+     [&](uint32_t a,std::span<const uint8_t> b){++rows;std::copy(b.begin(),b.end(),bytes.begin()+1+a-c.destination);});
+   require(rows==280 && bytes.front()==0xa5 && bytes.back()==0xa5 &&
+     std::all_of(bytes.begin()+1,bytes.end()-1,[](auto b){return b==0;}),"GE teletext clear zeros the complete overlapping extent and preserves neighbours");
+   bool wrote=false;rejects([&]{c.execute([](auto,auto){return false;},[&](auto,auto){wrote=true;});});
+   require(!wrote,"GE missing MIU1 backing refuses before writes");
+   set(0x70,1);rejects([&]{Fill::decode(0x30,read);});}
+  regs=saved;
   set(0x33,12);rejects([&]{Fill::decode(0x30,read);});regs=saved;
   writes=validations=0;set(0x55,4);auto empty=Fill::decode(0x30,read);empty.execute(writable,write);
   require(empty.empty && writes==0 && validations==0,"GE fully clipped rectangle retires without inventing a destination read or pixel");regs=saved;
@@ -1214,6 +1247,32 @@ void htotalBranchJoinTests(){
 #include "spi_nor_program_tests.inc"
 #include "usb_host_tests.inc"
 #include "pal_cvbs_tests.inc"
+void vbiSlotTests() {
+  require(manta::teletextInitialPage100[1]==0x15 && manta::teletextInitialPage100[2]==0x15 && manta::teletextInitialPage100[4]==0xd0,
+    "8/30 initial page has units/tens zero and magazine 1 (not page 110)");
+  {manta::GopLayer l;l.format=4;l.width=3;l.height=1;l.pitch=4;
+   l.memory={1,2,3,255};l.palette[1]=0xffff0000;l.palette[2]=0xff00ff00;l.palette[3]=0;
+   std::vector<manta::GopLayer> layers{l};auto f=manta::composeGopPreview(layers);
+   require(f.width==3 && f.bgra[0]==0xffff0000 && f.bgra[1]==0xff00ff00 && !f.covered[2],"I8 preview uses guest palette and preserves transparent entries and pitch padding");
+   l.indexedOpaque=true;layers={l};f=manta::composeGopPreview(layers);
+   require(f.covered[2] && f.bgra[2]==0xff000000,"GWIN blend-disabled full constant opacity does not use palette alpha");
+   l.palette[2].reset();layers={l};f=manta::composeGopPreview(layers);
+   require(f.empty() && !layers[0].skipReason.empty(),"I8 preview refuses undefined used palette entries");}
+  std::array<uint8_t,50> memory; memory.fill(0xa5);
+  std::array<uint8_t,42> packet{};
+  for (unsigned i=0;i<42;++i) packet[i]=uint8_t(i);
+  auto* slot=memory.data()+1;
+  require(manta::writeVbiSlot(slot,packet.data(),6,false),"VBI default layout accepted");
+  require(slot[5]==0x27 && slot[6]==0 && slot[47]==41,"VBI full packet and marker");
+  require(memory.front()==0xa5 && memory.back()==0xa5,"VBI adjacent slots preserved");
+  const auto before=memory;
+  for (unsigned off : {7u,48u,49u,~0u}) {
+    require(!manta::writeVbiSlot(slot,packet.data(),off,false),"VBI invalid offset rejected");
+    require(memory==before,"VBI refusal leaves slot unchanged");
+  }
+  require(manta::writeVbiSlot(slot,packet.data(),6,true),"VBI reverse diagnostic accepted");
+  require(slot[7]==0x80 && slot[5]==0x27,"VBI reverse leaves marker intact");
+}
 void geStretchRequestTests(){
   using Req=manta::GeStretchRequest;
   // Final 0x60=8040 request recorded from original OSD 3 instructions
@@ -1285,10 +1344,10 @@ void geBitBltTests(){
     return std::vector<uint8_t>(src.begin()+a-0x1000,src.begin()+a-0x1000+n);};
   auto writable=[&](uint32_t a,size_t n){return a>=0x2000 && uint64_t(a-0x2000)+n<=dst.size();};
   auto write=[&](uint32_t a,std::span<const uint8_t> b){++writes;std::copy(b.begin(),b.end(),dst.begin()+a-0x2000);};
-  for(auto format:{0x0f0fu,0x0808u}){
+  for(auto format:{0x0f0fu,0x0808u,0x0404u}){
     regs=saved;set(0x34,uint16_t(format));auto plan=Blit::decode(0x40,get);
     std::fill(dst.begin(),dst.end(),0xa5);reads=writes=0;plan.execute(read,writable,write);
-    unsigned bpp=format==0x0808?2:4;bool exact=true;
+    unsigned bpp=format==0x0404?1:format==0x0808?2:4;bool exact=true;
     for(unsigned i=0;i<dst.size();++i){auto y=i/28,x=i%28;
       uint8_t expected=0xa5;
       if(y>=1 && y<=2 && x>=2*bpp && x<4*bpp)expected=src[y*24+(x-2*bpp)+3*bpp];
@@ -1309,7 +1368,12 @@ void geBitBltTests(){
   for(auto control:{0x10,0x20,0x40,0x100,0x200}){set(1,uint16_t(control));rejects([&]{Blit::decode(0x40,get);});}regs=saved;
   set(0x6e,4);rejects([&]{Blit::decode(0x40,get);});regs=saved;
   set(0x59,1);rejects([&]{Blit::decode(0x40,get);});regs=saved;
-  for(auto index:{0x21,0x27}){set(index,0x8000);rejects([&]{Blit::decode(0x40,get);});regs=saved;}
+  for(auto index:{0x21,0x27}){set(index,0x1000);rejects([&]{Blit::decode(0x40,get);});regs=saved;}
+  set(0x34,0x0404);set(0x59,0x40);set(0x27,0x8000);set(0x6b,7);set(0x58,8);
+  rejects([&]{Blit::decode(0x40,get);}); // height-5 is still opt-in
+  {auto p=Blit::decode(0x40,get,false,true);
+   require(p.bpp==1 && p.destination==0x08002000 && p.bottom==7,"I8 MIU1 copy accepts the existing full-height hypothesis only when enabled");}
+  regs=saved;
   for(auto index:{0x30,0x33}){set(index,7);rejects([&]{Blit::decode(0x40,get);});regs=saved;}
   set(0x20,0x2000);rejects([&]{Blit::decode(0x40,get);});regs=saved;
   set(0x55,4096);rejects([&]{Blit::decode(0x40,get);});regs=saved;
@@ -1474,6 +1538,22 @@ void gopSelectorProvenanceTests() {
   require(!step(0x02021007).empty(),"GOP unknown shift count remains a decision blocker");
 }
 void gopPaletteTests() {
+  {
+    manta::GopPalette dma;std::array<uint8_t,16> records{0x33,0x22,0x11,0xff,7,0,0,0,0,0,0,0,8,0,0,0};
+    dma.loadDma(0,records);
+    require(dma.color(0,7)==0xff112233 && dma.color(0,8)==0 && dma.mode(0,7)==0x1000,"GOP DMA loads exact BGRA/index records including zero transparency");
+    records[15]=1;rejects([&]{dma.loadDma(0,records);});
+    require(dma.commits()==2,"GOP DMA validates every record before changing any palette entry");
+    rejects([&]{dma.loadDma(0,std::span(records).first(15));});
+    manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};r.symbolicInit=true;
+    r.configureExploratoryGopBank(0);r.candidateGopPalette=true;r.exploratoryGopPaletteDma=true;
+    bool read=false;r.dramRead=[&](uint32_t address,size_t size){
+      require(address==0x0be08000 && size==16,"GOP DMA derives source and count from original split descriptor registers");
+      read=true;return std::vector<uint8_t>{0x33,0x22,0x11,0xff,7,0,0,0,0,0,0,0,8,0,0,0};};
+    r.write(0x1f203e14,2,0x1000,0,0,0);r.write(0x1f203e18,2,0x1001,0,0,0);r.write(0x1f203e1c,2,0x7c,0,0,0);
+    r.write(0x1f203fe0,2,3,0,0,0);
+    require(read && r.paletteColor(0,7)==0xff112233,"original GOP DMA start causes palette load through bounded guest-memory reader");
+  }
   manta::GopPalette p;
   require(!p.color(0,7) && p.defined(0)==0,"GOP palette reset colors stay unknown");
   require(!p.pulse(0,0x3007,0xffff,0xff112233,0xffffffffu),"GOP color data without command cannot populate palette");
@@ -2975,6 +3055,7 @@ int main() {
     geRectFillTests();
     geBitBltTests();
     geStretchRequestTests();
+    vbiSlotTests();
     htotalBranchJoinTests();
     readMaskTests();
     opaquePolicyTests();

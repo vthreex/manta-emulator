@@ -30,5 +30,13 @@ Labelled option still in force: `--exploratory-menu-no-autoexit`. The firmware i
 save state `site/live/state.snap` is committed.
 
 ## Measured
+
+Teletext update (2026-11-05): the live profile explicitly enables
+`--exploratory-gop-palette-dma` and `--exploratory-gop-indexed-preview` alongside
+the existing I8/gradient/full-height hypotheses. Original firmware renders the
+station's page100 text; see `docs/atv-teletext-model.md` for model limits.
+`native/web/node_teletext_test.mjs` verifies the actual WASM and virtual-remote
+path. Worker JS/WASM requests use config content versions to refresh cached
+code after deployment. TV channel-name storage is still unverified.
 Node 24 (Windows, other emulator runs in parallel): 17–43 M guest instructions/s, the same order as the native desktop build. In the browser pane:
 about 17 M/s; MENU and the arrows produce the same frames as the desktop build.

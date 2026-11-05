@@ -461,9 +461,11 @@ public:
   uint32_t tspDownloadSource() const {return tspDownloadSource_;}
   uint8_t tspQmemByte(size_t offset) const {return tspDownload_.byte(offset);}
   bool candidateGopPalette=false;
+  bool exploratoryGopPaletteDma=false;
   uint64_t paletteCommits() const { return palette_.commits(); }
   unsigned paletteDefined(unsigned plane) const { return palette_.defined(plane); }
   std::optional<uint32_t> paletteColor(unsigned plane,unsigned index) const { return palette_.color(plane,index); }
+  std::optional<uint16_t> paletteMode(unsigned plane,unsigned index) const { return palette_.mode(plane,index); }
   bool candidateGe=false;
   bool candidateGeRectFill=false;
   bool candidateGeBitBlt=false;

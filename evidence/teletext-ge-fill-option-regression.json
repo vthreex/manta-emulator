@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "scope": "strict reset state/unknowns unchanged by opt-in fill support; no connected raster or UI output",
+  "strict_summary_identical_except_explicit_extension": true,
+  "missing_GE_queue_model_rejected": true,
+  "clean_PATH_help_pass": true,
+  "emulator_sha256": "4668866b59f8725ac6107fbb0ad45aead69e024578ef542a638456bbf9f1bf4a",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9"
+}

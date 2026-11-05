@@ -11,15 +11,16 @@ struct GeBitBlt {
   // yuvRelax (EXPLORATORY, opt-in with --exploratory-ge-yuv-stretch): also accepts source=destination format 0xE (packed 16-bit, copied byte for byte), register 59
   // equal to the GE-init default 0x0040 (as the fill model does), and a programmed source height 5 rows short of the destination rectangle (the original library's
   // "height - 5" programming, hypothesis H5: the hardware processes the full destination rectangle).
-  static GeBitBlt decode(uint16_t command,const GeRectFill::Register& reg,bool yuvRelax=false){
+  static GeBitBlt decode(uint16_t command,const GeRectFill::Register& reg,bool yuvRelax=false,bool fullHeight=false){
     if(command!=0x40)throw std::runtime_error("GE BitBlt stretch/filter/mode unsupported");
     auto field=[&](unsigned index,uint16_t mask=0xffff){auto [value,known]=reg(index);
       if((known&mask)!=mask)throw std::runtime_error("GE BitBlt field contains unknown bits");
       return uint32_t(value&mask);};
-    if(field(0)!=1 || field(1,0x372)!=0 || (field(0x59)!=0 && !(yuvRelax && field(0x59)==0x40)))
+    if(field(0)!=1 || field(1,0x372)!=0 || (field(0x59)&~0x40u)!=0)
       throw std::runtime_error("GE BitBlt requires enabled plain copy; transforms/blending/keying unsupported");
     auto format=field(0x34,0x1f1f);GeBitBlt p;
     if(format==0x0808)p.bpp=2;else if(format==0x0f0f)p.bpp=4;
+    else if(format==0x0404)p.bpp=1; // I8 indices copied verbatim; no palette conversion
     else if(yuvRelax && format==0x0e0e)p.bpp=2;
     else throw std::runtime_error("GE BitBlt format/conversion unsupported; no format-C alpha assumption");
     p.source=field(0x20)|(field(0x21)<<16);
@@ -32,14 +33,18 @@ struct GeBitBlt {
     auto cl=field(0x55),cr=field(0x56),ct=field(0x57),cb=field(0x58);
     for(auto v:{x0,y0,x1,y1,sx,sy,sw,sh,cl,cr,ct,cb})
       if(v>4095)throw std::runtime_error("GE BitBlt coordinate outside corroborated field");
-    if(yuvRelax && y1>=y0 && sh+5==y1-y0+1)sh+=5;   // H5
+    if((yuvRelax || fullHeight) && y1>=y0 && sh+5==y1-y0+1)sh+=5;   // opt-in H5
     if(x0>x1 || y0>y1 || sw!=x1-x0+1 || sh!=y1-y0+1 || !sw || !sh)
       throw std::runtime_error("GE BitBlt unequal/invalid unscaled extents");
     p.left=std::max(x0,cl);p.right=std::min(x1,cr);
     p.top=std::max(y0,ct);p.bottom=std::min(y1,cb);
     p.empty=cl>cr || ct>cb || p.left>p.right || p.top>p.bottom;
-    if(p.source>=0x08000000 || p.destination>=0x08000000)
+    if((p.source&0x78000000u) || (p.destination&0x78000000u))
       throw std::runtime_error("GE BitBlt requires MIU0 byte addressing");
+    const uint64_t sourceEnd=(p.source&0x80000000u)?0x10000000ull:0x08000000ull;
+    const uint64_t destEnd=(p.destination&0x80000000u)?0x10000000ull:0x08000000ull;
+    p.source=(p.source&0x07ffffffu)+((p.source&0x80000000u)?0x08000000u:0u);
+    p.destination=(p.destination&0x07ffffffu)+((p.destination&0x80000000u)?0x08000000u:0u);
     if(p.empty)return p;
     p.sourceX=sx+p.left-x0;p.sourceY=sy+p.top-y0;
     auto width=p.right-p.left+1,height=p.bottom-p.top+1;
@@ -51,7 +56,7 @@ struct GeBitBlt {
     uint64_t se=ss+uint64_t(height-1)*p.sourcePitch+width*p.bpp;
     uint64_t ds=uint64_t(p.destination)+uint64_t(p.top)*p.pitch+p.left*p.bpp;
     uint64_t de=ds+uint64_t(height-1)*p.pitch+width*p.bpp;
-    if(se>0x08000000 || de>0x08000000)
+    if(se>sourceEnd || de>destEnd)
       throw std::runtime_error("GE BitBlt range overflows MIU0");
     // Direction/overlap command bits are not established. Reject even possible
     // overlap across pitch padding rather than inventing memmove semantics.

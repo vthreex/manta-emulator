@@ -1774,7 +1774,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       GeBitBlt plan;
       try{
         plan=GeBitBlt::decode(uint16_t(v),[&](unsigned index){auto address=0x1f205000+4*index;
-          return geRegPair(address);},exploratoryGeYuvStretch);
+          return geRegPair(address);},exploratoryGeYuvStretch,exploratoryGeHeight5Full);
       }catch(const std::exception& error){
         // Observation only: the exact exception text is a tested contract; the register file travels in the summary.
         guardedStretchDetail_=std::string("plain-BitBlt decode refused (cmd ")+std::to_string(unsigned(v&0xffff))+"): "+error.what()+(copyRefusal_.empty()?"":"; exploratory blend-copy refused: "+copyRefusal_)+"; GE registers (index=value):";
@@ -1793,6 +1793,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         auto count=plan.empty?0u:(plan.right-plan.left+1)*(plan.bottom-plan.top+1);
         geBitBltPixels+=count;
         event("ge_bitblt_retired",plan.destination,plan.pitch,count,
+          plan.bpp==1 ? "original command 0040: I8 indices copied unchanged; MIU selector decoded; height-minus-five may use the explicitly enabled full-height hypothesis; no palette conversion or GOP enable assumed" :
           "original command 0040: known plain same-format RGB565/ARGB8888 copy; no stretch, format C or GOP enable assumed");
       };
     }else if(candidateGeRectFill && exploratoryGeLine && a==0x1f205180 && v==0x10){
@@ -1867,6 +1868,24 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       }
       gopResetHeld_[plane]=true;
     }else gopResetHeld_[plane]=false;
+  }
+  if(exploratoryGopPaletteDma && candidateGopPalette && a==0x1f203fe0 && n==2 &&
+      gopBankKnown() && (gopBank()==0 || gopBank()==3) && (v&3)==3) {
+    auto mode=get(0x1f203e14,2);
+    if((knownBits(0x1f203e14,2)&0x3000)!=0x3000)throw std::runtime_error("GOP palette DMA mode unknown");
+    if((mode&0x3000)==0x1000) {
+      if(knownBits(0x1f203e18,2)!=0xffff || knownBits(0x1f203e1c,2)!=0xffff || !dramRead)
+        throw std::runtime_error("GOP palette DMA descriptor unknown");
+      auto descriptor=get(0x1f203e18,2);
+      if(get(0x1f203e1c,2)>255)throw std::runtime_error("GOP palette DMA address exceeds MIU bank");
+      auto source=0x08000000u|((descriptor&0xfe00)<<3)|(get(0x1f203e1c,2)<<19);
+      auto length=((descriptor&0x1ff)+1)*8;
+      auto bytes=dramRead(source,length);
+      if(bytes.size()!=length)throw std::runtime_error("GOP palette DMA incomplete source");
+      palette_.loadDma(gopBank(),bytes);
+      event("exploratory_gop_palette_dma",source,length,gopBank(),
+        "EXPLORATORY original eight-byte BGRA/index records; MIU1 source and immediate transfer timing assumed; no status or IRQ fabricated");
+    }
   }
   if(candidateGopPalette && a==0x1f203e14 && n==2 && (gopBank()==0 || gopBank()==3)) {
     auto color=get(0x1f203e0c,2)|(get(0x1f203e10,2)<<16);

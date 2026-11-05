@@ -1,4 +1,6 @@
 #include "video/hdmi_modes.hpp"
+#include "video/vbi_slot.hpp"
+#include "board/dram_range.hpp"
 #include "board/machine.hpp"
 #include "video/pal_cvbs.hpp"
 #include "profile/sampler.hpp"
@@ -68,6 +70,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     throw std::runtime_error("HTotal branch-join diagnostic requires guarded symbolic exploration");
   riu_.candidateGeBitBlt=o.candidateGeBitBlt;
   riu_.candidateGopPalette=o.candidateGopPalette;
+  riu_.exploratoryGopPaletteDma=o.exploratoryGopPaletteDma;
   riu_.candidateTsp=o.candidateTsp;
   riu_.candidateVdMcuProgram=o.candidateVdMcuProgram;
   if(o.deferVdSfr8eWrite && !o.exploratoryVdMcuStartup)
@@ -450,16 +453,14 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   };
   riu_.event = [this](EvText k, uint32_t a, unsigned n, uint32_t v, EvText d) { event(k, a, n, v, d); };
   riu_.dramWrite=[this](uint32_t address,std::span<const uint8_t> bytes) {
-    if(!options_.candidateMiu || bytes.empty() || uint64_t(address)+bytes.size()>options_.miu0Bytes ||
-       uint64_t(address)+bytes.size()>dramBacking_.size())
+    if(!options_.candidateMiu || !mappedDramRange(address,bytes.size(),options_.miu0Bytes,options_.miu1Bytes,dramBacking_.size()))
       throw std::runtime_error("BDMA MIU0 destination outside mapped bounds");
     cpu_.write(address,bytes.data(),bytes.size());
     preservedBits_.overwriteKnownMemory(address,bytes.size());
     unknownObservations_.overwriteKnownMemory(address,bytes.size());
   };
   riu_.dramWritable=[this](uint32_t address,size_t size){
-    return options_.candidateMiu && size>0 && uint64_t(address)+size<=options_.miu0Bytes &&
-      uint64_t(address)+size<=dramBacking_.size();
+    return options_.candidateMiu && mappedDramRange(address,size,options_.miu0Bytes,options_.miu1Bytes,dramBacking_.size());
   };
   if(o.exploratoryCoproMipsIrq>=0){
     if(!o.exploratoryCopro || !o.cp0Timer)throw std::runtime_error("--exploratory-copro-mips-irq requires --exploratory-copro and --cp0-timer");
@@ -2458,6 +2459,12 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
       GopLayer l;
       l.bank = bank; l.window = window; l.x = d->x; l.y = d->y; l.width = d->width; l.height = d->height;
       l.pitch = d->pitch; l.format = d->format;
+      if(l.format==4 && options_.exploratoryGopIndexedPreview) for(unsigned i=0;i<256;++i)
+        if(auto mode=riu_.paletteMode(bank==1?0:1,i);mode==0x3000 || mode==0x1000) l.palette[i]=riu_.paletteColor(bank==1?0:1,i);
+      if(l.format==4 && options_.exploratoryGopIndexedPreview) {
+        auto alpha=riu_.gopActiveByte(bank,window*0x80+1);
+        l.indexedOpaque=(alpha.known&0x7f)==0x7f && (alpha.value&0x7f)==0x3f;
+      }
       auto physical = gopPhysicalAddress(riu_, bank, window, d->miuRelativeAddress);
       uint64_t size = uint64_t(d->pitch) * d->height;
       if (!physical || !size || size > 16 * 1024 * 1024 || uint64_t(*physical) + size > dramBacking_.size()) {
@@ -2515,13 +2522,16 @@ void Msd309Machine::vbiFeed() {
   const auto& S = riu_.atvStations[size_t(st)];
   std::vector<std::string> rows; { std::string t = S.text; size_t a = 0; while (a <= t.size() && rows.size() < 20) { size_t e = t.find('~', a); if (e == std::string::npos) e = t.size(); rows.push_back(t.substr(a, e - a)); a = e + 1; } }
   const std::string name = S.name.empty() ? std::string("ATV ") + std::to_string(int(S.mhz)) : S.name;
-  const unsigned pageRows = 2 + unsigned(rows.size());   // header, name row, text rows
+  const unsigned pageRows = 3 + unsigned(rows.size());   // header, double-height name (2 rows), text rows
+  // Firmware can reconfigure the descriptor (including reducing its capacity).
+  // Keep the host producer inside the current ring before writing the first slot.
+  vbiSlot_ %= slots;
   for (unsigned i = 0; i < count; ++i) {
     uint8_t line[42]{}; const unsigned k = vbiSeq_++ % (pageRows + 1);
     auto text = [&](unsigned at, const std::string& s, unsigned w) { for (unsigned j = 0; j < w; ++j) line[at + j] = par(j < s.size() ? uint8_t(s[j]) : uint8_t(' ')); };
     if (k == pageRows) {   // packet 8/30 format 1
       line[0] = ham[0 | (0 << 3)]; line[1] = ham[30 >> 1]; line[0] = ham[0 | ((30 & 1) << 3)];   // magazine 8 is coded 0
-      line[2] = ham[0]; line[3] = ham[0]; line[4] = ham[1]; line[5] = ham[0xf]; line[6] = ham[0xf]; line[7] = ham[0]; line[8] = ham[0];
+      std::copy(teletextInitialPage100.begin(),teletextInitialPage100.end(),line+2);
       line[9] = 0x00; line[10] = 0x00; line[11] = 0x00; for (unsigned j = 12; j < 22; ++j) line[j] = 0x15;
       text(22, name, 20);
     } else {
@@ -2530,11 +2540,12 @@ void Msd309Machine::vbiFeed() {
       if (row == 0) { line[2] = ham[0]; line[3] = ham[0]; line[4] = ham[0]; line[5] = ham[0]; line[6] = ham[0]; line[7] = ham[0]; line[8] = ham[0]; line[9] = ham[0];
         std::string h = name; h.resize(23, ' '); h += "100 Manta"; text(10, h, 32); }
       else if (row == 1) { std::string r(1, char(0x0d)); r += name; text(2, r, 40); }   // 0x0D = double height
-      else text(2, rows[row - 2], 40);
+      else if(row==2) text(2,"",40); // reserved lower half of the double-height station name
+      else text(2, rows[row - 3], 40);
     }
-    uint8_t* slot = dramBacking_.data() + phys + uint64_t(vbiSlot_) * 48; std::memset(slot, 0, 48); static const unsigned ttxOff = std::getenv("MANTA_TTX_OFF") ? unsigned(std::atoi(std::getenv("MANTA_TTX_OFF"))) : 6u;
-    std::memcpy(slot + ttxOff, line, std::min(42u, 48u - ttxOff)); slot[5] = 0x27;
-    if (std::getenv("MANTA_TTX_REV")) for (unsigned j = 6; j < 48; ++j) { uint8_t b = slot[j], r = 0; for (int q = 0; q < 8; ++q) if (b & (1 << q)) r |= uint8_t(0x80 >> q); slot[j] = r; }
+    uint8_t* slot = dramBacking_.data() + phys + uint64_t(vbiSlot_) * 48; static const unsigned ttxOff = std::getenv("MANTA_TTX_OFF") ? unsigned(std::atoi(std::getenv("MANTA_TTX_OFF"))) : 6u;
+    if (!writeVbiSlot(slot, line, ttxOff, std::getenv("MANTA_TTX_REV") != nullptr))
+      throw std::runtime_error("MANTA_TTX_OFF must be between 0 and 6 (42 bytes in a 48-byte VBI slot)");
     preservedBits_.overwriteKnownMemory(uint32_t(phys + uint64_t(vbiSlot_) * 48), 48); unknownObservations_.overwriteKnownMemory(uint32_t(phys + uint64_t(vbiSlot_) * 48), 48);
     vbiSlot_ = (vbiSlot_ + 1) % slots;
   }
@@ -2703,6 +2714,7 @@ void Msd309Machine::publishPreview() const {
   }
   auto layers = collectGopLayers();
   auto frame = composeGopPreview(layers,1920,1080,options_.videoPlaneBlackKey && !options_.videoPlane.empty(), options_.videoPlaneBlackKeyEdge);
+  if(options_.exploratoryGopIndexedPreview)frame.label+=" | ASSUMPTION: I8 mode-3000 palette is ARGB8888";
   if(options_.exploratoryGeHeight5Full)frame.label+=" | HYPOTHESIS: register 6F=height-5 copies full height";
   if(riu_.geBlendCopies)frame.label+=" | EXPLORATORY GE blend-copy model in use (not Titania4 behavior)";
   if(riu_.geI2Glyphs)frame.label+=" | EXPLORATORY GE I2-glyph model in use (not Titania4 behavior)";
@@ -3258,6 +3270,13 @@ std::string Msd309Machine::summary() const {
   s << ",\n  \"candidate_gop_palette\": " << (options_.candidateGopPalette?"true":"false")
     << ",\n  \"gop_palette_commits\": " << riu_.paletteCommits()
     << ",\n  \"gop_palette_defined_entries\": [" << riu_.paletteDefined(0) << ',' << riu_.paletteDefined(1) << ']';
+  if(std::getenv("MANTA_GOP_PALETTE_DUMP")) {
+    s<<",\n  \"diagnostic_gop_palette\": [";bool first=true;
+    for(unsigned plane=0;plane<2;++plane)for(unsigned i=0;i<256;++i)if(auto c=riu_.paletteColor(plane,i)){
+      if(!first)s<<',';first=false;
+      s<<"{\"plane\":"<<plane<<",\"index\":"<<i<<",\"mode\":"<<riu_.paletteMode(plane,i).value_or(0)<<",\"raw\":\""<<hex(*c)<<"\"}";
+    }s<<']';
+  }
   s << ",\n  \"candidate_tsp\": " << (options_.candidateTsp?"true":"false")
     << ",\n  \"exploratory_tsp_cpu\": " << (options_.exploratoryTspCpu?"true":"false")
     << ",\n  \"or1k_instructions\": " << riu_.tspCpuInstructions()

@@ -1,0 +1,32 @@
+{
+  "result": "PASS",
+  "native_checks": 3892,
+  "suites": {
+    "firmware": "PASS",
+    "display": "PASS",
+    "clock": "PASS",
+    "avd": "PASS",
+    "vd": "PASS",
+    "pm51": "PASS"
+  },
+  "forensics_tests": 4,
+  "strict_replay": {
+    "events": 6592741,
+    "preexisting_summary_fields": 289,
+    "differences": [],
+    "coverage_identical": true,
+    "dispatches": 854795171,
+    "pm_history_reference_available": false
+  },
+  "browser_wasm": {
+    "result": "PASS",
+    "width": 1360,
+    "height": 768,
+    "nonblack": 1044480,
+    "bodyWhite": 462,
+    "dispatches": 1520676743,
+    "sha256": "5fec0f3d386c566f9c26c9b660b48b939f45a0bdf878fab48527958a443495c5",
+    "scope": "browser WASM, original firmware, exploratory teletext models"
+  },
+  "wasm_sha256": "03685edd931756a99fb890e48c8bddd87b175fa4e5349194e5f03a048406975b"
+}

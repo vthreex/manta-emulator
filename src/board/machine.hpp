@@ -51,6 +51,7 @@ struct Options {
   bool candidateSemaphore=false, exploratorySemaphoreIdle=false;
   bool candidateGe=false, candidateGeRectFill=false, candidateGeBitBlt=false, exploratoryGeReset=false;
   bool candidateGopPalette=false;
+  bool exploratoryGopPaletteDma=false;
   bool candidateTsp=false, exploratoryTspResetLow=false;
   bool exploratoryTspCpu=false;
   bool deferPlatformIdentity=false;
@@ -168,6 +169,7 @@ struct Options {
   bool provenanceExtensions = false;   // opt-in: identity read-write-back RMW and INS bit-identity propagation (strict boot stays byte-identical when off)
   bool videoPlaneBlackKeyEdge = false;   // EXPLORATORY HYPOTHESIS refinement of the black key: only black connected to the frame border is see-through
   bool videoPlaneBlackKey = false;   // EXPLORATORY HYPOTHESIS: opaque RGB-black guest pixels are see-through to the video plane (colour key); requires videoPlane
+  bool exploratoryGopIndexedPreview = false; // diagnostic mode-3000 palette interpreted as ARGB8888
   std::string videoPlane;   // EXPLORATORY presentation: "" (neutral checker), black, blue, setting (guest Blue Screen setting); never changes guest state
   std::filesystem::path gopFrameHistory;   // DIAGNOSTIC: directory receiving a BMP of the GOP preview whenever its content changes (bounded)
   uint32_t exploratoryMiu1Done = 0;        // --exploratory-miu1-done N: guest cycles until the assumed MIU1 done bit (1F203104 bit8) after bit4 starts (0 = off)

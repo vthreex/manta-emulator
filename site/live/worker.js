@@ -95,7 +95,7 @@ async function boot(m) {
     }
     for (const [dst, data] of Object.entries(fetched)) if (!(m.cold && dst === '/data/state.snap')) files[dst] = data;
     post({ type: 'progress', label: 'starting', got: 1, total: 1 });
-    if (!self.MantaModule) importScripts(base + 'manta.js');
+    if (!self.MantaModule) importScripts(base + 'manta.js' + (cfg.versions && cfg.versions['manta.js'] ? '?v=' + encodeURIComponent(cfg.versions['manta.js']) : ''));
     const mod = await self.MantaModule({
       instantiateWasm: (imports, done) => { WebAssembly.instantiate(assets.module, imports).then(inst => done(inst), err => crashed('wasm instantiation failed: ' + err)); return {}; },
       print: s => { const r = /"reason":\s*"([^"]*)"/.exec(s); if (r) lastReason = r[1]; },   // the machine summary printed when the run ends
@@ -155,7 +155,7 @@ self.onmessage = async e => {
   try {
     const base = m.base; if (m.reload) fetchMode = 'reload';
     const cfg = await (await fetch(base + 'config.json', { cache: 'no-store' })).json();
-    const wasm = await fetchWithProgress(base + 'manta.wasm', 'emulator', cfg.sizes && cfg.sizes['manta.wasm']);
+    const wasm = await fetchWithProgress(base + 'manta.wasm' + (cfg.versions && cfg.versions['manta.wasm'] ? '?v=' + encodeURIComponent(cfg.versions['manta.wasm']) : ''), 'emulator', cfg.sizes && cfg.sizes['manta.wasm']);
     const files = {};
     for (const [dst, src] of Object.entries(cfg.files)) {
       if (m.cold && dst === '/data/state.snap') continue;

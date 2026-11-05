@@ -9,7 +9,8 @@ namespace manta {
 // Narrow register-driven rectangle fill. No reset values, queue readiness,
 // analog inputs or UI assets are supplied here. Original constructor command
 // 0030 and endpoint/color registers corroborate the related GE register map.
-// Blending, keying, gradients, format C/9 and MIU1 remain unsupported.
+// Unknown colour conversion stays guarded; format 9 supports the zero clear.
+// MIU1 uses the selector encoded by the original GE address helpers.
 struct GeRectFill {
   uint32_t destination=0,pitch=0,left=0,top=0,right=0,bottom=0,color=0;
   unsigned bpp=0;bool empty=false;bool argb1555=false;bool indexed=false;bool gradient=false;bool quantized=false;   // quantized: EXPLORATORY format-C RGB = top 5 bits of each channel, alpha bit = (A==FF)
@@ -23,7 +24,7 @@ struct GeRectFill {
   // ignoredReg00: EXPLORATORY. Bits of GE register 00 (bit 0 = enable) that the hypothesis treats as having no effect on a solid fill; the original
     // ZUI sets bit 1 (via 80520A30) and bit 2 (via 80525B78) before drawing, but their hardware meaning is not established.
     static GeRectFill decode(uint16_t command,const Register& reg,bool i8Hypothesis=false,uint16_t ignoredReg00=0,bool gradientHypothesis=false){
-    bool gradient=gradientHypothesis && command==0x2030;
+    bool gradient=gradientHypothesis && (command==0x2030 || command==0x1030);
     if(command!=0x30 && !gradient)throw std::runtime_error("GE raster primitive/mode unsupported");
     auto field=[&](unsigned index,uint16_t mask=0xffff){auto [value,known]=reg(index);
       if((known&mask)!=mask)throw std::runtime_error("GE rectangle field contains unknown bits");
@@ -35,6 +36,14 @@ struct GeRectFill {
       throw std::runtime_error("GE rectangle requires enabled plain fill; transforms/blending/keying unsupported");
     auto format=field(0x34,0x1f00)>>8;GeRectFill p;
     if(format==0xf)p.bpp=4;else if(format==8)p.bpp=2;
+    else if(format==9){
+      // Original teletext clear (80455E88) explicitly rebinds I8 storage as
+      // format 9. Zero has the same representation for ARGB1555 and RGB555;
+      // other colours/alpha conversion remain unestablished on Titania4.
+      if((field(0x70)|(field(0x71)<<16))!=0)
+        throw std::runtime_error("GE format-9 fill supports only zero colour");
+      p.bpp=2;
+    }
     else if(format==0xc){
       // ARGB1555_DST (destination-only 16 bit). Alpha quantization and channel order are not established, so only colors
       // whose result cannot depend on them are accepted: alpha 00 or FF and R=G=B in {00,FF} (black/white), which give
@@ -45,14 +54,27 @@ struct GeRectFill {
     else throw std::runtime_error("GE rectangle destination format unsupported; no format-C alpha assumption");
     p.gradient=gradient;
     if(gradient){
-      if(!p.argb1555)throw std::runtime_error("GE gradient hypothesis supports only the format-C destination");
+      if(!p.argb1555 && !p.indexed)throw std::runtime_error("GE gradient hypothesis supports only the format-C destination");
+      if(command==0x1030 && !p.indexed)throw std::runtime_error("GE horizontal gradient supports only constant-index I8");
       auto step=[&](unsigned lo){uint32_t v=field(lo)|(field(lo+1,0xf)<<16);return int32_t(v&0x80000?int32_t(v)-0x100000:int32_t(v));};
       p.dx[0]=step(0x74);p.dx[1]=step(0x78);p.dx[2]=step(0x7c);p.dy[0]=step(0x72);p.dy[1]=step(0x76);p.dy[2]=step(0x7a);
-      if(field(0x7e)||field(0x7f))throw std::runtime_error("GE gradient alpha steps unsupported");
+      const auto alphaSteps=field(0x7e)|field(0x7f);
+      if(alphaSteps && !p.indexed)throw std::runtime_error("GE gradient alpha steps unsupported");
       p.originX=field(0x68);p.originY=field(0x69);
+      if(p.indexed){
+        // Under the existing I8 low-byte hypothesis only B becomes the index.
+        // TEXT changes G (0100->0000), with zero B deltas: every index is 00
+        // for any accumulator rounding. Nonconstant indexed gradients refuse.
+        if(p.dx[2] || p.dy[2])throw std::runtime_error("GE I8 gradient changes the index; rounding unestablished");
+        p.gradient=false;
+      }
     }
     p.destination=field(0x26)|(field(0x27)<<16);
-    if(p.destination>=0x08000000)throw std::runtime_error("GE rectangle requires mapped MIU0 byte addressing");
+    // Original helpers 80525DD0/DD8/DE8 extract logical bit 27, mask to
+    // 27 address bits, then encode the MIU selector as GE address bit 31.
+    const bool miu1=(p.destination&0x80000000u)!=0;
+    if(p.destination&0x78000000u)throw std::runtime_error("GE rectangle requires mapped MIU0 byte addressing");
+    p.destination=(p.destination&0x07ffffffu)+(miu1?0x08000000u:0u);
     p.pitch=field(0x33);
     p.color=field(0x70)|(field(0x71)<<16);
     p.quantized=p.argb1555 && gradientHypothesis;
@@ -69,9 +91,12 @@ struct GeRectFill {
     p.left=std::max(x0,clipLeft);p.right=std::min(x1,clipRight);
     p.top=std::max(y0,clipTop);p.bottom=std::min(y1,clipBottom);
     p.empty=x0>x1 || y0>y1 || clipLeft>clipRight || clipTop>clipBottom || p.left>p.right || p.top>p.bottom;
-    if(!p.empty && uint64_t(p.right+1)*p.bpp>p.pitch)
+    // The original teletext zero clear deliberately uses 496-byte pitch for
+    // 496 format-9 pixels. Each row overlaps the next; execute validates the
+    // whole extent and writes the rows in command order.
+    if(!p.empty && uint64_t(p.right+1)*p.bpp>p.pitch && format!=9)
       throw std::runtime_error("GE rectangle exceeds programmed destination pitch");
-    if(!p.empty && uint64_t(p.destination)+uint64_t(p.bottom)*p.pitch+uint64_t(p.right+1)*p.bpp>0x08000000)
+    if(!p.empty && uint64_t(p.destination)+uint64_t(p.bottom)*p.pitch+uint64_t(p.right+1)*p.bpp>(miu1?0x10000000ull:0x08000000ull))
       throw std::runtime_error("GE rectangle destination overflows MIU0");
     return p;
   }

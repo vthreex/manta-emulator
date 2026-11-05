@@ -1,0 +1,32 @@
+{
+  "result": "PASS",
+  "checks": {
+    "join-needs-guarded-exploration": true,
+    "no-sync-needs-hsync-and-avd-run": true,
+    "invalid-publication-needs-avd-run": true,
+    "11db-bracket-needs-avd-run": true,
+    "vif-lock-bracket-needs-guarded-exploration": true,
+    "htotal-constant-needs-absent-hsync": true,
+    "uniform-stretch-needs-ge-bitblt": true,
+    "i2-glyph-needs-ge-bitblt": true,
+    "blend-copy-needs-ge-bitblt": true,
+    "noise-constant-needs-absent-hsync": true,
+    "afec-indirect-needs-guarded-exploration": true,
+    "mmio-bits-need-guarded-exploration": true,
+    "height5-needs-a-model": true,
+    "i8-fill-needs-rect-model": true,
+    "nearest-stretch-needs-uniform-opaque": true,
+    "gradient-fill-needs-rect-model": true,
+    "fill-ignore-reg00-needs-rect-model": true,
+    "rpt-latch-needs-pm-ir-fifo": true,
+    "ir-script-rejects-garbage": true,
+    "nor-write-needs-candidate-spi": true,
+    "restore-branch-needs-nor-write": true,
+    "11db-bracket-rejects-non-bit": true,
+    "htotal-constant-rejects-out-of-range": true,
+    "vif-lock-bracket-rejects-non-bit": true,
+    "help-labels": true
+  },
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "emulator_sha256": "4668866b59f8725ac6107fbb0ad45aead69e024578ef542a638456bbf9f1bf4a"
+}

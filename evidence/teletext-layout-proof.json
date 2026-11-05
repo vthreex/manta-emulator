@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "scope": "static original-firmware layout only",
+  "exact_instructions": 16,
+  "hamming_codes": 16,
+  "slot_copy_offset": 4,
+  "copied_bytes": 44,
+  "marker_slot_offset": 5,
+  "mrag_slot_offsets": [
+    6,
+    7
+  ],
+  "page_digits_slot_offsets": [
+    8,
+    9
+  ],
+  "displayed_page_verified": false,
+  "channel_name_verified": false
+}

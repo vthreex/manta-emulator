@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <optional>
 #include <stdexcept>
+#include <span>
 namespace manta {
 // Original 805393xx uploads a 32-bit color to registers 3/4, selects an
 // index in register5, and pulses bit8 with mode bits12/13 set. No reset
@@ -16,6 +17,19 @@ class GopPalette {
   std::array<std::optional<Pending>,2> pending_{};
   uint64_t commits_=0;
 public:
+  void loadDma(unsigned bank,std::span<const uint8_t> bytes) {
+    if((bank!=0 && bank!=3) || bytes.empty() || bytes.size()%8 || bytes.size()>4096)
+      throw std::runtime_error("GOP palette DMA framing unsupported");
+    const unsigned plane=bank==0?0:1;
+    if(pending_[plane])throw std::runtime_error("GOP palette DMA overlaps a CPU pulse");
+    for(size_t at=0;at<bytes.size();at+=8)
+      if(bytes[at+5] || bytes[at+6] || bytes[at+7])throw std::runtime_error("GOP palette DMA record reserved bytes nonzero");
+    for(size_t at=0;at<bytes.size();at+=8) {
+      const unsigned index=bytes[at+4];
+      colors_[plane][index]=uint32_t(bytes[at])|(uint32_t(bytes[at+1])<<8)|(uint32_t(bytes[at+2])<<16)|(uint32_t(bytes[at+3])<<24);
+      modes_[plane][index]=0x1000;++commits_;
+    }
+  }
   bool pulse(unsigned bank,uint16_t control,uint16_t known,uint32_t color,uint32_t colorKnown) {
     if(bank!=0 && bank!=3)throw std::runtime_error("GOP palette bank unsupported");
     auto plane=bank==0?0u:1u;

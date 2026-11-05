@@ -1,0 +1,23 @@
+{
+  "result": "PASS",
+  "scope": "connected original-firmware teletext with explicit exploratory models",
+  "channel_name_storage_verified": false,
+  "cases": [
+    {
+      "case": "alpha",
+      "dispatches": 2000000003,
+      "reason": "instruction budget exhausted",
+      "covered_pixels": 138880,
+      "frame_sha256": "8d5227507f1cf5f24b62142a06103dd5293edf249b23f79b3a98a63acd249c3f",
+      "frame": "C:\\Users\\micha\\Documents\\Codex\\2026-10-11\\codex-reverse-engineer-and-build-a\\work\\teletext-graphics-validation\\alpha\\gop_0_d2000000003.bmp"
+    },
+    {
+      "case": "beta",
+      "dispatches": 2000000002,
+      "reason": "instruction budget exhausted",
+      "covered_pixels": 138880,
+      "frame_sha256": "9fb766ba803c42058461073efb9b1fcd487bbdbe71d66ef3ddde2e171a7de3e6",
+      "frame": "C:\\Users\\micha\\Documents\\Codex\\2026-10-11\\codex-reverse-engineer-and-build-a\\work\\teletext-graphics-validation\\beta\\gop_0_d2000000002.bmp"
+    }
+  ]
+}

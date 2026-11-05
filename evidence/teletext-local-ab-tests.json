@@ -1,0 +1,28 @@
+[
+  {
+    "case": "without-text",
+    "exit": 2,
+    "reason": "instruction budget exhausted",
+    "dispatches": 1460000268,
+    "ram_dump": {
+      "806b92c0+4": "00000000",
+      "806c0910+4": "00000000",
+      "806bedf0+4": "02000000",
+      "806d87d8+14": "a7000000a7000000000001000070840368010000"
+    },
+    "request": null
+  },
+  {
+    "case": "text-no-station",
+    "exit": 2,
+    "reason": "instruction budget exhausted",
+    "dispatches": 1460000004,
+    "ram_dump": {
+      "806b92c0+4": "0b000000",
+      "806c0910+4": "00000000",
+      "806bedf0+4": "02000000",
+      "806d87d8+14": "0000000000000000000000000070840368010000"
+    },
+    "request": null
+  }
+]

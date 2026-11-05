@@ -1,5 +1,7 @@
 #pragma once
 #include <algorithm>
+#include <array>
+#include <optional>
 #include "input/remote_queue.hpp"
 #include <atomic>
 #include <cstdint>
@@ -22,6 +24,8 @@ struct GopLayer {
   std::vector<uint8_t> memory;   // private copy of pitch*height guest bytes (captured by the emulator thread)
   uint64_t invalidBytes = 0;     // bytes whose guest value is unknown
   std::string skipReason;        // non-empty: not composed
+  std::array<std::optional<uint32_t>,256> palette{}; // mode-3000 guest ARGB entries only
+  bool indexedOpaque = false; // original GWIN blend disabled, coefficient 3F
 };
 struct GopPreviewFrame {
   uint32_t width = 0, height = 0;
@@ -54,11 +58,16 @@ inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t
   uint32_t w = 0, h = 0;
   for (auto& l : layers) {
     if (l.skipReason.empty()) {
-      if (l.format != 6) l.skipReason = "format not decoded (only 6, inferred ARGB1555)";
+      if (l.format != 6 && l.format != 4) l.skipReason = "format not decoded (only 6, inferred ARGB1555)";
       else if (l.invalidBytes) l.skipReason = "window memory contains unknown bytes";
-      else if (!l.width || !l.height || uint64_t(l.pitch) < uint64_t(l.width) * 2 || uint64_t(l.pitch) * l.height > l.memory.size())
+      else if (!l.width || !l.height || uint64_t(l.pitch) < uint64_t(l.width) * (l.format==4?1:2) || uint64_t(l.pitch) * l.height > l.memory.size())
         l.skipReason = "geometry exceeds captured memory";
       else if (l.x >= maxWidth || l.y >= maxHeight) l.skipReason = "outside the panel canvas";
+      if(l.skipReason.empty() && l.format==4)
+        for(uint32_t y=0;y<l.height && l.skipReason.empty();++y)
+          for(uint32_t x=0;x<l.width;++x) if(!l.palette[l.memory[size_t(y)*l.pitch+x]]) {
+            l.skipReason="indexed window references an unknown or unsupported palette entry";break;
+          }
     }
     if (l.skipReason.empty()) {
       w = std::max(w, std::min(l.x + l.width, maxWidth));
@@ -75,11 +84,13 @@ inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t
     if (!l.skipReason.empty()) continue;
     for (uint32_t yy = 0; yy < l.height && l.y + yy < h; ++yy)
       for (uint32_t xx = 0; xx < l.width && l.x + xx < w; ++xx) {
-        size_t src = size_t(yy) * l.pitch + size_t(xx) * 2;
-        uint16_t p = uint16_t(l.memory[src] | (l.memory[src + 1] << 8));
-        if (!(p & 0x8000) || (blackKey && !blackKeyEdgeOnly && !(p & 0x7fff))) continue;
+        size_t src = size_t(yy) * l.pitch + size_t(xx) * (l.format==4?1:2);
+        uint32_t color;
+        if(l.format==4) {color=*l.palette[l.memory[src]];if(l.indexedOpaque)color|=0xff000000u;}
+        else color=argb1555ToBgra(uint16_t(l.memory[src] | (l.memory[src+1]<<8)));
+        if (!(color & 0xff000000u) || (blackKey && !blackKeyEdgeOnly && !(color & 0xffffffu))) continue;
         size_t dst = size_t(l.y + yy) * w + l.x + xx;
-        f.bgra[dst] = argb1555ToBgra(p); f.covered[dst] = 1;
+        f.bgra[dst] = color; f.covered[dst] = 1;
       }
   }
   // blackKeyEdgeOnly (EXPLORATORY HYPOTHESIS): opaque pure-black pixels are see-through only where they connect (4-neighbourhood, through black or uncovered
