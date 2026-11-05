@@ -1,6 +1,6 @@
 # ATV teletext (VBI slicer) model - EXPLORATORY, work in progress
 
-Station spec: `atv-stations=MHZ[=PIC][@LEVEL][|NAME][|TEXT~LINE2~...]`.
+Station spec: `atv-stations=MHZ[=PIC][@LEVEL][|NAME][|TEXT~LINE2~...][|NETWORK_ID]`.
 * Original driver: buffer setup 80527F48 (1F206E70/71/74 = DRAM address/8, 6E39 bit0 MIU1, 6E75/78 = slots, 6E3D = 0x82 enable),
   data present = 1F206E41 bit7 (80527F0C), hardware write index = 6E79 | 6E7C<<8 (80527F20), reader 805277B8: slot = base + (idx-1)*48,
   consumer 80455070: byte 5 must be 0x27, copies 44 bytes from slot+4 into the teletext core ring (806C0564).
@@ -92,3 +92,15 @@ Body rows start at3 to leave room for the double-height name. GOP blend-disabled
 coefficient3F is honored for indexed preview, so zero-alpha uploaded palette
 entries can still be displayed with constant opacity. TV channel-name storage
 remains unverified.
+
+## GOP output size correction
+
+Original80539824 (horizontal) and8053979C (vertical) program source/output
+ratios with 12 fractional bits into logical1F6A /1F6C, engine-bank offsetsD4/D8.
+The connected TEXT request is496/1920 and280/1080, yielding0422/0425. The
+indexed diagnostic preview now samples the guest buffer using those known
+ratios under its explicit nearest-sampling hypothesis. It no longer places the
+496x280 source buffer unscaled in the panel corner. Connected native and WASM
+tests now require1920x1080 output and2,073,600 covered pixels.
+
+For TV-banner naming, see [ATV identification](atv-channel-identification.md).

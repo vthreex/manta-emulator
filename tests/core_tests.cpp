@@ -1171,7 +1171,15 @@ void geRectFillTests(){
   set(0x7e,0xfdef);{auto p=Fill::decode(0x1030,read,true,0,true);
    require(p.indexed && !p.gradient,"I8 low-byte hypothesis is independent of unused alpha gradients");}
   rejects([&]{Fill::decode(0x1030,read,true);});
-  set(0x7c,1);rejects([&]{Fill::decode(0x1030,read,true,0,true);});regs=saved;
+  set(0x7a,1);rejects([&]{Fill::decode(0x1030,read,true,0,true);});regs=saved;
+  set(0x34,0x0c09);set(0x70,0xffff);set(0x71,0xffff);
+  for(unsigned i=0x72;i<=0x7f;++i)set(i,0);
+  set(0x72,0xf860);set(0x73,0xf);set(0x74,0x1000);
+  {auto p=Fill::decode(0x1030,read,false,0,true);
+   require(p.dx[0]==-1952 && p.dy[0]==0,"Programme Edit horizontal gradient uses original72/73 red delta and ignores stale vertical delta");}
+  {auto p=Fill::decode(0x2030,read,false,0,true);
+   require(p.dy[0]==4096 && p.dx[0]==0,"vertical GE gradient uses original74/75 delta and ignores horizontal registers");}
+  regs=saved;
   set(1,0x10);rejects([&]{Fill::decode(0x30,read);});regs=saved;
   set(0x27,0x1000);rejects([&]{Fill::decode(0x30,read);});regs=saved;
   // Original TEXT clear: MIU1 selector, format 9, zero colour and overlapping rows.
@@ -1248,6 +1256,7 @@ void htotalBranchJoinTests(){
 #include "usb_host_tests.inc"
 #include "pal_cvbs_tests.inc"
 void vbiSlotTests() {
+  require(manta::teletextNetworkId(0x4801)==std::array<uint8_t,2>{0x12,0x80},"packet 8/30 NI reverses each high/low byte as consumed by original 804530F8");
   require(manta::teletextInitialPage100[1]==0x15 && manta::teletextInitialPage100[2]==0x15 && manta::teletextInitialPage100[4]==0xd0,
     "8/30 initial page has units/tens zero and magazine 1 (not page 110)");
   {manta::GopLayer l;l.format=4;l.width=3;l.height=1;l.pitch=4;
@@ -1256,6 +1265,11 @@ void vbiSlotTests() {
    require(f.width==3 && f.bgra[0]==0xffff0000 && f.bgra[1]==0xff00ff00 && !f.covered[2],"I8 preview uses guest palette and preserves transparent entries and pitch padding");
    l.indexedOpaque=true;layers={l};f=manta::composeGopPreview(layers);
    require(f.covered[2] && f.bgra[2]==0xff000000,"GWIN blend-disabled full constant opacity does not use palette alpha");
+   l.scaleStepX=2048;l.scaleStepY=2048;layers={l};f=manta::composeGopPreview(layers);
+   require(f.width==6 && f.height==2 && f.bgra[0]==0xffff0000 && f.bgra[1]==0xffff0000 && f.bgra[2]==0xff00ff00 && f.bgra[5]==0xff000000,
+     "GOP 12.12 nearest preview scales source indices into the output canvas");
+   layers={l};f=manta::composeGopPreview(layers,4,1);
+   require(f.width==4 && f.height==1 && f.bgra[3]==0xff00ff00,"scaled GOP sampling clips output without extending source reads");
    l.palette[2].reset();layers={l};f=manta::composeGopPreview(layers);
    require(f.empty() && !layers[0].skipReason.empty(),"I8 preview refuses undefined used palette entries");}
   std::array<uint8_t,50> memory; memory.fill(0xa5);

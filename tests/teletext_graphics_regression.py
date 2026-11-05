@@ -52,7 +52,7 @@ for tag, text in [('alpha', 'ALPHA TEXT'), ('beta', 'BETA TEXT')]:
                for w in s['gop_active_descriptors'])
     frames = json.loads((out / 'index.json').read_text())['frames']
     f = frames[-1]
-    assert f['covered_pixels'] == 496 * 280, (tag, f)
+    assert f['covered_pixels'] == 1920 * 1080, (tag, f)
     bitmap = (out / f['file']).read_bytes()
     results.append(dict(case=tag, dispatches=s['instruction_dispatches'],
                         reason=s['reason'], covered_pixels=f['covered_pixels'],

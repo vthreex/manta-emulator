@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "scope": "original firmware manual tuning, broadcast identification and RED Save",
+  "station": {
+    "mhz": 55.25,
+    "network_id": "0x4801",
+    "expected_name": "TVP1"
+  },
+  "current_name_hex": "5456503120000000",
+  "programme_edit_frame": "0x9265f91d54beb0e3",
+  "analogue_row_visually_verified": true,
+  "power_cycle_persistence_verified": false
+}

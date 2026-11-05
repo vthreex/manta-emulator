@@ -26,6 +26,7 @@ struct GopLayer {
   std::string skipReason;        // non-empty: not composed
   std::array<std::optional<uint32_t>,256> palette{}; // mode-3000 guest ARGB entries only
   bool indexedOpaque = false; // original GWIN blend disabled, coefficient 3F
+  uint32_t scaleStepX=4096,scaleStepY=4096; // source advance per output pixel, 12 fractional bits
 };
 struct GopPreviewFrame {
   uint32_t width = 0, height = 0;
@@ -70,8 +71,9 @@ inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t
           }
     }
     if (l.skipReason.empty()) {
-      w = std::max(w, std::min(l.x + l.width, maxWidth));
-      h = std::max(h, std::min(l.y + l.height, maxHeight));
+      if(!l.scaleStepX || !l.scaleStepY){l.skipReason="GOP scale ratio invalid";continue;}
+      w = std::max(w, uint32_t(std::min<uint64_t>((uint64_t(l.x+l.width)<<12)/l.scaleStepX, maxWidth)));
+      h = std::max(h, uint32_t(std::min<uint64_t>((uint64_t(l.y+l.height)<<12)/l.scaleStepY, maxHeight)));
     }
   }
   f.width = w; f.height = h;
@@ -82,14 +84,19 @@ inline GopPreviewFrame composeGopPreview(std::vector<GopLayer>& layers, uint32_t
                      std::to_string(l.height) + "@(" + std::to_string(l.x) + "," + std::to_string(l.y) + ") fmt" + std::to_string(l.format) +
                      (l.skipReason.empty() ? " composed; " : " SKIPPED: " + l.skipReason + "; ");
     if (!l.skipReason.empty()) continue;
-    for (uint32_t yy = 0; yy < l.height && l.y + yy < h; ++yy)
-      for (uint32_t xx = 0; xx < l.width && l.x + xx < w; ++xx) {
-        size_t src = size_t(yy) * l.pitch + size_t(xx) * (l.format==4?1:2);
+    const uint32_t left=uint32_t((uint64_t(l.x)<<12)/l.scaleStepX),top=uint32_t((uint64_t(l.y)<<12)/l.scaleStepY);
+    const uint32_t right=uint32_t(std::min<uint64_t>((uint64_t(l.x+l.width)<<12)/l.scaleStepX,w));
+    const uint32_t bottom=uint32_t(std::min<uint64_t>((uint64_t(l.y+l.height)<<12)/l.scaleStepY,h));
+    for (uint32_t yy=top;yy<bottom;++yy)
+      for (uint32_t xx=left;xx<right;++xx) {
+        const auto sx=std::min(l.width-1,uint32_t((uint64_t(xx-left)*l.scaleStepX)>>12));
+        const auto sy=std::min(l.height-1,uint32_t((uint64_t(yy-top)*l.scaleStepY)>>12));
+        size_t src = size_t(sy) * l.pitch + size_t(sx) * (l.format==4?1:2);
         uint32_t color;
         if(l.format==4) {color=*l.palette[l.memory[src]];if(l.indexedOpaque)color|=0xff000000u;}
         else color=argb1555ToBgra(uint16_t(l.memory[src] | (l.memory[src+1]<<8)));
         if (!(color & 0xff000000u) || (blackKey && !blackKeyEdgeOnly && !(color & 0xffffffu))) continue;
-        size_t dst = size_t(l.y + yy) * w + l.x + xx;
+        size_t dst = size_t(yy) * w + xx;
         f.bgra[dst] = color; f.covered[dst] = 1;
       }
   }

@@ -1,5 +1,51 @@
 # Manta ATV / teletext handoff
 
+## Follow-up: full-screen teletext and automatic station identity (2026-11-05)
+
+User screenshots showed the496x280 teletext buffer in the panel corner and
+C-03 in the TV banner. The previous checks verified page text only, not output
+scaling or stored TV names.
+
+Scaling: original80539824 /8053979C explicitly request496->1920 and280->1080,
+writing12-fractional-bit ratios0422/0425 at active engine-bank offsetsD4/D8.
+Indexed preview now samples with those ratios under its existing opt-in nearest
+sampling hypothesis. Native two-body tests pass to2B with2,073,600 covered
+pixels; actual live-profile WASM renders1920x1080. Screenshot:
+evidence/teletext-scaled-preview.png. Existing unscaled/palette tests preserved.
+
+Naming: original80453D50 calls CNI lookup805B248C and name copier805B27FC.
+It uses a built-in identifier table at806B2BD0 (549 records x28 bytes), not
+the arbitrary teletext status string. Without a known ID,80402254 falls back
+to80402118 formatting C-03. New station syntax adds an optional broadcast ID:
+55.25|TVP1|TEST|0x4801. Packet8/30 encodes both reversed NI bytes; original
+804530F8 reverses them back. A real connected manual search now decodes4801,
+selects index512 and writes TVP1 into its own806BDEE0 name buffer. No host RAM
+name writes or firmware changes. See docs/atv-channel-identification.md.
+
+The web station controls now separate custom teletext text/name from the TV
+channel identity, offering466 usable identities extracted from the original
+table. Arbitrary TV-name editing is not verified; do not promise a Rename
+action (observed Programme Edit offers Delete/Move/Skip/Favourite). Worker
+protocol test passes. tools/station_name_probe.cpp also verifies the original
+lookup in isolation (distinct from connected progress).
+
+Programme Edit hit a previously unsupported C1030 gradient. Added horizontal
+gradient execution under the existing opt-in quantization hypothesis, and
+corrected the axis/register pairing from original80523228..80523420:
+1030 uses horizontal72/76/7A;2030 vertical74/78/7C. Stale other-axis registers
+are ignored. Updated the old synthetic gradient test to verify vertical rows;
+static firmware-word proof now pins the command/register pairings.3897 native
+checks pass. Connected RED Save, MENU, DOWN, OK now opens Programme Edit and
+visibly shows the selected1 TVP1 / ATV entry. Snapshot digital TVP1 is a separate
+pre-existing row; the analog row verifies this run's new stored station name.
+
+Follow-up validated: 3897 native checks; 18 baseline and 9 display cases;
+auxiliary/clock/forensics; clean-PATH presenter; original lookup probe; web
+worker and actual WASM teletext rendering. Final strict replay matches all
+289 reference summary fields and coverage (6,592,741 events). Saved analog
+TVP1 row visually verified. Publishing this follow-up now; next user request
+is raw .ttx file input. All unrelated Sunplus changes remain preserved.
+
 Recovered from repository and local evidence on 2026-11-05. Teletext page 100
 now renders transmitted name/body through the original firmware using the
 explicit exploratory models below. TV channel-name storage remains unverified.

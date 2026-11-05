@@ -34,6 +34,11 @@ def main():
         0x80525dfc: 0x3c028000,
         0x80525e00: 0x00c23025,
         0x80455e88: 0x24020009,
+        # Original GE gradient driver pairs the coordinate axis and command.
+        0x805233a4: 0x24050072,
+        0x80523408: 0x24131000,
+        0x8052327c: 0x24050074,
+        0x805232e0: 0x36732000,
     }
     for pc, word in expected.items():
         actual = struct.unpack_from('<I', image, pc - BASE)[0]

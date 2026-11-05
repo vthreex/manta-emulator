@@ -1,7 +1,7 @@
 {
   "result": "PASS",
   "scope": "static original-firmware layout only",
-  "exact_instructions": 16,
+  "exact_instructions": 20,
   "hamming_codes": 16,
   "slot_copy_offset": 4,
   "copied_bytes": 44,

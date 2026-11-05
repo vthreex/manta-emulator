@@ -15,7 +15,8 @@ struct GeRectFill {
   uint32_t destination=0,pitch=0,left=0,top=0,right=0,bottom=0,color=0;
   unsigned bpp=0;bool empty=false;bool argb1555=false;bool indexed=false;bool gradient=false;bool quantized=false;   // quantized: EXPLORATORY format-C RGB = top 5 bits of each channel, alpha bit = (A==FF)
   // EXPLORATORY gradient (command 0x2030): per-channel signed 20-bit steps in 7.12 fixed point, evidence = original delta routine 8052158C
-  // ((|c1-c0|<<12)/(length-1), negative as 0x100000-v). x steps: regs 74/75 R, 78/79 G, 7C/7D B; y steps: 72/73 R, 76/77 G, 7A/7B B.
+  // ((|c1-c0|<<12)/(length-1), negative as 0x100000-v). Original80523228..23420 programs
+  // horizontal1030 steps at72/76/7A; vertical2030 steps at74/78/7C. Only the commanded axis is consumed.
   // Accumulation from the rectangle origin, truncation of the 12 fraction bits and the ARGB1555 channel quantization are ASSUMED.
   int32_t dx[3]={0,0,0},dy[3]={0,0,0};uint32_t originX=0,originY=0;
   using Register=std::function<std::pair<uint16_t,uint16_t>(unsigned)>; // value, known
@@ -55,10 +56,10 @@ struct GeRectFill {
     p.gradient=gradient;
     if(gradient){
       if(!p.argb1555 && !p.indexed)throw std::runtime_error("GE gradient hypothesis supports only the format-C destination");
-      if(command==0x1030 && !p.indexed)throw std::runtime_error("GE horizontal gradient supports only constant-index I8");
       auto step=[&](unsigned lo){uint32_t v=field(lo)|(field(lo+1,0xf)<<16);return int32_t(v&0x80000?int32_t(v)-0x100000:int32_t(v));};
-      p.dx[0]=step(0x74);p.dx[1]=step(0x78);p.dx[2]=step(0x7c);p.dy[0]=step(0x72);p.dy[1]=step(0x76);p.dy[2]=step(0x7a);
-      const auto alphaSteps=field(0x7e)|field(0x7f);
+      if(command==0x1030){p.dx[0]=step(0x72);p.dx[1]=step(0x76);p.dx[2]=step(0x7a);}
+      else {p.dy[0]=step(0x74);p.dy[1]=step(0x78);p.dy[2]=step(0x7c);}
+      const auto alphaSteps=field(command==0x1030?0x7e:0x7f);
       if(alphaSteps && !p.indexed)throw std::runtime_error("GE gradient alpha steps unsupported");
       p.originX=field(0x68);p.originY=field(0x69);
       if(p.indexed){

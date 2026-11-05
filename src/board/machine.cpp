@@ -2464,6 +2464,14 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
       if(l.format==4 && options_.exploratoryGopIndexedPreview) {
         auto alpha=riu_.gopActiveByte(bank,window*0x80+1);
         l.indexedOpaque=(alpha.known&0x7f)==0x7f && (alpha.value&0x7f)==0x3f;
+        // Original 80539824 / 8053979C write (source<<12)/output to
+        // logical 1F6A / 1F6C of the corresponding engine bank.
+        auto ratio=[&](unsigned off)->uint32_t {
+          auto lo=riu_.gopActiveByte(bank-1,off),hi=riu_.gopActiveByte(bank-1,off+1);
+          return lo.known==255 && hi.known==255 ? uint32_t(lo.value)|(uint32_t(hi.value)<<8) : 0;
+        };
+        auto sx=ratio(0xd4),sy=ratio(0xd8);
+        if(sx && sy){l.scaleStepX=sx;l.scaleStepY=sy;}
       }
       auto physical = gopPhysicalAddress(riu_, bank, window, d->miuRelativeAddress);
       uint64_t size = uint64_t(d->pitch) * d->height;
@@ -2532,7 +2540,8 @@ void Msd309Machine::vbiFeed() {
     if (k == pageRows) {   // packet 8/30 format 1
       line[0] = ham[0 | (0 << 3)]; line[1] = ham[30 >> 1]; line[0] = ham[0 | ((30 & 1) << 3)];   // magazine 8 is coded 0
       std::copy(teletextInitialPage100.begin(),teletextInitialPage100.end(),line+2);
-      line[9] = 0x00; line[10] = 0x00; line[11] = 0x00; for (unsigned j = 12; j < 22; ++j) line[j] = 0x15;
+      const auto ni=teletextNetworkId(S.networkId);line[9]=ni[0];line[10]=ni[1];
+      line[11] = 0x00; for (unsigned j = 12; j < 22; ++j) line[j] = 0x15;
       text(22, name, 20);
     } else {
       const unsigned row = k == 0 ? 0 : k;   // row 0 header, row 1 name, rows 2.. text
@@ -2559,7 +2568,14 @@ void Msd309Machine::setAtvStations(const std::string& spec) {
   while (at < spec.size()) { size_t e = spec.find(',', at); if (e == std::string::npos) e = spec.size(); std::string item = spec.substr(at, e - at); at = e + 1;
     if (item.empty()) continue; Riu::AtvStation s;
     { size_t bar = item.find('|'); if (bar != std::string::npos) { std::string rest = item.substr(bar + 1); item = item.substr(0, bar);
-        size_t b2 = rest.find('|'); s.name = rest.substr(0, b2); if (b2 != std::string::npos) s.text = rest.substr(b2 + 1); } } size_t lv = item.rfind('@'); if (lv != std::string::npos) { s.level = std::stod(item.substr(lv + 1)); item = item.substr(0, lv); }
+        size_t b2 = rest.find('|'); s.name = rest.substr(0, b2); if (b2 != std::string::npos) {
+          auto b3=rest.find('|',b2+1);s.text=rest.substr(b2+1,b3==std::string::npos?std::string::npos:b3-b2-1);
+          if(b3!=std::string::npos && b3+1<rest.size()){
+            size_t used=0;auto id=std::stoul(rest.substr(b3+1),&used,0);
+            if(id>65535 || used!=rest.size()-b3-1)throw std::runtime_error("ATV broadcast identity must be a 16-bit integer");
+            s.networkId=uint16_t(id);
+          }
+        } } } size_t lv = item.rfind('@'); if (lv != std::string::npos) { s.level = std::stod(item.substr(lv + 1)); item = item.substr(0, lv); }
     size_t eq = item.find('='); s.mhz = std::stod(item.substr(0, eq)); if (eq != std::string::npos) s.picture = item.substr(eq + 1); riu_.atvStations.push_back(s); }
 }
 void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requestedAt) {
@@ -2714,7 +2730,7 @@ void Msd309Machine::publishPreview() const {
   }
   auto layers = collectGopLayers();
   auto frame = composeGopPreview(layers,1920,1080,options_.videoPlaneBlackKey && !options_.videoPlane.empty(), options_.videoPlaneBlackKeyEdge);
-  if(options_.exploratoryGopIndexedPreview)frame.label+=" | ASSUMPTION: I8 mode-3000 palette is ARGB8888";
+  if(options_.exploratoryGopIndexedPreview)frame.label+=" | ASSUMPTION: I8 palette is ARGB8888; GOP scaling uses nearest 12.12 sampling";
   if(options_.exploratoryGeHeight5Full)frame.label+=" | HYPOTHESIS: register 6F=height-5 copies full height";
   if(riu_.geBlendCopies)frame.label+=" | EXPLORATORY GE blend-copy model in use (not Titania4 behavior)";
   if(riu_.geI2Glyphs)frame.label+=" | EXPLORATORY GE I2-glyph model in use (not Titania4 behavior)";

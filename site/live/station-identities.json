@@ -1,0 +1,1868 @@
+{
+ "stations": [
+  {
+   "name": "101TV",
+   "id": 12641
+  },
+  {
+   "name": "105TV",
+   "id": 13361
+  },
+  {
+   "name": "123TV",
+   "id": 18877
+  },
+  {
+   "name": "1+1",
+   "id": 30464
+  },
+  {
+   "name": "1TV",
+   "id": 12638
+  },
+  {
+   "name": "24HOR",
+   "id": 13354
+  },
+  {
+   "name": "3SAT",
+   "id": 18887
+  },
+  {
+   "name": "40LAT",
+   "id": 13353
+  },
+  {
+   "name": "7GOLD",
+   "id": 14598
+  },
+  {
+   "name": "7GSR",
+   "id": 14771
+  },
+  {
+   "name": "8TV",
+   "id": 13358
+  },
+  {
+   "name": "A1",
+   "id": 14720
+  },
+  {
+   "name": "AB1",
+   "id": 13249
+  },
+  {
+   "name": "AB3",
+   "id": 12812
+  },
+  {
+   "name": "AB4E",
+   "id": 12813
+  },
+  {
+   "name": "ABCH",
+   "id": 14830
+  },
+  {
+   "name": "ACHT",
+   "id": 12844
+  },
+  {
+   "name": "ALICE",
+   "id": 14738
+  },
+  {
+   "name": "ANGLI",
+   "id": 64412
+  },
+  {
+   "name": "ANIMA",
+   "id": 12579
+  },
+  {
+   "name": "ANIMP",
+   "id": 17441
+  },
+  {
+   "name": "ANTEC",
+   "id": 12855
+  },
+  {
+   "name": "ANTEN",
+   "id": 13348
+  },
+  {
+   "name": "AQUI",
+   "id": 13088
+  },
+  {
+   "name": "ARD",
+   "id": 18689
+  },
+  {
+   "name": "ARTE",
+   "id": 13066
+  },
+  {
+   "name": "ATV",
+   "id": 36874
+  },
+  {
+   "name": "AVRAS",
+   "id": 36870
+  },
+  {
+   "name": "AVSE",
+   "id": 12831
+  },
+  {
+   "name": "BRNDV",
+   "id": 16896
+  },
+  {
+   "name": "BASTV",
+   "id": 14791
+  },
+  {
+   "name": "BBC1",
+   "id": 17535
+  },
+  {
+   "name": "BBC1N",
+   "id": 17473
+  },
+  {
+   "name": "BBC1S",
+   "id": 17531
+  },
+  {
+   "name": "BBC1W",
+   "id": 17533
+  },
+  {
+   "name": "BBC2",
+   "id": 17472
+  },
+  {
+   "name": "BBC2N",
+   "id": 17534
+  },
+  {
+   "name": "BBC2W",
+   "id": 17474
+  },
+  {
+   "name": "BBCN",
+   "id": 17513
+  },
+  {
+   "name": "BBCP",
+   "id": 17512
+  },
+  {
+   "name": "BBCW",
+   "id": 17495
+  },
+  {
+   "name": "BE",
+   "id": 12822
+  },
+  {
+   "name": "BOING",
+   "id": 14806
+  },
+  {
+   "name": "BOORG",
+   "id": 14661
+  },
+  {
+   "name": "BORTV",
+   "id": 47095
+  },
+  {
+   "name": "BR",
+   "id": 18891
+  },
+  {
+   "name": "BRABN",
+   "id": 12631
+  },
+  {
+   "name": "BRALP",
+   "id": 18756
+  },
+  {
+   "name": "BRAVO",
+   "id": 36878
+  },
+  {
+   "name": "BRESC",
+   "id": 14826
+  },
+  {
+   "name": "BRUG",
+   "id": 12658
+  },
+  {
+   "name": "BST24",
+   "id": 12642
+  },
+  {
+   "name": "CAN+",
+   "id": 13300
+  },
+  {
+   "name": "C33",
+   "id": 51763
+  },
+  {
+   "name": "CAMER",
+   "id": 14631
+  },
+  {
+   "name": "CAN5",
+   "id": 64005
+  },
+  {
+   "name": "CANA9",
+   "id": 13315
+  },
+  {
+   "name": "CANAC",
+   "id": 12853
+  },
+  {
+   "name": "CANJ",
+   "id": 13250
+  },
+  {
+   "name": "JIMMY",
+   "id": 13251
+  },
+  {
+   "name": "CANAL",
+   "id": 14597
+  },
+  {
+   "name": "CALEX",
+   "id": 13333
+  },
+  {
+   "name": "CANV",
+   "id": 12802
+  },
+  {
+   "name": "CANZO",
+   "id": 12851
+  },
+  {
+   "name": "CANZR",
+   "id": 12891
+  },
+  {
+   "name": "CARLT",
+   "id": 33501
+  },
+  {
+   "name": "CARSE",
+   "id": 33505
+  },
+  {
+   "name": "CARNK",
+   "id": 14660
+  },
+  {
+   "name": "CARNP",
+   "id": 14663
+  },
+  {
+   "name": "CARTO",
+   "id": 12906
+  },
+  {
+   "name": "CCV",
+   "id": 13317
+  },
+  {
+   "name": "CENTV",
+   "id": 12071
+  },
+  {
+   "name": "CH4",
+   "id": 64721
+  },
+  {
+   "name": "CH5",
+   "id": 38402
+  },
+  {
+   "name": "CHTV",
+   "id": 64740
+  },
+  {
+   "name": "CHILD",
+   "id": 17412
+  },
+  {
+   "name": "CINE5",
+   "id": 36872
+  },
+  {
+   "name": "CLATV",
+   "id": 13355
+  },
+  {
+   "name": "CLUBR",
+   "id": 12810
+  },
+  {
+   "name": "CNBC",
+   "id": 36466
+  },
+  {
+   "name": "CNN",
+   "id": 498
+  },
+  {
+   "name": "CONSU",
+   "id": 12645
+  },
+  {
+   "name": "CT1",
+   "id": 16897
+  },
+  {
+   "name": "CT2",
+   "id": 16898
+  },
+  {
+   "name": "CT24",
+   "id": 16906
+  },
+  {
+   "name": "CT4",
+   "id": 16907
+  },
+  {
+   "name": "CUATR",
+   "id": 13351
+  },
+  {
+   "name": "CULTU",
+   "id": 12640
+  },
+  {
+   "name": "CYL7",
+   "id": 13357
+  },
+  {
+   "name": "CYL8",
+   "id": 13362
+  },
+  {
+   "name": "DISC1",
+   "id": 14768
+  },
+  {
+   "name": "DISCO",
+   "id": 12847
+  },
+  {
+   "name": "DISNC",
+   "id": 14770
+  },
+  {
+   "name": "DISNE",
+   "id": 17617
+  },
+  {
+   "name": "DR1",
+   "id": 29586
+  },
+  {
+   "name": "DR2",
+   "id": 18895
+  },
+  {
+   "name": "DUNA",
+   "id": 13878
+  },
+  {
+   "name": "EDC2",
+   "id": 13359
+  },
+  {
+   "name": "EDC3",
+   "id": 13360
+  },
+  {
+   "name": "EET",
+   "id": 14776
+  },
+  {
+   "name": "EKOTV",
+   "id": 36877
+  },
+  {
+   "name": "ESPAN",
+   "id": 14735
+  },
+  {
+   "name": "ESPCS",
+   "id": 14792
+  },
+  {
+   "name": "ET1",
+   "id": 12289
+  },
+  {
+   "name": "ET3",
+   "id": 12291
+  },
+  {
+   "name": "ETB1",
+   "id": 47617
+  },
+  {
+   "name": "ETB2",
+   "id": 13314
+  },
+  {
+   "name": "EUNEW",
+   "id": 65025
+  },
+  {
+   "name": "EUROD",
+   "id": 36876
+  },
+  {
+   "name": "EURSP",
+   "id": 61697
+  },
+  {
+   "name": "EUSP2",
+   "id": 61698
+  },
+  {
+   "name": "EUSPN",
+   "id": 61699
+  },
+  {
+   "name": "EXQI",
+   "id": 12842
+  },
+  {
+   "name": "EXTRA",
+   "id": 18755
+  },
+  {
+   "name": "EXTRM",
+   "id": 13334
+  },
+  {
+   "name": "FAMIL",
+   "id": 12649
+  },
+  {
+   "name": "FESTI",
+   "id": 18753
+  },
+  {
+   "name": "FILM",
+   "id": 50420
+  },
+  {
+   "name": "FOCTV",
+   "id": 12821
+  },
+  {
+   "name": "FOX",
+   "id": 14711
+  },
+  {
+   "name": "FOXKD",
+   "id": 14725
+  },
+  {
+   "name": "FOXKI",
+   "id": 14727
+  },
+  {
+   "name": "FOXLF",
+   "id": 14712
+  },
+  {
+   "name": "FR2",
+   "id": 13298
+  },
+  {
+   "name": "FR3",
+   "id": 13299
+  },
+  {
+   "name": "FR5",
+   "id": 13301
+  },
+  {
+   "name": "FUNTV",
+   "id": 36880
+  },
+  {
+   "name": "GALA.",
+   "id": 36879
+  },
+  {
+   "name": "GALAS",
+   "id": 16916
+  },
+  {
+   "name": "GAYTV",
+   "id": 14649
+  },
+  {
+   "name": "GELRE",
+   "id": 12627
+  },
+  {
+   "name": "GESCH",
+   "id": 12644
+  },
+  {
+   "name": "GMTV",
+   "id": 44508
+  },
+  {
+   "name": "GPTV",
+   "id": 12637
+  },
+  {
+   "name": "GRAAF",
+   "id": 12626
+  },
+  {
+   "name": "GRAMP",
+   "id": 62266
+  },
+  {
+   "name": "GRANA",
+   "id": 44504
+  },
+  {
+   "name": "GRATI",
+   "id": 19803
+  },
+  {
+   "name": "GTV",
+   "id": 1033
+  },
+  {
+   "name": "GXT",
+   "id": 14820
+  },
+  {
+   "name": "HETG",
+   "id": 12624
+  },
+  {
+   "name": "HISC1",
+   "id": 14818
+  },
+  {
+   "name": "HISTO",
+   "id": 14721
+  },
+  {
+   "name": "HOLLN",
+   "id": 12643
+  },
+  {
+   "name": "HR",
+   "id": 18943
+  },
+  {
+   "name": "HRT",
+   "id": 901
+  },
+  {
+   "name": "HSE",
+   "id": 18879
+  },
+  {
+   "name": "HTV",
+   "id": 23215
+  },
+  {
+   "name": "HUMOR",
+   "id": 12646
+  },
+  {
+   "name": "ICTV",
+   "id": 30471
+  },
+  {
+   "name": "INFOK",
+   "id": 12953
+  },
+  {
+   "name": "INFOT",
+   "id": 12625
+  },
+  {
+   "name": "IRIS",
+   "id": 14815
+  },
+  {
+   "name": "ITA1",
+   "id": 64006
+  },
+  {
+   "name": "ITA8",
+   "id": 14839
+  },
+  {
+   "name": "ITALI",
+   "id": 14751
+  },
+  {
+   "name": "ITV",
+   "id": 64413
+  },
+  {
+   "name": "JIMTV",
+   "id": 12815
+  },
+  {
+   "name": "JOURN",
+   "id": 12650
+  },
+  {
+   "name": "KANA2",
+   "id": 12806
+  },
+  {
+   "name": "KANA3",
+   "id": 12834
+  },
+  {
+   "name": "KANAL",
+   "id": 43750
+  },
+  {
+   "name": "KANL5",
+   "id": 17671
+  },
+  {
+   "name": "KANL6",
+   "id": 36898
+  },
+  {
+   "name": "KANLD",
+   "id": 36875
+  },
+  {
+   "name": "KANLR",
+   "id": 1029
+  },
+  {
+   "name": "KANZL",
+   "id": 12890
+  },
+  {
+   "name": "KAPIT",
+   "id": 1031
+  },
+  {
+   "name": "KC",
+   "id": 43747
+  },
+  {
+   "name": "KIKA",
+   "id": 18889
+  },
+  {
+   "name": "L1",
+   "id": 12571
+  },
+  {
+   "name": "LA7",
+   "id": 14728
+  },
+  {
+   "name": "METEO",
+   "id": 13253
+  },
+  {
+   "name": "LAOTR",
+   "id": 13345
+  },
+  {
+   "name": "LASEX",
+   "id": 13347
+  },
+  {
+   "name": "LCI",
+   "id": 13252
+  },
+  {
+   "name": "LEARN",
+   "id": 17414
+  },
+  {
+   "name": "LEOND",
+   "id": 14740
+  },
+  {
+   "name": "LIBER",
+   "id": 12922
+  },
+  {
+   "name": "LIFE",
+   "id": 12840
+  },
+  {
+   "name": "LIVE",
+   "id": 17417
+  },
+  {
+   "name": "LWT",
+   "id": 34891
+  },
+  {
+   "name": "M1",
+   "id": 30469
+  },
+  {
+   "name": "M6",
+   "id": 13302
+  },
+  {
+   "name": "MACPL",
+   "id": 14737
+  },
+  {
+   "name": "MATMU",
+   "id": 14808
+  },
+  {
+   "name": "MAXIM",
+   "id": 12636
+  },
+  {
+   "name": "MCM",
+   "id": 13254
+  },
+  {
+   "name": "MCMB",
+   "id": 12818
+  },
+  {
+   "name": "MDR",
+   "id": 18942
+  },
+  {
+   "name": "MEDPR",
+   "id": 14802
+  },
+  {
+   "name": "MEDSH",
+   "id": 14810
+  },
+  {
+   "name": "MERID",
+   "id": 4324
+  },
+  {
+   "name": "MOVCH",
+   "id": 64763
+  },
+  {
+   "name": "MOZAI",
+   "id": 12952
+  },
+  {
+   "name": "MTV",
+   "id": 19796
+  },
+  {
+   "name": "MTV1",
+   "id": 13825
+  },
+  {
+   "name": "MTV2",
+   "id": 13826
+  },
+  {
+   "name": "MTVB",
+   "id": 14644
+  },
+  {
+   "name": "MTVH",
+   "id": 14645
+  },
+  {
+   "name": "MTVI",
+   "id": 14643
+  },
+  {
+   "name": "MTVNL",
+   "id": 12594
+  },
+  {
+   "name": "MUBOX",
+   "id": 14823
+  },
+  {
+   "name": "MUXX",
+   "id": 18754
+  },
+  {
+   "name": "NBCEU",
+   "id": 36465
+  },
+  {
+   "name": "NDR",
+   "id": 18900
+  },
+  {
+   "name": "NED1",
+   "id": 12545
+  },
+  {
+   "name": "NED2",
+   "id": 12546
+  },
+  {
+   "name": "NED3",
+   "id": 12547
+  },
+  {
+   "name": "NEOX",
+   "id": 13349
+  },
+  {
+   "name": "NET",
+   "id": 12290
+  },
+  {
+   "name": "NET2",
+   "id": 13618
+  },
+  {
+   "name": "NET5",
+   "id": 12581
+  },
+  {
+   "name": "NGC",
+   "id": 12811
+  },
+  {
+   "name": "NGP1",
+   "id": 14817
+  },
+  {
+   "name": "NICK",
+   "id": 16255
+  },
+  {
+   "name": "NICKU",
+   "id": 42080
+  },
+  {
+   "name": "NICLD",
+   "id": 12578
+  },
+  {
+   "name": "NIT",
+   "id": 1030
+  },
+  {
+   "name": "NOTLE",
+   "id": 12864
+  },
+  {
+   "name": "NOVA",
+   "id": 13350
+  },
+  {
+   "name": "NOVAC",
+   "id": 16915
+  },
+  {
+   "name": "NOVAT",
+   "id": 16899
+  },
+  {
+   "name": "NOVYK",
+   "id": 30472
+  },
+  {
+   "name": "NPO",
+   "id": 12565
+  },
+  {
+   "name": "NRK1",
+   "id": 18177
+  },
+  {
+   "name": "NRK2",
+   "id": 18179
+  },
+  {
+   "name": "NUVLI",
+   "id": 14739
+  },
+  {
+   "name": "NUVR",
+   "id": 14773
+  },
+  {
+   "name": "OCKO",
+   "id": 16912
+  },
+  {
+   "name": "OK54",
+   "id": 18692
+  },
+  {
+   "name": "OKTO",
+   "id": 34952
+  },
+  {
+   "name": "OMROP",
+   "id": 12561
+  },
+  {
+   "name": "ORB",
+   "id": 18818
+  },
+  {
+   "name": "ORF1",
+   "id": 17153
+  },
+  {
+   "name": "ORF2",
+   "id": 17154
+  },
+  {
+   "name": "OTV",
+   "id": 1039
+  },
+  {
+   "name": "OWL3",
+   "id": 13711
+  },
+  {
+   "name": "PARIS",
+   "id": 13256
+  },
+  {
+   "name": "PCCU",
+   "id": 42085
+  },
+  {
+   "name": "PEOPL",
+   "id": 14726
+  },
+  {
+   "name": "PHOEN",
+   "id": 18696
+  },
+  {
+   "name": "PLAHD",
+   "id": 14821
+  },
+  {
+   "name": "PLALI",
+   "id": 14807
+  },
+  {
+   "name": "PLNET",
+   "id": 13257
+  },
+  {
+   "name": "PLANT",
+   "id": 14659
+  },
+  {
+   "name": "PLAYH",
+   "id": 12607
+  },
+  {
+   "name": "PLAYT",
+   "id": 14778
+  },
+  {
+   "name": "PLUGT",
+   "id": 12837
+  },
+  {
+   "name": "POLIT",
+   "id": 12651
+  },
+  {
+   "name": "POPTV",
+   "id": 43749
+  },
+  {
+   "name": "PRIMA",
+   "id": 16900
+  },
+  {
+   "name": "PRIME",
+   "id": 12826
+  },
+  {
+   "name": "PUNT2",
+   "id": 13316
+  },
+  {
+   "name": "QOOB",
+   "id": 14827
+  },
+  {
+   "name": "QVC",
+   "id": 23625
+  },
+  {
+   "name": "R8VGA",
+   "id": 14772
+  },
+  {
+   "name": "RACIN",
+   "id": 64755
+  },
+  {
+   "name": "RADCV",
+   "id": 12866
+  },
+  {
+   "name": "RADIT",
+   "id": 14774
+  },
+  {
+   "name": "RADTE",
+   "id": 14841
+  },
+  {
+   "name": "RAI",
+   "id": 14625
+  },
+  {
+   "name": "RAI1",
+   "id": 14593
+  },
+  {
+   "name": "RAI2",
+   "id": 14594
+  },
+  {
+   "name": "RAI3",
+   "id": 14595
+  },
+  {
+   "name": "RAISA",
+   "id": 14672
+  },
+  {
+   "name": "RB",
+   "id": 18905
+  },
+  {
+   "name": "REGIO",
+   "id": 12635
+  },
+  {
+   "name": "RETE4",
+   "id": 64004
+  },
+  {
+   "name": "RETE7",
+   "id": 14775
+  },
+  {
+   "name": "RETEA",
+   "id": 14596
+  },
+  {
+   "name": "RFO1",
+   "id": 13073
+  },
+  {
+   "name": "RFO2",
+   "id": 13074
+  },
+  {
+   "name": "RIKIS",
+   "id": 13633
+  },
+  {
+   "name": "RINTV",
+   "id": 12814
+  },
+  {
+   "name": "RITV",
+   "id": 1027
+  },
+  {
+   "name": "RNEWS",
+   "id": 14624
+  },
+  {
+   "name": "RNN7",
+   "id": 12599
+  },
+  {
+   "name": "ROBTV",
+   "id": 12836
+  },
+  {
+   "name": "RTBF1",
+   "id": 12803
+  },
+  {
+   "name": "RTBF2",
+   "id": 12804
+  },
+  {
+   "name": "RTBFS",
+   "id": 12807
+  },
+  {
+   "name": "RTCTL",
+   "id": 12857
+  },
+  {
+   "name": "RTE1",
+   "id": 13617
+  },
+  {
+   "name": "RTL4",
+   "id": 12548
+  },
+  {
+   "name": "RTL5",
+   "id": 12549
+  },
+  {
+   "name": "RTL7",
+   "id": 12615
+  },
+  {
+   "name": "RTL8",
+   "id": 12616
+  },
+  {
+   "name": "RTLP",
+   "id": 1025
+  },
+  {
+   "name": "RTLT",
+   "id": 12809
+  },
+  {
+   "name": "RTLTL",
+   "id": 16384
+  },
+  {
+   "name": "RTP1",
+   "id": 13584
+  },
+  {
+   "name": "RTP2",
+   "id": 13585
+  },
+  {
+   "name": "RTPAF",
+   "id": 13586
+  },
+  {
+   "name": "RTPAZ",
+   "id": 13588
+  },
+  {
+   "name": "RTPI",
+   "id": 13587
+  },
+  {
+   "name": "RTPM",
+   "id": 13589
+  },
+  {
+   "name": "RTV",
+   "id": 12816
+  },
+  {
+   "name": "RTV38",
+   "id": 14648
+  },
+  {
+   "name": "RTVR",
+   "id": 12657
+  },
+  {
+   "name": "S4C",
+   "id": 46279
+  },
+  {
+   "name": "SA200",
+   "id": 14657
+  },
+  {
+   "name": "SAILC",
+   "id": 14769
+  },
+  {
+   "name": "SATAS",
+   "id": 16650
+  },
+  {
+   "name": "SBS6",
+   "id": 12582
+  },
+  {
+   "name": "SCIFC",
+   "id": 14688
+  },
+  {
+   "name": "SCIFI",
+   "id": 64757
+  },
+  {
+   "name": "SERIE",
+   "id": 13258
+  },
+  {
+   "name": "SCOTV",
+   "id": 63954
+  },
+  {
+   "name": "SENAT",
+   "id": 14632
+  },
+  {
+   "name": "SF1",
+   "id": 16641
+  },
+  {
+   "name": "SF2",
+   "id": 16647
+  },
+  {
+   "name": "SFB",
+   "id": 18908
+  },
+  {
+   "name": "SHOW",
+   "id": 36871
+  },
+  {
+   "name": "SHOWE",
+   "id": 36887
+  },
+  {
+   "name": "SITCO",
+   "id": 14746
+  },
+  {
+   "name": "SK224",
+   "id": 14822
+  },
+  {
+   "name": "SKYC",
+   "id": 14744
+  },
+  {
+   "name": "SKYCA",
+   "id": 14752
+  },
+  {
+   "name": "SKYCI",
+   "id": 14704
+  },
+  {
+   "name": "SKYCM",
+   "id": 14609
+  },
+  {
+   "name": "SKYDG",
+   "id": 14665
+  },
+  {
+   "name": "SKYG",
+   "id": 64761
+  },
+  {
+   "name": "SKYME",
+   "id": 14696
+  },
+  {
+   "name": "SKYMP",
+   "id": 64764
+  },
+  {
+   "name": "SKYNE",
+   "id": 64765
+  },
+  {
+   "name": "SKYON",
+   "id": 64766
+  },
+  {
+   "name": "SKYS",
+   "id": 14743
+  },
+  {
+   "name": "SKYSO",
+   "id": 64759
+  },
+  {
+   "name": "SKYSP",
+   "id": 64762
+  },
+  {
+   "name": "SKYS2",
+   "id": 64760
+  },
+  {
+   "name": "SKYS3",
+   "id": 14664
+  },
+  {
+   "name": "SKYTR",
+   "id": 64758
+  },
+  {
+   "name": "SKYTV",
+   "id": 14819
+  },
+  {
+   "name": "SKYTW",
+   "id": 64767
+  },
+  {
+   "name": "SLO",
+   "id": 43745
+  },
+  {
+   "name": "SPRIT",
+   "id": 12648
+  },
+  {
+   "name": "SPITL",
+   "id": 14730
+  },
+  {
+   "name": "SPORZ",
+   "id": 12838
+  },
+  {
+   "name": "SR",
+   "id": 18911
+  },
+  {
+   "name": "SSVC",
+   "id": 14309
+  },
+  {
+   "name": "STAR",
+   "id": 36896
+  },
+  {
+   "name": "STAR4",
+   "id": 36899
+  },
+  {
+   "name": "STAR5",
+   "id": 36900
+  },
+  {
+   "name": "STAR6",
+   "id": 36901
+  },
+  {
+   "name": "STAR7",
+   "id": 36902
+  },
+  {
+   "name": "STAR8",
+   "id": 36903
+  },
+  {
+   "name": "STARM",
+   "id": 36897
+  },
+  {
+   "name": "STELE",
+   "id": 12832
+  },
+  {
+   "name": "STERE",
+   "id": 12647
+  },
+  {
+   "name": "STUUV",
+   "id": 14736
+  },
+  {
+   "name": "STV1",
+   "id": 17057
+  },
+  {
+   "name": "STV2",
+   "id": 17058
+  },
+  {
+   "name": "STV3",
+   "id": 17059
+  },
+  {
+   "name": "STV4",
+   "id": 17060
+  },
+  {
+   "name": "SUPCH",
+   "id": 14742
+  },
+  {
+   "name": "SUPSP",
+   "id": 36873
+  },
+  {
+   "name": "SVT1",
+   "id": 17921
+  },
+  {
+   "name": "SVT2",
+   "id": 17922
+  },
+  {
+   "name": "SVTT",
+   "id": 17920
+  },
+  {
+   "name": "SWRBW",
+   "id": 18913
+  },
+  {
+   "name": "SWRRP",
+   "id": 18916
+  },
+  {
+   "name": "TBOX",
+   "id": 12596
+  },
+  {
+   "name": "TCM",
+   "id": 12938
+  },
+  {
+   "name": "TCST",
+   "id": 14763
+  },
+  {
+   "name": "TEBRU",
+   "id": 12848
+  },
+  {
+   "name": "TEING",
+   "id": 13619
+  },
+  {
+   "name": "TELCE",
+   "id": 14760
+  },
+  {
+   "name": "TELE3",
+   "id": 14745
+  },
+  {
+   "name": "TELE5",
+   "id": 58624
+  },
+  {
+   "name": "TELED",
+   "id": 13356
+  },
+  {
+   "name": "TELEG",
+   "id": 14600
+  },
+  {
+   "name": "TELEL",
+   "id": 14824
+  },
+  {
+   "name": "TELEM",
+   "id": 13344
+  },
+  {
+   "name": "TELEN",
+   "id": 14601
+  },
+  {
+   "name": "TELER",
+   "id": 14599
+  },
+  {
+   "name": "TELES",
+   "id": 14809
+  },
+  {
+   "name": "TELSA",
+   "id": 14759
+  },
+  {
+   "name": "TELST",
+   "id": 14761
+  },
+  {
+   "name": "TELVE",
+   "id": 12856
+  },
+  {
+   "name": "TELZI",
+   "id": 16674
+  },
+  {
+   "name": "TEMB",
+   "id": 12854
+  },
+  {
+   "name": "TEMPO",
+   "id": 36881
+  },
+  {
+   "name": "TESAM",
+   "id": 12849
+  },
+  {
+   "name": "TEVA",
+   "id": 13260
+  },
+  {
+   "name": "TF1",
+   "id": 13297
+  },
+  {
+   "name": "TGNOR",
+   "id": 14666
+  },
+  {
+   "name": "TGRT",
+   "id": 36884
+  },
+  {
+   "name": "TIEN",
+   "id": 12580
+  },
+  {
+   "name": "TLM",
+   "id": 43748
+  },
+  {
+   "name": "TLT",
+   "id": 13090
+  },
+  {
+   "name": "TMC",
+   "id": 13255
+  },
+  {
+   "name": "TMF",
+   "id": 12592
+  },
+  {
+   "name": "TMSAT",
+   "id": 13346
+  },
+  {
+   "name": "TNTC",
+   "id": 17601
+  },
+  {
+   "name": "TNTEL",
+   "id": 14825
+  },
+  {
+   "name": "TONDS",
+   "id": 14777
+  },
+  {
+   "name": "TTOON",
+   "id": 13259
+  },
+  {
+   "name": "TP9TE",
+   "id": 14650
+  },
+  {
+   "name": "TRSTV",
+   "id": 14608
+  },
+  {
+   "name": "TRT1",
+   "id": 36865
+  },
+  {
+   "name": "TRT2",
+   "id": 36866
+  },
+  {
+   "name": "TRT3",
+   "id": 36867
+  },
+  {
+   "name": "TRT4",
+   "id": 36868
+  },
+  {
+   "name": "TRTIN",
+   "id": 36869
+  },
+  {
+   "name": "TSI1",
+   "id": 16643
+  },
+  {
+   "name": "TSI2",
+   "id": 16649
+  },
+  {
+   "name": "TSR1",
+   "id": 16642
+  },
+  {
+   "name": "TSR2",
+   "id": 16648
+  },
+  {
+   "name": "TV1",
+   "id": 12801
+  },
+  {
+   "name": "TV2",
+   "id": 17666
+  },
+  {
+   "name": "TV2_",
+   "id": 18178
+  },
+  {
+   "name": "TV2__",
+   "id": 13858
+  },
+  {
+   "name": "TV2_Z",
+   "id": 17667
+  },
+  {
+   "name": "TV3",
+   "id": 13107
+  },
+  {
+   "name": "TV4",
+   "id": 17984
+  },
+  {
+   "name": "TV5",
+   "id": 62720
+  },
+  {
+   "name": "TVBRN",
+   "id": 16904
+  },
+  {
+   "name": "TVBRU",
+   "id": 12830
+  },
+  {
+   "name": "TVC",
+   "id": 1036
+  },
+  {
+   "name": "TVCOM",
+   "id": 12850
+  },
+  {
+   "name": "TVDAN",
+   "id": 17670
+  },
+  {
+   "name": "TVE1",
+   "id": 15872
+  },
+  {
+   "name": "TVE2",
+   "id": 57600
+  },
+  {
+   "name": "TVEIE",
+   "id": 57856
+  },
+  {
+   "name": "TVHK",
+   "id": 16902
+  },
+  {
+   "name": "TVJ",
+   "id": 1037
+  },
+  {
+   "name": "TVJOJ",
+   "id": 17073
+  },
+  {
+   "name": "TVL",
+   "id": 12659
+  },
+  {
+   "name": "TVLIM",
+   "id": 12833
+  },
+  {
+   "name": "TVLUX",
+   "id": 12865
+  },
+  {
+   "name": "TVN",
+   "id": 18464
+  },
+  {
+   "name": "TVNOR",
+   "id": 18180
+  },
+  {
+   "name": "TVNOV",
+   "id": 1026
+  },
+  {
+   "name": "TVP",
+   "id": 18560
+  },
+  {
+   "name": "TVP1",
+   "id": 18433
+  },
+  {
+   "name": "TVP2",
+   "id": 18434
+  },
+  {
+   "name": "TVPAR",
+   "id": 16903
+  },
+  {
+   "name": "TVPPL",
+   "id": 18448
+  },
+  {
+   "name": "TVPR",
+   "id": 16901
+  },
+  {
+   "name": "TVSIB",
+   "id": 1034
+  },
+  {
+   "name": "TTTV",
+   "id": 43052
+  },
+  {
+   "name": "U1",
+   "id": 16673
+  },
+  {
+   "name": "UKGD",
+   "id": 17409
+  },
+  {
+   "name": "LIVNG",
+   "id": 17410
+  },
+  {
+   "name": "ULSTE",
+   "id": 33595
+  },
+  {
+   "name": "V8",
+   "id": 12584
+  },
+  {
+   "name": "VDOIT",
+   "id": 14656
+  },
+  {
+   "name": "VDOLI",
+   "id": 14794
+  },
+  {
+   "name": "VH1",
+   "id": 19799
+  },
+  {
+   "name": "VIDSC",
+   "id": 12852
+  },
+  {
+   "name": "VIJFT",
+   "id": 12839
+  },
+  {
+   "name": "VITAY",
+   "id": 12819
+  },
+  {
+   "name": "VOX",
+   "id": 18700
+  },
+  {
+   "name": "VT4",
+   "id": 1028
+  },
+  {
+   "name": "VTM",
+   "id": 12805
+  },
+  {
+   "name": "VTVV",
+   "id": 1035
+  },
+  {
+   "name": "WDR3",
+   "id": 18918
+  },
+  {
+   "name": "WEST",
+   "id": 9680
+  },
+  {
+   "name": "WIRE",
+   "id": 17411
+  },
+  {
+   "name": "WTV",
+   "id": 12820
+  },
+  {
+   "name": "YLE1",
+   "id": 13697
+  },
+  {
+   "name": "YLE2",
+   "id": 13698
+  },
+  {
+   "name": "YORK",
+   "id": 64044
+  },
+  {
+   "name": "Z1",
+   "id": 1038
+  },
+  {
+   "name": "ZDF",
+   "id": 18690
+  }
+ ]
+}
