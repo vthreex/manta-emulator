@@ -10,3 +10,8 @@ Station spec: `atv-stations=MHZ[=PIC][@LEVEL][|NAME][|TEXT~LINE2~...]`.
 * Verified: the driver's read pointer follows the index (806D87D8 = 0x105 vs index 0x107), so the core receives the packets.
 * Open: TEXT (raw 0x12) does not open a page yet. Check the core's line format (whether the 42 bytes start at copy offset 2),
   bit order (MANTA_TTX_REV=1 tried, no page), and whether the TEXT handler needs a "teletext available" flag set by the core.
+* Findings 2026-11-05: standard Hamming 8/4 decode table at 0x806466C0 (so bytes are NOT bit-reversed); header page-number decode 805C1B80.
+  Viewing a stored channel (TV source, channel 1 ~864 MHz) now AFC-locks (divider settles at 14466) but the firmware shows its blue
+  no-signal screen: normal viewing uses the status tracker 80475A18 / 806B92C0 path (docs/atv-signal-model.md), not the search checks.
+  MENU toggles make scripted menu exits unreliable; test teletext from a viewing state once that path shows the picture.
+  Knobs: MANTA_TTX_OFF (line offset in the 48-byte slot, default 6), MANTA_TTX_REV, MANTA_VBI_LOG.

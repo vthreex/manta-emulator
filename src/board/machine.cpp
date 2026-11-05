@@ -2532,7 +2532,8 @@ void Msd309Machine::vbiFeed() {
       else if (row == 1) { std::string r(1, char(0x0d)); r += name; text(2, r, 40); }   // 0x0D = double height
       else text(2, rows[row - 2], 40);
     }
-    uint8_t* slot = dramBacking_.data() + phys + uint64_t(vbiSlot_) * 48; std::memset(slot, 0, 48); slot[5] = 0x27; std::memcpy(slot + 6, line, 42);
+    uint8_t* slot = dramBacking_.data() + phys + uint64_t(vbiSlot_) * 48; std::memset(slot, 0, 48); static const unsigned ttxOff = std::getenv("MANTA_TTX_OFF") ? unsigned(std::atoi(std::getenv("MANTA_TTX_OFF"))) : 6u;
+    std::memcpy(slot + ttxOff, line, std::min(42u, 48u - ttxOff)); slot[5] = 0x27;
     if (std::getenv("MANTA_TTX_REV")) for (unsigned j = 6; j < 48; ++j) { uint8_t b = slot[j], r = 0; for (int q = 0; q < 8; ++q) if (b & (1 << q)) r |= uint8_t(0x80 >> q); slot[j] = r; }
     preservedBits_.overwriteKnownMemory(uint32_t(phys + uint64_t(vbiSlot_) * 48), 48); unknownObservations_.overwriteKnownMemory(uint32_t(phys + uint64_t(vbiSlot_) * 48), 48);
     vbiSlot_ = (vbiSlot_ + 1) % slots;
