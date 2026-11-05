@@ -1456,6 +1456,7 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
   try {
     auto a = 0x1f000000 + uint32_t(off);
     auto pc = m.guestPc();
+    if (a >= 0x1f206e00 && a < 0x1f206f00 && !m.riu_.atvStations.empty()) m.vbiFeed();
     if(m.options_.explorePmNonresumeBranch && pc==0x80404bf4 && a==0x1f001cd1 && n==1){
       std::vector<uint8_t> helper(28);m.cpu_.read(0x00404bec,helper.data(),helper.size());
       if(sha256(helper)=="4405618c6483bb6fc54e12c7132b4713b570cea7f827f6452f0220338bef708c" &&
@@ -2492,10 +2493,61 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
 }
 // Virtual remote delivery (emulator thread only). A host function becomes a decoded IR frame in the emulated PM IR FIFO; the original
 // firmware then polls the FIFO itself. Events the receiver cannot take yet (firmware has not enabled it) wait, they are never dropped silently.
+// EXPLORATORY VBI teletext slicer (docs/atv-teletext-model.md). The original driver (8052749C..805278xx) programs a DRAM ring buffer
+// (0x1F206E70/71/74 = address/8, 0x6E39 bit0 = MIU1, 0x6E75/78 = slots), reads the write index at 0x6E79/7C and "data present" at
+// 0x6E41 bit7; a slot is 48 bytes, the consumer (80455070) needs byte 5 = 0x27 and takes the 42-byte line (MRAG + 40) from byte 6.
+// While the tuner sits on a station the model writes standard EN 300 706 packets: 8/30 format 1 (status display = station name) and
+// page 100 (header + name + the station text). Rate and slot header bytes 0..4 are ASSUMPTIONS.
+void Msd309Machine::vbiFeed() {
+  const int st = riu_.atvLockedStation();
+  const uint8_t en = riu_.liveGet(0x1f206e3d);
+  { static uint64_t lastLog = 0; if (std::getenv("MANTA_VBI_LOG") && dispatches_ - lastLog > 50000000) { lastLog = dispatches_; std::fprintf(stderr, "VBI st=%d en=%02x base=%02x%02x%02x slots=%02x%02x\n", st, en, riu_.liveGet(0x1f206e74), riu_.liveGet(0x1f206e71), riu_.liveGet(0x1f206e70), riu_.liveGet(0x1f206e78), riu_.liveGet(0x1f206e75)); } }
+  if (st < 0 || !(en & 0x80)) { vbiLast_ = dispatches_; return; }
+  const uint32_t base = (uint32_t(riu_.liveGet(0x1f206e70)) | uint32_t(riu_.liveGet(0x1f206e71)) << 8 | uint32_t(riu_.liveGet(0x1f206e74)) << 16) << 3;
+  const uint32_t slots = uint32_t(riu_.liveGet(0x1f206e75)) | uint32_t(riu_.liveGet(0x1f206e78)) << 8;
+  const uint64_t phys = uint64_t(base) + ((riu_.liveGet(0x1f206e39) & 1) ? 0x08000000ull : 0);
+  if (!slots || phys + uint64_t(slots) * 48 > dramBacking_.size()) return;
+  constexpr uint64_t perField = 2000000; constexpr unsigned linesPerField = 12;
+  uint64_t fields = (dispatches_ - vbiLast_) / perField; if (!fields) return; vbiLast_ += fields * perField;
+  unsigned count = unsigned(std::min<uint64_t>(fields * linesPerField, slots > 4 ? slots - 4 : 1));
+  static const uint8_t ham[16] = {0x15,0x02,0x49,0x5e,0x64,0x73,0x38,0x2f,0xd0,0xc7,0x8c,0x9b,0xa1,0xb6,0xfd,0xea};
+  auto par = [](uint8_t c) { c &= 0x7f; uint8_t p = c; p ^= p >> 4; p ^= p >> 2; p ^= p >> 1; return uint8_t((p & 1) ? c : (c | 0x80)); };
+  const auto& S = riu_.atvStations[size_t(st)];
+  std::vector<std::string> rows; { std::string t = S.text; size_t a = 0; while (a <= t.size() && rows.size() < 20) { size_t e = t.find('~', a); if (e == std::string::npos) e = t.size(); rows.push_back(t.substr(a, e - a)); a = e + 1; } }
+  const std::string name = S.name.empty() ? std::string("ATV ") + std::to_string(int(S.mhz)) : S.name;
+  const unsigned pageRows = 2 + unsigned(rows.size());   // header, name row, text rows
+  for (unsigned i = 0; i < count; ++i) {
+    uint8_t line[42]{}; const unsigned k = vbiSeq_++ % (pageRows + 1);
+    auto text = [&](unsigned at, const std::string& s, unsigned w) { for (unsigned j = 0; j < w; ++j) line[at + j] = par(j < s.size() ? uint8_t(s[j]) : uint8_t(' ')); };
+    if (k == pageRows) {   // packet 8/30 format 1
+      line[0] = ham[0 | (0 << 3)]; line[1] = ham[30 >> 1]; line[0] = ham[0 | ((30 & 1) << 3)];   // magazine 8 is coded 0
+      line[2] = ham[0]; line[3] = ham[0]; line[4] = ham[1]; line[5] = ham[0xf]; line[6] = ham[0xf]; line[7] = ham[0]; line[8] = ham[0];
+      line[9] = 0x00; line[10] = 0x00; line[11] = 0x00; for (unsigned j = 12; j < 22; ++j) line[j] = 0x15;
+      text(22, name, 20);
+    } else {
+      const unsigned row = k == 0 ? 0 : k;   // row 0 header, row 1 name, rows 2.. text
+      line[0] = ham[1 | ((row & 1) << 3)]; line[1] = ham[(row >> 1) & 15];
+      if (row == 0) { line[2] = ham[0]; line[3] = ham[0]; line[4] = ham[0]; line[5] = ham[0]; line[6] = ham[0]; line[7] = ham[0]; line[8] = ham[0]; line[9] = ham[0];
+        std::string h = name; h.resize(23, ' '); h += "100 Manta"; text(10, h, 32); }
+      else if (row == 1) { std::string r(1, char(0x0d)); r += name; text(2, r, 40); }   // 0x0D = double height
+      else text(2, rows[row - 2], 40);
+    }
+    uint8_t* slot = dramBacking_.data() + phys + uint64_t(vbiSlot_) * 48; std::memset(slot, 0, 48); slot[5] = 0x27; std::memcpy(slot + 6, line, 42);
+    if (std::getenv("MANTA_TTX_REV")) for (unsigned j = 6; j < 48; ++j) { uint8_t b = slot[j], r = 0; for (int q = 0; q < 8; ++q) if (b & (1 << q)) r |= uint8_t(0x80 >> q); slot[j] = r; }
+    preservedBits_.overwriteKnownMemory(uint32_t(phys + uint64_t(vbiSlot_) * 48), 48); unknownObservations_.overwriteKnownMemory(uint32_t(phys + uint64_t(vbiSlot_) * 48), 48);
+    vbiSlot_ = (vbiSlot_ + 1) % slots;
+  }
+  const uint32_t idx = vbiSlot_ ? vbiSlot_ : slots;   // 1-based index of the last written slot, as the driver reads it
+  riu_.livePut(0x1f206e79, uint8_t(idx)); riu_.livePut(0x1f206e7c, uint8_t(idx >> 8));
+  if (std::getenv("MANTA_VBI_LOG")) std::fprintf(stderr, "VBIW idx=%u back=%02x count=%u\n", idx, riu_.liveGet(0x1f206e79), count);
+  riu_.livePut(0x1f206e41, uint8_t(riu_.liveGet(0x1f206e41) | 0x80));
+}
 void Msd309Machine::setAtvStations(const std::string& spec) {
   riu_.atvStations.clear(); size_t at = 0;
   while (at < spec.size()) { size_t e = spec.find(',', at); if (e == std::string::npos) e = spec.size(); std::string item = spec.substr(at, e - at); at = e + 1;
-    if (item.empty()) continue; Riu::AtvStation s; size_t lv = item.rfind('@'); if (lv != std::string::npos) { s.level = std::stod(item.substr(lv + 1)); item = item.substr(0, lv); }
+    if (item.empty()) continue; Riu::AtvStation s;
+    { size_t bar = item.find('|'); if (bar != std::string::npos) { std::string rest = item.substr(bar + 1); item = item.substr(0, bar);
+        size_t b2 = rest.find('|'); s.name = rest.substr(0, b2); if (b2 != std::string::npos) s.text = rest.substr(b2 + 1); } } size_t lv = item.rfind('@'); if (lv != std::string::npos) { s.level = std::stod(item.substr(lv + 1)); item = item.substr(0, lv); }
     size_t eq = item.find('='); s.mhz = std::stod(item.substr(0, eq)); if (eq != std::string::npos) s.picture = item.substr(eq + 1); riu_.atvStations.push_back(s); }
 }
 void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requestedAt) {

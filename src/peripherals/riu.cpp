@@ -713,7 +713,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   }
   if(a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41){
     auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;
-    if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && irDma_.capturePresent().has_value())v|=bit;
+    if((exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && irDma_.capturePresent().has_value()) || atvLockedStation()>=0)v|=bit;   // also the VBI slicer data-present bit (atv teletext model)
   }
   // Live USBC UTMI line state (D-/D+); defined only by the explicit no-device hypothesis on a guest-powered PHY.
   for(uint32_t reg:{0x1f200e10u,0x1f200f10u}){
@@ -813,7 +813,7 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
   if(g_readHist.on)for(uint32_t at:{0x1f224471u,0x1f224470u})if(a<=at && uint64_t(a)+n>at) ++g_readHist.m[0x0d000000u|((at&0xff)<<12)|(unsigned(n)<<8)|((v>>(8*(at-a)))&0xff)|(atvLockedStation()>=0?0x00100000u:0u)];
   if(exploratoryIrCapturePresent_ && exploratoryIrDmaReset_ && a<=0x1f206e41 && uint64_t(a)+n>0x1f206e41)
     if(auto captured=irDma_.capturePresent()){
-      auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;if(*captured)v|=bit;
+      auto bit=0x80u<<(8*(0x1f206e41-a));v&=~bit;if(*captured || atvLockedStation()>=0)v|=bit;
     }
   if(candidatePmIrFifo_ && a<=0x1f007b59 && uint64_t(a)+n>0x1f007b59){
     unsigned shift=8*(0x1f007b59-a);
@@ -972,7 +972,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     return unsigned(exploratoryFetchRevisionByte_);
   }
   if(pqSram_.advance(tick))event("pq_sram_commit",0x1f205f04,2,uint32_t(pqSram_.commits),"original five-byte coefficient payload stored in SRAM; deterministic provisional transfer latency elapsed");
-  if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c))if(auto cursor=irDma_.producer()){
+  if(exploratoryIrDmaReset_ && n==1 && (a==0x1f206e79 || a==0x1f206e7c) && atvLockedStation()<0)if(auto cursor=irDma_.producer()){
     auto v=(*cursor>>(a==0x1f206e79?0:8))&255;
     event("exploratory_ir_dma_cursor",a,n,v,"capture-ring producer index after original descriptor command; no external IR records supplied, no key or interrupt fabricated; reset coupling unvalidated");return v;
   }

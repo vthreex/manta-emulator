@@ -235,7 +235,9 @@ class Msd309Machine {
   mutable std::vector<uint32_t> processedPicture_;   // inputPicture_ after the firmware-programmed colour pipeline (cache)
   mutable uint64_t processedKey_ = 0;
   mutable std::string loadedPicture_;
-  void setAtvStations(const std::string& spec);   // EXPLORATORY: video of the generated input signal
+  void setAtvStations(const std::string& spec);
+  void vbiFeed();                 // EXPLORATORY teletext slicer (docs/atv-teletext-model.md)
+  uint64_t vbiLast_ = 0; uint32_t vbiSeq_ = 0, vbiSlot_ = 0;   // EXPLORATORY: video of the generated input signal
   void insertUsbImage(const std::string& path);
   void updateIrqLines();
   uint32_t irqLinesApplied_=0;

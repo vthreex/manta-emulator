@@ -711,7 +711,9 @@ public:
   bool atvSignalNow() const { return exploratoryAtvSignal_ || atvLockedStation() >= 0; }
   // EXPLORATORY ATV stations (docs/atv-tuner-model.md): RF picture-carrier frequencies the user places on the "antenna". The tuned RF is
   // derived from the firmware's own PLL frame (divider x 62.5 kHz - 38.9 MHz IF; checked against the ATV Manual Tuning frequency display).
-  struct AtvStation { double mhz = 0; std::string picture; double level = 1.0; };
+  struct AtvStation { double mhz = 0; std::string picture; double level = 1.0; std::string name, text; };
+  void livePut(uint32_t a, uint8_t v) { put(a, 1, v); }
+  uint8_t liveGet(uint32_t a) const { return uint8_t(get(a, 1)); }
   std::vector<AtvStation> atvStations;
   double atvTunedMHz() const { const auto& t = gpio_.tuner; if (!t.on || t.lastCount < 2) return -1; return double(((t.last[0] & 0x7f) << 8) | t.last[1]) * 0.0625 - 38.9; }
   int atvLockedStation(double* offset = nullptr) const {
