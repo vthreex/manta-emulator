@@ -19,5 +19,11 @@
     "coverage_identical": true
   },
   "wasm_version": "c0bdd2de5d3f",
-  "scope": "original firmware with explicit existing VBI/GOP hypotheses; no hardware pixel verification"
+  "scope": "original firmware with explicit existing VBI/GOP hypotheses; no hardware pixel verification",
+  "deployment": {
+    "commit": "97c61d2904acc8226c2e4669080bc3c5357d1688",
+    "run": "https://github.com/vthreex/manta-emulator/actions/runs/42077377967",
+    "result": "success",
+    "live_upload_ui_worker_hash_config_wasm_head_verified": true
+  }
 }

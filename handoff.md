@@ -22,7 +22,10 @@ and evidence/teletext-file-web-validation.json. 3905 native checks pass;
 worker transfer/byte tests, page validation, JS parsing, baseline/display,
 clock, auxiliary, clean-PATH presenter and forensics checks pass. Final full
 strict replay passed all 6,592,741 events with 289 reference summary fields
-and coverage identical. Updated browser build is c0bdd2de5d3f; publishing next.
+and coverage identical. Commit 97c61d2 deployed successfully in Pages run
+42077377967 (https://github.com/vthreex/manta-emulator/actions/runs/42077377967).
+Live upload UI, worker hash, config and WASM HEAD verified: c0bdd2de5d3f,
+39,037,408 bytes. Both requested website updates are published.
 
 File selection persists only in the current page memory. Connect antenna again
 after restarting the emulator. TTI, CEBRA, MPEG-TS and bit-reversed files are not
