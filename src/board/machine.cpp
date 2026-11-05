@@ -1,5 +1,6 @@
 #include "video/hdmi_modes.hpp"
 #include "video/vbi_slot.hpp"
+#include "video/teletext_file.hpp"
 #include "board/dram_range.hpp"
 #include "board/machine.hpp"
 #include "video/pal_cvbs.hpp"
@@ -2535,9 +2536,12 @@ void Msd309Machine::vbiFeed() {
   // Keep the host producer inside the current ring before writing the first slot.
   vbiSlot_ %= slots;
   for (unsigned i = 0; i < count; ++i) {
-    uint8_t line[42]{}; const unsigned k = vbiSeq_++ % (pageRows + 1);
+    uint8_t line[42]{}; const uint32_t sequence=vbiSeq_++; const unsigned k = sequence % (pageRows + 1);
     auto text = [&](unsigned at, const std::string& s, unsigned w) { for (unsigned j = 0; j < w; ++j) line[at + j] = par(j < s.size() ? uint8_t(s[j]) : uint8_t(' ')); };
-    if (k == pageRows) {   // packet 8/30 format 1
+    if (!S.teletextPackets.empty()) {
+      const size_t packet = size_t(sequence) % (S.teletextPackets.size()/42);
+      std::copy_n(S.teletextPackets.data()+packet*42,42,line);
+    } else if (k == pageRows) {   // packet 8/30 format 1
       line[0] = ham[0 | (0 << 3)]; line[1] = ham[30 >> 1]; line[0] = ham[0 | ((30 & 1) << 3)];   // magazine 8 is coded 0
       std::copy(teletextInitialPage100.begin(),teletextInitialPage100.end(),line+2);
       const auto ni=teletextNetworkId(S.networkId);line[9]=ni[0];line[10]=ni[1];
@@ -2564,19 +2568,31 @@ void Msd309Machine::vbiFeed() {
   riu_.livePut(0x1f206e41, uint8_t(riu_.liveGet(0x1f206e41) | 0x80));
 }
 void Msd309Machine::setAtvStations(const std::string& spec) {
-  riu_.atvStations.clear(); size_t at = 0;
+  std::vector<Riu::AtvStation> stations; size_t at = 0;
   while (at < spec.size()) { size_t e = spec.find(',', at); if (e == std::string::npos) e = spec.size(); std::string item = spec.substr(at, e - at); at = e + 1;
     if (item.empty()) continue; Riu::AtvStation s;
     { size_t bar = item.find('|'); if (bar != std::string::npos) { std::string rest = item.substr(bar + 1); item = item.substr(0, bar);
         size_t b2 = rest.find('|'); s.name = rest.substr(0, b2); if (b2 != std::string::npos) {
           auto b3=rest.find('|',b2+1);s.text=rest.substr(b2+1,b3==std::string::npos?std::string::npos:b3-b2-1);
           if(b3!=std::string::npos && b3+1<rest.size()){
-            size_t used=0;auto id=std::stoul(rest.substr(b3+1),&used,0);
-            if(id>65535 || used!=rest.size()-b3-1)throw std::runtime_error("ATV broadcast identity must be a 16-bit integer");
+            const auto b4=rest.find('|',b3+1);
+            const auto identity=rest.substr(b3+1,b4==std::string::npos?std::string::npos:b4-b3-1);
+            size_t used=0;auto id=std::stoul(identity.empty()?"0":identity,&used,0);
+            if(id>65535 || (!identity.empty() && used!=identity.size()))throw std::runtime_error("ATV broadcast identity must be a 16-bit integer");
             s.networkId=uint16_t(id);
+            if(b4!=std::string::npos && b4+1<rest.size()) {
+              std::ifstream file(rest.substr(b4+1),std::ios::binary|std::ios::ate);
+              if(!file)throw std::runtime_error("Cannot open teletext packet file");
+              const auto size=file.tellg();
+              if(size<=0 || uint64_t(size)>teletextFileLimit)throw std::runtime_error("Teletext file must contain 1 byte to 16 MiB of packet data");
+              std::vector<uint8_t> bytes(static_cast<size_t>(size)); file.seekg(0);
+              if(!file.read(reinterpret_cast<char*>(bytes.data()),std::streamsize(bytes.size())))throw std::runtime_error("Cannot read teletext packet file");
+              s.teletextPackets=teletextFilePackets(bytes);
+            }
           }
         } } } size_t lv = item.rfind('@'); if (lv != std::string::npos) { s.level = std::stod(item.substr(lv + 1)); item = item.substr(0, lv); }
-    size_t eq = item.find('='); s.mhz = std::stod(item.substr(0, eq)); if (eq != std::string::npos) s.picture = item.substr(eq + 1); riu_.atvStations.push_back(s); }
+    size_t eq = item.find('='); s.mhz = std::stod(item.substr(0, eq)); if (eq != std::string::npos) s.picture = item.substr(eq + 1); stations.push_back(std::move(s)); }
+  riu_.atvStations=std::move(stations);vbiSeq_=0;
 }
 void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requestedAt) {
   // EXPLORATORY generated HDMI/DVI input (docs/hdmi-input-model.md), changed at run time like plugging a cable: "hdmi-signal=1920x1080@60" or

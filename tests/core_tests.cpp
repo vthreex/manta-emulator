@@ -21,6 +21,7 @@
 #include "video/ge_blend_copy.hpp"
 #include "video/pal_cvbs.hpp"
 #include "video/vbi_slot.hpp"
+#include "video/teletext_file.hpp"
 #include "board/dram_range.hpp"
 #include "video/gop_preview.hpp"
 #include <array>
@@ -1256,6 +1257,17 @@ void htotalBranchJoinTests(){
 #include "usb_host_tests.inc"
 #include "pal_cvbs_tests.inc"
 void vbiSlotTests() {
+  {
+    std::vector<uint8_t> packets(84);for(size_t i=0;i<packets.size();++i)packets[i]=uint8_t(i);
+    require(manta::teletextFilePackets(packets)==packets,"raw42 teletext preserves coded bytes and packet order");
+    std::vector<uint8_t> framed;
+    for(size_t at=0;at<84;at+=42){framed.insert(framed.end(),{0x55,0x55,0x27});framed.insert(framed.end(),packets.begin()+at,packets.begin()+at+42);}
+    require(manta::teletextFilePackets(framed)==packets,"raw45 strips only clock run-in and framing");
+    auto reject=[&](const std::vector<uint8_t>& b){bool rejected=false;try{manta::teletextFilePackets(b);}catch(const std::runtime_error&){rejected=true;}require(rejected,"invalid teletext packet stream rejected");};
+    reject({});reject(std::vector<uint8_t>(41));reject(std::vector<uint8_t>(43));
+    auto bad=framed;bad[47]=0;reject(bad);framed.pop_back();reject(framed);
+    reject(std::vector<uint8_t>(manta::teletextFileLimit+1));
+  }
   require(manta::teletextNetworkId(0x4801)==std::array<uint8_t,2>{0x12,0x80},"packet 8/30 NI reverses each high/low byte as consumed by original 804530F8");
   require(manta::teletextInitialPage100[1]==0x15 && manta::teletextInitialPage100[2]==0x15 && manta::teletextInitialPage100[4]==0xd0,
     "8/30 initial page has units/tens zero and magazine 1 (not page 110)");

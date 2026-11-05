@@ -146,7 +146,14 @@ self.onmessage = async e => {
     if (!M || stopped) return;
     try {
       M.FS.mkdirTree('/data'); const parts = [];
-      m.stations.forEach((s, i) => { let item = String(s.mhz); if (s.image) { const f = '/data/atv' + i + '.bmp'; M.FS.writeFile(f, new Uint8Array(s.image)); item += '=' + f; } item += '@' + s.level; if (s.title || s.text || s.networkId) item += '|' + (s.title || '') + '|' + (s.text || '').split(/\r?\n/).slice(0, 18).join('~') + '|' + (s.networkId || 0); parts.push(item); });
+      m.stations.forEach((s, i) => {
+        let item = String(s.mhz);
+        if (s.image) { const f = '/data/atv' + i + '.bmp'; M.FS.writeFile(f, new Uint8Array(s.image)); item += '=' + f; }
+        let ttx='';if(s.ttx){ttx='/data/atv'+i+'.ttx';M.FS.writeFile(ttx,new Uint8Array(s.ttx));}
+        item += '@' + s.level;
+        if (s.title || s.text || s.networkId || ttx) item += '|' + (s.title || '') + '|' + (s.text || '').split(/\r?\n/).slice(0, 18).join('~') + '|' + (s.networkId || 0) + (ttx?'|'+ttx:'');
+        parts.push(item);
+      });
       key('atv-stations=' + parts.join(','));
     } catch (err) { post({ type: 'log', s: 'atv: ' + (err && err.message || err) }); }
     return;

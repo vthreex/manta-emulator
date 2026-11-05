@@ -1,0 +1,39 @@
+{
+  "result": "PASS",
+  "cases": [
+    {
+      "case": "raw42",
+      "result": "PASS",
+      "width": 1920,
+      "height": 1080,
+      "nonblack": 2073600,
+      "bodyWhite": 8562,
+      "dispatches": 1520676608,
+      "sha256": "222ac7df388ed272f84d5d61dc46b0f4cf1efa10b39dc65c0ffef66939292aed",
+      "scope": "browser WASM, original firmware, exploratory teletext models"
+    },
+    {
+      "case": "raw45",
+      "result": "PASS",
+      "width": 1920,
+      "height": 1080,
+      "nonblack": 2073600,
+      "bodyWhite": 8562,
+      "dispatches": 1520676608,
+      "sha256": "222ac7df388ed272f84d5d61dc46b0f4cf1efa10b39dc65c0ffef66939292aed",
+      "scope": "browser WASM, original firmware, exploratory teletext models"
+    },
+    {
+      "case": "changed",
+      "result": "PASS",
+      "width": 1920,
+      "height": 1080,
+      "nonblack": 2073600,
+      "bodyWhite": 9279,
+      "dispatches": 1520676637,
+      "sha256": "83b629bf914c9c29926da9c5ffe5977c989aa7d532869ffade95d821be8caf65",
+      "scope": "browser WASM, original firmware, exploratory teletext models"
+    }
+  ],
+  "scope": "original firmware in browser WASM, explicit exploratory VBI/GOP models"
+}

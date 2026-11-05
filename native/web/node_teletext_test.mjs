@@ -5,7 +5,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
-const [webDir, argsFile, snapshot, firmware, output] = process.argv.slice(2);
+const [webDir, argsFile, snapshot, firmware, output, packetFile] = process.argv.slice(2);
 const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const require=createRequire(import.meta.url);
 const M=await require(path.resolve(webDir,'manta.js'))({print:()=>{},printErr:s=>console.log(s)});
@@ -20,7 +20,10 @@ for(let i=0;i<args.length;++i){
 M.FS.chdir('/');M.callMain(args);
 function run(n){for(let i=0;i<n;i+=2e6){const status=M._manta_step(2e6);if(status!==0)throw Error('firmware stopped: '+status);}}
 function key(s){const p=M._malloc(M.lengthBytesUTF8(s)+1);M.stringToUTF8(s,p,M.lengthBytesUTF8(s)+1);M._manta_key(p);M._free(p);}
-run(10e6);key('atv-stations=864|WEB TEST|BROWSER TELETEXT');key('raw=0x4b');
+run(10e6);
+if(packetFile){put('/data/test.ttx',packetFile);key('atv-stations=864|||0|/data/test.ttx');}
+else key('atv-stations=864|WEB TEST|BROWSER TELETEXT');
+key('raw=0x4b');
 run(90e6);key('raw=0x12');run(120e6);
 M._manta_frame_update();const w=M._manta_frame_width(),h=M._manta_frame_height();
 const pixels=M.HEAPU8.slice(M._manta_frame_rgba(),M._manta_frame_rgba()+w*h*4);

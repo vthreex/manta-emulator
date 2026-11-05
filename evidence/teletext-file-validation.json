@@ -1,0 +1,23 @@
+{
+  "result": "PASS",
+  "native_checks": 3905,
+  "baseline": "ttx-file-firmware.json",
+  "display_cases": 9,
+  "auxiliary": [
+    "AVD",
+    "VD",
+    "PM51"
+  ],
+  "clock_profiles": 5,
+  "forensics_cases": 4,
+  "clean_path_presenter": "PASS",
+  "worker_file_transfer": "PASS",
+  "browser_file_rendering": "teletext-file-web-validation.json",
+  "strict_replay": {
+    "events": 6592741,
+    "reference_summary_fields": 289,
+    "coverage_identical": true
+  },
+  "wasm_version": "c0bdd2de5d3f",
+  "scope": "original firmware with explicit existing VBI/GOP hypotheses; no hardware pixel verification"
+}

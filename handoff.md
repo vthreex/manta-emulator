@@ -1,5 +1,35 @@
 # Manta ATV / teletext handoff
 
+## Teletext file input (2026-11-05)
+
+Latest user request: publish the scaling/name fixes first, then support .ttx
+files. Scaling/identity commit d6bb703 deployed successfully in Pages run
+42076020370; live config and WASM HEAD verified (a6ff52c36f22, 39,034,984 bytes).
+
+Added per-station Teletext .ttx file picker and return-to-text control. The
+browser keeps the original ArrayBuffer and transfers copies on Connect antenna.
+The worker writes /data/atvN.ttx; optional fifth station field selects the file:
+55.25|||0|capture.ttx. Non-empty files up to 16 MiB, raw42 or 55 55 27-framed
+raw45, are loaded once; framing alone is stripped. Original encoded packet
+bytes/order are cycled through the same VBI ring, without generated page/8-30
+mixing. The file owns page numbers and broadcast identity. Station-list parsing
+is transactional. No firmware/name RAM patches or host teletext renderer.
+
+WASM tests render full-screen FILE TEST / UPLOADED TELETEXT FILE through the
+original firmware. Raw42 and raw45 frames have identical SHA256 222ac7df388e...;
+different body produces 83b629bf914c... . See evidence/teletext-file-preview.png
+and evidence/teletext-file-web-validation.json. 3905 native checks pass;
+worker transfer/byte tests, page validation, JS parsing, baseline/display,
+clock, auxiliary, clean-PATH presenter and forensics checks pass. Final full
+strict replay passed all 6,592,741 events with 289 reference summary fields
+and coverage identical. Updated browser build is c0bdd2de5d3f; publishing next.
+
+File selection persists only in the current page memory. Connect antenna again
+after restarting the emulator. TTI, CEBRA, MPEG-TS and bit-reversed files are not
+supported containers. Existing exploratory VBI timing/palette/scaling models
+remain assumptions. Arbitrary TV station names and power-cycle persistence
+remain unverified. Unrelated Sunplus changes are preserved and excluded.
+
 ## Follow-up: full-screen teletext and automatic station identity (2026-11-05)
 
 User screenshots showed the496x280 teletext buffer in the panel corner and

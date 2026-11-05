@@ -185,7 +185,7 @@
   "state.snap": 27430694,
   "files/ir-keymap.tsv": 7884,
   "files/sar-keymap.tsv": 1313,
-  "manta.wasm": 39034984
+  "manta.wasm": 39037408
  },
  "versions": {
   "firmware.bin": "d60645b549a4",
@@ -194,9 +194,9 @@
   "state.snap": "21c632a059a7",
   "files/ir-keymap.tsv": "7a5aba2a8dbb",
   "files/sar-keymap.tsv": "2306b2d48ac3",
-  "manta.wasm": "a6ff52c36f22",
+  "manta.wasm": "c0bdd2de5d3f",
   "manta.js": "8416abc91b86",
-  "worker.js": "3227203e375a"
+  "worker.js": "32fa44a88cd4"
  },
  "snapshot": "no-signal-ready-v2.snap"
 }

@@ -1,6 +1,38 @@
 # ATV teletext (VBI slicer) model - EXPLORATORY, work in progress
 
-Station spec: `atv-stations=MHZ[=PIC][@LEVEL][|NAME][|TEXT~LINE2~...][|NETWORK_ID]`.
+Station spec: `atv-stations=MHZ[=PIC][@LEVEL][|NAME][|TEXT~LINE2~...][|NETWORK_ID][|PACKET_FILE]`.
+
+## Teletext packet files
+
+The antenna controls accept `.ttx` / `.t42` files as an alternative to generated
+text. Select **Teletext .ttx file…**, then **Connect antenna**. Tune the station
+and press TEXT. **Use text fields** switches back to the generated page.
+If the file contains other page numbers, select them with the remote digits.
+
+Accepted formats are concatenated 42-byte teletext packets (two MRAG bytes and
+40 coded payload bytes), or 45-byte packets prefixed with `55 55 27`. This
+matches [VBIT2 t42/raw output](https://github.com/peterkvt80/vbit2/wiki/Manual-configuration).
+Files must be non-empty, complete packets, and at most 16 MiB. This does not
+parse TTI text, CEBRA containers, MPEG transport streams or bit-reversed captures.
+The extension alone does not identify a container format.
+
+The model strips only the optional framing, loops packets in file order, and
+feeds the existing VBI ring while tuned. The original firmware decoder and renderer
+handle the pages, colour codes, parity and Hamming codes. Generated page 100 and
+8/30 packets are suppressed in file mode, so the file owns page numbers and
+network identity. A file without packet 8/30 does not receive a generated ID.
+The existing VBI rate and graphics hypotheses remain explicit assumptions.
+
+Native example: `--exploratory-atv-stations "55.25|||0|capture.ttx"`.
+Runtime `atv-stations=` uses the same syntax. Invalid station lists are parsed
+before replacing the active list. Uploaded files stay in the current browser
+page's memory; after restarting the emulator, connect the antenna again.
+
+`tools/teletext_test_stream.py` creates small deterministic page-100 streams.
+`tests/teletext_file_web_regression.py` verifies 42/45-byte equivalence and a
+different uploaded body through the actual WASM firmware and virtual remote.
+
+## Earlier slicer investigation (historical)
 * Original driver: buffer setup 80527F48 (1F206E70/71/74 = DRAM address/8, 6E39 bit0 MIU1, 6E75/78 = slots, 6E3D = 0x82 enable),
   data present = 1F206E41 bit7 (80527F0C), hardware write index = 6E79 | 6E7C<<8 (80527F20), reader 805277B8: slot = base + (idx-1)*48,
   consumer 80455070: byte 5 must be 0x27, copies 44 bytes from slot+4 into the teletext core ring (806C0564).
