@@ -144,6 +144,14 @@ on it, rather than assuming any power-on contents. A related-family primary
 [8051 datasheet](https://www.keil.com/dd/docs/datashts/silabs/c8051f39x_37x_ds.pdf)
 also documents RAM retention across reset; it is not an exact MStar reset map.
 
+With retention fixed, the connected divider64 probe passes0368, publishes
+software FEC state0 itself, and stops22CE at an unsupported invalid-byte
+`MOV R2,06` transfer. The source is2073, read through2375 from1E3D. Importantly,
+2073 also has an original software writer:1511/1514/1515 invokes16F5 to write
+it after the FEC-state9 gate at14BA. It must not be supplied as an RF lock
+observation. Its power-on contents and the initial2073..75 value remain
+unresolved; extending data-copy tracking alone would not establish them.
+
 The next connected probe passes native TSP initialization and starts the
 original MHEG5 task through2.1B MIPS dispatches. It exposed and fixed missing
 validity reporting for the existing hardware semaphore owner. This run uses

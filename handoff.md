@@ -2,6 +2,21 @@
 
 ## Latest DTV continuation (2026-11-05/06)
 
+2073 OWNERSHIP CORRECTION: it has an original MCU writer!1511 sets DPTR2073,
+1514 MOV A,R7,1515 calls16F5 (MOVX @DPTR,A). This path is gated by FEC state9
+at14BA. Early initialization1E3D reads2073 through2375, then22BB copies the
+24-bit2073/74/75 value via integer/floating helpers. Its initial/reset contents
+are still unknown; it is NOT safe to call it a silicon-only lock observation
+or to make the RF model own it. Keep unknown, inspect original init tables or
+exact register docs. Static proof now pins this writer and reader. Pure
+MOV Rn,direct tracking at22CE is still conservative/unimplemented for invalid
+source; admitting the copy alone will not establish2073's missing value.
+
+Verified continuation commits:5aa8a86 (tuner/parameter/save-state plumbing),
+25a741d (XRAM reset retention + first-visit trace formatting). All code changes
+are committed; only unrelated pre-existing Sunplus edits remain. New static
+ownership anchors pass against original unchanged firmware. No active runs.
+
 LATEST COMPLETED RESULT: reset retention cold probe work/dtv-rf-clock-64-retain
 completed2150000003 MIPS. Original MCU passes old0368 carry boundary, writes
 FEC23E0=0 ITSELF, then stops22CE MOV R2,06 on invalid data from hardware2073
