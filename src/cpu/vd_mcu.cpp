@@ -282,6 +282,7 @@ struct VdMcuCpu::Impl {
     bool registerStore=opcode>=0xf8;
     bool registerImmediate=opcode>=0x78 && opcode<=0x7f;
     bool directRegisterLoad=opcode==0xe5 && operand<128;
+    bool directToRn=opcode>=0xa8 && opcode<=0xaf && operand<128;
     if(registerStore){m.registerKnown[index]=m.aKnown;m.registerOrigin[index]=m.aOrigin;}
     if(registerImmediate){m.registerKnown[index]=255;m.registerOrigin[index]=0;}
     if(opcode==0x75 && operand<128){m.registerKnown[operand]=255;m.registerOrigin[operand]=0;}
@@ -316,7 +317,7 @@ struct VdMcuCpu::Impl {
       opcode==0x45 || opcode==0x55 || opcode==0x65 || opcode==0x85 || opcode==0x95 ||
       opcode==0xb5 || opcode==0xc5 || opcode==0xd5 ||
       (opcode>=0xa8 && opcode<=0xaf);
-    if(directSource && operand<128 && m.registerKnown[operand]!=255)
+    if(directSource && !directToRn && operand<128 && m.registerKnown[operand]!=255)
       throw VdHardwareBoundary("MCU unknown register bits consumed through direct IRAM alias");
     bool bitRead=opcode==0x10 || opcode==0x20 || opcode==0x30 || opcode==0x72 ||
       opcode==0x82 || opcode==0xa0 || opcode==0xa2 || opcode==0xb0 || opcode==0xb2;
@@ -356,7 +357,12 @@ struct VdMcuCpu::Impl {
       for(unsigned i=1;i<=2;++i){auto address=uint8_t(sp+i);
         m.registerKnown[address]=255;m.registerOrigin[address]=0;}
     }
-    if(opcode>=0xa8 && opcode<=0xaf){m.registerKnown[index]=255;m.registerOrigin[index]=0;}
+    if(opcode>=0xa8 && opcode<=0xaf){
+      // MOV Rn,direct is an eight-bit copy, including across register banks.
+      // Preserve invalid bits/origin instead of rejecting or laundering them.
+      m.registerKnown[index]=directToRn?m.registerKnown[operand]:255;
+      m.registerOrigin[index]=directToRn?m.registerOrigin[operand]:0;
+    }
     if((opcode>=0x88 && opcode<=0x8f) && operand<128){m.registerKnown[operand]=255;m.registerOrigin[operand]=0;}
     if(opcode==0x85){auto destination=cpu->mCodeMem[uint16_t(pc+2)];
       if(destination<128){m.registerKnown[destination]=255;m.registerOrigin[destination]=0;}}

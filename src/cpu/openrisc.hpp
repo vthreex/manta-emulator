@@ -21,6 +21,7 @@ class OpenRisc {
   bool running_=false;
   static uint32_t require(OrWord v);
   static OrWord logic(OrWord a,OrWord b,unsigned op);
+  static OrWord shift(OrWord value,unsigned amount,unsigned kind);
   void exception(unsigned vector,uint32_t address);
   uint32_t arithmetic(uint32_t a,uint32_t b,bool sub,bool carry);
 public:

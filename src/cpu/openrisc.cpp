@@ -33,6 +33,18 @@ void OpenRisc::reset(uint32_t pc,uint32_t sr,std::optional<uint32_t> configuredR
   // original TSP caller leaves this unset: its uninitialized GPRs stay invalid.
   if(configuredResetR0)r_[0]={*configuredResetR0,0xffffffffu,{}};
 }
+OrWord OpenRisc::shift(OrWord input,unsigned amount,unsigned kind){
+  amount&=31;if(!amount){if(input.known==0xffffffffu)input.origin.reset();return input;}
+  OrWord result;
+  const auto low=(uint32_t(1)<<amount)-1,high=~uint32_t(0)<<(32-amount);
+  if(kind==0){result.value=input.value<<amount;result.known=(input.known<<amount)|low;}
+  else if(kind==1){result.value=input.value>>amount;result.known=(input.known>>amount)|high;}
+  else if(kind==2){result.value=uint32_t(int32_t(input.value)>>amount);result.known=(input.known>>amount)|((input.known&0x80000000u)?high:0);}
+  else{result.value=std::rotr(input.value,int(amount));result.known=std::rotr(input.known,int(amount));}
+  // A permutation is no longer a same-register RMW identity. Invalid bits
+  // remain invalid; a later mask may still prove a decision independent of them.
+  return result;
+}
 void OpenRisc::exception(unsigned vector,uint32_t address){
   spr_[32]=branch_?pc_-4:pc_;spr_[48]=address;spr_[64]=sr_|(branch_?0x2000:0);
   sr_=(sr_|1)&~(2u|4u|0x20u|0x40u);branch_.reset();pc_=(sr_&0x4000?0xf0000000u:0)+(vector<<8);++exceptions_;
@@ -102,9 +114,7 @@ void OpenRisc::step(){
     else if(id==18)r_[d]=full(ppc_);else if(spr_.contains(id))r_[d]=full(spr_[id]);
     else throw std::runtime_error("OpenRISC unknown/unimplemented SPR read");
     break;}
-  case 0x2e:{uint32_t x=ra();unsigned shift=w&31;
-    switch((w>>6)&3){case 0:x<<=shift;break;case 1:x>>=shift;break;case 2:x=uint32_t(int32_t(x)>>shift);break;case 3:x=std::rotr(x,int(shift));break;}
-    r_[d]=full(x);break;}
+  case 0x2e:r_[d]=shift(r_[a],w&31,(w>>6)&3);break;
   case 0x2f:compare(ra(),uint32_t(imm));break;
   case 0x30:{unsigned id=ra()|(((w>>10)&0xf800)|(w&0x7ff));uint32_t value=rb();
     if(id==17){if(value&(0x20|0x40))throw std::runtime_error("OpenRISC MMU enable unsupported");sr_=value|0x8000;}
@@ -116,6 +126,7 @@ void OpenRisc::step(){
     write(address,width,r_[b]);break;}
   case 0x38:{unsigned fn=w&0x7ff;uint32_t value=0;
     if(fn>=3&&fn<=5){r_[d]=logic(r_[a],r_[b],fn);break;}
+    if(fn==8 || fn==0x48 || fn==0x88 || fn==0xc8){r_[d]=shift(r_[a],rb()&31,(fn>>6)&3);break;}
     switch(fn){case 0:value=arithmetic(ra(),rb(),false,false);break;case 1:value=arithmetic(ra(),rb(),false,true);break;
     case 2:value=arithmetic(ra(),rb(),true,false);break;case 8:value=ra()<<(rb()&31);break;
     case 0x48:value=ra()>>(rb()&31);break;case 0x88:value=uint32_t(int32_t(ra())>>(rb()&31));break;

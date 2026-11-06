@@ -8,8 +8,8 @@
 //  * 16550-style UART at 0x90000000 (THR text captured; LSR reports ready).
 //  * RIU window at 0xA0200000+off == MIPS RIU 0x1F200000+off. The mailbox bytes 0x6700..0x677F are the SAME storage the MIPS firmware uses.
 //  * Interrupt controller words 0x3290..0x32FF: mask words are plain storage (a cleared bit enables, as the firmware's own unmask code does);
-//    the only modelled source is the MIPS->AEON mailbox: hardware interrupt 113 (status word 0x32B8/0x32BC bit 17) = mailbox 0 control bit 0 (FIRE).
-//    Its output is PIC line 2, level sensitive. All other status bits read as unknown.
+//    the default source is the MIPS->AEON mailbox113. Candidate TS input also connects TSP2AEON47 to its ORIGINAL producer FIRE bit.
+//    Outputs use PIC line2 and the guest's own mask words; no ISR or mailbox response is supplied by the host.
 #pragma once
 #include "cpu/or1k.hpp"
 #include "cpu/or1k_observations.hpp"
@@ -35,6 +35,7 @@ public:
   bool zeroUnknownReads = false;                                          // LABELLED HYPOTHESIS: unknown registers read as 0
   std::function<bool(uint32_t, uint8_t&)> mailRead;                        // shared RIU byte storage (known bytes only)
   std::function<void(uint32_t, uint8_t)> mailWrite;
+  std::function<bool()> tspFiqPending; // candidate source47, derived only from original TSP's AEON notification FIRE bit
   // Coherent connection to the board's existing RIU devices. No value is
   // supplied unless their known-bit mask covers the complete read.
   std::function<std::optional<uint32_t>(uint32_t,unsigned)> peripheralRead;
@@ -90,10 +91,11 @@ public:
     cpu_.read = [this](uint32_t a, unsigned n) {
       lastReadMask_=n==4?0xffffffffu:(1u<<(n*8))-1;lastReadOrigin_=0;
       auto value=busRead(a,n);
+      if(tspFiqPending && a>=kWindow && a<kWindow+kWindowSize)updateIrq();
       if(trackUnknown && inInstruction_ && observations_.access.kind==1)observations_.loaded(lastReadMask_,lastReadOrigin_);
       return value;
     };
-    cpu_.write = [this](uint32_t a, unsigned n, uint32_t v) { busWrite(a, n, v); };
+    cpu_.write = [this](uint32_t a, unsigned n, uint32_t v) { busWrite(a, n, v);if(tspFiqPending && a>=kWindow && a<kWindow+kWindowSize)updateIrq(); };
     if(trackUnknown)cpu_.beforeInstruction=[this](uint32_t,uint32_t word){
       inInstruction_=true;observations_.begin(word,[this](unsigned r){return cpu_.reg(r);},(cpu_.sr()&Or1k::kF)!=0);
     };
@@ -121,6 +123,7 @@ public:
   // Run up to `budget` instructions; stops early (and permanently) at the first unmodelled access.
   void run(uint64_t budget) {
     if (!started || stopped) return;
+    if(tspFiqPending)updateIrq();
     if (watchAddr && ram) {   // diagnostic: report changes to a watched DRAM word made by anyone but the coprocessor
       uint32_t cur; std::memcpy(&cur, ram + watchAddr, 4);
       if (cur != watchLast_) {
@@ -133,6 +136,8 @@ public:
         inInstruction_=false;
         if(trackUnknown && !(intcBitKnown_[0x329c-kIntcBase]&2) && (cpu_.sr()&Or1k::kIEE) && (cpu_.picmr()&4) && pending113())
           throw std::runtime_error("INVALID interrupt-mask bit affects a pending mailbox interrupt");
+        if(trackUnknown && tspFiqPending && tspFiqPending() && !(intcBitKnown_[0x3291-kIntcBase]&0x80) && (cpu_.sr()&Or1k::kIEE) && (cpu_.picmr()&4))
+          throw std::runtime_error("INVALID interrupt-mask bit affects a pending TSP interrupt");
         ring_[ringPos_++ & 63] = cpu_.pc();
         if (cpu_.pc() >= ramSize) { stop("instruction fetch outside DRAM at " + hex8(cpu_.pc()) + "; r6=" + hex8(cpu_.reg(6)) + " r7=" + hex8(cpu_.reg(7)) + " r9=" + hex8(cpu_.reg(9)) + " r11=" + hex8(cpu_.reg(11)) + "; last pcs " + recentPcs()); return; }
         if (!cpu_.step()) { stop("halted"); return; }
@@ -162,6 +167,11 @@ public:
   uint32_t pc() const { return cpu_.pc(); }
   bool irqLine2() const { return irqLine2_; }
   uint64_t intcWrites() const { return intcWrites_; }
+  std::pair<uint16_t,uint16_t> observedMaskWord(uint32_t off)const{
+    if(off<kIntcBase || off+1>=kIntcEnd)throw std::runtime_error("CP mask observation outside INTC");
+    const auto i=off-kIntcBase;
+    return {uint16_t(intc_[i]|(uint16_t(intc_[i+1])<<8)),uint16_t(intcBitKnown_[i]|(uint16_t(intcBitKnown_[i+1])<<8))};
+  }
 
 private:
   Or1k cpu_;
@@ -216,8 +226,14 @@ private:
     // enabled when the firmware cleared the mask bit (mask word 0x3298/0x329C, bit 17 = upper half bit 1)
     bool maskKnown = trackUnknown?(intcBitKnown_[0x329C-kIntcBase]&2)!=0:intcKnown_[0x329C - kIntcBase] != 0;
     bool masked = !maskKnown || (intc_[0x329C - kIntcBase] & 2);
-    bool level = pending113() && !masked;
-    if (level && !irqLine2_) ++mailboxIrqs;
+    const bool mailboxLevel=pending113() && !masked;
+    bool tspLevel=false;
+    if(tspFiqPending){const auto index=0x3291-kIntcBase;
+      const bool known=trackUnknown?(intcBitKnown_[index]&0x80)!=0:intcKnown_[index]!=0;
+      tspLevel=tspFiqPending() && known && !(intc_[index]&0x80);
+    }
+    const bool level=mailboxLevel || tspLevel;
+    if (mailboxLevel && !irqLine2_) ++mailboxIrqs;
     irqLine2_ = level;
     cpu_.setLevel(2, level);
   }
@@ -271,11 +287,12 @@ private:
         if (isStatus(off)) {
           for (unsigned i = 0; i < n; ++i) {
             uint32_t o = off + i;
-            // 0x32BC bit 1 (hardware interrupt 113): MIPS->AEON mailbox pending. Every other status bit has no modelled source.
+            // Mailbox113 and, only when attached, original TSP source47.
             uint8_t b = (o == 0x32BC && pending113()) ? 2 : 0;
+            if(o==0x32b1 && tspFiqPending && tspFiqPending())b|=0x80;
             // With the connected RIU fabric, pending status is derived from
-            // the configured mailbox source. Other devices have no wired CP
-            // interrupt output; this is a mailbox-only fabric, not a read-zero
+            // the configured device sources. Other devices have no wired CP
+            // interrupt output; this is a bounded fabric, not a read-zero
             // fallback for unknown registers.
             if (o != 0x32BC && !zeroUnknownReads && !trackUnknown) fail("status read", a, n);
             v |= uint32_t(b) << (8 * i);

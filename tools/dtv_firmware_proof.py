@@ -57,12 +57,25 @@ for pc, expected in {0xe10:0x18e00021, 0xe14:0xa8c70200, 0xe20:0x84e60014,
                      0xe24:0xa4e70100, 0xe38:0x8626001c, 0xe78:0xb8f10007,
                      0xe80:0xa8c61000, 0xd10:0x9ce000bc, 0x418:0xd4063824}.items():
     assert struct.unpack_from('<I', tsp, pc)[0] == expected
+for pc,expected in {0xff8:0xd40b6000,0x1004:0x84eb0004,0x3d8:0xa4e70100,
+                    0x3f4:0xd4063814,0x1398:0x9cc00010,0x139c:0xd4073018,
+                    0x1394:0xd4070014,0x13a0:0xd4070018,
+                    0x10a8:0xd4077020,0x10c4:0x9ce00089,0x1b84:0x9ce00009,
+                    0x115c:0x84ed003c,0x45c:0x84e72348,0x460:0xd40b3818}.items():
+    assert struct.unpack_from('<I',tsp,pc)[0]==expected
 # The original MIPS register save/restore loops prove the same logical bank
 # layout as the related T3 header, independently of any proposed packet model.
 assert word(0x805d878c) == 0x24120030  # 48 PID words
 assert word(0x805d8794) == 0x001020c0  # PID index * 8
 assert word(0x805d87b4) == 0x34522000  # section bank 0x422000
 assert word(0x805d87f4) == 0x26520100  # section stride 0x100 (CP byte stride 0x80)
+assert word(0x805d69d8)==0x948300e4 and word(0x805d69dc)==0x948200e0
+assert word(0x805d69b0)==0x946403b4 and word(0x805d69bc)==0x946203b8
+assert struct.unpack_from('<I',dtv,0xa33d4)[0]==0x9c6300e0
+assert struct.unpack_from('<I',dtv,0xa33f4)[0]==0x9c6a03b0
+assert struct.unpack_from('<I',dtv,0xa3400)[0]==0x9c6a03b8
+assert mcu[0x16ab:0x16bc]==bytes.fromhex('90 23 f2 e4 f0 a3 04 f0 90 23 f0 74 40 f0 74 01 f0')
+assert mcu[0x506a:0x5071]==bytes.fromhex('90 23 f9 e0 30 e0 f2')
 assert hashlib.sha256(runtime[0x804f58c8-0x803b3980:0x804f5a3c-0x803b3980]).hexdigest() == '30a8f64bbd9857bfd4c9820d1e062cec8999d141db6dbf37a4537f8e72e22edd'
 assert struct.unpack_from('<dd', runtime, 0x80625748-0x803b3980) == (36.167, 6.0)
 assert int((682+36.167)*6) == 4309  # observed native CH47 GPIO frame10 D5 90 14 C0

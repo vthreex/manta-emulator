@@ -188,6 +188,7 @@ bool Riu::vdWrite(uint16_t address,VdByte v){
   }
   if(exploratoryDvbtRegisters)if(auto physical=dvbtSharedAddress(address)){
     bytes_[*physical]={v.value,v.known};
+    if(dvbtPollTimer.divider && address==0x23f0)dvbtTimerControl(v,dvbtTimerNow());
     event("exploratory_dvbt_shared_register_write",*physical,1,v.value,
       "original DVB-T MCU register write; provisional XDATA/RIU storage mapping; known="+std::to_string(v.known)+"; no reset/lock/ready response supplied");
     return true;
@@ -229,13 +230,23 @@ void Riu::advanceVd(uint64_t tick){
       if(executionStopped && executionStopped())return;
       if(vdMcuCpu_.totalInstructions()>=vdInstructionBudget)
         throw std::runtime_error("VD MCU original instruction diagnostic budget reached");
-      vdTick_+=vdDispatchDivider;vdMcuCpu_.step();
+      vdTick_+=vdDispatchDivider;
+      struct StepScope{bool& in;bool previous;StepScope(bool& v):in(v),previous(v){in=true;}~StepScope(){in=previous;}}scope(vdInStep_);
+      vdMcuCpu_.step();
     }
   }catch(const VdHardwareBoundary& boundary){
     if(!exploratoryVdSuspendedBoundary)throw;
     vdMcuSuspended_=true;vdMcuBoundaryReason_=boundary.what();
     event("exploratory_vd_boundary_suspension",0,0,vdMcuCpu_.pc(),"scheduled original MCU stopped on unresolved hardware: "+vdMcuBoundaryReason_);
   }
+}
+void Riu::dvbtTimerControl(VdByte value,uint64_t tick){
+  if(value.known!=255)throw VdHardwareBoundary("DVB-T timer control contains invalid bits");
+  const auto low=*dvbtSharedAddress(0x23f2),high=*dvbtSharedAddress(0x23f3);
+  const auto count=uint16_t(get(low,1)|(get(high,1)<<8)),known=uint16_t(knownBits(low,1)|(knownBits(high,1)<<8));
+  try{dvbtPollTimer.control(value.value,count,known,tick);}
+  catch(const std::exception& e){throw VdHardwareBoundary(e.what());}
+  event("candidate_dvbt_timer_control",*dvbtSharedAddress(0x23f0),1,value.value,"original guest timer control; explicit uncalibrated clock divisor, no completion on reads");
 }
 void Riu::configureExploratoryAtvSignal(unsigned htotal,unsigned linesA,unsigned linesB,unsigned fieldSteps){
   exploratoryAtvSignal_=true;atvHTotal_=htotal;atvFieldLines_[0]=linesA;atvFieldLines_[1]=linesB;atvFieldSteps_=fieldSteps;
@@ -332,8 +343,35 @@ void Riu::configureExploratoryTspCpu(){
       "original TSP QMEM instruction; deterministic auxiliary dispatch");
   };
 }
+OrWord Riu::tspRawWord(uint32_t address)const{
+  OrWord result{0,0,address};
+  for(unsigned i=0;i<4;++i){auto it=bytes_.find(tspPayloadKey(address<<1,i));
+    if(it!=bytes_.end()){result.value|=uint32_t(it->second.value)<<(8*i);result.known|=uint32_t(it->second.known)<<(8*i);}}
+  return result;
+}
+void Riu::bindTspTransport(){
+  tspTransport.regRead=[this](uint32_t a){return tspRawWord(a);};
+  tspTransport.regWrite=[this](uint32_t a,uint32_t value){for(unsigned i=0;i<4;++i)bytes_[tspPayloadKey(a<<1,i)]={uint8_t(value>>(8*i)),255};};
+  tspTransport.memoryWritable=[this](uint32_t a,size_t n){return dramWritable && dramWritable(a,n);};
+  tspTransport.memoryWrite=[this](uint32_t a,std::span<const uint8_t> bytes){dramWrite(a,bytes);};
+}
+void Riu::feedTspTransport(uint64_t tick){
+  if(!candidateTspPackets)return;
+  int station=-1;
+  if(dvbtRf.reception(dtvTunedMHz(),dtvTunedBandwidthMHz()).value_or(false))
+    for(size_t i=0;i<dvbtRf.stations.size();++i)if(std::abs(dtvTunedMHz()-dvbtRf.stations[i].mhz)<=1.0/12.0){station=int(i);break;}
+  const auto bytes=station<0?std::span<const uint8_t>{}:std::span<const uint8_t>(dvbtRf.stations[station].transport);
+  const bool delivered=tspTransport.packetCycles?tspTransport.clockedSupply(station,bytes,tick):tspTransport.supply(station,bytes);
+  if(delivered){
+    // A newly arrived external packet invalidates the idle proof. Device
+    // writes below are also excluded from storage-only loop proofs.
+    orProbeStop();orIdle_.valid=false;orProbeCooldown_=64;
+    event("tsp_transport_packet",0x210200,188,uint32_t(tspTransport.delivered()),"candidate unpaced post-FEC pin input; actual transport bytes, original PID routing; no FEC software state or service supplied");
+  }
+}
 void Riu::advanceTsp(uint64_t tick){
   if(!exploratoryTspCpu_ || !tspCpu_.running())return;
+  if(candidateTspPackets)feedTspTransport(tspCpuTick_);
   if(tick-tspCpuTick_<orDivider_)return;
   // During this deterministic burst MIPS is suspended in its bus callback.
   // OR writes reach QMEM or internal storage, not these controller registers.
@@ -352,9 +390,11 @@ void Riu::advanceTsp(uint64_t tick){
   while(tick-tspCpuTick_>=orDivider_){
     if(executionStopped && executionStopped())return;
     if(tspCpu_.instructions()>=orBudget_)throw std::runtime_error("OpenRISC diagnostic dispatch budget reached; no hardware timeout or successful boot inferred");
+    if(candidateTspPackets && tspTransport.packetCycles && ((tspTransport.hasStation() && tspTransport.nextPacketTick<=tspCpuTick_) || tspTransport.pendingReplica()))feedTspTransport(tspCpuTick_);
+    const auto deadline=candidateTspPackets && tspTransport.packetCycles && tspTransport.hasStation()?std::min(tick,tspTransport.nextPacketTick):tick;
     if(orIdleSkip){
       if(orIdle_.valid){
-        if(tspCpu_.pc()==orIdle_.head && orTryFastForward(tick))continue;
+        if(tspCpu_.pc()==orIdle_.head && orTryFastForward(deadline))continue;
       }else if(!orProbe_.on){
         if(orProbeCooldown_)--orProbeCooldown_;else orProbeStart();
       }
@@ -485,6 +525,11 @@ OrWord Riu::tspCpuReadImpl(uint32_t a,unsigned n,bool fetch,uint8_t* kindOut){
   }
   if(fetch)throw std::runtime_error("OpenRISC instruction fetch outside configured QMEM unsupported");
   if(!orPeek_)++tspCpuReads_;
+  if(candidateTspPackets && n==4)if(auto live=tspTransport.read(a)){
+    if(kindOut)*kindOut=3;
+    if(!orPeek_)event("tsp_packet_register_read",a,n,live->value,"candidate live packet window/DMA status; unknown bits retained");
+    return *live;
+  }
   // These aliases are corroborated by both original command handlers: MIPS
   // Alive issues 01000000 at B00; OR main sets global=210200, dispatches +130,
   // responds at +13c, and clears +130. MIPS reads response from C00.
@@ -531,6 +576,7 @@ bool Riu::orWriteTargets(uint32_t a,unsigned n,const OrWord& v,std::vector<OrTgt
   // Byte targets of the three store paths of tspCpuWriteImpl. False for anything unexpected, so the
   // idle-loop proof is never granted on a path this mirror does not understand.
   try{
+    if(candidateTspPackets && tspTransport.ownsWrite(a))return false;
     auto dbase=tspBurstMappingActive_?tspBurstMapping_[1].base:get(0x1f202b98,2)|(get(0x1f202b9c,2)<<16);
     auto dmask=tspBurstMappingActive_?tspBurstMapping_[1].mask:get(0x1f202ba0,2)|(get(0x1f202ba4,2)<<16);
     uint32_t wanted=n==4?0xffffffffu:(1u<<(n*8))-1;
@@ -554,6 +600,7 @@ bool Riu::orWriteTargets(uint32_t a,unsigned n,const OrWord& v,std::vector<OrTgt
   return false;
 }
 void Riu::orReadTargets(uint32_t a,unsigned n,uint8_t kind,std::vector<OrTgt>& out) const {
+  if(kind==3)return; // live packet observations are external dependencies, never storage produced by the loop
   try{
     if(kind==0){for(unsigned i=0;i<n;++i)out.push_back({0,(a&0x3fff)+i});}
     else if(kind==1){uint32_t p=a==0x210330?0x1f202b00:0x1f202c00;for(unsigned i=0;i<4;++i)out.push_back({1,p+(i>=2?4:0)+(i&1)});}
@@ -590,6 +637,9 @@ void Riu::tspCpuWriteImpl(uint32_t a,unsigned n,OrWord v){
     for(unsigned i=0;i<n;++i)tspDownload_.byte((a&0x3fff)+i,uint8_t(v.value>>(i*8)));
     event("or1k_qmem_write",a,n,v.value,"original auxiliary instruction writes the shared downloaded QMEM backing");return;
   }
+  if(candidateTspPackets && n==4 && tspTransport.write(a,v)){
+    event("tsp_packet_register_write",a,n,v.value,"original TSP instruction controls candidate packet window/actual section DMA");return;
+  }
   if((a==0x210330 || a==0x21033c) && n==4){
     if(v.known!=0xffffffffu && v.origin!=a)throw std::runtime_error("OpenRISC unknown foreign register write");
     uint32_t p=a==0x210330?0x1f202b00:0x1f202c00;
@@ -603,11 +653,17 @@ void Riu::tspCpuWriteImpl(uint32_t a,unsigned n,OrWord v){
   }
   throw std::runtime_error("OpenRISC store address unsupported");
 }
-uint32_t Riu::tspPayloadKey(uint32_t target,unsigned lane) {
+uint32_t Riu::tspPayloadKey(uint32_t target,unsigned lane)const {
   if(target<0x00420000 || target>=0x00430000 || (target&7) || lane>=4)
     throw std::runtime_error("TSP indirect target outside corroborated aligned filter-register aperture");
   if(target==0x420660 || target==0x420678){
     uint32_t base=target==0x420660?0x1f202b00:0x1f202c00;
+    return base+(lane>=2?4:0)+(lane&1);
+  }
+  if(candidateTspPackets && (target==0x420658 || target==0x4261b8)){
+    // Original TSP2C8 selects HK21032C or AEON2130DC. Original MIPS getters
+    // 805D69D0/805D69A8 and CP A33D0/A33EC read these respective split words.
+    const auto base=target==0x420658?0x1f202ae0u:0x1f202db4u;
     return base+(lane>=2?4:0)+(lane&1);
   }
   return 0x83000000u+(target-0x00420000)/2+lane;
@@ -811,6 +867,11 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
   }
   if(inputTiming.on)for(unsigned i=0;i<n;++i)if(inputTimingByte(a+i))v|=0xffu<<(8*i);
   if(dvbtRf.enabled)for(unsigned i=0;i<n;++i){const auto b=dvbtLiveByte(a+i);v=(v&~(uint32_t(b.owned)<<(8*i)))|(uint32_t(b.known)<<(8*i));}
+  if(dvbtPollTimer.divider){const auto status=*dvbtSharedAddress(0x23f9);
+    if(a<=status && uint64_t(a)+n>status){const auto bit=1u<<(8*(status-a));v&=~bit;if(dvbtPollTimer.known())v|=bit;}}
+  if(candidateTspPackets && a<=0x1f202bf9 && uint64_t(a)+n>0x1f202bf9){
+    const auto bit=0x20u<<(8*(0x1f202bf9-a));v&=~bit;if(tspRawWord(0x2130dc).known&0x80000000u)v|=bit;
+  }
   return v;
 }
 namespace { struct ReadHist { std::map<uint32_t,uint64_t> m; bool on=std::getenv("MANTA_READ_HIST")!=nullptr;
@@ -836,6 +897,8 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     }
     if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
     if(dvbtRf.enabled){const auto b=dvbtLiveByte(a+i);byte=(byte&~uint32_t(b.owned))|(b.value&b.owned);}
+    if(dvbtPollTimer.divider && a+i==*dvbtSharedAddress(0x23f9))byte=(byte&~1u)|(dvbtPollTimer.expired(dvbtTimerNow())?1u:0u);
+    if(candidateTspPackets && a+i==0x1f202bf9)byte=(byte&~0x20u)|((tspRawWord(0x2130dc).value&0x80000000u)?0x20:0);
     v |= byte << (i * 8);
   }
   if(exploratoryAfecIndirect_>=0 && afecIndirectActive())
@@ -955,6 +1018,7 @@ RiuByte Riu::gopActiveByte(unsigned bank,unsigned offset)const{
   return it==gopActive_.end()?RiuByte{}:it->second;
 }
 uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(dvbtPollTimer.divider)dvbtTimerClock=tick;
   if (tick >= writeLogFrom && (readLog.size() < 6000 || readLog.count(a))) { auto& s = readLog[a]; if (!s.count) s.firstPc = pc; ++s.count; s.width = n; }
   if(miu1DoneCycles && a==0x1f203104u && (n==2 || n==4)){
     uint32_t v=get(a,n)&knownBits(a,n);   // bits the guest wrote; never-written bits read 0 under the blanket hypothesis
@@ -1325,6 +1389,7 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
   return v;
 }
 void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, uint64_t tick) {
+  if(dvbtPollTimer.divider)dvbtTimerClock=tick;
   if(miu1DoneCycles && a==0x1f203104u && (n==2 || n==4)){
     bool start=(v&0x10u)!=0;
     if(start && !miu1.armed){miu1.armed=true;miu1.start=tick;++miu1.starts;}
@@ -1471,6 +1536,8 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     }
   } else
     put(a, n, v);
+  if(dvbtPollTimer.divider){const auto control=*dvbtSharedAddress(0x23f0);
+    if(a<=control && uint64_t(a)+n>control)dvbtTimerControl({uint8_t(get(control,1)),uint8_t(knownBits(control,1)),0x23f0},tick);}
   if(fiqModel && fiqChanged && a<0x1f2033a0u && uint64_t(a)+n>0x1f203390u)fiqChanged();   // guest changed an FIQ mask word
   if(coproNotify && ((a<0x1f206800u && uint64_t(a)+n>0x1f206700u) || (a<=0x1f201fe0u && uint64_t(a)+n>0x1f201fe0u))) coproNotify(a,n,v);
   if(vifZeroInput_.enabled())for(auto config:VifZeroInput::configuration)
@@ -1661,13 +1728,17 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         throw std::runtime_error("TSP indirect command unsupported; no borrowed Titania3 opcode response");
       if(!tsp_.known() || tsp_.held())throw std::runtime_error("TSP indirect access before known experimental reset release");
       auto target=tspSelectedTarget();
+      std::optional<OrWord> packetRead;
+      if(candidateTspPackets && command==0x21)packetRead=tspTransport.read(target/2);
       for(unsigned lane=0;lane<4;++lane) {
         auto key=tspPayloadKey(target,lane);
         auto port=(command==0x21?0x1f202b34u:0x1f202b2cu)+(lane>=2?4:0)+(lane&1);
         if(command==0x21) {
-          auto it=bytes_.find(key);bytes_[port]=it==bytes_.end()?RiuByte{}:it->second;
+          if(packetRead)bytes_[port]={uint8_t(packetRead->value>>(8*lane)),uint8_t(packetRead->known>>(8*lane))};
+          else{auto it=bytes_.find(key);bytes_[port]=it==bytes_.end()?RiuByte{}:it->second;}
         } else bytes_[key]=bytes_[port];
       }
+      if(candidateTspPackets && command==0x23)tspTransport.write(target/2,tspRawWord(target/2));
       if(command==0x21){tspReadTarget_=target;++tspIndirectReads_;}
       else ++tspIndirectWrites_;
       event(command==0x21?"tsp_indirect_read":"tsp_indirect_write",target,4,

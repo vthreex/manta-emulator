@@ -379,6 +379,8 @@ std::vector<Msd309Machine::SnapSection> Msd309Machine::captureSections(uint32_t 
   { Section s{"riu", {}}; Ar a(s.bytes); ioClass(a, riu_); sections.push_back(std::move(s)); }
   { Section s{"machine", {}}; Ar a(s.bytes); ioClass(a, *this); sections.push_back(std::move(s)); }
   if (riu_.usbHost.enabled()) { Section s{"usb", {}}; Ar a(s.bytes); riu_.usbHost.serialize(a); sections.push_back(std::move(s)); }   // EXPLORATORY pendrive state
+  if(riu_.candidateTspPackets){Section s{"tsp-packets",{}};Ar a(s.bytes);riu_.tspTransport.serialize(a);sections.push_back(std::move(s));}
+  if(riu_.dvbtPollTimer.divider){Section s{"dvbt-timer",{}};Ar a(s.bytes);riu_.dvbtPollTimer.serialize(a);a(riu_.dvbtTimerClock);sections.push_back(std::move(s));}
   if (options_.exploratoryCopro && copro_.started) {   // EXPLORATORY coprocessor model state
     Section s{"copro", {}}; Ar a(s.bytes);
     copro_.serialize(a);
@@ -499,6 +501,14 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   }
   { auto& s = find(sections, "flash"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, flash_); }
   { auto& s = find(sections, "riu"); Ar a(s.bytes.data(), s.bytes.size()); ioClass(a, riu_); }
+  for(auto& s:sections)if(s.name=="tsp-packets"){
+    if(!riu_.candidateTspPackets)throw SnapshotError("snapshot has TSP packet input but --candidate-tsp-packets is absent");
+    Ar a(s.bytes.data(),s.bytes.size());riu_.tspTransport.serialize(a);if(a.remaining())throw SnapshotError("TSP packet state has trailing data");
+  }
+  for(auto& s:sections)if(s.name=="dvbt-timer"){
+    if(!riu_.dvbtPollTimer.divider)throw SnapshotError("snapshot has a DVB-T timer but its candidate clock is absent");
+    Ar a(s.bytes.data(),s.bytes.size());riu_.dvbtPollTimer.serialize(a);a(riu_.dvbtTimerClock);if(a.remaining())throw SnapshotError("DVB-T timer state has trailing data");
+  }
   {
     bool haveUsb = false;
     for (auto& s : sections) if (s.name == "usb") { haveUsb = true; if (!riu_.usbHost.enabled()) throw SnapshotError("snapshot holds USB pendrive state but --exploratory-usb-pendrive is absent"); Ar a(s.bytes.data(), s.bytes.size()); riu_.usbHost.serialize(a); }

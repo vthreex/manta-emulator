@@ -1,0 +1,303 @@
+{
+  "result": "PASS",
+  "scope": "candidate original TSP packet, section DMA and interrupt path; native DTV acquisition/video incomplete",
+  "native_checks": 4445,
+  "suites": {
+    "firmware": 0,
+    "display": 0,
+    "clock_profile": 0,
+    "avd_firmware": 0,
+    "vd_firmware": 0,
+    "pm51_firmware": 0,
+    "copro_firmware": 0,
+    "diagnostic_options": 0,
+    "window_preview": 0,
+    "snapshot": 0,
+    "native": 0,
+    "forensics": 0,
+    "dtv_static": 0,
+    "dtv_original_mcu": 0,
+    "tsp_packet_original": 0,
+    "strict-replay": 2
+  },
+  "strict_replay": {
+    "events": 6592741,
+    "reference_fields": 289,
+    "differences": [],
+    "coverage_identical": true,
+    "dispatches": 854795171
+  },
+  "original_tsp_probe": {
+    "result": "PASS",
+    "original_startup_RMW_cases": 2,
+    "original_packet_window_cases": 6,
+    "original_DMA_cases": 4,
+    "scope": "isolated original TSP packet-window and section-DMA instructions; connected reception not asserted"
+  },
+  "atv_teletext_compatibility": {
+    "result": "PASS",
+    "scope": "connected original-firmware teletext with explicit exploratory models",
+    "channel_name_storage_verified": false,
+    "cases": [
+      {
+        "case": "alpha",
+        "dispatches": 2000000003,
+        "reason": "instruction budget exhausted",
+        "covered_pixels": 2073600,
+        "frame_sha256": "76250611353f3edb3a1fdd84d79d5ded26fd2c9ecf5991b59d93efc7ffd3adb5",
+        "frame": "C:\\Users\\micha\\Documents\\Codex\\2026-10-11\\codex-reverse-engineer-and-build-a\\work\\dtv-ttx-irq-paced-compat\\alpha\\gop_0_d2000000003.bmp"
+      },
+      {
+        "case": "beta",
+        "dispatches": 2000000002,
+        "reason": "instruction budget exhausted",
+        "covered_pixels": 2073600,
+        "frame_sha256": "c24c0bf029dbbcd1f9802fe7a35b5a0e8ed94a51ae8768b3c4e84eb0dc33fa37",
+        "frame": "C:\\Users\\micha\\Documents\\Codex\\2026-10-11\\codex-reverse-engineer-and-build-a\\work\\dtv-ttx-irq-paced-compat\\beta\\gop_0_d2000000002.bmp"
+      }
+    ]
+  },
+  "connected": [
+    {
+      "tag": "64-packets-irq-paced",
+      "unverified_startup_hypotheses": false,
+      "summary": {
+        "instruction_dispatches": 2150000003,
+        "reason": "instruction budget exhausted",
+        "vd_mcu_pc": "0x637",
+        "vd_mcu_boundary_reason": "VD MCU unknown XDATA bits affect instruction/decision/address",
+        "dvbt_fec_software_state": 0,
+        "dvbt_delivered_transport_packets": 238,
+        "tsp_input_packets": 49105,
+        "tsp_input_overrun_packets": 0,
+        "tsp_pid_filtered_packets": 48867,
+        "tsp_section_dma_transfers": 238,
+        "tsp_section_dma_bytes": 5278,
+        "tsp_packet_filter": 0,
+        "tsp_packet_cursor": 25,
+        "tsp_aeon_notification": {
+          "value": 0,
+          "known": 4294967295
+        },
+        "tsp_aeon_fiq_mask": {
+          "value": 32767,
+          "known": 65535
+        },
+        "tsp_active_section_registers": [
+          {
+            "offset": 0,
+            "value": 32,
+            "known": 4294967295
+          },
+          {
+            "offset": 4,
+            "value": 4294967040,
+            "known": 4294967295
+          },
+          {
+            "offset": 8,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 12,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 16,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 20,
+            "value": 4294967040,
+            "known": 4294967295
+          },
+          {
+            "offset": 24,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 28,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 32,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 36,
+            "value": 2197028864,
+            "known": 4294967295
+          },
+          {
+            "offset": 40,
+            "value": 2197032960,
+            "known": 4294967295
+          },
+          {
+            "offset": 44,
+            "value": 2197028864,
+            "known": 4294967295
+          },
+          {
+            "offset": 48,
+            "value": 2197029004,
+            "known": 4294967295
+          },
+          {
+            "offset": 52,
+            "value": 2197029004,
+            "known": 4294967295
+          },
+          {
+            "offset": 56,
+            "value": 2147483648,
+            "known": 4294967295
+          },
+          {
+            "offset": 60,
+            "value": 0,
+            "known": 4294967295
+          },
+          {
+            "offset": 64,
+            "value": 0,
+            "known": 4294967295
+          }
+        ]
+      },
+      "copro_stopped": false,
+      "copro_stop_reason": "",
+      "copro_zero_unknown_reads": false
+    },
+    {
+      "tag": "64-packets-xramzero-timer-irq-paced-init00",
+      "unverified_startup_hypotheses": true,
+      "summary": {
+        "instruction_dispatches": 2150000003,
+        "reason": "instruction budget exhausted",
+        "vd_mcu_pc": "0x3443",
+        "vd_mcu_boundary_reason": "VD MCU unknown XDATA bits affect instruction/decision/address",
+        "dvbt_fec_software_state": 6,
+        "dvbt_delivered_transport_packets": 238,
+        "tsp_input_packets": 49105,
+        "tsp_input_overrun_packets": 0,
+        "tsp_pid_filtered_packets": 48867,
+        "tsp_section_dma_transfers": 238,
+        "tsp_section_dma_bytes": 5278,
+        "tsp_packet_filter": 0,
+        "tsp_packet_cursor": 25,
+        "tsp_aeon_notification": {
+          "value": 0,
+          "known": 4294967295
+        },
+        "tsp_aeon_fiq_mask": {
+          "value": 32767,
+          "known": 65535
+        },
+        "tsp_active_section_registers": [
+          {
+            "offset": 0,
+            "value": 32,
+            "known": 4294967295
+          },
+          {
+            "offset": 4,
+            "value": 4294967040,
+            "known": 4294967295
+          },
+          {
+            "offset": 8,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 12,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 16,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 20,
+            "value": 4294967040,
+            "known": 4294967295
+          },
+          {
+            "offset": 24,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 28,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 32,
+            "value": 4294967295,
+            "known": 4294967295
+          },
+          {
+            "offset": 36,
+            "value": 2197028864,
+            "known": 4294967295
+          },
+          {
+            "offset": 40,
+            "value": 2197032960,
+            "known": 4294967295
+          },
+          {
+            "offset": 44,
+            "value": 2197028864,
+            "known": 4294967295
+          },
+          {
+            "offset": 48,
+            "value": 2197029004,
+            "known": 4294967295
+          },
+          {
+            "offset": 52,
+            "value": 2197029004,
+            "known": 4294967295
+          },
+          {
+            "offset": 56,
+            "value": 2147483648,
+            "known": 4294967295
+          },
+          {
+            "offset": 60,
+            "value": 0,
+            "known": 4294967295
+          },
+          {
+            "offset": 64,
+            "value": 0,
+            "known": 4294967295
+          }
+        ]
+      },
+      "copro_stopped": false,
+      "copro_stop_reason": "",
+      "copro_zero_unknown_reads": false
+    }
+  ],
+  "limitations": [
+    "Timing ratios and ideal RF observations are explicit uncalibrated candidates.",
+    "Baseline MCU still stops at unknown startup TOP2073/74/75 arithmetic.",
+    "Private SRAM zero plus TOP reset brackets are diagnostics, not recovered hardware reset values.",
+    "No channel discovery, channel-name storage or DTV decoded picture claim.",
+    "Buffer-overflow behavior and unsupported DMA/PES commands remain guarded."
+  ]
+}

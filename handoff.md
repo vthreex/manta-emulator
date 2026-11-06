@@ -1,6 +1,110 @@
 # Manta ATV / teletext handoff
 
+## Active DTV checkpoint (2026-11-06, supersedes older active-process notes)
+
+Current uncommitted build passes 4,445 native checks and the original TSP
+packet/DMA instruction probe. ATV/teletext compatibility also passes to 2B
+dispatches for both body-text fixtures, covering all 2,073,600 output pixels.
+No DTV website deployment has been made; native channel discovery and decoded
+video are still unproven. Preserve unrelated Sunplus edits/untracked files.
+
+The previous connected run assembled 5,304 actual section bytes, checked CRC
+with the original TSP code, and posted AEON notification 80010000. Ring0 then
+filled because the notification interrupt was missing. The candidate now wires
+TSP2AEON source47 through its original local SW_INT enable and CP mask3290;
+original getters and the Titania4 IRQ map corroborate the routing. Tiny ISA
+fixtures verify actual interrupt entry, pending status and deassertion.
+
+New --exploratory-tsp-packet-cycles explicitly paces transmitter arrivals;
+busy receiver slots drop arrivals and advance the source, rather than pausing
+the transmitter. Idle-skip on/off tests compare CPU and serialized input state
+across 201 arrival slots. Timing remains explicitly uncalibrated. RF24CF now
+exposes the fixed transmitter's 8K/1:32 mode fields, corroborated by original
+2E6B/2E72 and the public demodulator enum. No software FEC state is supplied.
+
+Completed copied-native 64-packets-irq-paced and diagnostic
+64-packets-xramzero-timer-irq-paced-init00: both reach 2,150,000,003 MIPS,
+238 real packets/5,278 section bytes, no input overruns or CP validity stop,
+original AEON notification acknowledged to zero. Original MCU baseline still
+stops0637; startup-hypothesis run now reaches FEC6 then3443 reading213D bit0.
+Final original GOP still shows NO SIGNAL; channel discovery is NOT proven.
+Full validation finished: all suites pass, 6,592,741-event strict replay has
+289 identical summary fields and identical coverage. Latest compatibility
+report: work/dtv-ttx-irq-paced-compat.json. Evidence is recorded separately from
+private TS/firmware inputs in evidence/dtv-tsp-packets-validation.json.
+
+Currently running: all-one TOP reset bracket
+64-packets-xramzero-timer-irq-paced-initff; plus two additional original213D.0
+startup brackets ...-213d0-init00 / ...-213d1-init00 via the private run helper.
+These use +init at physical1F224279, never an RF-owned forced lock response.
+Original3434/2773 both read213D.0 to choose21B0/B4 programming41/54 vs71/64;
+hardware meaning/reset value unresolved. Read live process/results rather than
+relying on the older session IDs below. Validation is finished, so builds are
+allowed; active native probes use copied binaries.
+
 ## Latest DTV continuation (2026-11-05/06)
+
+NEWEST WORK IN PROGRESS, NOT COMMITTED: integrated --candidate-tsp-packets
+now delivers actual TS through native PID routing. First connected3 runs
+work/dtv-rf-clock-64-packets-{rmw,init00,initff} all reached1438025221 MIPS,
+one actual packet delivered, TSP stopped714 shifting partial status. Original
+descriptor was FULLY KNOWN (filter0,cursor5,MaskFFFFFF00,Cur82F40000,CRCunknown),
+so the issue was OpenRisc rejecting partial-source shifts, NOT uninitialized
+filters. Generic immediate/register shifts now propagate masks/sign extension
+and drop permuted RMW identity; exhaustive low8+sign fixtures added. Original
+710/714/71C positive-match path is tested on the existing original core.
+
+DMA now retains descriptor cached aliases (82F4...) for original arithmetic,
+but decodes actual MIU writes into physical RAM (02F4...). Original428 tests
+linear+wrap under BOTH physical/cached pointers and two-fragment CRC. Added
+candidate notification aliases: TSP21032C->1F202AE0/AE4 (HK),2130DC->
+1F202DB4/DB8(AEON); static MIPS805D69D0/69A8 and CPA33D0/A33EC agree.
+IRQ output to CP is NOT wired yet. Candidate summary now reports actual
+notification word and CP3290 mask to establish which IRQ was enabled.
+
+work/dtv-rf-clock-64-packets-xramzero-init00 used NEW explicit
+--exploratory-vd-xram-poweron-zero + existing TOP2073..75 +init00 hypothesis.
+No defaults changed; this is NOT exact hardware evidence. Original MCU got
+to FEC state2, then506E waiting23F9. Reads/writes prove a timeout counter:
+16AB sets F2/F3 count,16B3 writes F0=40 then1;0 stops. NEW candidate
+--exploratory-dvbt-timer-divider N models elapsed guest cycles, divider is
+explicitly uncalibrated. Riu MCU-step clock scope + optional snapshot section
+implemented; tests exercise deadline/reset/stop/no read-triggered completion.
+
+CURRENT BUILD session96543 was at29/31 (core compile pending), no suites or
+native runs active. After it ends, ensure latest core_tests edit is rebuilt,
+run core+tsp_packet_probe (new positive-path fixture previously needed a
+write callback; fixed), launch new packet baseline and
+TAG-packets-xramzero-timer-init00 via work/dtv_default_clock.py64 TAG. Work
+script adds timer divisor4096 when tag contains timer. Existing unknown
+TOP reset values remain separate00/FF diagnostics, never RF-owned defaults.
+Last complete full validation was4011-check PRE-shift/timer build: all suites
++6592741-event replay289fields/coverage identical. Latest changes need full
+validation before commit. DO NOT ninja during work/dtv_validate.py probes.
+
+CURRENT ACTIVE WORK (new turn, uncommitted): MOV Rn,direct now retains masks
+and origins across all4 register banks.3999-check build passed ALL required
+suites/replay; cold work/dtv-rf-clock-64-copy passed22CE then stopped0637 ADD
+A,R3, with unknown2074 source. Do not assign those bytes to the RF model.
+
+TSP candidate now implemented in src/peripherals/tsp_packet_window.hpp,
+tsp_section_dma.hpp, tsp_transport.hpp, attached with --candidate-tsp-packets.
+Original FF8/3C4/1004 read6 real byte offsets; original428 checks actual DMA,
+wrap and two-fragment MPEG CRC (tsp_packet_probe PASS). New core integration
+tests4011 PASS, including MIPS indirect/live packet sharing, routing, snapshots
+and unknown/unsupported bounds. Input is UNPACED post-FEC pin stimulus from
+configured station bytes, not measured RF timing. Never writes MCU FEC state,
+never parses service metadata. Optional snapshot section checks input hashes.
+
+First connected packet probe work/dtv-rf-clock-64-packets stopped194857124 at
+original TSP1E14: startup RMWs release bit4 while reserved bits stay unknown.
+Latest UNBUILT fix admits ONLY same-origin218 update with known mask10, plus
+ordinary fully-known10/0 release commands. Original startup fixture covers
+both opaque poison values. Full validation driver for PRE-fix build is still
+running (session37504); do not ninja until it ends. Then build, run core and
+tsp_packet_probe, launch new cold baseline and separate2073..75 startup00/FF
+diagnostic brackets via work/dtv_default_clock.py64 TAG-packets-init00/initff.
+No reset hypothesis has been added to code defaults. See docs/dtv-tsp-transport.md.
 
 2073 OWNERSHIP CORRECTION: it has an original MCU writer!1511 sets DPTR2073,
 1514 MOV A,R7,1515 calls16F5 (MOVX @DPTR,A). This path is gated by FEC state9

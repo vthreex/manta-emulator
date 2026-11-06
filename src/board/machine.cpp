@@ -119,11 +119,29 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryDvbtRegisters && !o.exploratoryVdSharedRun)
     throw std::runtime_error("DVB-T shared register experiment requires original shared MCU execution");
   riu_.exploratoryDvbtRegisters=o.exploratoryDvbtRegisters;
+  if(o.exploratoryVdXramPoweronZero){
+    if(!o.exploratoryDvbtRegisters)throw std::runtime_error("VD XRAM power-on hypothesis requires the guarded original MCU register experiment");
+    riu_.exploratoryZeroVdPoweronRam();
+  }
+  if(o.exploratoryDvbtTimerDivider){
+    if(!o.exploratoryDvbtRegisters || o.exploratoryDvbtTimerDivider>1000000000)
+      throw std::runtime_error("DVB-T timer requires original MCU register bus and a clock divisor1..1000000000");
+    riu_.dvbtPollTimer.divider=o.exploratoryDvbtTimerDivider;
+  }
   if(!o.exploratoryDtvStations.empty()){
     if(!o.exploratoryDvbtRegisters || !o.exploratoryPllTuner)
       throw std::runtime_error("ideal DVB-T RF input requires the original MCU register bus and PLL tuner");
     riu_.dvbtRf=DvbtRf::load(o.exploratoryDtvStations);
   }
+  if(o.candidateTspPackets){
+    if(o.exploratoryDtvStations.empty() || !o.candidateMiu || !o.candidateTsp || !o.exploratoryTspCpu)
+      throw std::runtime_error("candidate TSP packet input requires configured RF input, MIU, TSP and original TSP CPU execution");
+    riu_.candidateTspPackets=true;
+    riu_.tspTransport.packetCycles=o.exploratoryTspPacketCycles;
+    for(const auto& station:riu_.dvbtRf.stations)riu_.tspTransport.inputIdentity+=sha256(station.transport);
+    riu_.bindTspTransport();
+  }
+  if(o.exploratoryTspPacketCycles && !o.candidateTspPackets)throw std::runtime_error("TSP input cadence requires the candidate packet input");
   if(o.exploratoryVdSuspendedBoundary && (!o.exploratoryVdMcuStartup || !o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("Suspended VD boundary experiment requires original startup and guarded exploration");
   riu_.exploratoryVdSuspendedBoundary=o.exploratoryVdSuspendedBoundary;
@@ -495,6 +513,13 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     copro_.zeroUnknownReads=o.exploratoryCoproZeroUnknown;
     copro_.mailRead=[this](uint32_t a,uint8_t& v){return riu_.coproPeekByte(a,v);};
     copro_.mailWrite=[this](uint32_t a,uint8_t v){riu_.coproPokeByte(a,v);};
+    if(o.candidateTspPackets)copro_.tspFiqPending=[this]{
+      // Original HAL enables SW_INT status2000 by setting enable0020 at
+      // BF202BF8. The source is the original TSP's AEON FIRE, not a host event.
+      const auto notification=riu_.tspRawWord(0x2130dc);
+      return (notification.known&notification.value&0x80000000u) &&
+        (riu_.knownBits(0x1f202bf8,1)&0x20) && (riu_.liveGet(0x1f202bf8)&0x20);
+    };
     copro_.ramWritten=[this](uint32_t a,size_t n){preservedBits_.overwriteKnownMemory(a,n);unknownObservations_.overwriteKnownMemory(a,n);};
     copro_.event=[this](const std::string& k,uint32_t a,unsigned n,uint32_t v,const std::string& d){
       event(k,a,n,v,d);
@@ -3461,6 +3486,8 @@ std::string Msd309Machine::summary() const {
     <<",\n  \"vd_mcu_upstream_ticks\": "<<riu_.vdMcuCpu().cycles()<<",\n  \"vd_mcu_pc\": \""<<hex(riu_.vdMcuCpu().pc())<<"\",\n  \"vd_mcu_stack\": "<<unsigned(riu_.vdMcuCpu().stack());
   if(options_.deferVdSfr8eWrite)s<<",\n  \"deferred_vd_sfr8e_write_enabled\": true";
   if(options_.deferVdResetKeyWrites)s<<",\n  \"deferred_vd_reset_key_writes_enabled\": true";
+  if(options_.exploratoryVdXramPoweronZero)s<<",\n  \"vd_xram_poweron_zero_hypothesis\": true,\n  \"vd_xram_poweron_contents_hardware_verified\": false";
+  if(options_.exploratoryDvbtTimerDivider)s<<",\n  \"dvbt_timeout_timer_candidate\": true,\n  \"dvbt_timer_clock_divisor\": "<<options_.exploratoryDvbtTimerDivider<<",\n  \"dvbt_timer_clock_hardware_verified\": false";
   if(options_.exploratoryDvbtRegisters){
     s<<",\n  \"exploratory_dvbt_shared_registers\": true,\n  \"dvbt_register_reset_defaults_supplied\": false"
       <<",\n  \"dvbt_mcu_accumulator_known\": "<<unsigned(riu_.vdMcuCpu().accumulatorKnown())
@@ -3480,9 +3507,25 @@ std::string Msd309Machine::summary() const {
   if(riu_.dvbtRf.enabled){
     uint64_t packets=0;for(const auto& station:riu_.dvbtRf.stations)packets+=station.transport.size()/188;
     s<<",\n  \"exploratory_dvbt_ideal_rf\": true,\n  \"dvbt_configured_transport_packets\": "<<packets
-      <<",\n  \"dvbt_delivered_transport_packets\": 0,\n  \"dvbt_host_channel_database\": false";
+      <<",\n  \"dvbt_delivered_transport_packets\": "<<riu_.tspTransport.delivered()<<",\n  \"dvbt_host_channel_database\": false";
     const auto a=*dvbtSharedAddress(0x23e0);
     s<<",\n  \"dvbt_fec_software_state\": ";if(riu_.knownBits(a,1)==255)s<<unsigned(riu_.liveGet(a));else s<<"null";
+  }
+  if(options_.candidateTspPackets){s<<",\n  \"candidate_tsp_packet_input\": true,\n  \"tsp_packet_clock_calibrated\": false"
+    <<",\n  \"tsp_input_cycles_per_packet\": "<<riu_.tspTransport.packetCycles
+    <<",\n  \"tsp_input_overrun_packets\": "<<riu_.tspTransport.droppedPackets
+    <<",\n  \"tsp_input_packets\": "<<riu_.tspTransport.inputPackets
+    <<",\n  \"tsp_pid_filtered_packets\": "<<riu_.tspTransport.filteredPackets
+    <<",\n  \"tsp_section_dma_transfers\": "<<riu_.tspTransport.dmaTransfers
+    <<",\n  \"tsp_section_dma_bytes\": "<<riu_.tspTransport.dmaBytes
+    <<",\n  \"tsp_packet_filter\": "<<riu_.tspTransport.activeFilter()
+    <<",\n  \"tsp_packet_cursor\": "<<riu_.tspTransport.activeCursor()<<",\n  \"tsp_active_section_registers\": [";
+    for(unsigned offset=0;offset<0x44;offset+=4){if(offset)s<<',';const auto word=riu_.tspRawWord(0x211000+128*riu_.tspTransport.activeFilter()+offset);
+      s<<"{\"offset\":"<<offset<<",\"value\":"<<word.value<<",\"known\":"<<word.known<<'}';}
+    s<<']';
+    const auto irq=riu_.tspRawWord(0x2130dc);const auto mask=copro_.observedMaskWord(0x3290);
+    s<<",\n  \"tsp_aeon_notification\": {\"value\":"<<irq.value<<",\"known\":"<<irq.known
+      <<"},\n  \"tsp_aeon_fiq_mask\": {\"value\":"<<mask.first<<",\"known\":"<<mask.second<<'}';
   }
   if(options_.exploratoryVdSharedRun)s<<",\n  \"exploratory_vd_shared_run\": true"
     <<",\n  \"vd_mcu_total_instructions\": "<<riu_.vdMcuCpu().totalInstructions()

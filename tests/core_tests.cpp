@@ -1,4 +1,5 @@
 #include "board/htotal_join.hpp"
+#include <bit>
 #include "video/ge_stretch_request.hpp"
 #include "cpu/engine.hpp"
 #include "cpu/mcu_value_mask.hpp"
@@ -1271,6 +1272,7 @@ void htotalBranchJoinTests(){
 #include "spi_nor_program_tests.inc"
 #include "usb_host_tests.inc"
 #include "pal_cvbs_tests.inc"
+#include "tsp_input_clock_tests.inc"
 void mcuPackedDataTests(){
   // Isolated ISA fixture on the existing 8051 engine, not a TV image or a
   // replacement routine in connected boot. Exercise the real opcodes used
@@ -1298,6 +1300,21 @@ void mcuPackedDataTests(){
     auto address=packing;address[19]=0xf8;address[20]=0xe6;run(address,v,0xfe,true,false);
   }
   run({0x90,0x22,0x22,0xe0,0x25,0xe0,0x80,0xfe},0,0x7f,false,true);
+  for(unsigned bank:{0u,8u,16u,24u})for(uint8_t poison:{uint8_t(0),uint8_t(0xfe)})for(bool mask:{false,true}){
+    // Read one known bit, copy the byte via a direct bank-0 register alias
+    // into R2 in each selected bank, then consume only the known field.
+    std::vector<uint8_t> bytes={0x90,0x22,0x22,0xe0,0xfe,0x75,0xd0,uint8_t(bank),0xaa,0x06,0xea};
+    if(mask){bytes.push_back(0x54);bytes.push_back(0x01);}
+    bytes.insert(bytes.end(),{0x60,0x00,0x80,0xfe});
+    manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+    for(auto b:bytes)p.write(0x18,b);
+    manta::VdMcuCpu cpu;cpu.busRead=[&](uint16_t a)->std::optional<manta::VdByte>{return manta::VdByte{uint8_t(poison|1),1,a};};
+    cpu.resetProgram(p);std::string boundary;
+    try{for(unsigned t=0;t<100 && cpu.instructions()<12;++t)cpu.step();}catch(const manta::VdHardwareBoundary& e){boundary=e.what();}
+    const auto [value,known,origin]=cpu.iramInfo(bank+2);
+    require(value==uint8_t(poison|1) && known==1 && origin==0x2222,"MOV Rn,direct preserves invalid bits and origin across register banks");
+    require(mask?boundary.empty():!boundary.empty(),"only a masked independent decision may follow an opaque direct-to-register copy");
+  }
 }
 void dvbtRfTests(){
   manta::DvbtRf::Station s;s.mhz=682;s.bandwidthMHz=8;s.transport.assign(188,255);s.transport[0]=0x47;s.transport[1]=0x1f;s.transport[2]=0xff;s.transport[3]=0x10;
@@ -1311,11 +1328,130 @@ void dvbtRfTests(){
   const auto tps=rf.sample(0x2222,682,8),off=rf.sample(0x2222,683,8);
   require(tps.known==2 && tps.value==2 && off.known==2 && off.value==0,"only the named hardware TPS observation is derived from an actual configured transport input");
   require(rf.sample(0x2224,682,8).known==0x73 && rf.sample(0x2224,683,8).known==0,"TPS parameters are invalid before acquisition");
+  require(rf.sample(0x24cf,682,8).known==0x1f && rf.sample(0x24cf,682,8).value==0x11 && rf.sample(0x24cf,683,8).known==0x10,"mode detector reports the same8K/GI1/32 transmitter parameters as TPS, and invalidates mode data without reception");
   bool softwareUntouched=true;for(auto x:{0x2070,0x23e0,0x2f00,0x2f03})softwareUntouched&=rf.sample(uint16_t(x),682,8).owned==0;
   require(softwareUntouched,"RF input cannot publish the original MCU's FEC state, TOP status or mailbox replies");
   rf.stations.push_back(s);require(!rf.reception(682,8).has_value(),"cochannel inputs cannot silently become one perfect locked transmitter");
   bool reverse=true;for(unsigned x=0x2000;x<0x2600;++x)reverse&=manta::dvbtXdataAddress(*manta::dvbtSharedAddress(uint16_t(x)))==x;
   require(reverse && !manta::dvbtXdataAddress(0x1f224002).has_value(),"RF register aliases round trip without admitting padding lanes");
+}
+void tspPacketInputTests(){
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};r.symbolicInit=true;r.candidateTsp=true;
+  r.configureExploratoryTspResetLow();r.write(0x1f202be8,2,0,0,0xffff,0);r.write(0x1f202be8,2,2,0,0xffff,1);
+  r.candidateTspPackets=true;r.bindTspTransport();uint64_t tick=2;
+  auto target=[&](uint32_t a){const auto encoded=a;r.write(0x1f202b24,2,encoded&0xffff,0,0xffff,++tick);r.write(0x1f202b28,2,encoded>>16,0,0xffff,++tick);};
+  auto write=[&](uint32_t a,uint32_t v){target(a);r.write(0x1f202b2c,2,v&0xffff,0,0xffff,++tick);r.write(0x1f202b30,2,v>>16,0,0xffff,++tick);r.write(0x1f202b20,2,0x23,0,0xffff,++tick);};
+  auto read=[&](uint32_t a){target(a);r.write(0x1f202b20,2,0x21,0,0xffff,++tick);return r.read(0x1f202b34,2,0,0xffff,++tick)|(r.read(0x1f202b38,2,0,0xffff,++tick)<<16);};
+  for(unsigned i=0;i<48;++i)write(0x210000+4*i,i?0x1fff:0x00200000);
+  for(unsigned i=0;i<4;++i){write(0x211004+4*i,0);write(0x211014+4*i,0xffffffffu);}
+  write(0x211014,0xffffff00u);
+  std::array<uint8_t,188> packet{};packet[0]=0x47;packet[1]=0x40;packet[3]=0x10;packet[5]=0;packet[6]=0xb0;
+  require((read(0x210214)&0x100)==0,"an empty candidate TSP window cannot manufacture packet arrival");
+  require(r.tspTransport.supply(0,packet),"TSP routes an actual received PID through the guest-programmed section filter");
+  require((read(0x210214)&0x300)==0x100,"hardware positive match compares actual bytes, initially the TS header");
+  write(0x210200,5);
+  require((read(0x210214)&0x300)==0x300 && (read(0x210204)&0xffff)==0xb000,"MIPS indirect reads and cursor writes share the live packet window");
+  write(0x210214,0);require(!(read(0x210214)&0x100),"MIPS acknowledgement clears only an actual latched arrival");
+  r.tspTransport.inputIdentity="fixture";std::vector<uint8_t> state;manta::snap::Ar save(state);r.tspTransport.serialize(save);
+  manta::TspTransport restored;restored.inputIdentity="fixture";manta::snap::Ar load(state.data(),state.size());restored.serialize(load);
+  std::vector<uint8_t> again;manta::snap::Ar saveAgain(again);restored.serialize(saveAgain);
+  require(state==again && load.remaining()==0,"TSP snapshot preserves pending actual bytes, cursor, acknowledgements and input index");
+  manta::TspTransport changed;changed.inputIdentity="changed";
+  rejects([&]{manta::snap::Ar different(state.data(),state.size());changed.serialize(different);});
+  write(0x210218,0x10);write(0x210218,0);
+  require(r.tspTransport.delivered()==1 && !(read(0x210214)&0x100),"original release command retires the packet without fabricating a second one");
+  r.write(0x1f202db4,2,0x1234,0,0xffff,++tick);r.write(0x1f202db8,2,0x8001,0,0xffff,++tick);
+  require(read(0x2130dc)==0x80011234,"original AEON notification split-word accessor and TSP internal address share actual register bytes");
+  require((r.knownBits(0x1f202bf9,1)&0x20) && (r.read(0x1f202bf8,2,0,0x2000,++tick)&0x2000),"TSP hardware SW_INT status derives from the original producer's FIRE bit");
+  require(!(r.knownBits(0x1f202bf8,1)&0x20),"observing a notification must not fabricate an interrupt enable bit");
+  write(0x2130dc,0);require(r.read(0x1f202db4,2,0,0xffff,++tick)==0 && r.read(0x1f202db8,2,0,0xffff,++tick)==0,"consumer acknowledgement reaches the original producer's notification word");
+  require(!(r.read(0x1f202bf8,2,0,0x2000,++tick)&0x2000),"clearing the actual notification also clears the derived hardware SW_INT status");
+  write(0x21032c,0x80020003);require(r.read(0x1f202ae0,2,0,0xffff,++tick)==3 && r.read(0x1f202ae4,2,0,0xffff,++tick)==0x8002,"HK notification uses the separately corroborated physical register pair");
+  auto ring=manta::TspSectionDma::Ring{{0x1000,~0u,{}},{0x1100,~0u,{}},{0x1000,~0u,{}},{0x1000,~0u,{}},{0,0,{}}};
+  const auto known=[](uint32_t v){return manta::OrWord{v,~0u,{}};};
+  auto plan=manta::TspSectionDma::plan(packet,known(5),known(13),known(0x89),ring);
+  require(plan.writes.size()==13 && plan.current==0x100d,"section DMA plan contains only actual bytes and their guest addresses");
+  rejects([&]{manta::TspSectionDma::plan(packet,known(180),known(13),known(0x89),ring);});
+  rejects([&]{manta::TspSectionDma::plan(packet,known(5),known(13),known(0x21),ring);});
+  ring.current.known=0;rejects([&]{manta::TspSectionDma::plan(packet,known(5),known(13),known(0x89),ring);});
+  for(uint32_t poison:{0u,1u}){
+    manta::TspTransport matcher;
+    uint32_t pattern=1,mask=0xfffffffeu|poison;
+    matcher.regRead=[&](uint32_t a)->manta::OrWord{
+      if(a<0x2100c0)return known(a==0x210000?0x00200000:0x1fff);
+      if(a==0x211004)return known(pattern);
+      if(a==0x211014)return {mask,0xfffffffeu,a};
+      return known(a>=0x211014?0xffffffffu:0);
+    };
+    require(matcher.supply(0,packet),"opaque mask fixture still uses a real PID-routed packet");
+    auto match=matcher.read(0x210214);
+    require((match->known&0x200) && (match->value&0x200),"an unknown ignore bit cannot matter when actual data and pattern agree");
+    pattern=0;match=matcher.read(0x210214);
+    require(!(match->known&0x200),"an unknown ignore bit remains unknown when it can change the comparison");
+    mask&=~2u;match=matcher.read(0x210214);
+    require((match->known&0x200) && !(match->value&0x200),"a definite mismatch defeats opaque unrelated comparison bits for either poison value");
+  }
+}
+void openRiscShiftValidityTests(){
+  for(unsigned kind=0;kind<4;++kind)for(unsigned amount:{0u,1u,9u,31u})for(uint32_t known:{0x7fffff00u,0xffffff00u,0xffffffffu}){
+    const uint32_t input=0x92345678;
+    const std::array<uint32_t,4> code={0x18800001,0x84e40000,0xb8e70000u|(kind<<6)|amount,0xd4043800};
+    manta::OpenRisc cpu;manta::OrWord result;
+    cpu.read=[&](uint32_t a,unsigned,bool fetch)->manta::OrWord{
+      if(!fetch && a==0x10000)return {input,known,a};
+      require(a<16 && !(a&3),"shift fixture fetches only its explicit ISA harness");return {code[a/4],~0u,{}};
+    };
+    cpu.write=[&](uint32_t a,unsigned n,manta::OrWord value){require(a==0x10000 && n==4,"shift fixture writes only its result observation");result=value;};
+    cpu.reset(0);for(unsigned i=0;i<4;++i)cpu.step();
+    uint32_t ones=~0u,zeros=~0u;bool consistent=true;
+    for(unsigned assignment=0;assignment<512;++assignment){
+      const auto bits=uint32_t(assignment&255)|(uint32_t(assignment>>8)<<31);
+      const auto concrete=(input&known)|(bits&~known);
+      const auto shifted=kind==0?concrete<<amount:kind==1?concrete>>amount:kind==2?uint32_t(int32_t(concrete)>>amount):std::rotr(concrete,int(amount));
+      ones&=shifted;zeros&=~shifted;
+      consistent&=((result.value^shifted)&result.known)==0;
+    }
+    require(consistent,"every represented input agrees with every bit marked known by the real shift instruction");
+    require(result.known==(ones|zeros),"logical/arithmetic shifts and rotates preserve exactly the invariant bits including sign extension and zero shifts");
+    require(!amount || !result.origin.has_value(),"permuted opaque bits cannot authorize a same-register RMW identity");
+  }
+}
+void dvbtPollTimerTests(){
+  manta::DvbtPollTimer timer;timer.divider=8;
+  require(!timer.known(),"candidate DVB-T timeout status has no reset default before a guest reset command");
+  rejects([&]{timer.control(1,256,0xffff,100);});
+  timer.control(0x40,0,0,100);require(timer.known()==1 && !timer.expired(100),"guest reset establishes only the timeout bit as clear");
+  rejects([&]{timer.control(1,256,0,100);});
+  timer.control(1,256,0xffff,100);
+  for(unsigned i=0;i<10;++i)require(!timer.expired(101),"repeated reads cannot complete the guest-programmed timeout");
+  require(!timer.expired(2147) && timer.expired(2148),"timeout derives exactly from period times the explicit clock divisor");
+  timer.control(0,0,0,2149);require(timer.expired(9000),"stopping retains an already expired timer until reset");
+  timer.control(0x40,0,0,9001);timer.control(1,2,0xffff,9002);timer.control(0,0,0,9003);
+  require(!timer.expired(99999),"stopped timer cannot acquire elapsed ticks after stop");
+  rejects([&]{timer.control(3,0,0,100000);});
+  timer.control(0x40,0,0,100000);timer.control(1,10,0xffff,100001);
+  std::vector<uint8_t> bytes;manta::snap::Ar save(bytes);timer.serialize(save);
+  manta::DvbtPollTimer restored;manta::snap::Ar load(bytes.data(),bytes.size());restored.serialize(load);
+  require(!restored.expired(100080) && restored.expired(100081),"timer snapshot retains the real pending deadline and clock ratio");
+  manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};r.symbolicInit=true;r.dvbtPollTimer.divider=8;
+  const auto control=*manta::dvbtSharedAddress(0x23f0),period=*manta::dvbtSharedAddress(0x23f2),status=*manta::dvbtSharedAddress(0x23f9);
+  r.write(control,1,0x40,0,255,100);r.write(period,1,2,0,255,101);r.write(period+1,1,0,0,255,102);r.write(control,1,1,0,255,103);
+  require(r.knownBits(status,1)==1 && !(r.read(status,1,0,1,118)&1) && (r.read(status,1,0,1,119)&1),"MIPS and MCU mapped timer status follows actual programmed elapsed board cycles");
+}
+void tspAeonInterruptTests(){
+  std::vector<uint8_t> ram(0x1000);
+  // A real CPU fixture unmasks source47, reads its physical pending bit and
+  // stores that observed bit. It does not implement any TV ISR or service.
+  const std::array<uint32_t,9> words={0x1860a020,0xa8633290,0xa8807fff,0xdc032000,
+    0x9c630020,0x94c30000,0xa4c68000,0xa8e00300,0xdc073000};
+  std::memcpy(ram.data()+0x100,words.data(),sizeof(words));
+  bool pending=true;manta::Copro cp;cp.ram=ram.data();cp.ramSize=ram.size();cp.trackUnknown=true;
+  cp.tspFiqPending=[&]{return pending;};cp.start();
+  require(!cp.irqLine2(),"unknown/unwritten CP interrupt mask cannot enable the candidate TSP source");
+  cp.run(words.size());
+  require(!cp.stopped && cp.irqLine2() && ram[0x301]==0x80,"source47 derives from the actual pending producer and the guest's source47 mask write");
+  require(cp.mailboxIrqs==0,"TSP notification is not a fabricated mailbox interrupt");
+  pending=false;cp.run(0);require(!cp.irqLine2(),"consumer clearing the TSP source removes the level without a fabricated acknowledgement");
 }
 void coproValidityTests(){
   {
@@ -3263,6 +3399,12 @@ int main() {
     tspIndirectTests();
     tspDownloadTests();
     tspMappingBurstTests();
+    tspPacedIdleEquivalenceTests();
+    tspPacketInputTests();
+    openRiscShiftValidityTests();
+    dvbtPollTimerTests();
+    tspAeonInterruptTests();
+    tspInputClockTests();
     dlcStatusTests();
     combBankTests();
 #ifdef UC_MIPS_MANTA_TIMER_API

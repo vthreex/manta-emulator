@@ -73,6 +73,10 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-pll-tuner")
         o.exploratoryPllTuner = true;
       else if (a == "--exploratory-dtv-stations")o.exploratoryDtvStations=value(i);
+      else if (a == "--candidate-tsp-packets")o.candidateTspPackets=true;
+      else if (a == "--exploratory-vd-xram-poweron-zero")o.exploratoryVdXramPoweronZero=true;
+      else if (a == "--exploratory-dvbt-timer-divider")o.exploratoryDvbtTimerDivider=std::stoull(value(i),nullptr,0);
+      else if (a == "--exploratory-tsp-packet-cycles")o.exploratoryTspPacketCycles=std::stoull(value(i),nullptr,0);
       else if (a == "--exploratory-atv-stations")
         o.exploratoryAtvStations = value(i);
       else if (a == "--candidate-miu")
@@ -485,7 +489,11 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-copro-zero-unknown-reads: LABELLED HYPOTHESIS, unknown coprocessor registers read as 0\n"
                "--candidate-copro-riu: connect the original multimedia CPU to board RIU models with invalid-bit tracking; no blanket-zero reads\n"
                "--diagnostic-copro-boundary-stop: debugger halt when original multimedia code reaches an unresolved hardware boundary\n"
-               "--exploratory-dtv-stations 'MHz|bandwidth|FILE.ts[;...]' or off: IDEAL RF HYPOTHESIS, no OFDM/ADC/timing calibration; silicon lock/TPS fields only, never FEC software state or channels; native packet delivery not yet implemented\n"
+               "--exploratory-dtv-stations 'MHz|bandwidth|FILE.ts[;...]' or off: IDEAL RF HYPOTHESIS, no OFDM/ADC/timing calibration; silicon lock/TPS fields only, never FEC software state or channels\n"
+               "--candidate-tsp-packets: CANDIDATE unpaced post-FEC pin input from configured RF stations; original TSP PID/window/section DMA, no host service parser or FEC-state override\n"
+               "--exploratory-vd-xram-poweron-zero: UNVERIFIED POWER-ON SRAM HYPOTHESIS; initialize private MCU XRAM once at board construction, preserve across CPU reset; no FEC/status reply override\n"
+               "--exploratory-dvbt-timer-divider N: CANDIDATE guest-programmed timeout counter23F0/F2/F3/F9; explicit UNCALIBRATED cycles/count divisor1..1000000000, no read-triggered completion\n"
+               "--exploratory-tsp-packet-cycles N: explicit UNCALIBRATED input cadence in guest cycles/packet; actual arrivals and single-slot overrun, idle skip stops at arrival boundaries;0=unpaced\n"
                "--copro-probes: inspect original multimedia loader output in guest RAM; no processor/reset/status emulation\n"
                "--opaque-read-policy FILE: guarded INVALID observations at exact code/hash/PC/address/width only; no values or readiness\n"
                "--opaque-policy-wait-ms N: debugger freeze of ALL virtual clocks at unmatched reads, maximum300000; default0\n"

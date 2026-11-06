@@ -15,6 +15,8 @@
 #include "peripherals/gpio_i2c.hpp"
 #include "peripherals/dvbt_rf.hpp"
 #include "peripherals/dvbt_registers.hpp"
+#include "peripherals/tsp_transport.hpp"
+#include "peripherals/dvbt_poll_timer.hpp"
 #include "peripherals/rtc.hpp"
 #include "peripherals/utmi.hpp"
 #include "peripherals/ev_text.hpp"
@@ -144,9 +146,11 @@ class Riu {
   std::array<RiuByte,2> vdVersionBytes_{};
   std::array<RiuByte,1024> vdPrivateRam_{};
   uint64_t vdTick_=0,vdMailboxReads_=0,vdMailboxWrites_=0;
+  bool vdInStep_=false;
   std::set<uint16_t> vdVisited_;
   std::map<uint16_t,VdByte> vdLastMailboxReads_;
   void advanceVd(uint64_t tick);
+  void dvbtTimerControl(VdByte value,uint64_t tick);
   std::optional<VdByte> vdRead(uint16_t address);
   bool vdWrite(uint16_t address,VdByte value);
   void bindVdCallbacks();
@@ -282,7 +286,7 @@ class Riu {
     return false;
   }
   uint32_t tspSelectedTarget() const;
-  static uint32_t tspPayloadKey(uint32_t target,unsigned lane);
+  uint32_t tspPayloadKey(uint32_t target,unsigned lane)const;
   std::optional<bool> lastOutputSync_;
   uint64_t outputSyncReads_=0, outputSyncTransitions_=0;
   // pcWrite/pcRestore identify the verified original paired-write instructions; the second
@@ -328,6 +332,15 @@ public:
   bool exploratoryVdSharedRun=false;
   bool exploratoryDvbtRegisters=false; // opt-in shared register storage; no reset/lock/completion defaults
   DvbtRf dvbtRf; // external ideal input; never owns software FEC/TPS publications or mailbox replies
+  bool candidateTspPackets=false;
+  DvbtPollTimer dvbtPollTimer;
+  uint64_t dvbtTimerClock=0;
+  uint64_t dvbtTimerNow()const{return vdInStep_?vdTick_:dvbtTimerClock;}
+  void exploratoryZeroVdPoweronRam(){vdPrivateRam_.fill({0,255});}
+  TspTransport tspTransport;
+  void bindTspTransport();
+  void feedTspTransport(uint64_t tick);
+  OrWord tspRawWord(uint32_t address)const;
   struct VdInvalidRead {uint16_t pc,address,origin;uint8_t value,known;};
   std::vector<VdInvalidRead> vdInvalidReads; // bounded observation history, not guest or restore state
   DvbtRf::Observation dvbtLiveByte(uint32_t physical)const{

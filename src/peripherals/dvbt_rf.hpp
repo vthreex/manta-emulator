@@ -69,10 +69,14 @@ public:
   Observation sample(uint16_t xdata,double tunedMHz,unsigned tunedBandwidth)const{
     if(!enabled)return {};
     const auto lock=reception(tunedMHz,tunedBandwidth);
+    if(xdata==0x24cf){
+      // ORIGINAL2E6B/2E72 takes FFT from bits1:0 and guard interval from
+      // bits3:2. Same transmitter8K/GI1/32 as the independently read TPS2226.
+      return {uint8_t(lock.value_or(false)?0x11:0),uint8_t((lock.has_value()?0x10:0)|(lock.value_or(false)?0x0f:0)),0x1f};
+    }
     uint8_t bit=0;
     switch(xdata){
       case 0x212f:case 0x2145:bit=1;break; // AGC / DCR: related T4 driver lock readers
-      case 0x24cf:bit=0x10;break;         // mode/CP detection
       case 0x2222:case 0x232c:bit=2;break;// TPS / post-FEC packet synchronization
       default:break;
     }
