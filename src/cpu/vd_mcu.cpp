@@ -251,7 +251,8 @@ struct VdMcuCpu::Impl {
       lengthsReady=true;
     }
     uint8_t size;
-    if((m.outer->instruction && m.outer->instructionText) || (cpu->mSFR[REG_PCON]&3))size=decode(cpu,pc,text);
+    if((m.outer->instruction && m.outer->instructionText &&
+        (!m.outer->instructionTextAt || m.outer->instructionTextAt(pc))) || (cpu->mSFR[REG_PCON]&3))size=decode(cpu,pc,text);
     else{size=lengths[cpu->mCodeMem[pc&cpu->mCodeMemMaxIdx]];text[0]=0;}
     if(!size)throw VdHardwareBoundary("VD MCU invalid instruction decode");
     for(unsigned i=0;i<size;++i)if(!m.byteKnown(uint16_t(pc+i)))

@@ -1,0 +1,107 @@
+{
+  "result": "PASS",
+  "scope": "CPU reset preserves original ISR-written XRAM; reception is still incomplete",
+  "native_checks": 3967,
+  "suites": {
+    "firmware": 0,
+    "display": 0,
+    "clock_profile": 0,
+    "avd_firmware": 0,
+    "vd_firmware": 0,
+    "pm51_firmware": 0,
+    "copro_firmware": 0,
+    "diagnostic_options": 0,
+    "window_preview": 0,
+    "snapshot": 0,
+    "native": 0,
+    "forensics": 0,
+    "dtv_static": 0,
+    "dtv_original_mcu": 0,
+    "strict-replay": 2
+  },
+  "strict_replay": {
+    "events": 6592741,
+    "reference_fields": 289,
+    "differences": [],
+    "coverage_identical": true,
+    "dispatches": 854795171
+  },
+  "original_mcu_probe": {
+    "result": "PASS",
+    "scope": "isolated original DVB-T MCU; register mapping only, no RF/lock/channel claim",
+    "guest_generated_FF_replies": 13,
+    "original_DSP_parameter_commands_verified": true,
+    "DSP_parameter_retained_across_CPU_reset": true,
+    "unwritten_register_payload_stays_INVALID": true,
+    "private_XRAM_payload_stays_INVALID": true,
+    "restored_original_ISR_replies": 2,
+    "continuous_restored_device_bytes_identical": true,
+    "unmapped_target_has_no_reply": true,
+    "resumed_original_MOVX": true
+  },
+  "original_reset_retention_test_failed_before_fix": true,
+  "first_visit_formatting_comparison": {
+    "summary_fields": 364,
+    "differences": [],
+    "identical_frame_count": 1
+  },
+  "original_static_evidence": {
+    "result": "PASS",
+    "scope": "static unmodified-firmware evidence only",
+    "original_flash_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+    "copro_identity_cache_signature_verified": true,
+    "dtv_resource_sha256": "6f64d6edc9306c7aae88483efdd25edd4c7d2b326ccba39cc9961da71f4298ee",
+    "boot_info_base_read_is_original": true,
+    "boot_info_base_hardware_reset_known": false,
+    "fec_state_is_written_by_original_mcu": true,
+    "fec_lock_host_override_permitted": false,
+    "parameter_initializer": "original MIPS804F2FD0 writes46 bytes through command4",
+    "parameter_mapping": "original MCU5469 maps DSP index into XDATA8000+index",
+    "parameter_polling_is_bounded": true,
+    "original_configuration_resets_mcu_after_parameter_initialization": true,
+    "tsp_original_packet_processing_instructions_verified": true,
+    "tsp_packet_ready_observation": "original PC0xe20 reads 0x210214 bit8",
+    "tsp_section_assembly_should_run_in_original_firmware": true,
+    "digital_tuner_function": "original MIPS804F58C8..804F5A38",
+    "digital_tuner_if_mhz": 36.167,
+    "digital_tuner_steps_per_mhz": 6,
+    "observed_ch47_divider": 4309,
+    "dtv_channel_reception_demonstrated": false
+  },
+  "atv_teletext_compatibility": {
+    "result": "PASS",
+    "scope": "connected original-firmware teletext with explicit exploratory models",
+    "channel_name_storage_verified": false,
+    "cases": [
+      {
+        "case": "alpha",
+        "dispatches": 2000000003,
+        "reason": "instruction budget exhausted",
+        "covered_pixels": 2073600,
+        "frame_sha256": "76250611353f3edb3a1fdd84d79d5ded26fd2c9ecf5991b59d93efc7ffd3adb5",
+        "frame": "C:\\Users\\micha\\Documents\\Codex\\2026-10-11\\codex-reverse-engineer-and-build-a\\work\\dtv-atv-xram-compatibility\\alpha\\gop_0_d2000000003.bmp"
+      },
+      {
+        "case": "beta",
+        "dispatches": 2000000002,
+        "reason": "instruction budget exhausted",
+        "covered_pixels": 2073600,
+        "frame_sha256": "c24c0bf029dbbcd1f9802fe7a35b5a0e8ed94a51ae8768b3c4e84eb0dc33fa37",
+        "frame": "C:\\Users\\micha\\Documents\\Codex\\2026-10-11\\codex-reverse-engineer-and-build-a\\work\\dtv-atv-xram-compatibility\\beta\\gop_0_d2000000002.bmp"
+      }
+    ]
+  },
+  "connected_diagnostic": {
+    "instruction_dispatches": 2150000003,
+    "reason": "instruction budget exhausted",
+    "vd_mcu_pc": "0x22ce",
+    "vd_mcu_boundary_reason": "MCU unknown register bits consumed through direct IRAM alias",
+    "dvbt_last_requested_mhz": 682,
+    "dvbt_tuner_bandwidth_mhz": 8,
+    "dvbt_fec_software_state": 0,
+    "dvbt_delivered_transport_packets": 0
+  },
+  "connected_assumptions": "Existing diagnostic platform/cache/boot-info hypotheses; ideal RF input; uncalibrated VD divider64",
+  "next_unknown_source": "XDATA2073 read by original MCU2375; invalid byte reaches direct IRAM copy22CE",
+  "channel_reception_demonstrated": false
+}

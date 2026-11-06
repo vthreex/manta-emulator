@@ -2,6 +2,55 @@
 
 ## Latest DTV continuation (2026-11-05/06)
 
+LATEST COMPLETED RESULT: reset retention cold probe work/dtv-rf-clock-64-retain
+completed2150000003 MIPS. Original MCU passes old0368 carry boundary, writes
+FEC23E0=0 ITSELF, then stops22CE MOV R2,06 on invalid data from hardware2073
+(read at2375). Parameters8013/8014 no longer appear as invalid sources.
+No reception claim: FEC0 is unlocked, zero packets delivered. Next investigate
+pure IRAM byte-copy tracking and ownership/meaning of2073; never set it to0
+just to pass arithmetic. Formatting-only paired cold runs matched ALL364
+summary fields and their one exported frame exactly.
+
+Reset-fix final verification COMPLETE:3967 native checks, baseline18/display9,
+auxiliary/clock/forensics/diagnostics/snapshot/clean-PATH suites, full6592741-
+event replay (289 baseline fields+coverage identical), fresh ATV/TTX PASS.
+evidence/dtv-mcu-reset-retention-validation.json records this; no active probes
+or suite drivers remain. No website deployment. Unrelated Sunplus files intact.
+
+NEWEST ROOT CAUSE/FIX (uncommitted, after5aa8a86): divider64 old/filtered
+formatting cold runs both completed2.15B; ALL summary fields identical. Both
+still hit0368 with invalid8013/8014, refuting clock timeout as the whole cause.
+Found host bug: Riu reset release cleared vdPrivateRam_ every time. Original
+MIPS configuration804F4B5C calls CPU reset helper804F4894 AFTER parameter init,
+without rewriting the full table. Native ISR regression now writes parameter13,
+resets through actual board control, and reads via command3. It FAILED before
+removing host XRAM clear, PASSES after. Preserve bytes AND masks across CPU
+reset; fresh board remains invalid. Do not inject parameter values or defaults.
+Static proof now pins original config/loader calls and reset writes.
+
+3967 core checks and13-reply original-MCU probe PASS. Full required suites and
+strict replay running AGAIN for reset repair (work/dtv_validate.py). Native
+cold probe work/dtv-rf-clock-64-retain is running with divider64/actual TS;
+script work/dtv_default_clock.py64 64-retain. Inspect connected outcome before
+claiming acquisition progress. No packets/service discovery/video yet.
+
+AFTER COMMIT5aa8a86: default-divider4 cold probe completed at556784827 MIPS
+with VD instruction budget1B exhausted, BEFORE DTV selection; MCU still runs,
+PC4ECC, no validity boundary. This is a BUDGET result, not a reception result
+or proof/refutation of the mailbox-timeout explanation. Divider1024 is too
+slow to trust short mailbox polling; next paired cold probes use divider64.
+work/dtv-rf-clock-64 = pre-optimization, work/dtv-rf-clock-64-fast = new copy.
+Both run actual TS fixture and original firmware, max2.15B MIPS/1B VD.
+
+New UNCOMMITTED logging-only optimization: instructionTextAt pure observation
+predicate avoids sprintf/disassembly at already-visited VD PCs, whose events
+were already discarded. CPU execution, rollback, validity, ticks and interrupts
+are unchanged. Original-ISR snapshot test compares filtered formatting versus
+full formatting with byte-identical serialized device result.3967 core checks
+and12-reply original ISR probe PASS. Full required suites/replay running again
+(work/dtv_validate.py); do NOT ninja while it runs. Compare paired connected
+summaries/frames before committing performance claim. No DTV deployment.
+
 NEWEST UPDATE (supersedes pending-build notes below):3967 native checks PASS.
 Fresh callback-fix verification is COMPLETE: baseline18, display9, auxiliary,
 clock, forensics, clean-PATH startup, diagnostics and snapshots PASS. Strict

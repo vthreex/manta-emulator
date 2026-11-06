@@ -108,6 +108,9 @@ void Riu::bindVdCallbacks(){
     if(exploratoryVdSharedRun && !vdVisited_.insert(pc).second)return;
     event("vd_mcu_instruction",pc,1,opcode,"original uploaded MCU instruction attempt: "+text+"; standard 8052 reset/RAM experiment, bounded synchronous startup burst");
   };
+  // The shared-run logger emits each PC only once. Avoid formatting discarded
+  // disassembly on every idle-loop iteration; all CPU/validity work still runs.
+  vdMcuCpu_.instructionTextAt=[this](uint16_t pc){return !exploratoryVdSharedRun || !vdVisited_.contains(pc);};
   vdMcuCpu_.external=[this](uint16_t address,bool write,uint8_t value){
     event("vd_mcu_blocked_xdata",address,1,value,
       std::string(write?"write":"read")+" from original VD MCU; MCU PC="+std::to_string(vdMcuCpu_.pc())+"; MStar XDATA-to-RIU/private-memory mapping unverified, no byte fabricated");
@@ -1593,7 +1596,11 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         vdMcuSuspended_=false;vdMcuBoundaryReason_.clear();
         try{
           if(exploratoryVdSharedRun){
-            vdMcuCpu_.standardInterrupts=true;vdFiqMask_={};vdPrivateRam_.fill({});
+            // A CPU reset does not write external RAM. In particular, the
+            // original driver resets the MCU again after loading DSP parameters.
+            // Retain guest-written bytes and their validity; a fresh board's
+            // XRAM is still wholly unknown, never a fabricated zero default.
+            vdMcuCpu_.standardInterrupts=true;vdFiqMask_={};
             vdMcuCpu_.resetProgram(vdMcuProgram_);vdTick_=tick;
           }else vdMcuCpu_.startup(vdMcuProgram_);
         }

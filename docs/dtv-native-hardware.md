@@ -129,6 +129,21 @@ carry at MCU0368. A default-divider4 cold run is checking whether those
 timeouts explain the missing parameters. Neither carry nor parameter RAM is
 initialized by the host to bypass that boundary.
 
+Subsequent divider64 probes still stopped at0368 with invalid parameter bytes;
+therefore the slow-clock timeout hypothesis alone does not explain the failure.
+They exposed a host reset bug: every MCU hold/release erased private XRAM.
+Original MIPS804F4B5C calls reset helper804F4894 during configuration, after the
+loader has written the parameter table. This helper asserts/release CPU reset
+and does not upload the table again. The model now retains guest-written XRAM
+and its masks across CPU resets. Fresh-board RAM remains unknown. An original-
+ISR regression writes a parameter, resets the MCU, then reads it through the
+original handler: it failed before this change and passes afterward.
+
+This follows ordinary 8051 RAM retention and the original driver's dependence
+on it, rather than assuming any power-on contents. A related-family primary
+[8051 datasheet](https://www.keil.com/dd/docs/datashts/silabs/c8051f39x_37x_ds.pdf)
+also documents RAM retention across reset; it is not an exact MStar reset map.
+
 The next connected probe passes native TSP initialization and starts the
 original MHEG5 task through2.1B MIPS dispatches. It exposed and fixed missing
 validity reporting for the existing hardware semaphore owner. This run uses

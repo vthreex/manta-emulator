@@ -80,6 +80,9 @@ int main(int argc,char** argv){try{
     };
     manta::snap::Ar load(saved.data(),saved.size());manta::snap::io(load,*restored);
     check(load.remaining()==0 && deviceState(*restored)==saved,"restoring the native MCU must preserve its complete serialized device state");
+    // Compare optimized first-visit formatting against the original full
+    // formatting path on the same restored guest, including all device bytes.
+    const_cast<manta::VdMcuCpu&>(restored->vdMcuCpu()).instructionTextAt={};
     auto restoredTick=tick;
     const auto exercise=[](manta::Riu& bus,uint64_t& t){
       for(auto command:{2u,1u}){
@@ -103,9 +106,13 @@ int main(int argc,char** argv){try{
     r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x8013,0);
     check(guestReplies==12 && r.read(0x1f224c05,1,0,255,++tick)==0x67,
       "original DSP parameter helper must map index 0x13 into private XRAM 0x8013");
+    w(0,1);w(0,0);r.write(0x1f206700,1,0,0,255,tick+=100000);
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(3,0x13,0);
+    check(guestReplies==13 && r.knownBits(0x1f224c05,1)==255 && r.read(0x1f224c05,1,0,255,++tick)==0x67,
+      "CPU reset must not erase the DSP parameter previously written by the original ISR");
     r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x7000,0);
-    check(r.vdMcuSuspended() && guestReplies==12 && r.read(0x1f224c00,1,0,255,++tick)==1,"unmapped bus access cannot yield a completion");
-    std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original DVB-T MCU; register mapping only, no RF/lock/channel claim\",\"guest_generated_FF_replies\":12,\"original_DSP_parameter_commands_verified\":true,\"unwritten_register_payload_stays_INVALID\":true,\"private_XRAM_payload_stays_INVALID\":true,\"restored_original_ISR_replies\":2,\"continuous_restored_device_bytes_identical\":true,\"unmapped_target_has_no_reply\":true,\"resumed_original_MOVX\":true}\n";
+    check(r.vdMcuSuspended() && guestReplies==13 && r.read(0x1f224c00,1,0,255,++tick)==1,"unmapped bus access cannot yield a completion");
+    std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original DVB-T MCU; register mapping only, no RF/lock/channel claim\",\"guest_generated_FF_replies\":13,\"original_DSP_parameter_commands_verified\":true,\"DSP_parameter_retained_across_CPU_reset\":true,\"unwritten_register_payload_stays_INVALID\":true,\"private_XRAM_payload_stays_INVALID\":true,\"restored_original_ISR_replies\":2,\"continuous_restored_device_bytes_identical\":true,\"unmapped_target_has_no_reply\":true,\"resumed_original_MOVX\":true}\n";
     return 0;
   }
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"original auxiliary firmware diagnostic; no MIPS boot claimed\","

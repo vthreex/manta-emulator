@@ -42,6 +42,10 @@ assert word(0x804f2ff8) == 0x2412002e  # initialize 46 DSP parameter bytes
 assert word(0x804f3008) == 0x0c13cbc5  # original WriteDspReg at804F2F14
 assert word(0x804f2f60) == 0x24030004  # parameter-write command4
 assert word(0x804f2fa4) == 0x10860008  # bounded polling; no sleep in this loop
+assert word(0x804f4b5c) == 0x0c13d225  # configuration calls reset helper804F4894 again
+assert word(0x804f57f4) == 0x0c13d225  # initial code loader calls the same reset helper
+assert word(0x804f48c0) == 0xa0620000  # helper asserts CPU reset
+assert word(0x804f48d8) == 0xa0400000  # helper releases CPU reset
 assert mcu[0x4af5:0x4b07] == bytes.fromhex('12 54 44 12 54 5c 50 0a 90 2f 03 e0 fd 12 54 69 ed f0')
 assert mcu[0x5469:0x5474] == bytes.fromhex('74 00 2f f5 82 e4 34 80 f5 83 22')
 tsp = flash[0x1e7838:0x1ebc40]
@@ -70,6 +74,7 @@ a.report.write_text(json.dumps(dict(result='PASS', scope='static unmodified-firm
     parameter_initializer='original MIPS804F2FD0 writes46 bytes through command4',
     parameter_mapping='original MCU5469 maps DSP index into XDATA8000+index',
     parameter_polling_is_bounded=True,
+    original_configuration_resets_mcu_after_parameter_initialization=True,
     tsp_original_packet_processing_instructions_verified=True,
     tsp_packet_ready_observation='original PC0xe20 reads 0x210214 bit8',
     tsp_section_assembly_should_run_in_original_firmware=True,
