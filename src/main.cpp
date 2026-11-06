@@ -27,7 +27,7 @@ static std::string stateFingerprint(const std::vector<std::string> &args, std::s
   static const std::set<std::string> flags = {"--exploratory-menu-no-autoexit", "--exploratory-gop-black-colorkey-edge", "--exploratory-skip-zui-timers", "--exploratory-gop-black-colorkey", "--save-state-stop", "--exploratory-fast-jit", "--state-digest", "--load-state-allow-extra-options", "--headless", "--window-smoke-test"};
   std::string canonical;
   for (size_t i = 1; i < args.size(); ++i) {
-    if(args[i]=="--exploratory-gop-indexed-preview")continue; // presentation only
+    if(args[i]=="--exploratory-gop-indexed-preview" || args[i]=="--diagnostic-copro-boundary-stop")continue; // presentation/debugger only
     if (valued.count(args[i])) { ++i; continue; }
     if (flags.count(args[i])) continue;
     canonical += args[i];
@@ -146,6 +146,8 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--exploratory-copro-mips-irq")o.exploratoryCoproMipsIrq=std::stoi(value(i),nullptr,0);
       else if (a == "--exploratory-copro-dump-start")o.exploratoryCoproDumpStart=value(i);
       else if (a == "--exploratory-copro-zero-unknown-reads")o.exploratoryCoproZeroUnknown=true;
+      else if (a == "--candidate-copro-riu")o.candidateCoproRiu=true;
+      else if (a == "--diagnostic-copro-boundary-stop")o.diagnosticCoproBoundaryStop=true;
       else if (a == "--opaque-read-policy")o.opaqueReadPolicy=value(i);
       else if (a == "--opaque-policy-wait-ms")o.opaquePolicyWaitMs=std::stoull(value(i),nullptr,0);
       else if (a == "--or1k-no-qmem-trace")o.noOrQmemTrace=true;
@@ -181,6 +183,9 @@ static int appMain(const std::vector<std::string> &args) {
       else if (a == "--defer-vd-sfr8e-write")o.deferVdSfr8eWrite=true;
       else if (a == "--defer-vd-reset-key-writes")o.deferVdResetKeyWrites=true;
       else if (a == "--exploratory-vd-shared-run")o.exploratoryVdSharedRun=true;
+      else if (a == "--exploratory-dvbt-registers")o.exploratoryDvbtRegisters=true;
+      else if (a == "--max-vd-instructions")o.vdBudget=std::stoull(value(i),nullptr,0);
+      else if (a == "--vd-dispatch-divider")o.vdDivider=std::stoull(value(i),nullptr,0);
       else if (a == "--exploratory-vd-suspended-boundary")o.exploratoryVdSuspendedBoundary=true;
       else if (a == "--exploratory-fetch-revision-byte"){
         auto v=std::stoul(value(i),nullptr,0);
@@ -477,6 +482,8 @@ static int appMain(const std::vector<std::string> &args) {
                "--diagnostic-riu-zero-unknown-reads: LABELLED HYPOTHESIS, DIAGNOSTIC ONLY: any never-defined MIPS-visible register reads as 0 (addresses listed in the summary); invalidates strict evidence\n"
                "--exploratory-copro-jpd: EXPLORATORY model of the coprocessor JPEG decoder block (baseline 4:2:0, scale 1/1 and 1/2); unsupported configurations stop it\n"
                "--exploratory-copro-zero-unknown-reads: LABELLED HYPOTHESIS, unknown coprocessor registers read as 0\n"
+               "--candidate-copro-riu: connect the original multimedia CPU to board RIU models with invalid-bit tracking; no blanket-zero reads\n"
+               "--diagnostic-copro-boundary-stop: debugger halt when original multimedia code reaches an unresolved hardware boundary\n"
                "--copro-probes: inspect original multimedia loader output in guest RAM; no processor/reset/status emulation\n"
                "--opaque-read-policy FILE: guarded INVALID observations at exact code/hash/PC/address/width only; no values or readiness\n"
                "--opaque-policy-wait-ms N: debugger freeze of ALL virtual clocks at unmatched reads, maximum300000; default0\n"
@@ -556,6 +563,8 @@ static int appMain(const std::vector<std::string> &args) {
                  "--exploratory-avd-host-request-reset-empty: UNVERIFIED nonretained request-latch hypothesis; actual guest MCU hold clears only command bits 0C; no payload, bank, ready value or completion generated\n"
                  "--diagnostic-avd-deferred-startup-writes: separately retain unresolved original startup configuration writes; assume no asynchronous reset/clock disruption during bounded execution; no readback/status inferred\n"
                  "--avd-dispatch-divider N --max-avd-instructions N: explicit virtual-cycle ratio and original-instruction diagnostic budget\n"
+                 "--max-vd-instructions N: original DVB-T MCU diagnostic instruction budget (default 20000000)\n"
+                 "--vd-dispatch-divider N: UNCALIBRATED diagnostic virtual-cycle ratio (1..4096, default 4); does not supply demodulator status\n"
                  "--candidate-audio-idma: observed 24-bit addressed upload/readback protocol, atomic functional timing; no DSP ISA/ready replies\n"
                  "--exploratory-audio-no-ack: constrain only original ack!=E3 predicate; byte remains INVALID, guest executes finite timeout; not a hardware reset-value/ready model\n"
                  "--exploratory-avd-mcu-startup: bounded original AVD execution under standard 8052 reset hypothesis; unknown XDATA/SFR stops\n"
@@ -564,6 +573,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--defer-vd-sfr8e-write: separate diagnostic write-effect deferral; SFR identity/effects unknown and reads forbidden\n"
                "--defer-vd-reset-key-writes: defer only original AA/55/AA/55 XDATA 1080..1083 writes; effects unverified, no ready response\n"
                "--exploratory-vd-shared-run: original MCU on verified mailbox aliases; provisional divider4, private XRAM and INT0/Timer0 wiring; unknown data consumption stops\n"
+               "--exploratory-dvbt-registers: original DVB-T MCU shared TOP/FEC register mapping; reset/status bits stay unknown\n"
                "--exploratory-vd-suspended-boundary: explicit stalled-MCU experiment; unresolved transaction has no effect/reply; MIPS continues only until unknown inputs\n"
                 "--osd-probes: original ZUI state, graphics context, font renderer and window-creation entry traces\n"
                 "--zui-flow-probes: hash-verified, read-only ZUI state/queue observations; no input or CPU control changes\n"

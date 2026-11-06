@@ -110,6 +110,15 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryVdSharedRun && !o.exploratoryVdMcuStartup)
     throw std::runtime_error("Shared MCU experiment requires original program upload/startup");
   riu_.exploratoryVdSharedRun=o.exploratoryVdSharedRun;
+  if(!o.vdBudget || o.vdBudget>100000000000ull || (o.vdBudget!=20000000 && !o.exploratoryVdSharedRun))
+    throw std::runtime_error("DVB-T MCU diagnostic budget requires shared original execution and must be 1..100000000000");
+  riu_.vdInstructionBudget=o.vdBudget;
+  if(!o.vdDivider || o.vdDivider>4096 || (o.vdDivider!=4 && !o.exploratoryVdSharedRun))
+    throw std::runtime_error("DVB-T MCU diagnostic clock requires shared original execution and divider 1..4096");
+  riu_.vdDispatchDivider=o.vdDivider;
+  if(o.exploratoryDvbtRegisters && !o.exploratoryVdSharedRun)
+    throw std::runtime_error("DVB-T shared register experiment requires original shared MCU execution");
+  riu_.exploratoryDvbtRegisters=o.exploratoryDvbtRegisters;
   if(o.exploratoryVdSuspendedBoundary && (!o.exploratoryVdMcuStartup || !o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("Suspended VD boundary experiment requires original startup and guarded exploration");
   riu_.exploratoryVdSuspendedBoundary=o.exploratoryVdSuspendedBoundary;
@@ -211,6 +220,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryCopro){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("coprocessor execution requires guarded exploration");
   }
+  if(o.candidateCoproRiu && !o.exploratoryCopro)throw std::runtime_error("coprocessor RIU bridge requires original coprocessor execution");
+  if(o.candidateCoproRiu && o.exploratoryCoproZeroUnknown)throw std::runtime_error("coprocessor RIU bridge refuses blanket-zero register diagnostics");
   if(!o.exploratoryUsbPendrive.empty()){
     if(!o.symbolicInit || !o.deferDiagnosticReads)throw std::runtime_error("USB pendrive attach requires guarded exploration");
     riu_.usbDeviceAttachedPort0=true;
@@ -480,7 +491,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     copro_.mailRead=[this](uint32_t a,uint8_t& v){return riu_.coproPeekByte(a,v);};
     copro_.mailWrite=[this](uint32_t a,uint8_t v){riu_.coproPokeByte(a,v);};
     copro_.ramWritten=[this](uint32_t a,size_t n){preservedBits_.overwriteKnownMemory(a,n);unknownObservations_.overwriteKnownMemory(a,n);};
-    copro_.event=[this](const std::string& k,uint32_t a,unsigned n,uint32_t v,const std::string& d){event(k,a,n,v,d);};
+    copro_.event=[this](const std::string& k,uint32_t a,unsigned n,uint32_t v,const std::string& d){
+      event(k,a,n,v,d);
+      if(options_.diagnosticCoproBoundaryStop && k=="copro_stop")stop("coprocessor hardware boundary: "+d,a);
+    };
     riu_.coproNotify=[this](uint32_t a,unsigned n,uint32_t v){
       if(a<=0x1f201fe0u && uint64_t(a)+n>0x1f201fe0u){
         uint32_t ctl=(v>>(8*(0x1f201fe0u-a)))&255;
@@ -652,6 +666,40 @@ void Msd309Machine::attachCopro() {
   copro_.seqHi = options_.exploratoryCoproSeqHi;
   copro_.ram = dramBacking_.data();
   copro_.ramSize = ramSize;
+  if(options_.candidateCoproRiu){
+    copro_.trackUnknown=true;copro_.rebind();
+    copro_.deferIdentityCache=options_.deferPlatformIdentity;
+    copro_.identityObservation=[this](uint32_t off,unsigned n){
+      uint32_t value=0;for(unsigned i=0;i<n;++i)value|=uint32_t(riu_.liveGet(0x1f200000u+off+i))<<(i*8);
+      event("deferred_copro_platform_identity",0x1f200000u+off,n,0,"INVALID original straight-line cache observation; no identity bits or authorization result supplied");
+      return value;
+    };
+    copro_.ramKnown=[this](uint32_t address,unsigned n){return unknownObservations_.memoryKnown(address,n);};
+    copro_.ramUnknown=[this](uint32_t address,unsigned n,uint32_t origin){unknownObservations_.markMemoryUnknown(address,n,origin);};
+    copro_.peripheralRead=[this](uint32_t off,unsigned n)->std::optional<uint32_t>{
+      const auto physical=0x1f200000u+off;
+      const uint32_t full=n==4?0xffffffffu:(1u<<(n*8))-1;
+      const auto known=riu_.knownBits(physical,n)&full;
+      if(known!=full && (off==0x198 || off==0x19c))return {};
+      const auto previous=riu_.stopReason;riu_.stopReason.clear();
+      try{
+        if(known!=full)riu_.prepareOpaqueRead(physical);
+        const auto value=riu_.read(physical,n,copro_.pc(),full,virtualTime_.cycles(dispatches_));
+        const auto failure=riu_.stopReason;riu_.stopReason=previous;
+        if(!failure.empty())throw std::runtime_error("coprocessor RIU: "+failure);
+        return value;
+      }catch(...){riu_.stopReason=previous;throw;}
+    };
+    copro_.peripheralKnown=[this](uint32_t off,unsigned n){return riu_.knownBits(0x1f200000u+off,n);};
+    copro_.peripheralWrite=[this](uint32_t off,unsigned n,uint32_t value){
+      riu_.write(0x1f200000u+off,n,value,copro_.pc(),n==4?0xffffffffu:(1u<<(n*8))-1,virtualTime_.cycles(dispatches_));
+    };
+    copro_.peripheralWriteKnown=[this](uint32_t off,unsigned n,uint32_t value,uint32_t known){
+      const auto full=n==4?0xffffffffu:(1u<<(n*8))-1;
+      riu_.preparePreservedWrite(0x1f200000u+off,n,full&~known);
+      riu_.write(0x1f200000u+off,n,value,copro_.pc(),known,virtualTime_.cycles(dispatches_));
+    };
+  }
 }
 void Msd309Machine::startCopro(uint32_t riuAddress) {
   const size_t ramSize = std::min<size_t>(dramBacking_.size(), 0x08000000);
@@ -3265,7 +3313,9 @@ std::string Msd309Machine::summary() const {
     s<<"], \"io_log\": ["; {bool f=true; for(auto& kv:copro_.ioLog){s<<(f?"":", ")<<"[\""<<hex(kv.first)<<"\", "<<kv.second.reads<<", "<<kv.second.writes<<", \""<<hex(kv.second.last)<<"\", \""<<hex(kv.second.firstPc)<<"\"]"; f=false;}}
     s<<"], \"mail_log\": [";
     for(size_t i=0;i<copro_.mailLog.size();++i)s<<(i?", ":"")<<"\""<<jsonText(copro_.mailLog[i])<<"\"";
-    s<<"], \"uart\": \""<<jsonText(copro_.uart)<<"\"}";
+    s<<"], \"uart\": \""<<jsonText(copro_.uart)<<"\"";
+    if(options_.candidateCoproRiu)s<<", \"shared_riu\": true, \"invalid_bit_tracking\": true, \"deferred_identity_reads\": "<<copro_.deferredIdentityReads;
+    s<<"}";
   }
   if(!options_.exploratoryUsbPendrive.empty()){
     auto& u=riu_.usbHost;
@@ -3406,6 +3456,9 @@ std::string Msd309Machine::summary() const {
     <<",\n  \"vd_mcu_upstream_ticks\": "<<riu_.vdMcuCpu().cycles()<<",\n  \"vd_mcu_pc\": \""<<hex(riu_.vdMcuCpu().pc())<<"\",\n  \"vd_mcu_stack\": "<<unsigned(riu_.vdMcuCpu().stack());
   if(options_.deferVdSfr8eWrite)s<<",\n  \"deferred_vd_sfr8e_write_enabled\": true";
   if(options_.deferVdResetKeyWrites)s<<",\n  \"deferred_vd_reset_key_writes_enabled\": true";
+  if(options_.exploratoryDvbtRegisters)s<<",\n  \"exploratory_dvbt_shared_registers\": true,\n  \"dvbt_register_reset_defaults_supplied\": false";
+  if(options_.vdBudget!=20000000 || options_.vdDivider!=4)s<<",\n  \"vd_diagnostic_instruction_budget\": "<<options_.vdBudget
+    <<",\n  \"vd_diagnostic_dispatch_divider\": "<<options_.vdDivider<<",\n  \"vd_clock_ratio_hardware_verified\": false";
   if(options_.exploratoryVdSharedRun)s<<",\n  \"exploratory_vd_shared_run\": true"
     <<",\n  \"vd_mcu_total_instructions\": "<<riu_.vdMcuCpu().totalInstructions()
     <<",\n  \"vd_mcu_interrupt_entries\": "<<riu_.vdMcuCpu().interruptEntries()

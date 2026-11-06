@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include "peripherals/riu.hpp"
+#include "peripherals/dvbt_registers.hpp"
 #include "video/ge_stretch_request.hpp"
 #include "video/ge_uniform_stretch.hpp"
 #include "video/ge_i2_glyph.hpp"
@@ -109,21 +110,42 @@ std::optional<VdByte> Riu::vdRead(uint16_t address){
     if(v.known!=255)throw VdHardwareBoundary("VD MCU version byte read before original initialization");
     return VdByte{v.value,v.known,address};
   }
+  if(exploratoryDvbtRegisters)if(auto physical=dvbtSharedAddress(address)){
+    return VdByte{uint8_t(get(*physical,1)),uint8_t(knownBits(*physical,1)),address};
+  }
   if(address==0x1b10)return VdByte{uint8_t(vdMcuProgram_.interruptPending?4:0),4,address};
   if(address>=0x8000 && address<0x8400){
     auto v=vdPrivateRam_[address-0x8000];
-    if(v.known!=255)throw VdHardwareBoundary("VD MCU private XRAM read before original initialization");
+    if(v.known!=255 && !exploratoryDvbtRegisters)throw VdHardwareBoundary("VD MCU private XRAM read before original initialization");
     return VdByte{v.value,v.known,address};
   }
   return {};
 }
 bool Riu::vdWrite(uint16_t address,VdByte v){
-  if(v.known!=255 && v.origin!=address)
+  // The original RPC handler copies register data through mailbox DATA and
+  // back into the addressed configuration byte. Transporting INVALID data is
+  // not a known hardware response: retain its mask exactly. No control/IRQ or
+  // software FEC state is supplied, and unmapped transactions still stop.
+  const bool registerDataCopy=exploratoryDvbtRegisters &&
+    (dvbtSharedAddress(address).has_value() || (address>=0x8000 && address<0x8400) ||
+     (address==0x2f03 && (dvbtSharedAddress(v.origin).has_value() || (v.origin>=0x8000 && v.origin<0x8400))));
+  if(v.known!=255 && v.origin!=address && !registerDataCopy){
+    if(exploratoryDvbtRegisters){
+      char detail[180];std::snprintf(detail,sizeof(detail),"VD MCU unknown bits stored to foreign XDATA origin: pc=%04x target=%04x value=%02x known=%02x origin=%04x",vdMcuCpu_.pc(),address,v.value,v.known,v.origin);
+      throw VdHardwareBoundary(detail);
+    }
     throw VdHardwareBoundary("VD MCU unknown bits stored to foreign XDATA origin");
+  }
   if((address==0x2071 || address==0x2072) && v.known==255){
     vdVersionBytes_[address-0x2071]={v.value,255};
     event("vd_firmware_version_write",address,1,v.value,
       "original MOVC at 5513/5514 publishes firmware-owned version bytes; no ready/status inference or reset default");
+    return true;
+  }
+  if(exploratoryDvbtRegisters)if(auto physical=dvbtSharedAddress(address)){
+    bytes_[*physical]={v.value,v.known};
+    event("exploratory_dvbt_shared_register_write",*physical,1,v.value,
+      "original DVB-T MCU register write; provisional XDATA/RIU storage mapping; known="+std::to_string(v.known)+"; no reset/lock/ready response supplied");
     return true;
   }
   if(address>=0x2f00 && address<0x2f20){
@@ -143,9 +165,11 @@ bool Riu::vdWrite(uint16_t address,VdByte v){
     event("vd_fiq_clear",address,1,v.value,"original MCU ISR clears only the observed host-request bit2; no mailbox completion synthesized");
     return true;
   }
-  if(address>=0x8000 && address<0x8400 && v.known==255){
-    vdPrivateRam_[address-0x8000]={v.value,255};
-    event("vd_private_xram_write",address,1,v.value,"original MCU initialized private data; inferred 8000..83FF span is experimental, unwritten reads stop");
+  if(address>=0x8000 && address<0x8400 && (v.known==255 || exploratoryDvbtRegisters)){
+    vdPrivateRam_[address-0x8000]={v.value,v.known};
+    event("vd_private_xram_write",address,1,v.value,exploratoryDvbtRegisters?
+      "original MCU private data copy; source invalid bits retained, never a known hardware response":
+      "original MCU initialized private data; inferred 8000..83FF span is experimental, unwritten reads stop");
     return true;
   }
   return false;
@@ -659,6 +683,8 @@ std::string Riu::geRegisterFile() const {
   return out;
 }
 uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
+  if(candidateSemaphore && HardwareSemaphore::aperture(a) && !(a&3) && n==2)
+    return semaphore_.owner(a,n).has_value()?0xffff:0;
   if(candidatePmIrFifo_ && n==1 && a==0x1f007b51)return pmIrFifo_.key().has_value()?255:0;
   if(candidateAudioIdma && (a>=0x1f225a00 && a<0x1f225d00)){
     const auto base=a>=0x1f225c00?0x1f225c00u:0x1f225a00u;

@@ -323,6 +323,12 @@ public:
   bool exploratoryVdSuspendedBoundary=false;
   bool deferVdResetKeyWrites=false;
   bool exploratoryVdSharedRun=false;
+  bool exploratoryDvbtRegisters=false; // opt-in shared register storage; no reset/lock/completion defaults
+  bool resumeDvbtRegisterAccess(uint64_t tick){
+    if(!exploratoryDvbtRegisters || !vdMcuSuspended_)return false;
+    if(!vdMcuCpu_.resumePendingMovx())return false;
+    vdMcuSuspended_=false;vdMcuBoundaryReason_.clear();vdTick_=tick;return true;
+  }
   uint64_t vdDispatchDivider=4,vdInstructionBudget=20000000;
   uint64_t vdMailboxReads()const{return vdMailboxReads_;}
   uint64_t vdMailboxWrites()const{return vdMailboxWrites_;}

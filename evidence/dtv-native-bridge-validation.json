@@ -1,0 +1,57 @@
+{
+  "result": "PASS",
+  "scope": "original processor execution and validity plumbing; DTV RF reception not implemented",
+  "native_checks": 3931,
+  "suite_results": {
+    "firmware": 0,
+    "display": 0,
+    "clock_profile": 0,
+    "avd_firmware": 0,
+    "vd_firmware": 0,
+    "pm51_firmware": 0,
+    "copro_firmware": 0,
+    "diagnostic_options": 0,
+    "window_preview": 0,
+    "snapshot": 0,
+    "native": 0,
+    "forensics": 0,
+    "dtv_static": 0,
+    "dtv_original_mcu": 0,
+    "strict-replay": 2
+  },
+  "strict_replay": {
+    "events": 6592741,
+    "reference_fields": 289,
+    "differences": [],
+    "coverage_identical": true,
+    "dispatches": 854795171
+  },
+  "original_vd_probe": {
+    "guest_generated_replies": 7,
+    "register_and_private_ram_unknown_masks_preserved": true,
+    "unmapped_access_stops_without_reply": true
+  },
+  "connected_diagnostic": {
+    "mips_dispatches": 2100000004,
+    "reason": "instruction budget exhausted",
+    "copro_started": true,
+    "copro_stopped": false,
+    "copro_last_image_instructions": 238747648,
+    "copro_starts": 3,
+    "copro_blanket_zero_reads": 0,
+    "original_tsp_init_uart": true,
+    "original_mheg_task_uart": true,
+    "vd_boundary": "VD MCU unknown XDATA bits affect instruction/decision/address",
+    "diagnostic_vd_dispatch_divider": 1024,
+    "explicit_unverified_register_hypotheses": [
+      "1F203D98/99=18/00",
+      "1F207844 bit0=1",
+      "1F205700/01=0"
+    ],
+    "digital_signal_received": false,
+    "host_channel_database_added": false
+  },
+  "emulator_sha256": "6c444d774b3cec3809f527f7a8ea29f88b9602fa2abef14e23743e0110cff448",
+  "native_emulator_sha256": "71e3c47bdf6c516decd65904da2ba3499cf080e8246f010dc658f4885a304e39",
+  "firmware_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9"
+}

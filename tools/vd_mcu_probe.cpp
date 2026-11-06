@@ -6,7 +6,8 @@
 #include <iterator>
 static void check(bool condition,const char* message){if(!condition)throw std::runtime_error(message);}
 int main(int argc,char** argv){try{
-  check(argc==2,"supply the original 22026-byte MCU payload; this is an auxiliary-only diagnostic");
+  const bool registers=argc==3 && std::string(argv[2])=="--register-bus";
+  check(argc==2 || registers,"supply the original 22026-byte MCU payload [--register-bus]; this is an auxiliary-only diagnostic");
   std::ifstream file(argv[1],std::ios::binary);
   std::vector<uint8_t> code(std::istreambuf_iterator<char>(file),{});
   check(code.size()==22026 && manta::sha256(code)=="2bdb82e863899ea863f63bb4596235615c8f5aa5f77bdc465bec2d465bde22a5","original MCU size/hash mismatch");
@@ -32,10 +33,11 @@ int main(int argc,char** argv){try{
   r.write(0x1f206700,1,0,0,255,tick+=100000);
   check(r.vdMcuCpu().running() && guestIdleWrites==1 && r.knownBits(0x1f224c38,1)==255,
     "original MCU must initialize shared idle status and run its own main loop");
-  auto transaction=[&](unsigned command,unsigned address,unsigned value){
+  auto transaction=[&](unsigned command,unsigned address,unsigned value,unsigned known=255){
     r.write(0x1f224c04,1,address>>8,0,255,++tick);
     r.write(0x1f224c01,1,address&255,0,255,++tick);
-    r.write(0x1f224c05,1,value,0,255,++tick);r.write(0x1f224c00,1,command,0,255,++tick);
+    if(known!=255)r.preparePreservedWrite(0x1f224c05,1,255&~known);
+    r.write(0x1f224c05,1,value,0,known,++tick);r.write(0x1f224c00,1,command,0,255,++tick);
     w(5,2);w(5,0);r.write(0x1f206700,1,0,0,255,tick+=4000);
   };
   transaction(2,0x83ab,0x34);
@@ -47,6 +49,32 @@ int main(int argc,char** argv){try{
   r.write(0x1f224c00,1,0,0,255,++tick);transaction(2,0x2200,0xff);
   check(r.vdMcuSuspended() && !r.vdMcuCpu().running() && r.read(0x1f224c00,1,0,255,++tick)==2 && guestReplies==2,
     "unmapped hardware transaction cannot yield a fabricated completion");
+  if(registers){
+    r.symbolicInit=true; // retain deliberately invalid host DATA in the isolated private-RAM copy check
+    const auto before=r.vdMcuCpu().totalInstructions();
+    r.exploratoryDvbtRegisters=true;
+    check(r.knownBits(0x1f224400,1)==0,"enabling register bus must not create reset values");
+    check(r.resumeDvbtRegisterAccess(tick),"pending original MOVX can resume when its bus is attached");
+    r.write(0x1f206700,1,0,0,255,tick+=4000);
+    check(r.vdMcuCpu().totalInstructions()>before && r.read(0x1f224c00,1,0,255,++tick)==255 && guestReplies==3,
+      "original ISR alone acknowledges resumed software write");
+    check(r.read(0x1f224400,1,0,255,++tick)==255,"original MCU write reaches the shared MIPS register byte");
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x2200,0);
+    check(r.read(0x1f224c05,1,0,255,++tick)==255 && guestReplies==4,"original read handler returns the actual stored register value");
+    check(r.knownBits(0x1f224401,1)==0,"adjacent unwritten register stays unknown");
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x2201,0);
+    check(guestReplies==5 && r.knownBits(0x1f224c05,1)==0 && r.read(0x1f224c00,1,0,255,++tick)==255,"original RPC may transport an opaque byte but cannot promote any of its bits to known");
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(2,0x83ac,0xa5,0);
+    if(guestReplies!=6)std::cerr<<"private store: replies="<<guestReplies<<" pc="<<std::hex<<r.vdMcuCpu().pc()<<" boundary="<<r.vdMcuBoundaryReason()<<'\n';
+    check(guestReplies==6,"original MCU may cache invalid data in its own private XRAM");
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x83ac,0);
+    if(guestReplies!=7 || r.knownBits(0x1f224c05,1)!=0)std::cerr<<"private round trip: replies="<<guestReplies<<" known="<<r.knownBits(0x1f224c05,1)<<" boundary="<<r.vdMcuBoundaryReason()<<'\n';
+    check(guestReplies==7 && r.knownBits(0x1f224c05,1)==0,"private XRAM round trip cannot turn invalid register data into known bits");
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x7000,0);
+    check(r.vdMcuSuspended() && guestReplies==7 && r.read(0x1f224c00,1,0,255,++tick)==1,"unmapped bus access cannot yield a completion");
+    std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original DVB-T MCU; register mapping only, no RF/lock/channel claim\",\"guest_generated_FF_replies\":7,\"unwritten_register_payload_stays_INVALID\":true,\"private_XRAM_payload_stays_INVALID\":true,\"unmapped_target_has_no_reply\":true,\"resumed_original_MOVX\":true}\n";
+    return 0;
+  }
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"original auxiliary firmware diagnostic; no MIPS boot claimed\","
     <<"\"original_sha256\":\""<<manta::sha256(code)<<"\",\"verified_upload_bytes\":"<<code.size()
     <<",\"original_instructions\":"<<r.vdMcuCpu().totalInstructions()<<",\"first_visit_opcodes_verified\":"<<traced

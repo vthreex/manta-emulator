@@ -18,6 +18,7 @@ public:
   std::function<uint32_t(uint32_t addr, unsigned size)> read;
   std::function<void(uint32_t addr, unsigned size, uint32_t value)> write;
   std::function<void(const std::string&)> log;      // optional diagnostics
+  std::function<void(uint32_t,uint32_t)> beforeInstruction; // optional validity observer, never changes architectural values
   bool bigEndian = false;                           // data accesses (instruction words are always fetched little-endian from the image)
 
   static constexpr uint32_t kSM = 1u << 0, kTEE = 1u << 1, kIEE = 1u << 2, kF = 1u << 9, kCY = 1u << 10, kOV = 1u << 11, kDSX = 1u << 13, kEPH = 1u << 14;
@@ -58,6 +59,7 @@ public:
     bool wasDelay = delayActive_;
     delayActive_ = false;
     bool jumped = false; uint32_t target = 0;
+    if(beforeInstruction)beforeInstruction(cur,w);
     exec(w, cur, wasDelay ? branchPc_ : cur, jumped, target);
     if (halted_) return false;
     if (exceptionTaken_) { exceptionTaken_ = false; return true; }

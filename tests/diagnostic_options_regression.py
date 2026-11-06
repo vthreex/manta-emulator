@@ -39,6 +39,12 @@ for name, extra, text in (
     ('rpt-latch-needs-pm-ir-fifo', ['--exploratory-pm-ir-rpt-latch'], 'requires the PM IR FIFO'),
     ('ir-script-rejects-garbage', ['--ir-script', 'abc'], ''),
     ('nor-write-needs-candidate-spi', ['--candidate-spi-nor-write'], 'requires the candidate SPI model'),
+    ('dvbt-registers-need-native-mcu', ['--exploratory-dvbt-registers'], 'requires original shared MCU execution'),
+    ('copro-riu-needs-original-cpu', ['--candidate-copro-riu'], 'requires original coprocessor execution'),
+    ('vd-budget-needs-shared-run', ['--max-vd-instructions', '20000001'], 'requires shared original execution'),
+    ('vd-budget-must-be-positive', ['--max-vd-instructions', '0'], 'requires shared original execution'),
+    ('vd-clock-needs-shared-run', ['--vd-dispatch-divider', '4096'], 'requires shared original execution'),
+    ('vd-clock-must-be-positive', ['--vd-dispatch-divider', '0'], 'requires shared original execution'),
     ('restore-branch-needs-nor-write', ['--diagnostic-restore-by-identity-branch'], 'requires guarded exploration and the SPI NOR write model'),
 ):
     r = run(extra)

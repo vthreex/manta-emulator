@@ -45,6 +45,13 @@ public:
     uint32_t a = ea & 0x1fffffff;
     return !maybeByte(a) && !maybeByte((a + width - 1) & 0x1fffffff);
   }
+  // Exact query after the negative page filter says "possibly unknown".
+  // A known pointer sharing a page with an opaque cached value stays known.
+  bool memoryKnown(uint32_t ea,unsigned width)const{
+    if(memoryClean(ea,width))return true;
+    for(unsigned i=0;i<width;++i)if(bytes_.contains((ea+i)&0x1fffffff))return false;
+    return true;
+  }
   void restored() { pageMaybe_.reset(); for (auto& kv : bytes_) noteByte(kv.first); unknownMask_ = 0; for (unsigned r = 0; r < 32; ++r) if (registers_[r]) unknownMask_ |= 1u << r; }   // after the snapshot loader rewrote bytes_
   void markRegisterKnown(unsigned reg){ registers_.at(reg)=false; unknownMask_ &= ~(1u << reg); timingRegisters_[reg]=false; clockOrigins_[reg]=0; }
   // False proves no byte of the range is tracked (page filter); true means some page may hold one.

@@ -411,6 +411,11 @@ struct VdMcuCpu::Impl {
         opcode==0x12 || (opcode&0x1f)==0x11 || opcode==0x80 || opcode==0x90 ||
         opcode==0xa3 || opcode==0xf0 || opcode==0xc0 || opcode==0xd0 || opcode==0xc3 || opcode==0xd3 ||
         opcode==0x40 || opcode==0x50 || partialPermutation || directImmediateLogical;
+      // INC/DEC Rn do not consume ACC or set arithmetic flags. The usesRn
+      // guard above has already required a fully known register operand.
+      // An opaque byte waiting in ACC therefore remains opaque data while
+      // the original code adjusts an independent private-RAM pointer.
+      if((opcode>=0x08 && opcode<=0x0f) || (opcode>=0x18 && opcode<=0x1f))independent=true;
       if(opcode==0x54 || opcode==0x44 || opcode==0x64){
         auto bits=cpu->mCodeMem[uint16_t(pc+1)];
         if(opcode!=0x64)m.aKnown|=opcode==0x54?uint8_t(~bits):bits;
@@ -588,6 +593,15 @@ void VdMcuCpu::requestInt0(){
   impl_->context.cpu.mSFR[REG_TCON]|=TCONMASK_IE0;
 }
 bool VdMcuCpu::running()const{return impl_->running;}
+bool VdMcuCpu::resumePendingMovx(){
+  auto& m=*impl_;if(m.running)return false;
+  const auto opcode=m.context.cpu.mCodeMem[m.context.cpu.mPC];
+  // MOVX invokes the bus before changing PC or its destination. A rejected
+  // access has no architectural effect; retry exactly that instruction after
+  // a newly attached device provides the bus. Never resume other boundaries.
+  if(opcode!=0xe0 && opcode!=0xf0 && opcode!=0xe2 && opcode!=0xe3 && opcode!=0xf2 && opcode!=0xf3)return false;
+  m.running=true;return true;
+}
 uint64_t VdMcuCpu::totalInstructions()const{return impl_->total;}
 uint64_t VdMcuCpu::interruptEntries()const{return impl_->interrupts;}
 void VdMcuCpu::startup(VdMcuProgram& program,uint64_t budget){

@@ -4,6 +4,8 @@
 #include "cpu/mcu_value_mask.hpp"
 #include "board/zui_flow.hpp"
 #include "peripherals/riu.hpp"
+#include "peripherals/copro.hpp"
+#include "peripherals/dvbt_registers.hpp"
 #include "storage/flash.hpp"
 #include "storage/sha256.hpp"
 #include "board/unknown_observations.hpp"
@@ -1074,11 +1076,13 @@ void preservedRegisterRestoreTests() {
 }
 void semaphoreTests() {
   manta::Riu r;r.event=[](auto&&,auto,auto,auto,auto&&){};r.candidateSemaphore=true;
+  require(r.knownBits(0x1f203004,2)==0,"unknown semaphore ownership stays invalid through a connected CPU bridge");
   r.read(0x1f203008,2,0,0,0);
   require(!r.stopReason.empty(),"resource ID reset is unknown, never universal zero");r.stopReason.clear();
   r.write(0x1f203004,2,2,0,0,0);
   require(!r.stopReason.empty() && r.semaphoreAcquisitions()==0,"unknown owner cannot be claimed by overwriting storage");r.stopReason.clear();
   r.write(0x1f203004,2,0,0,0,0);r.write(0x1f203004,2,2,0,0,0);
+  require(r.knownBits(0x1f203004,2)==0xffff,"semaphore validity comes from its actual owner state after release/acquire, not ordinary register storage");
   require(r.read(0x1f203004,2,0,0,0)==2 && r.semaphoreAcquisitions()==1,"original reset then acquire defines an owner causally");
   r.write(0x1f203004,2,3,0,0,0);
   require(r.read(0x1f203004,2,0,0,0)==2 && r.semaphoreContentions()==1,"competing ID cannot steal an acquired semaphore");
@@ -1256,7 +1260,96 @@ void htotalBranchJoinTests(){
 #include "spi_nor_program_tests.inc"
 #include "usb_host_tests.inc"
 #include "pal_cvbs_tests.inc"
+void coproValidityTests(){
+  manta::UnknownObservations memory;
+  memory.markMemoryUnknown(0x154b44,4,0x1f200198);
+  require(!memory.memoryKnown(0x154b44,4) && memory.memoryKnown(0x154b78,4),"validity queries distinguish a cached opaque value from known pointers in the same page");
+  std::vector<uint8_t> ram(0x1000);
+  uint32_t words[]={0x1860a020,0xa8633290,0x94830000,0xa8840002,0xdc032000,
+    0x94a30000,0xa4a50002,0xbc050002,0xa8c00300,0xdc062800};
+  std::memcpy(ram.data()+0x100,words,sizeof(words));
+  manta::Copro cp;cp.ram=ram.data();cp.ramSize=ram.size();cp.trackUnknown=true;
+  cp.start();cp.run(10);
+  require(!cp.stopped && ram[0x300]==2,"original CPU read/OR/write preserves unknown mask bits while a later masked bit read is known");
+  words[6]=0x15000000;std::memcpy(ram.data()+0x100,words,sizeof(words));ram[0x300]=0;
+  cp.start();cp.run(10);
+  require(cp.stopped && cp.stopReason.find("comparison")!=std::string::npos && ram[0x300]==0,"unmasked invalid bits cannot choose a coprocessor branch or publish a result");
+  {
+    const uint32_t mailbox[]={0x1860a020,0xa86367bc,0x94830000,0xa484000f,0xbc040001};
+    std::memcpy(ram.data()+0x100,mailbox,sizeof(mailbox));
+    manta::Copro mail;mail.ram=ram.data();mail.ramSize=ram.size();mail.trackUnknown=true;
+    mail.mailRead=[](uint32_t a,uint8_t& v){v=1;return a==0x1f2067bc;};
+    mail.peripheralRead=[](uint32_t,unsigned)->std::optional<uint32_t>{return 0xa5;};
+    mail.peripheralKnown=[](uint32_t,unsigned){return 0u;};mail.start();mail.run(5);
+    require(!mail.stopped,"native mailbox role selection consumes the known low nibble without inventing the unwritten high byte");
+    const uint32_t noop=0x15000000;std::memcpy(ram.data()+0x10c,&noop,4);mail.start();mail.run(5);
+    require(mail.stopped && mail.stopReason.find("comparison")!=std::string::npos,"an unmasked undefined mailbox byte cannot affect a native comparison");
+  }
+  {
+    const uint32_t copy[]={0x1860a020,0xa8631000,0x84830000,0xa8c00300,0xd4062000,0x84a60000,0xa4a50000,0xbc050000};
+    std::memcpy(ram.data()+0x100,copy,sizeof(copy));
+    manta::UnknownObservations validity;
+    manta::Copro cache;cache.ram=ram.data();cache.ramSize=ram.size();cache.trackUnknown=true;
+    cache.peripheralRead=[](uint32_t,unsigned)->std::optional<uint32_t>{return 0xdeadbeef;};
+    cache.peripheralKnown=[](uint32_t,unsigned){return 0u;};
+    cache.ramKnown=[&](uint32_t a,unsigned n){return validity.memoryKnown(a,n);};
+    cache.ramWritten=[&](uint32_t a,size_t n){validity.overwriteKnownMemory(a,n);};
+    cache.ramUnknown=[&](uint32_t a,unsigned n,uint32_t o){validity.markMemoryUnknown(a,n,o);};
+    cache.start();cache.run(8);
+    require(!cache.stopped && !validity.memoryKnown(0x300,4),"opaque device data can be cached but remains invalid through RAM copies");
+    uint32_t noop=0x15000000;std::memcpy(ram.data()+0x118,&noop,4);cache.start();cache.run(8);
+    require(cache.stopped && cache.stopReason.find("comparison")!=std::string::npos,"a cached opaque value cannot become a known comparison operand");
+    cache.start();cache.run(3);
+    std::vector<uint8_t> state;manta::snap::Ar save(state);cache.serialize(save);cache.knownSnapshot(save);
+    manta::Copro resumed;resumed.ram=ram.data();resumed.ramSize=ram.size();resumed.trackUnknown=true;
+    manta::snap::Ar restore(state.data(),state.size());resumed.serialize(restore);resumed.knownSnapshot(restore);resumed.run(5);
+    require(resumed.stopped && resumed.stopReason.find("comparison")!=std::string::npos,"restoring a coprocessor snapshot cannot turn an opaque register into a known value");
+    const uint32_t rmw[]={0x1860a020,0xa8631000,0x84830000,0xa8840001,0xd4032000};
+    std::memcpy(ram.data()+0x100,rmw,sizeof(rmw));unsigned partialWrites=0;
+    cache.peripheralWriteKnown=[&](uint32_t off,unsigned n,uint32_t value,uint32_t known){
+      require(off==0x1000 && n==4 && (value&1) && known==1,"same-origin RMW publishes only its actually determined bit");++partialWrites;};
+    cache.start();cache.run(5);
+    require(!cache.stopped && partialWrites==1,"unknown register bits survive an original same-register configuration update");
+    const uint32_t foreign[]={0x1860a020,0xa8631000,0x84830000,0xa8840001,0xa8631004,0xd4032000};
+    std::memcpy(ram.data()+0x100,foreign,sizeof(foreign));cache.start();cache.run(6);
+    require(cache.stopped && partialWrites==1 && cache.stopReason.find("foreign peripheral")!=std::string::npos,"opaque data cannot be carried into another device register");
+    const uint32_t sharedCopy[]={0x1860a020,0xa8631000,0x84830000,0xa8840001,0xa8c00300,0xd4062000,0x84a60000,0xa4a50001,0xbc050001};
+    std::memcpy(ram.data()+0x100,sharedCopy,sizeof(sharedCopy));cache.start();cache.run(6);
+    require(!cache.stopped,"partial data may be stored in shared RAM without making a decision");
+    validity.markMemoryUnknown(0x300,4,0x1f200200); // another CPU caches a new invalid observation; concrete bytes may match
+    cache.run(3);
+    require(cache.stopped && cache.stopReason.find("comparison")!=std::string::npos,"another CPU's invalid store cannot inherit stale known bits from the coprocessor's previous partial RAM value");
+  }
+  manta::Or1kObservations observations;
+  const auto reg=[](unsigned){return 0u;};
+  observations.begin(0x94670000,reg,false);observations.loaded(0xfffe);
+  require(observations.known(3)==0xfffffffeu,"zero-extended halfword keeps its uninitialised low bit invalid");
+  observations.begin(0xa8630001,reg,false);
+  require(observations.known(3)==0xffffffffu,"setting the sole unknown bit produces a fully known result");
+  observations.begin(0x94670000,reg,false);observations.loaded(0);
+  bool rejected=false;try{observations.begin(0xbc030000,reg,false);}catch(const std::runtime_error&){rejected=true;}
+  require(rejected,"unknown comparisons are rejected before architectural execution");
+  std::vector<uint8_t> snapshot;manta::snap::Ar out(snapshot);observations.serialize(out);
+  manta::Or1kObservations restored;manta::snap::Ar in(snapshot.data(),snapshot.size());restored.serialize(in);
+  require(restored.known(3)==observations.known(3),"coprocessor register validity survives serialization");
+}
 void vbiSlotTests() {
+  {
+    std::vector<uint8_t> ram(0x1000);
+    const uint32_t program[]={0x1860a020,0xa8632400,0x94830000,0xdc032000};
+    std::memcpy(ram.data()+0x100,program,sizeof(program));
+    manta::Copro cp;cp.ram=ram.data();cp.ramSize=ram.size();unsigned reads=0,writes=0;
+    cp.peripheralRead=[&](uint32_t off,unsigned n)->std::optional<uint32_t>{require(off==0x2400 && n==2,"coprocessor bridge uses the actual RIU byte address and width");++reads;return 0x9abc;};
+    cp.peripheralWrite=[&](uint32_t off,unsigned n,uint32_t value){require(off==0x2400 && n==2 && value==0x9abc,"coprocessor forwards the original register store to its board device");++writes;};
+    cp.start();cp.run(4);
+    require(!cp.stopped && reads==1 && writes==1 && cp.latch.empty(),"connected peripheral transfers do not become private coprocessor latches");
+    cp.peripheralRead=[](uint32_t,unsigned)->std::optional<uint32_t>{return {};};
+    cp.zeroUnknownReads=true;cp.start();cp.run(4);
+    require(cp.stopped && cp.stopReason.find("shared RIU read")!=std::string::npos && cp.unknownReadTotal==0,"connected RIU unknowns cannot fall through to blanket-zero diagnostics");
+  }
+  require(manta::dvbtSharedAddress(0x2070)==0x1f2240e0 && manta::dvbtSharedAddress(0x2071)==0x1f2240e1,"DVB-T TOP byte lanes map into T4 RIU bank 1120");
+  require(manta::dvbtSharedAddress(0x23e0)==0x1f2247c0,"DVB-T firmware-owned FEC state address mapping");
+  require(!manta::dvbtSharedAddress(0x1fff) && !manta::dvbtSharedAddress(0x2600) && !manta::dvbtSharedAddress(0x2f00),"DVB-T mapping excludes unrelated and separately mapped mailbox banks");
   {
     std::vector<uint8_t> packets(84);for(size_t i=0;i<packets.size();++i)packets[i]=uint8_t(i);
     require(manta::teletextFilePackets(packets)==packets,"raw42 teletext preserves coded bytes and packet order");
@@ -3082,6 +3175,7 @@ int main() {
     geBitBltTests();
     geStretchRequestTests();
     vbiSlotTests();
+    coproValidityTests();
     htotalBranchJoinTests();
     readMaskTests();
     opaquePolicyTests();

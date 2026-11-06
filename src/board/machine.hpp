@@ -121,6 +121,8 @@ struct Options {
   std::string exploratoryCoproJpdDump;  // diagnostic: write the JPD output picture (raw packed 4:2:2) to this file
   bool exploratoryCoproJpd=false;       // EXPLORATORY: model the coprocessor JPEG decoder block from its register programming (peripherals/jpd.hpp)
   bool exploratoryCoproZeroUnknown=false; // LABELLED HYPOTHESIS: coprocessor registers with unknown semantics read as 0 (listed in the summary)
+  bool candidateCoproRiu=false;
+  bool diagnosticCoproBoundaryStop=false;
   std::string exploratoryUsbPendrive;   // EXPLORATORY: attach a USB mass-storage device (image file) to port 0 (peripherals/usb_host.hpp)
   bool exploratoryGeLine=false;   // EXPLORATORY: GE command 0x10 axis-aligned one-pixel line into format C (video/ge_line.hpp)
   bool exploratoryGeGradientFill=false;   // EXPLORATORY: GE command 0x2030 gradient rectangle fill into format C
@@ -156,6 +158,9 @@ struct Options {
   bool deferVdSfr8eWrite=false;
   bool deferVdResetKeyWrites=false;
   bool exploratoryVdSharedRun=false;
+  bool exploratoryDvbtRegisters=false;
+  uint64_t vdBudget=20000000; // diagnostic bound; original MCU instructions are never skipped
+  uint64_t vdDivider=4; // explicit, uncalibrated diagnostic virtual-cycle ratio
   bool exploratoryVdSuspendedBoundary=false;
   bool exploratoryCiDetectHigh=false;
   uint64_t orBudget=10000000;

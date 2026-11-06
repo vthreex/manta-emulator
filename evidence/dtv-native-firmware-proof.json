@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "scope": "static unmodified-firmware evidence only",
+  "original_flash_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+  "copro_identity_cache_signature_verified": true,
+  "dtv_resource_sha256": "6f64d6edc9306c7aae88483efdd25edd4c7d2b326ccba39cc9961da71f4298ee",
+  "boot_info_base_read_is_original": true,
+  "boot_info_base_hardware_reset_known": false,
+  "fec_state_is_written_by_original_mcu": true,
+  "fec_lock_host_override_permitted": false,
+  "tsp_original_packet_processing_instructions_verified": true,
+  "tsp_packet_ready_observation": "original PC0xe20 reads 0x210214 bit8",
+  "tsp_section_assembly_should_run_in_original_firmware": true,
+  "dtv_channel_reception_demonstrated": false
+}

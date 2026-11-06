@@ -382,6 +382,9 @@ std::vector<Msd309Machine::SnapSection> Msd309Machine::captureSections(uint32_t 
     a(riu_.fiqPending, riu_.fiqRaises, riu_.fiqStatusReads, riu_.fiqStatusWrites, riu_.fiqLineChanges, irqLinesApplied_);
     sections.push_back(std::move(s));
   }
+  if(options_.candidateCoproRiu && copro_.started){
+    Section s{"cpknown",{}};Ar a(s.bytes);copro_.knownSnapshot(a);sections.push_back(std::move(s));
+  }
   return sections;
 }
 void Msd309Machine::writeSnapshot(uint32_t pc) {
@@ -510,6 +513,10 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     }
     (void)haveCopro;
   }
+  for(auto& s:sections)if(s.name=="cpknown"){
+    if(!options_.candidateCoproRiu)throw SnapshotError("snapshot holds INVALID coprocessor observations without their tracking option");
+    Ar a(s.bytes.data(),s.bytes.size());copro_.knownSnapshot(a);if(a.remaining())throw SnapshotError("coprocessor observation section has trailing data");
+  }
   riu_.reapplyInitHypotheses();
   riu_.exploratoryGeLine = options_.exploratoryGeLine;
   riu_.usbDeviceAttachedPort0 = !options_.exploratoryUsbPendrive.empty();   // not part of the snapshot format: always taken from the current options
@@ -517,6 +524,12 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
   // Silently ignoring an added option whose state lives in the serialized device configuration would mislabel the run.
   for (size_t i = 0; i < extraTokens.size(); ++i) {
     const auto& t = extraTokens[i];
+    // Configuration-only, constructor-owned opt-in. Existing stored bytes keep
+    // their original validity; no MCU restart or reset value is synthesized.
+    if (t == "--exploratory-dvbt-registers") { riu_.resumeDvbtRegisterAccess(cycles);continue; }
+    if (t == "--candidate-copro-riu") continue; // stateless bus callbacks rebuilt by attachCopro
+    if (t == "--max-vd-instructions") { ++i;riu_.vdInstructionBudget=options_.vdBudget;continue; }
+    if (t == "--vd-dispatch-divider") { ++i;riu_.vdDispatchDivider=options_.vdDivider;continue; }
     // Stateless opt-in transfer decoder; palette contents already belong to
     // the serialized GopPalette. No DMA state or completion bit is seeded.
     if(t=="--exploratory-gop-palette-dma") { riu_.exploratoryGopPaletteDma=true;continue; }

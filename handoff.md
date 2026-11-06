@@ -1,5 +1,189 @@
 # Manta ATV / teletext handoff
 
+## Latest DTV continuation (2026-11-05/06)
+
+NEWEST verified state:3931 native checks and ALL required suites PASS, including
+full6,592,741-event replay (289 fields equal, identical coverage). Original VD
+probe now verifies SEVEN ISR replies, invalid data round-trip through private
+XRAM, and no reply for unmapped7000. Evidence/dtv-native-bridge-validation.json
+and evidence/dtv-native-firmware-proof.json. Earlier five-reply/3929 notes below
+are superseded. No DTV deployment or working RF reception claim.
+
+Connected work/dtv-native-semaphore reaches2,100,000,004 MIPS dispatches with
+the ORIGINAL CP running (no unknown boundary, no blanket-zero CP reads), prints
+start/end TSP init and _appMHEG5_TaskEntry. Original DTV Manual Tuning panel
+shown (UHF CH47 / NO SIGNAL). Fixed genuine bridge bug: semaphore.owner() is
+real device state, and knownBits now reports it; unknown owners remain invalid.
+Original MCU private-RAM data copies retain invalid masks. Original INC/DEC Rn
+can adjust known pointer registers while ACC holds an opaque byte, since they
+do not consume ACC or alter arithmetic flags (usesRn still guards Rn itself).
+
+Native diagnostic command: work/dtv-native-semaphore/command.json, COPY binary
+work/dtv_sem_native.exe. Uses --vd-dispatch-divider1024 and1B MCU budget to avoid
+billions of idle MCU instructions; UNCALIBRATED, explicitly experimental. Still
+has chip mirror3D98/99=18/00, cache7844 bit0=1, boot-info5700/01=0 hypotheses.
+These are NOT defaults or evidence of exact reset hardware. Default divider4
+long run work/dtv-native-bootinfo-budget executes1B original MCU instructions,
+stops881,336,661 MIPS dispatches at diagnostic instruction bound, no hardware
+completion. No processes from these completed probes remain running.
+
+NEXT MCU boundary is5311 (ADD A,ACC), invoked3719/3732 after reading private
+8380/8382 and maskingbit0. This is data-field packing, not a lock decision.
+Consider conservative exact ADD A,ACC mask propagation ONLY if C/AC/OV all
+determinate; do not blanket-allow invalid arithmetic/flags. Original core has
+finite abstractions in cpu/mcu_value_mask.hpp, symbolicCodeTables only AVD now.
+
+IMPORTANT native transport discovery: original TSP firmware already processes
+TS packets/sections. Do NOT replace section parsing with a host DVB database.
+Original0xE20 reads210214 bit8 (packet ready); controller210200, filter-id read
+21021C, header/data access210204, input cursor210200, DMA size write210224,
+DMA launch210218;0x428 polls210214 bit0 then checks section buffer cursor.
+Section bank211000 + id*80 (MIPS indirect422000 + id*100), PID48words at420000.
+Static original words pinned in tools/dtv_firmware_proof.py. Related T3 register
+struct independently matches this layout: private work/dtv-reference/t3-mhal_
+tsp{_reg.h,_hardware.h,.c}, downloaded from Benjamin-Dobell/kogan-tv-gpl.
+NEXT transport model should feed the native TSP FIFO/DMA, letting ORIGINAL TSP
+code assemble/filter sections and publish its own mailbox messages. Need derive
+DMA command semantics/timing, output pointer, packet flags and RF acquisition.
+Private fixture dtv-one.ts is real MPEG2/MP2 transport with DTV ONE SDT/NIT,
+ffprobe verified, still NOT connected. Future cold probes should explicitly set
+MANTA_I2C_LOG=1 in subprocess env to capture digital tuner bytes (last probe did
+NOT set it; command JSON cannot contain environment).
+
+Read docs/dtv-native-hardware.md first. DTV remains unfinished; no fabricated
+channels/lock/picture or DTV website deployment. All new CPU/device paths are
+opt-in and preserve the original instructions. Earlier work below is retained.
+
+Native core checks3929 PASS; original VD register-bus probe now verifies FIVE
+actual ISR replies (unwritten payload remains INVALID, unmapped7000 no reply).
+Previous four-reply notes below predate invalid DATA transport support.
+Baseline18 cases, display9 cases including replay, clock, auxiliary AVD/VD/PM51,
+copro, snapshot, diagnostic options, forensics4 and clean-PATH presenter PASS.
+Full strict6,592,741-event replay is currently running in work/dtv-validation
+(driver work/dtv_validate.py; do NOT rebuild while it executes probes).
+The first display validation failed writing a trace on nearly full C:; rerun
+using D:/CodexWork/MantaLCD4214/dtv-test-temp passed. No reference was changed.
+
+Resource51 (946752 bytes) is the actual DTV CP program loaded by original MIPS
+after rawF9, not resource61. DTV cache geometry1F207844 bit0 remains unknown;
+explicit0/1 probes reached identical next boundaries with896 original cache
+warm-up instructions difference. Diagnostic chip mirror3D98/99=18/00 remains
+unverified. Corrected partial mailbox role read67BC/BD: known low nibble can be
+masked without inventing unwritten high byte. Latest CP stop (work/dtv-native-
+mail-known)659E0 uses unknown1F205700 as boot-info memory base: ((reg<<16)+10100),
+checksFA54534D/61744150. No real meaning/reset/writer yet; NEVER silently set0.
+Caller8EA0 falls back65A8C on failed signature. Any explicit5700=0 probe is
+counterfactual only and must not become the working DTV configuration.
+
+New --max-vd-instructions (default20M) allows bounded longer original MCU runs.
+work/dtv-native-bootinfo-budget uses1B and the explicit5700=0 hypothesis;
+copied binary work/dtv_bootinfo_budget_native.exe is running. Full instruction
+stepping can be slow now that the native MCU stays in its own polling loop.
+No RF/lock defaults are supplied. Do not interpret the old20M stop as hardware.
+
+CP RAM validity now conservatively drops all known bits/origin for a shared
+invalid byte: the board observer is byte-granular and another CPU can overwrite
+it after a previous CP partial store. A regression prevents stale masks from
+promoting the new observation. Existing snapshots/layouts/defaults unchanged;
+optional cpknown preserves register masks and standalone RAM metadata.
+
+Ten completed copied dtv*.exe probe binaries were MOVED (preserved) from work/
+to D:/CodexWork/MantaLCD4214/dtv-probe-binaries/ to free C: space. Old command
+JSON files reference their former locations; update executable path when
+replaying them. Active dtv_bootinfo_budget_native.exe remains in work/.
+
+Private transmitter fixture work/dtv-inputs/dtv-one.ts (MPEG2/MP2 with SDT/NIT)
+is NOT connected to TSP or evidence of reception. TSP transport section DMA,
+RF acquisition model, native compressed video decode and DTV antenna UI remain.
+
+## DTV antenna work in progress (2026-11-05)
+
+User now requests DTV antenna inputs like ATV, explicitly native/original
+firmware rather than fabricated channels/UI. Do not claim a working DTV signal
+or publish a pretend picture/lock. No digital stations have been discovered yet.
+
+Recovered DTV banner snapshot at work/checkpoints/dtv-banner.snap, 1.6B. Its
+canonical options are recoverable read-only from the snapshot meta section;
+saved locally in work/dtv-banner-options.txt. Exact options + native-cpu +
+load-state-allow-extra-options loads. ATV profile is not a superset of that old
+snapshot. Real keys at 1.62B MENU40, 1.66B DOWN0E, 1.70B OK0D reach original
+DTV Manual Tuning, UHF CH47. Screen evidence is in work/dtv-antenna-menu-exact.
+
+Opening that panel blocks in MDrv_MBX_SendMsg, 805D9E24/805DB908, before it
+can consume the next key or program the tuner. 1F206700 FIRE remains set;
+class2/index1/no params. Class2 is TSP; this goes to the ORIGINAL multimedia
+AEON/OpenRISC resource61, NOT PM51. Existing copro.hpp already models the
+mailbox IRQ and original CPU; most live profiles have it disabled. Do not
+invent a mailbox acknowledgment. Stack/write trace: work/dtv-mbx-trace.
+
+Cold native probe with exploratory-copro, NO copro-zero-unknown, starts the
+actual resource61 and stops after10 instructions at original CP124 reading
+A0202400 (MIU control). work/dtv-copro-cold contains command, summary, logs.
+This exposed another missing connection: copro RIU accesses were private
+latches, not connected to the existing board device models. New uncommitted
+--candidate-copro-riu connects fully known reads and writes to those existing
+models; unknown reads stop instead of falling through to blanket zero. This
+still needs validation and further continuation. Next cold probe should remove
+the old 1f206728/29 +ack hypotheses as well as keeping copro-zero-unknown OFF.
+
+Also added uncommitted --exploratory-dvbt-registers: provisional MCU XDATA
+2000..25FF to RIU1120..1125 shared mapping, preserving unknown masks and original
+software writes; no reset/lock/status defaults. The original VD MCU previously
+stopped at4EF1 MOVX from2070. Crucially, original MCU writes its FEC state
+23E0 itself (e.g.3CE7 clears,445F sets1): NEVER supply0B from the host to fake
+FEC lock. Pending MOVX can be retried after attaching the new bus, without
+resetting/changing PC/registers or resuming unknown branch/SFR boundaries.
+Snapshot opt-in resumes at current virtual time, not accumulated suspended time.
+Extended vd_mcu_probe --register-bus tests original IRQ write/read completion
+and refusal to acknowledge an unknown register; not yet run at this note.
+
+Native copro continuation: work/dtv-copro-known-exact cold run reaches1.1B
+MIPS dispatches,376,274,944 original multimedia instructions, MM TaskEntry,
+475 real mailbox FIQs, zero copro blanket-zero reads. Both old1f206728/29
++ack hypotheses were removed. Full original firmware still runs; no function
+hooks/PC redirects added. This is connected execution, not DTV reception.
+
+--candidate-copro-riu now enables conservative validity monitoring on the
+EXISTING Or1k engine (cpu/or1k_observations.hpp + beforeInstruction hook).
+Bitwise masks/copies/loads/stores preserve known masks and origins; unknown
+comparisons, addresses, arithmetic or foreign peripheral writes stop. INTC
+mask reset bits remain INVALID; original mask/unmask RMW operations establish
+them. The virtual CP interrupt fabric currently wires only the actual MIPS
+mailbox source113 (other CP device interrupt outputs are not wired). CP general
+RIU reads use INVALID observations, never blanket zero, with existing board
+devices connected. Partial configuration stores need the same observed origin
+and preserve unknown masks in Riu. Platform-ID cache routine C8454..C8490 is
+checked against all16 exact original words; its198/19C reads remain INVALID,
+including cached RAM. tools/dtv_firmware_proof.py pins this and the original
+DVB-T FEC writer/getter. Do not supply a fake ID or FEC0B.
+
+The board unknown-memory page filter is NEGATIVE ONLY. New exact memoryKnown
+query prevents an invalid identity byte from falsely invalidating known
+pointers elsewhere on its page. CP validity lives in optional cpknown snapshot
+section; legacy snapshot layout and default paths preserved. Isolated tests
+and3919 native checks passed before the last debugger/summary additions;
+vd_mcu_probe --register-bus passes with4 actual original ISR replies and no
+acknowledgment of an unwritten register.
+
+--diagnostic-copro-boundary-stop halts the main run on a CP hardware boundary
+(debugger only, excluded from option fingerprint). Native cold search v1 halted
+correctly at421,625,859 MIPS /5,153,592 CP instructions: unknown JPD2E60 status
+comparison at CPB2C34. Do NOT bypass this. Existing real JPD model is available;
+new run work/dtv-native-search-jpd/command.json enables exploratory-copro-jpd
+and ge-yuv-stretch, with no copro-zero-unknown or handshake+ack. Session83786
+is active as of this note. Binary work/dtv_search_native.exe is a COPY, so
+rebuilding build-irq/manta_native_full.exe cannot relink underneath that probe.
+Keys: DTV rawF9 at1.3B, MENU40 at1.68B, DOWN0E1.72B, OK0D1.76B/1.88B;
+max2.1B. MANTA_I2C_LOG=1; read stdout/stderr/summary and frames after completion.
+VD currently stops on unknown-to-foreign XDATA (get exact PC from summary),
+because input/control reset bits still unknown; no RF/DVB TS model yet.
+
+Build dir work/build-irq, no current ninja. Unrelated tools/sunplus_run.cpp
+etc remain preserved. No DTV changes committed or deployed yet. Previous
+teletext deployment below remains live. Continue implementing the original
+tuning/TS path and required validation before commit. No DTV UI controls should
+be published as working until a real transport stream is parsed by firmware.
+
 ## Teletext file input (2026-11-05)
 
 Latest user request: publish the scaling/name fixes first, then support .ttx

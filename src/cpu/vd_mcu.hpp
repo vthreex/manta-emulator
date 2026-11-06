@@ -57,6 +57,7 @@ public:
   uint64_t skipIdleLoop(uint64_t maxTicks,uint64_t maxInstructions);   // ticks fast-forwarded (0 if not provably idle)
   void requestInt0();
   bool running()const;
+  bool resumePendingMovx(); // explicit device-model continuation; never bypass an unknown branch or SFR
   uint64_t totalInstructions()const;
   uint64_t interruptEntries()const;
   void startup(VdMcuProgram& program,uint64_t cycleBudget=10000);
