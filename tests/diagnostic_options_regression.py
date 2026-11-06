@@ -45,6 +45,7 @@ for name, extra, text in (
     ('vd-budget-must-be-positive', ['--max-vd-instructions', '0'], 'requires shared original execution'),
     ('vd-clock-needs-shared-run', ['--vd-dispatch-divider', '4096'], 'requires shared original execution'),
     ('vd-clock-must-be-positive', ['--vd-dispatch-divider', '0'], 'requires shared original execution'),
+    ('dvbt-rf-needs-original-registers-and-tuner', ['--exploratory-dtv-stations', 'off'], 'requires the original MCU register bus and PLL tuner'),
     ('restore-branch-needs-nor-write', ['--diagnostic-restore-by-identity-branch'], 'requires guarded exploration and the SPI NOR write model'),
 ):
     r = run(extra)

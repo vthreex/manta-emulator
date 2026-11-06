@@ -298,7 +298,16 @@ struct VdMcuCpu::Impl {
         (opcode>=0x98 && opcode<=0x9f) || (opcode>=0xb8 && opcode<=0xbf) ||
         (opcode>=0xc8 && opcode<=0xcf) || (opcode>=0xd8 && opcode<=0xdf);
     };
-    if(usesRn() && m.registerKnown[index]!=255)
+    bool logicalRnTracked=false;
+    if(((opcode>=0x48 && opcode<=0x4f) || (opcode>=0x58 && opcode<=0x5f) || (opcode>=0x68 && opcode<=0x6f)) &&
+       (m.aKnown!=255 || m.registerKnown[index]!=255)){
+      const auto origin=m.aKnown==255?m.registerOrigin[index]:m.registerKnown[index]==255?m.aOrigin:
+        m.aOrigin==m.registerOrigin[index]?m.aOrigin:0;
+      const auto result=mcuLogicMasks({cpu->mSFR[REG_ACC],m.aKnown},{cpu->mLowerData[index],m.registerKnown[index]},
+        opcode<0x50?McuLogic::Or:opcode<0x60?McuLogic::And:McuLogic::Xor);
+      m.aKnown=result.known;m.aOrigin=origin;m.parityUnknown=m.aKnown!=255;logicalRnTracked=true;
+    }
+    if(usesRn() && m.registerKnown[index]!=255 && !logicalRnTracked)
       throw VdHardwareBoundary("MCU unknown register bits affect operation/address/decision");
     // Conservative direct/indirect guards: transfers not yet tracked must
     // stop rather than laundering an invalid Rn through another IRAM alias.
@@ -392,6 +401,17 @@ struct VdMcuCpu::Impl {
     // INC A / DEC A on a partially known byte: the result bit is known exactly
     // when every assignment of the unknown bits agrees on it. Carry is unaffected;
     // parity follows result validity. This creates no information about the input.
+    bool partialDouble=false;
+    if(opcode==0x25 && operand==0xe0 && m.aKnown!=255){
+      const auto doubled=mcuDoubleMasks({cpu->mSFR[REG_ACC],m.aKnown});
+      // The ordinary core guards C/parity, but has no general invalid AC/OV
+      // consumer model. Admit this transfer only when all arithmetic flags
+      // are determined for EVERY represented input; otherwise fail closed.
+      if((doubled.flagsKnown&0xc4)==0xc4){
+        m.aKnown=doubled.result.known;m.aOrigin=0;m.parityUnknown=m.aKnown!=255;
+        m.carryKnown=true;m.arithmeticFlagsKnown=0x44;partialDouble=true;
+      }
+    }
     bool incDecA=false;
     if((opcode==0x04 || opcode==0x14) && m.aKnown!=255){
       uint8_t knownMask=m.aKnown,value=cpu->mSFR[REG_ACC]&knownMask,agreeOnes=0xff,agreeZeros=0xff;
@@ -407,7 +427,7 @@ struct VdMcuCpu::Impl {
     bool cplA=false;
     if(opcode==0xf4 && m.aKnown!=255){m.aOrigin=0;m.parityUnknown=true;cplA=true;}
     if(m.aKnown!=255){
-      bool independent=incDecA || cplA || (opcode&0x1f)==0x01 || opcode==0 || opcode==0x22 || opcode==0x32 || opcode==0x02 ||
+      bool independent=logicalRnTracked || partialDouble || incDecA || cplA || (opcode&0x1f)==0x01 || opcode==0 || opcode==0x22 || opcode==0x32 || opcode==0x02 ||
         opcode==0x12 || (opcode&0x1f)==0x11 || opcode==0x80 || opcode==0x90 ||
         opcode==0xa3 || opcode==0xf0 || opcode==0xc0 || opcode==0xd0 || opcode==0xc3 || opcode==0xd3 ||
         opcode==0x40 || opcode==0x50 || partialPermutation || directImmediateLogical;
@@ -425,8 +445,8 @@ struct VdMcuCpu::Impl {
       // into an invalid same-origin register read. A fully known Rn has
       // exactly the same bit-validity effect as an immediate operand.
       // The usesRn guard above still rejects partially unknown operands.
-      if((opcode>=0x48 && opcode<=0x4f) || (opcode>=0x58 && opcode<=0x5f) ||
-         (opcode>=0x68 && opcode<=0x6f)){
+      if(!logicalRnTracked && ((opcode>=0x48 && opcode<=0x4f) || (opcode>=0x58 && opcode<=0x5f) ||
+         (opcode>=0x68 && opcode<=0x6f))){
         auto bits=cpu->mLowerData[index];
         if(opcode<0x60)m.aKnown|=opcode<0x50?bits:uint8_t(~bits);
         m.parityUnknown=m.aKnown!=255;independent=true;
@@ -435,7 +455,7 @@ struct VdMcuCpu::Impl {
         registerLoad || opcode==0xe0 ||
         (opcode==0xe5 && cpu->mCodeMem[uint16_t(pc+1)]!=0xd0 && cpu->mCodeMem[uint16_t(pc+1)]!=0xe0);
       if(overwrite){m.aKnown=255;m.aOrigin=0;m.parityUnknown=false;independent=true;}
-      if(registerStore || registerImmediate || (opcode==0x75 && operand!=0xe0))independent=true;
+      if(registerStore || registerImmediate || opcode==0xf6 || opcode==0xf7 || (opcode==0x75 && operand!=0xe0))independent=true;
       // Original AVD 076E copies the known register index from direct IRAM
       // into R3 while ACC still carries the masked value being stored.
       // The directSource guard above verifies the source independently.

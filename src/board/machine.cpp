@@ -119,6 +119,11 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   if(o.exploratoryDvbtRegisters && !o.exploratoryVdSharedRun)
     throw std::runtime_error("DVB-T shared register experiment requires original shared MCU execution");
   riu_.exploratoryDvbtRegisters=o.exploratoryDvbtRegisters;
+  if(!o.exploratoryDtvStations.empty()){
+    if(!o.exploratoryDvbtRegisters || !o.exploratoryPllTuner)
+      throw std::runtime_error("ideal DVB-T RF input requires the original MCU register bus and PLL tuner");
+    riu_.dvbtRf=DvbtRf::load(o.exploratoryDtvStations);
+  }
   if(o.exploratoryVdSuspendedBoundary && (!o.exploratoryVdMcuStartup || !o.symbolicInit || !o.deferDiagnosticReads))
     throw std::runtime_error("Suspended VD boundary experiment requires original startup and guarded exploration");
   riu_.exploratoryVdSuspendedBoundary=o.exploratoryVdSuspendedBoundary;
@@ -3456,9 +3461,29 @@ std::string Msd309Machine::summary() const {
     <<",\n  \"vd_mcu_upstream_ticks\": "<<riu_.vdMcuCpu().cycles()<<",\n  \"vd_mcu_pc\": \""<<hex(riu_.vdMcuCpu().pc())<<"\",\n  \"vd_mcu_stack\": "<<unsigned(riu_.vdMcuCpu().stack());
   if(options_.deferVdSfr8eWrite)s<<",\n  \"deferred_vd_sfr8e_write_enabled\": true";
   if(options_.deferVdResetKeyWrites)s<<",\n  \"deferred_vd_reset_key_writes_enabled\": true";
-  if(options_.exploratoryDvbtRegisters)s<<",\n  \"exploratory_dvbt_shared_registers\": true,\n  \"dvbt_register_reset_defaults_supplied\": false";
+  if(options_.exploratoryDvbtRegisters){
+    s<<",\n  \"exploratory_dvbt_shared_registers\": true,\n  \"dvbt_register_reset_defaults_supplied\": false"
+      <<",\n  \"dvbt_mcu_accumulator_known\": "<<unsigned(riu_.vdMcuCpu().accumulatorKnown())
+      <<",\n  \"dvbt_mcu_accumulator_origin\": \""<<hex(riu_.vdMcuCpu().accumulatorOrigin())<<"\""
+      <<",\n  \"dvbt_last_requested_mhz\": ";
+    if(const auto mhz=riu_.dtvTunedMHz();mhz>=0)s<<mhz;else s<<"null";
+    s<<",\n  \"dvbt_tuner_bandwidth_mhz\": ";
+    if(const auto bw=riu_.dtvTunedBandwidthMHz())s<<bw;else s<<"null";
+    s<<",\n  \"dvbt_invalid_mcu_reads\": [";
+    bool first=true;for(const auto& r:riu_.vdInvalidReads){if(!first)s<<',';first=false;
+      s<<"{\"pc\":\""<<hex(r.pc)<<"\",\"xdata\":\""<<hex(r.address)<<"\",\"origin\":\""<<hex(r.origin)
+        <<"\",\"value\":"<<unsigned(r.value)<<",\"known\":"<<unsigned(r.known)<<'}';}
+    s<<']';
+  }
   if(options_.vdBudget!=20000000 || options_.vdDivider!=4)s<<",\n  \"vd_diagnostic_instruction_budget\": "<<options_.vdBudget
     <<",\n  \"vd_diagnostic_dispatch_divider\": "<<options_.vdDivider<<",\n  \"vd_clock_ratio_hardware_verified\": false";
+  if(riu_.dvbtRf.enabled){
+    uint64_t packets=0;for(const auto& station:riu_.dvbtRf.stations)packets+=station.transport.size()/188;
+    s<<",\n  \"exploratory_dvbt_ideal_rf\": true,\n  \"dvbt_configured_transport_packets\": "<<packets
+      <<",\n  \"dvbt_delivered_transport_packets\": 0,\n  \"dvbt_host_channel_database\": false";
+    const auto a=*dvbtSharedAddress(0x23e0);
+    s<<",\n  \"dvbt_fec_software_state\": ";if(riu_.knownBits(a,1)==255)s<<unsigned(riu_.liveGet(a));else s<<"null";
+  }
   if(options_.exploratoryVdSharedRun)s<<",\n  \"exploratory_vd_shared_run\": true"
     <<",\n  \"vd_mcu_total_instructions\": "<<riu_.vdMcuCpu().totalInstructions()
     <<",\n  \"vd_mcu_interrupt_entries\": "<<riu_.vdMcuCpu().interruptEntries()

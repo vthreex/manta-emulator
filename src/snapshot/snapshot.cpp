@@ -217,6 +217,9 @@ void ioClass(Ar& a, Riu& r) {
     r.geBlendCopyLog, r.geI2Glyphs, r.geI2GlyphPixels, r.candidateSemaphore, r.exploratoryCombRestore, r.exploratoryDlcTimeout, r.exploratoryDisplayClock,
     r.exploratoryGopVsyncLatch, r.symbolicInit, r.candidateBdma, r.gpioI2c, r.candidateMiu, r.virtualRtc, r.candidateUtmi, r.candidateSpi, r.candidateChipId,
     r.candidateGamma, r.stopReason, r.uart);
+  // Callbacks are not archive data. A new process must reconnect the original
+  // MCU to its restored bus without resetting any register, PC or device.
+  if(a.loading() && r.exploratoryVdMcuStartup && r.vdMcuCpu_.bound())r.bindVdCallbacks();
 }
 
 // ---------------------------------------------------------------------------------------------------------------- machine state

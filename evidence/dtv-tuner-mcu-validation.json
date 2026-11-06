@@ -1,0 +1,95 @@
+{
+  "result": "PASS",
+  "scope": "Native tuner decoding, conservative MCU data validity and original-ISR restoration; DTV reception remains unimplemented",
+  "native_checks": 3967,
+  "executable_sha256": "ef94d21807743f022ca5cb9f0f495d10d2642a0ba698a3c47123da21af7d2402",
+  "suites": {
+    "firmware": 0,
+    "display": 0,
+    "clock_profile": 0,
+    "avd_firmware": 0,
+    "vd_firmware": 0,
+    "pm51_firmware": 0,
+    "copro_firmware": 0,
+    "diagnostic_options": 0,
+    "window_preview": 0,
+    "snapshot": 0,
+    "native": 0,
+    "forensics": 0,
+    "dtv_static": 0,
+    "dtv_original_mcu": 0,
+    "strict-replay": 2
+  },
+  "strict_replay": {
+    "events": 6592741,
+    "reference_fields": 289,
+    "differences": [],
+    "coverage_identical": true,
+    "dispatches": 854795171
+  },
+  "original_mcu_probe": {
+    "result": "PASS",
+    "scope": "isolated original DVB-T MCU; register mapping only, no RF/lock/channel claim",
+    "guest_generated_FF_replies": 12,
+    "original_DSP_parameter_commands_verified": true,
+    "unwritten_register_payload_stays_INVALID": true,
+    "private_XRAM_payload_stays_INVALID": true,
+    "restored_original_ISR_replies": 2,
+    "continuous_restored_device_bytes_identical": true,
+    "unmapped_target_has_no_reply": true,
+    "resumed_original_MOVX": true
+  },
+  "static_original_instructions": {
+    "result": "PASS",
+    "scope": "static unmodified-firmware evidence only",
+    "original_flash_sha256": "d60645b549a456d4193e7b8bf16fc892118cba9489dcabf74848336f6f1030e9",
+    "copro_identity_cache_signature_verified": true,
+    "dtv_resource_sha256": "6f64d6edc9306c7aae88483efdd25edd4c7d2b326ccba39cc9961da71f4298ee",
+    "boot_info_base_read_is_original": true,
+    "boot_info_base_hardware_reset_known": false,
+    "fec_state_is_written_by_original_mcu": true,
+    "fec_lock_host_override_permitted": false,
+    "parameter_initializer": "original MIPS804F2FD0 writes46 bytes through command4",
+    "parameter_mapping": "original MCU5469 maps DSP index into XDATA8000+index",
+    "parameter_polling_is_bounded": true,
+    "tsp_original_packet_processing_instructions_verified": true,
+    "tsp_packet_ready_observation": "original PC0xe20 reads 0x210214 bit8",
+    "tsp_section_assembly_should_run_in_original_firmware": true,
+    "digital_tuner_function": "original MIPS804F58C8..804F5A38",
+    "digital_tuner_if_mhz": 36.167,
+    "digital_tuner_steps_per_mhz": 6,
+    "observed_ch47_divider": 4309,
+    "dtv_channel_reception_demonstrated": false
+  },
+  "atv_teletext_compatibility": {
+    "result": "PASS",
+    "scope": "connected original-firmware teletext with explicit exploratory models",
+    "channel_name_storage_verified": false,
+    "cases": [
+      {
+        "case": "alpha",
+        "dispatches": 2000000003,
+        "reason": "instruction budget exhausted",
+        "covered_pixels": 2073600,
+        "frame_sha256": "76250611353f3edb3a1fdd84d79d5ded26fd2c9ecf5991b59d93efc7ffd3adb5",
+        "frame": "C:\\Users\\micha\\Documents\\Codex\\2026-10-11\\codex-reverse-engineer-and-build-a\\work\\dtv-atv-restore-compatibility\\alpha\\gop_0_d2000000003.bmp"
+      },
+      {
+        "case": "beta",
+        "dispatches": 2000000002,
+        "reason": "instruction budget exhausted",
+        "covered_pixels": 2073600,
+        "frame_sha256": "c24c0bf029dbbcd1f9802fe7a35b5a0e8ed94a51ae8768b3c4e84eb0dc33fa37",
+        "frame": "C:\\Users\\micha\\Documents\\Codex\\2026-10-11\\codex-reverse-engineer-and-build-a\\work\\dtv-atv-restore-compatibility\\beta\\gop_0_d2000000002.bmp"
+      }
+    ]
+  },
+  "rf_model": {
+    "ideal_uncalibrated": true,
+    "software_fec_state_host_owned": false,
+    "host_channel_database": false,
+    "transport_delivery_implemented": false,
+    "channel_reception_demonstrated": false
+  },
+  "connected_clock_probe": "work/dtv-rf-default-clock; inspect its separate outcome, not covered by passing suites"
+}

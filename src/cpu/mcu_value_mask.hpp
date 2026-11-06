@@ -17,6 +17,22 @@ struct McuMaskMerge {
   McuValueMask byte(unsigned shift=0)const{return {uint8_t(value>>shift),uint8_t(known>>shift)};}
 };
 struct McuAddMasks {McuValueMask result;uint8_t flagsKnown;};
+enum class McuLogic { And, Or, Xor };
+inline McuValueMask mcuLogicMasks(McuValueMask a,McuValueMask b,McuLogic op){
+  if(op==McuLogic::And)return {uint8_t(a.value&b.value),uint8_t((a.known&b.known)|(a.known&~a.value)|(b.known&~b.value))};
+  if(op==McuLogic::Or)return {uint8_t(a.value|b.value),uint8_t((a.known&b.known)|(a.known&a.value)|(b.known&b.value))};
+  return {uint8_t(a.value^b.value),uint8_t(a.known&b.known)};
+}
+// ADD A,ACC reads the SAME byte twice. Preserve that correlation rather than
+// treating the two observations as independent choices of unknown bits.
+inline McuAddMasks mcuDoubleMasks(McuValueMask a){
+  McuMaskMerge results,flags;
+  mcuPossibleBytes(a,[&](unsigned x){
+    const auto sum=x+x;results.add(sum&255);
+    flags.add((sum>255?128:0)|(((x&15)*2>15)?64:0)|(((x^sum)&128)?4:0));
+  });
+  return {results.byte(),uint8_t(flags.known)};
+}
 inline McuAddMasks mcuAddMasks(McuValueMask a,McuValueMask b,bool carry,bool carryKnown){
   McuMaskMerge results,flags;
   mcuPossibleBytes(a,[&](unsigned x){mcuPossibleBytes(b,[&](unsigned y){

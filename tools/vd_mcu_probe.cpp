@@ -70,9 +70,42 @@ int main(int argc,char** argv){try{
     r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x83ac,0);
     if(guestReplies!=7 || r.knownBits(0x1f224c05,1)!=0)std::cerr<<"private round trip: replies="<<guestReplies<<" known="<<r.knownBits(0x1f224c05,1)<<" boundary="<<r.vdMcuBoundaryReason()<<'\n';
     check(guestReplies==7 && r.knownBits(0x1f224c05,1)==0,"private XRAM round trip cannot turn invalid register data into known bits");
+    const auto deviceState=[](manta::Riu& bus){std::vector<uint8_t> bytes;manta::snap::Ar ar(bytes);manta::snap::io(ar,bus);return bytes;};
+    auto saved=deviceState(r);auto restored=std::make_unique<manta::Riu>();restored->exploratoryDvbtRegisters=true;
+    unsigned restoredReplies=0;
+    restored->event=[&](const auto& kind,uint32_t address,unsigned,uint32_t value,const auto&){
+      if(kind=="vd_mcu_instruction")check(address<code.size() && code[address]==value,"restored MCU executes an opcode outside the original image");
+      if(kind=="vd_shared_mailbox_write" && address==0x1f224c00 && value==255){
+        check(restored->vdMcuCpu().pc()==0x4b0c,"restored reply must come from the original ISR");++restoredReplies;}
+    };
+    manta::snap::Ar load(saved.data(),saved.size());manta::snap::io(load,*restored);
+    check(load.remaining()==0 && deviceState(*restored)==saved,"restoring the native MCU must preserve its complete serialized device state");
+    auto restoredTick=tick;
+    const auto exercise=[](manta::Riu& bus,uint64_t& t){
+      for(auto command:{2u,1u}){
+        bus.write(0x1f224c00,1,0,0,255,++t);
+        bus.write(0x1f224c04,1,0x83,0,255,++t);bus.write(0x1f224c01,1,0xad,0,255,++t);
+        bus.write(0x1f224c05,1,command==2?0x56:0,0,255,++t);bus.write(0x1f224c00,1,command,0,255,++t);
+        bus.write(0x1f206905,1,2,0,255,++t);bus.write(0x1f206905,1,0,0,255,++t);
+        bus.write(0x1f206700,1,0,0,255,t+=4000);
+        check(bus.read(0x1f224c00,1,0,255,++t)==255,"native ISR must still answer after device-state restore");
+      }
+      check(bus.read(0x1f224c05,1,0,255,++t)==0x56,"restored native read must return the preceding original ISR write");
+    };
+    exercise(r,tick);exercise(*restored,restoredTick);
+    check(guestReplies==9 && restoredReplies==2 && tick==restoredTick && deviceState(r)==deviceState(*restored),
+      "continuous and restored original-MCU transactions must leave every serialized device byte identical");
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(4,0x13,0x67);
+    check(guestReplies==10,"original DSP-parameter command 4 must complete in the original ISR");
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(3,0x13,0);
+    check(guestReplies==11 && r.knownBits(0x1f224c05,1)==255 && r.read(0x1f224c05,1,0,255,++tick)==0x67,
+      "original DSP-parameter command 3 must read the byte stored by command 4");
+    r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x8013,0);
+    check(guestReplies==12 && r.read(0x1f224c05,1,0,255,++tick)==0x67,
+      "original DSP parameter helper must map index 0x13 into private XRAM 0x8013");
     r.write(0x1f224c00,1,0,0,255,++tick);transaction(1,0x7000,0);
-    check(r.vdMcuSuspended() && guestReplies==7 && r.read(0x1f224c00,1,0,255,++tick)==1,"unmapped bus access cannot yield a completion");
-    std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original DVB-T MCU; register mapping only, no RF/lock/channel claim\",\"guest_generated_FF_replies\":7,\"unwritten_register_payload_stays_INVALID\":true,\"private_XRAM_payload_stays_INVALID\":true,\"unmapped_target_has_no_reply\":true,\"resumed_original_MOVX\":true}\n";
+    check(r.vdMcuSuspended() && guestReplies==12 && r.read(0x1f224c00,1,0,255,++tick)==1,"unmapped bus access cannot yield a completion");
+    std::cout<<"{\"result\":\"PASS\",\"scope\":\"isolated original DVB-T MCU; register mapping only, no RF/lock/channel claim\",\"guest_generated_FF_replies\":12,\"original_DSP_parameter_commands_verified\":true,\"unwritten_register_payload_stays_INVALID\":true,\"private_XRAM_payload_stays_INVALID\":true,\"restored_original_ISR_replies\":2,\"continuous_restored_device_bytes_identical\":true,\"unmapped_target_has_no_reply\":true,\"resumed_original_MOVX\":true}\n";
     return 0;
   }
   std::cout<<"{\"result\":\"PASS\",\"scope\":\"original auxiliary firmware diagnostic; no MIPS boot claimed\","

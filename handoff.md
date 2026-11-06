@@ -2,6 +2,105 @@
 
 ## Latest DTV continuation (2026-11-05/06)
 
+NEWEST UPDATE (supersedes pending-build notes below):3967 native checks PASS.
+Fresh callback-fix verification is COMPLETE: baseline18, display9, auxiliary,
+clock, forensics, clean-PATH startup, diagnostics and snapshots PASS. Strict
+replay6592741 events matches289 reference fields plus coverage exactly.
+ATV/teletext was rerun on the new native binary: both payloads remain distinct,
+full2073600-pixel GOP extent, no GE stop through2B. Consolidated evidence:
+evidence/dtv-tuner-mcu-validation.json. Only connected default-clock probe
+remains running; no build/suite driver is active now.
+Original-ISR probe now tests12 replies: invalid register/private-RAM transport,
+full Riu save/restore equivalence, and actual DSP parameter commands4/3.
+Snapshot restore DID omit VD callbacks; bindVdCallbacks now reinstalls them
+without resetting PC/registers. Continuous/restored transactions leave every
+serialized device byte identical. Default probe remains unchanged.
+
+The original MIPS initializer804F2FD0 writes46 parameter bytes from806A4950
+through804F2F14, command4. MCU4AF5/5469 maps DSP index to8000+index; command3
+reads it. Static proof pins these instructions. The native MIPS reply loop
+has only255 iterations and no delay. Divider1024 may timeout before servicing
+the original ISR and overwrite pending requests; DO NOT interpret resulting
+unknown private parameters as hardware reset values. New cold native probe
+work/dtv-rf-default-clock uses existing divider4 with the SAME RF fixture and
+diagnostic assumptions, script work/dtv_default_clock.py. Inspect its summary
+and last invalid reads when finished. Active process uses a copied executable.
+
+RF match682/mismatch683 probes at divider1024 BOTH completed2.15B with MCU0368
+unknown carry, no acquisition, no packets. Last invalid sources include8013,
+8014 and other configuration bytes. Their evidence does not validate RF lock.
+All suites + full6592741-event replay passed for3967-check RF/history build
+BEFORE callback repair. Fresh full validation is running again for callback
+repair and12-reply probe; do NOT ninja while it executes probes. No DTV push
+or deployment has happened. Prior ATV/TTX compatibility remains passing.
+
+LATEST WORK IN PROGRESS (after d380414):3957 core checks + all required suites
+and full6,592,741-event replay PASS on the field-packing/PLL decoder build.
+ATV/teletext compatibility PASS with two original decoded payloads/full-screen
+2073600-pixel GOP extent (work/dtv-atv-compatibility.json). Original native DTV
+probe work/dtv-native-raster reaches2.6B, tuner682MHz/bandwidth8 derived from
+real GPIO frame10 D5 90 14 C0. MCU now stops0368 on unknown carry used by JC
+in a generic arithmetic helper (not safe to choose an outcome). Last source
+origin was lost through rotations; new bounded dvbt_invalid_mcu_reads history
+will retain actual unknown XDATA reads so the missing measurement/config can
+be identified. Do NOT simply zero the carry or skip the helper.
+
+Original MIPS804F58C8..804F5A38 constructs digital PLL: double36.167 at80625748,
+double6.0 at80625750, CB90/ABC0; divide4309 maps681.999667MHz (CH47). Original
+analog804F5A3C emits CB93/ABF5,62.5kHz/38.9MHz. GpioI2c::pllTune now recognizes
+these two complete frames only; partial/unknown modes stay unknown. A digital
+frame no longer aliases an ATV station at230MHz. Native function SHA and pool
+constants are pinned in tools/dtv_firmware_proof.py. Bandwidth bit10 distinguishes
+8MHz from shared6/7 selection; six/seven ambiguity is kept unknown.
+
+NEW UNCOMMITTED RF FRONTEND (not yet validated end-to-end):
+src/peripherals/dvbt_rf.hpp + --exploratory-dtv-stations 'MHz|BW|FILE.ts;...' or
+off. Requires original VD bus +PLL. Bounded valid188-byte packets, no service
+parsing. IDEAL uncalibrated receiver only; derives documented silicon AGC212F.0,
+DCR2145.0, mode24CF.4, TPS2222.1 and P-sync232C.1; TPS2224..26 describe explicit
+64QAM/no hierarchy/2/3/8K/GI1/32 transmitter defaults. NEVER owns2070/23E0 or
+mailbox bytes. Unknown bandwidth/cochannel collision stays unknown. Strict
+defaults unchanged. PACKET DELIVERY TO TSP IS STILL UNIMPLEMENTED and summary
+explicitly reports0 delivered packets. No DTV website controls/deployment.
+Next build is running; run core/probes, full suites, then separate matching
+682MHz/off-input cold probes with actual .ts fixture and compare the last
+invalid MCU read history. No RF acquisition or channel reception claim yet.
+
+Potential existing bug to fix before using post-start VD snapshots: ioClass(Riu)
+rebinds VD code storage but appears not to reinstall VD busRead/busWrite callbacks
+in a fresh process. Early snapshot regression never reaches VD startup. Test an
+original-ISR save/restore equivalence and factor callback binding as needed.
+All active RF development probes use cold native boot, so this has not affected
+their evidence. Do not claim restored DTV MCU equivalence without testing it.
+
+Foundation committed as d380414. Continuing changes NOT YET COMMITTED:
+cpu/mcu_value_mask.hpp exact correlated ADD A,ACC abstraction, admitted only
+if EVERY represented input agrees on C/AC/OV; otherwise existing guard stops.
+Logical AND/OR/XOR with partially unknown Rn preserve masks and origins rather
+than refusing pure field-packing data. Unknown decisions/addresses still stop.
+3936 native checks PASS + original MCU seven-reply register-bus probe PASS.
+Current full verification driver work/dtv_validate.py is RUNNING again (do not
+ninja during its probes). Work/dtv-native-fields is a fresh native cold run
+to2.6B, SAME explicit diagnostic assumptions/divider1024, with MANTA_I2C_LOG=1.
+Binary work/dtv_field_native.exe is a COPY. Inspect its summary/stderr/index
+when finished. Prior2.1B probe is work/dtv-native-semaphore (completed).
+
+TSP packet-window deductions to VERIFY in an isolated ORIGINAL-program probe:
+210204 is the LE raw TS word at selected cursor: bits14/15=PUSI/TEI in byte1,
+bits28/29=adaptation control in byte3, bits24..27=continuity. 210208 is likely
+next raw word (low byte adaptation length at packet offset4). Native0xFF8
+writes payload cursor to210200, calls3C4 waiting210214 bit8, then1004 reads
+pointer field at210204. Thus ready8 may mean read-window-ready as well as
+initial packet arrival; must derive semantics, NOT blindly fake a ready poll.
+DMA helper400 writes count210224;428 writes command210218, polls210214 bit0,
+checks bit1 overflow and actual section BufCur movement. Original section
+register CP offsets24 start,28 end,2C read,30 write,34 current,38 remaining
+count,3C CRC (MIPS indirect offsets twice these). Native TSP handles section
+assembly/matching and original mailbox notifications itself. Generic HW DMA
+must move actual packet bytes into guest-configured buffers, never host-write
+PAT/SDT results or a channel database. Snapshot/idle-skip dependencies need
+invalidating on packet arrival/device state changes.
+
 NEWEST verified state:3931 native checks and ALL required suites PASS, including
 full6,592,741-event replay (289 fields equal, identical coverage). Original VD
 probe now verifies SEVEN ISR replies, invalid data round-trip through private

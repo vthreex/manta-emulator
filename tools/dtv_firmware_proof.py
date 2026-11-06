@@ -38,6 +38,12 @@ def word(address):
 assert word(0x804f506c) == 0x240423e0  # original FEC status request
 assert word(0x804f5088) == 0x2402000b  # original lock-state comparison
 assert word(0x804f50d8) == 0x24042070  # original TPS status request
+assert word(0x804f2ff8) == 0x2412002e  # initialize 46 DSP parameter bytes
+assert word(0x804f3008) == 0x0c13cbc5  # original WriteDspReg at804F2F14
+assert word(0x804f2f60) == 0x24030004  # parameter-write command4
+assert word(0x804f2fa4) == 0x10860008  # bounded polling; no sleep in this loop
+assert mcu[0x4af5:0x4b07] == bytes.fromhex('12 54 44 12 54 5c 50 0a 90 2f 03 e0 fd 12 54 69 ed f0')
+assert mcu[0x5469:0x5474] == bytes.fromhex('74 00 2f f5 82 e4 34 80 f5 83 22')
 tsp = flash[0x1e7838:0x1ebc40]
 assert hashlib.sha256(tsp).hexdigest() == '69785f9a58c2927ceb9e92cd0fb5d8b39c9978a3c2971a7e9e6fbd9a09df189a'
 for pc, expected in {0xe10:0x18e00021, 0xe14:0xa8c70200, 0xe20:0x84e60014,
@@ -50,6 +56,9 @@ assert word(0x805d878c) == 0x24120030  # 48 PID words
 assert word(0x805d8794) == 0x001020c0  # PID index * 8
 assert word(0x805d87b4) == 0x34522000  # section bank 0x422000
 assert word(0x805d87f4) == 0x26520100  # section stride 0x100 (CP byte stride 0x80)
+assert hashlib.sha256(runtime[0x804f58c8-0x803b3980:0x804f5a3c-0x803b3980]).hexdigest() == '30a8f64bbd9857bfd4c9820d1e062cec8999d141db6dbf37a4537f8e72e22edd'
+assert struct.unpack_from('<dd', runtime, 0x80625748-0x803b3980) == (36.167, 6.0)
+assert int((682+36.167)*6) == 4309  # observed native CH47 GPIO frame10 D5 90 14 C0
 a.report.write_text(json.dumps(dict(result='PASS', scope='static unmodified-firmware evidence only',
     original_flash_sha256=hashlib.sha256(flash).hexdigest(),
     copro_identity_cache_signature_verified=True,
@@ -58,8 +67,15 @@ a.report.write_text(json.dumps(dict(result='PASS', scope='static unmodified-firm
     boot_info_base_hardware_reset_known=False,
     fec_state_is_written_by_original_mcu=True,
     fec_lock_host_override_permitted=False,
+    parameter_initializer='original MIPS804F2FD0 writes46 bytes through command4',
+    parameter_mapping='original MCU5469 maps DSP index into XDATA8000+index',
+    parameter_polling_is_bounded=True,
     tsp_original_packet_processing_instructions_verified=True,
     tsp_packet_ready_observation='original PC0xe20 reads 0x210214 bit8',
     tsp_section_assembly_should_run_in_original_firmware=True,
+    digital_tuner_function='original MIPS804F58C8..804F5A38',
+    digital_tuner_if_mhz=36.167,
+    digital_tuner_steps_per_mhz=6,
+    observed_ch47_divider=4309,
     dtv_channel_reception_demonstrated=False), indent=2) + '\n')
 print('PASS: exact original identity-cache instructions and native MCU ownership of FEC state')

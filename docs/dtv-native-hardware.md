@@ -98,6 +98,37 @@ It does not retire or skip the failing guest instruction.
 
 ## Work still required
 
+### Current tuner, RF experiment and MCU restoration
+
+The original digital tuner function804F58C8..804F5A38 uses36.167MHz IF and
+six divider steps per MHz. Native CH47 writes10 D5 90 14 C0, divider4309,
+or681.999667MHz. The analog path uses a different control/auxiliary pair
+(93/F5),62.5kHz steps and38.9MHz IF. The tuner model recognizes these complete
+five-byte frames separately; partial and unknown modes remain unknown. The
+bandwidth mask0x10 identifies8MHz; the shared6/7MHz setting stays ambiguous.
+
+`--exploratory-dtv-stations 'MHz|BW|FILE.ts[;...]'` supplies bounded188-byte
+transport input, or `off` disconnects the experimental input. This is an
+explicitly ideal, uncalibrated post-FEC input model, not an OFDM decoder.
+Its half-raster capture window and fixed64QAM/2/3/8K/GI1/32 transmitter
+parameters are assumptions. It owns only documented silicon AGC/DCR/mode/TPS/
+P-sync observations; it never writes software status2070/23E0 or mailbox
+replies. No packets are delivered to TSP yet and no channels are received.
+
+Restoring an active original VD MCU now reinstalls its board callbacks without
+resetting guest state. The original-ISR probe verifies byte-identical device
+archives after continuous versus restored transactions, plus invalid-data
+round trips and unmapped-access rejection.
+
+The native parameter initializer804F2FD0 sends46 bytes through804F2F14 using
+mailbox command4. Original MCU4AF5/5469 writes each into XDATA8000+index;
+command3 reads it back. These original instructions are tested directly.
+The MIPS reply loop is bounded to255 iterations without a delay. Divider1024
+diagnostic runs left parameter bytes uninitialized and stopped on unknown
+carry at MCU0368. A default-divider4 cold run is checking whether those
+timeouts explain the missing parameters. Neither carry nor parameter RAM is
+initialized by the host to bypass that boundary.
+
 The next connected probe passes native TSP initialization and starts the
 original MHEG5 task through2.1B MIPS dispatches. It exposed and fixed missing
 validity reporting for the existing hardware semaphore owner. This run uses

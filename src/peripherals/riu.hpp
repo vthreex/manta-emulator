@@ -13,6 +13,8 @@
 #include <stdexcept>
 #include <vector>
 #include "peripherals/gpio_i2c.hpp"
+#include "peripherals/dvbt_rf.hpp"
+#include "peripherals/dvbt_registers.hpp"
 #include "peripherals/rtc.hpp"
 #include "peripherals/utmi.hpp"
 #include "peripherals/ev_text.hpp"
@@ -147,6 +149,7 @@ class Riu {
   void advanceVd(uint64_t tick);
   std::optional<VdByte> vdRead(uint16_t address);
   bool vdWrite(uint16_t address,VdByte value);
+  void bindVdCallbacks();
   bool vdMcuSuspended_=false;
   std::string vdMcuBoundaryReason_;
   RiuByteMap bytes_;
@@ -324,6 +327,14 @@ public:
   bool deferVdResetKeyWrites=false;
   bool exploratoryVdSharedRun=false;
   bool exploratoryDvbtRegisters=false; // opt-in shared register storage; no reset/lock/completion defaults
+  DvbtRf dvbtRf; // external ideal input; never owns software FEC/TPS publications or mailbox replies
+  struct VdInvalidRead {uint16_t pc,address,origin;uint8_t value,known;};
+  std::vector<VdInvalidRead> vdInvalidReads; // bounded observation history, not guest or restore state
+  DvbtRf::Observation dvbtLiveByte(uint32_t physical)const{
+    if(!dvbtRf.enabled)return {};
+    if(const auto x=dvbtXdataAddress(physical))return dvbtRf.sample(*x,dtvTunedMHz(),dtvTunedBandwidthMHz());
+    return {};
+  }
   bool resumeDvbtRegisterAccess(uint64_t tick){
     if(!exploratoryDvbtRegisters || !vdMcuSuspended_)return false;
     if(!vdMcuCpu_.resumePendingMovx())return false;
@@ -723,7 +734,9 @@ public:
   void livePut(uint32_t a, uint8_t v) { put(a, 1, v); }
   uint8_t liveGet(uint32_t a) const { return uint8_t(get(a, 1)); }
   std::vector<AtvStation> atvStations;
-  double atvTunedMHz() const { const auto& t = gpio_.tuner; if (!t.on || t.lastCount < 2) return -1; return double(((t.last[0] & 0x7f) << 8) | t.last[1]) * 0.0625 - 38.9; }
+  double atvTunedMHz() const { const auto t=gpio_.pllTune();return t && !t->digital?t->mhz:-1; }
+  double dtvTunedMHz() const { const auto t=gpio_.pllTune();return t && t->digital?t->mhz:-1; }
+  unsigned dtvTunedBandwidthMHz()const{const auto t=gpio_.pllTune();return t && t->digital?t->bandwidthMHz:0;}
   int atvLockedStation(double* offset = nullptr) const {
     const double f = atvTunedMHz(); if (f < 0) return -1; int best = -1; double bd = 3.0;
     for (size_t i = 0; i < atvStations.size(); ++i) { double d = std::fabs(f - atvStations[i].mhz); if (d <= bd) { bd = d; best = int(i); } }

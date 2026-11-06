@@ -92,7 +92,48 @@ void Riu::advancePm(uint64_t tick){
   if(!pm51_.started())pm51_.start(pmCode_);
   pm51_.advance(tick);
 }
+void Riu::bindVdCallbacks(){
+  vdMcuCpu_.deferSfr8eWrite=deferVdSfr8eWrite;
+  vdMcuCpu_.deferResetKeyWrites=deferVdResetKeyWrites;
+  vdMcuCpu_.coreDiagnostic=[this](int code){event("vd_core_diagnostic",0,0,unsigned(code),"upstream ISR register-preservation warning; not a guest CPU exception");};
+  vdMcuCpu_.deferredResetKey=[this](uint16_t address,uint8_t value){
+    event("deferred_vd_reset_key_write",address,1,value,
+      "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated");
+  };
+  vdMcuCpu_.deferredSfr8e=[this](uint8_t value){
+    event("deferred_vd_sfr8e_write",0x8e,1,value,
+      "EXPLORATORY write-effect deferral only; original instruction executes; identity/clock/memory-mode effects unresolved; read remains forbidden, no peripheral response generated");
+  };
+  vdMcuCpu_.instruction=[this](uint16_t pc,uint8_t opcode,const std::string& text){
+    if(exploratoryVdSharedRun && !vdVisited_.insert(pc).second)return;
+    event("vd_mcu_instruction",pc,1,opcode,"original uploaded MCU instruction attempt: "+text+"; standard 8052 reset/RAM experiment, bounded synchronous startup burst");
+  };
+  vdMcuCpu_.external=[this](uint16_t address,bool write,uint8_t value){
+    event("vd_mcu_blocked_xdata",address,1,value,
+      std::string(write?"write":"read")+" from original VD MCU; MCU PC="+std::to_string(vdMcuCpu_.pc())+"; MStar XDATA-to-RIU/private-memory mapping unverified, no byte fabricated");
+  };
+  vdMcuCpu_.specialRegister=[this](uint8_t address,bool write,uint8_t value){
+    event("vd_mcu_blocked_sfr",address,1,value,
+      std::string(write?"write":"read")+" from original VD MCU; MCU PC="+std::to_string(vdMcuCpu_.pc())+"; nonstandard MStar SFR definition unresolved");
+  };
+  if(exploratoryVdSharedRun){
+    vdMcuCpu_.busRead=[this](uint16_t address){return vdRead(address);};
+    vdMcuCpu_.busWrite=[this](uint16_t address,VdByte v){return vdWrite(address,v);};
+    vdMcuCpu_.standardInterrupts=true;
+  }else{vdMcuCpu_.busRead={};vdMcuCpu_.busWrite={};}
+}
 std::optional<VdByte> Riu::vdRead(uint16_t address){
+  auto observed=[&](VdByte v){
+    if(exploratoryDvbtRegisters && v.known!=255){
+      const VdInvalidRead now{vdMcuCpu_.pc(),address,v.origin,v.value,v.known};
+      const auto same=[&](const VdInvalidRead& p){return p.pc==now.pc && p.address==now.address && p.origin==now.origin && p.value==now.value && p.known==now.known;};
+      if(vdInvalidReads.empty() || !same(vdInvalidReads.back())){
+        if(vdInvalidReads.size()==64)vdInvalidReads.erase(vdInvalidReads.begin());
+        vdInvalidReads.push_back(now);
+      }
+    }
+    return v;
+  };
   if(address>=0x2f00 && address<0x2f20){
     auto i=uint32_t(address-0x2f00),physical=0x1f224c00+(i<<1)-(i&1);
     ++vdMailboxReads_;
@@ -102,22 +143,22 @@ std::optional<VdByte> Riu::vdRead(uint16_t address){
       event("vd_shared_mailbox_read",physical,1,v.value,"original MCU XDATA="+std::to_string(address)+"; same RIU bytes as MIPS, validity="+std::to_string(v.known)+"; repeated identical MCU reads counted but omitted from trace");
       vdLastMailboxReads_[address]=v;
     }
-    return v;
+    return observed(v);
   }
-  if(address==0x1b00)return VdByte{vdFiqMask_.value,vdFiqMask_.known,address};
+  if(address==0x1b00)return observed(VdByte{vdFiqMask_.value,vdFiqMask_.known,address});
   if(address==0x2071 || address==0x2072){
     auto v=vdVersionBytes_[address-0x2071];
     if(v.known!=255)throw VdHardwareBoundary("VD MCU version byte read before original initialization");
     return VdByte{v.value,v.known,address};
   }
   if(exploratoryDvbtRegisters)if(auto physical=dvbtSharedAddress(address)){
-    return VdByte{uint8_t(get(*physical,1)),uint8_t(knownBits(*physical,1)),address};
+    return observed(VdByte{uint8_t(get(*physical,1)),uint8_t(knownBits(*physical,1)),address});
   }
-  if(address==0x1b10)return VdByte{uint8_t(vdMcuProgram_.interruptPending?4:0),4,address};
+  if(address==0x1b10)return observed(VdByte{uint8_t(vdMcuProgram_.interruptPending?4:0),4,address});
   if(address>=0x8000 && address<0x8400){
     auto v=vdPrivateRam_[address-0x8000];
     if(v.known!=255 && !exploratoryDvbtRegisters)throw VdHardwareBoundary("VD MCU private XRAM read before original initialization");
-    return VdByte{v.value,v.known,address};
+    return observed(VdByte{v.value,v.known,address});
   }
   return {};
 }
@@ -766,6 +807,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     v&=~bit;if(pqSram_.known())v|=bit;
   }
   if(inputTiming.on)for(unsigned i=0;i<n;++i)if(inputTimingByte(a+i))v|=0xffu<<(8*i);
+  if(dvbtRf.enabled)for(unsigned i=0;i<n;++i){const auto b=dvbtLiveByte(a+i);v=(v&~(uint32_t(b.owned)<<(8*i)))|(uint32_t(b.known)<<(8*i));}
   return v;
 }
 namespace { struct ReadHist { std::map<uint32_t,uint64_t> m; bool on=std::getenv("MANTA_READ_HIST")!=nullptr;
@@ -790,6 +832,7 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
       byte=(0xa5u&~sample.known)|(sample.value&sample.known);
     }
     if(a+i==0x1f001d84 && pmPowerGood_.configured())byte=(byte&~7u)|(pmPowerGood_.sample().value&7);
+    if(dvbtRf.enabled){const auto b=dvbtLiveByte(a+i);byte=(byte&~uint32_t(b.owned))|(b.value&b.owned);}
     v |= byte << (i * 8);
   }
   if(exploratoryAfecIndirect_>=0 && afecIndirectActive())
@@ -1546,34 +1589,10 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
         "original program readback complete; bounded original 8051/8052 startup experiment; no ready response fabricated":
         "original DVB-T program readback complete; auxiliary CPU execution disabled; no ready response fabricated");
       if(exploratoryVdMcuStartup){
-        vdMcuCpu_.deferSfr8eWrite=deferVdSfr8eWrite;
-        vdMcuCpu_.deferResetKeyWrites=deferVdResetKeyWrites;
-        vdMcuCpu_.coreDiagnostic=[this](int code){event("vd_core_diagnostic",0,0,unsigned(code),"upstream ISR register-preservation warning; not a guest CPU exception");};
-        vdMcuCpu_.deferredResetKey=[this](uint16_t address,uint8_t value){
-          event("deferred_vd_reset_key_write",address,1,value,
-            "EXPLORATORY original AA/55/AA/55 XDATA sequence; write effect unmodeled, no ready response generated");
-        };
-        vdMcuCpu_.deferredSfr8e=[this](uint8_t value){
-          event("deferred_vd_sfr8e_write",0x8e,1,value,
-            "EXPLORATORY write-effect deferral only; original instruction executes; identity/clock/memory-mode effects unresolved; read remains forbidden, no peripheral response generated");
-        };
-        vdMcuCpu_.instruction=[this](uint16_t pc,uint8_t opcode,const std::string& text){
-          if(exploratoryVdSharedRun && !vdVisited_.insert(pc).second)return;
-          event("vd_mcu_instruction",pc,1,opcode,"original uploaded MCU instruction attempt: "+text+"; standard 8052 reset/RAM experiment, bounded synchronous startup burst");
-        };
-        vdMcuCpu_.external=[this](uint16_t address,bool write,uint8_t value){
-          event("vd_mcu_blocked_xdata",address,1,value,
-            std::string(write?"write":"read")+" from original VD MCU; MCU PC="+std::to_string(vdMcuCpu_.pc())+"; MStar XDATA-to-RIU/private-memory mapping unverified, no byte fabricated");
-        };
-        vdMcuCpu_.specialRegister=[this](uint8_t address,bool write,uint8_t value){
-          event("vd_mcu_blocked_sfr",address,1,value,
-            std::string(write?"write":"read")+" from original VD MCU; MCU PC="+std::to_string(vdMcuCpu_.pc())+"; nonstandard MStar SFR definition unresolved");
-        };
+        bindVdCallbacks();
         vdMcuSuspended_=false;vdMcuBoundaryReason_.clear();
         try{
           if(exploratoryVdSharedRun){
-            vdMcuCpu_.busRead=[this](uint16_t address){return vdRead(address);};
-            vdMcuCpu_.busWrite=[this](uint16_t address,VdByte v){return vdWrite(address,v);};
             vdMcuCpu_.standardInterrupts=true;vdFiqMask_={};vdPrivateRam_.fill({});
             vdMcuCpu_.resetProgram(vdMcuProgram_);vdTick_=tick;
           }else vdMcuCpu_.startup(vdMcuProgram_);

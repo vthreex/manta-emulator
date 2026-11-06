@@ -2,6 +2,7 @@
 #include "snapshot/archive.hpp"
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <string>
 namespace manta {
 // Stock descriptor pairs: GPIO 65/66 and 69/70. OEN=1 releases the
@@ -28,6 +29,18 @@ public:
   // answers reads with `status` (bit 6 = FL phase lock in that family; ASSUMPTION, no datasheet for the Manta tuner). Not snapshot state.
   struct PllTuner { bool on = false; uint8_t address = 0xC0, status = 0x40; uint8_t frame[6]{}; unsigned count = 0; uint32_t writes = 0, reads = 0;
     uint8_t last[6]{}; unsigned lastCount = 0; bool selected = false, reading = false; } tuner;
+  struct PllTune { bool digital=false;double mhz=0;unsigned bandwidthMHz=0; };
+  // Decode only the two five-byte modes emitted by this original firmware.
+  // DTV804F58C8 uses trunc((MHz+36.167)*6), CB90/ABC0; ATV uses CB93/ABF5
+  // and the independently observed 62.5-kHz raster /38.9-MHz IF. Unknown
+  // modes remain unknown rather than silently using the analog conversion.
+  std::optional<PllTune> pllTune()const{
+    if(!tuner.on || tuner.lastCount<5 || (tuner.last[0]&0x80))return {};
+    const auto divider=unsigned(tuner.last[0])<<8|tuner.last[1];
+    if(tuner.last[2]==0x93 && tuner.last[4]==0xf5)return PllTune{false,double(divider)/16.0-38.9,0};
+    if(tuner.last[2]==0x90 && tuner.last[4]==0xc0)return PllTune{true,double(divider)/6.0-36.167,(tuner.last[3]&0x10)?8u:0u};
+    return {};
+  }
   std::function<void(const std::string &, uint32_t, uint32_t, const std::string &)> event;
   void write(uint32_t a, uint8_t v, uint8_t known);
   // An external open-drain participant can pull a line low, never drive high.

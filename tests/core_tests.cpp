@@ -349,6 +349,17 @@ void riuTests() {
 }
 void gpioTests() {
   manta::GpioI2c g;
+  {
+    manta::GpioI2c pll;pll.tuner.on=true;pll.tuner.lastCount=5;
+    const uint8_t analog[]={0x05,0xe2,0x93,0x01,0xf5};std::copy(std::begin(analog),std::end(analog),pll.tuner.last);
+    require(pll.pllTune() && !pll.pllTune()->digital && std::abs(pll.pllTune()->mhz-55.225)<0.000001,"observed analog PLL mode retains its proven frequency conversion");
+    const uint8_t digital[]={0x10,0xd5,0x90,0x14,0xc0};std::copy(std::begin(digital),std::end(digital),pll.tuner.last);
+    require(pll.pllTune() && pll.pllTune()->digital && std::abs(pll.pllTune()->mhz-682)<0.001 && pll.pllTune()->bandwidthMHz==8,"original CH47 digital frame decodes with its own raster and IF, without an analog frequency alias");
+    pll.tuner.last[3]=4;
+    require(pll.pllTune() && pll.pllTune()->bandwidthMHz==0,"six/seven MHz ambiguity is not guessed from the shared narrow-band tuner bit");
+    pll.tuner.last[2]=0x91;require(!pll.pllTune(),"an unobserved PLL mode cannot inherit a made-up frequency");
+    pll.tuner.last[2]=0x90;pll.tuner.lastCount=2;require(!pll.pllTune(),"a partial divider write is not a complete known tuner configuration");
+  }
   std::vector<std::string> events;
   g.event = [&](const auto &kind, auto, auto value, const auto &detail) {
     events.push_back(kind + ":" + std::to_string(value) + ":" + detail);
@@ -1260,7 +1271,71 @@ void htotalBranchJoinTests(){
 #include "spi_nor_program_tests.inc"
 #include "usb_host_tests.inc"
 #include "pal_cvbs_tests.inc"
+void mcuPackedDataTests(){
+  // Isolated ISA fixture on the existing 8051 engine, not a TV image or a
+  // replacement routine in connected boot. Exercise the real opcodes used
+  // by original DVB-T field packing, including both possible poison values.
+  const std::vector<uint8_t> packing={0x90,0x22,0x22,0xe0,0x54,0x01,0x25,0xe0,0x25,0xe0,0xff,0x78,0x52,
+    0xe6,0x54,0xfb,0x4f,0xf6,0xe6,0x54,0xfb,0x60,0x00,0x80,0xfe};
+  auto run=[&](std::vector<uint8_t> bytes,uint8_t value,uint8_t known,bool rejectAddress,bool rejectFlags){
+    manta::VdMcuProgram p;p.write(0,1);p.write(1,0);p.write(5,0x51);p.write(8,0);p.write(9,0);
+    for(auto b:bytes)p.write(0x18,b);
+    manta::VdMcuCpu cpu;cpu.busRead=[&](uint16_t a)->std::optional<manta::VdByte>{
+      require(a==0x2222,"isolated MCU reads only its configured test observation");return manta::VdByte{value,known,a};};
+    cpu.resetProgram(p);std::string boundary;
+    try{for(unsigned t=0;t<100 && cpu.instructions()<15;++t)cpu.step();}catch(const manta::VdHardwareBoundary& e){boundary=e.what();}
+    if(rejectAddress)require(!boundary.empty() && boundary.find("indirect address")!=std::string::npos,"packed invalid data cannot select an IRAM address");
+    else if(rejectFlags)require(!boundary.empty(),"ADD A,ACC with indeterminate arithmetic flags still stops even when result bits would agree");
+    else if(bytes==packing){
+      const auto [v,k,o]=cpu.iramInfo(0x52);(void)o;
+      require(boundary.empty() && k==0xfb && (v&4)==(value?4:0),"real MCU field packing retains its unknown bit through a known-address private IRAM store");
+      require(cpu.accumulatorKnown()==255 && cpu.accumulator()==0,"masking the stored unknown field makes the later real branch independent of the poison value");
+    }else require(!boundary.empty(),"unmasked packed invalid data cannot choose a real MCU branch");
+  };
+  for(uint8_t v:{0,1}){
+    run(packing,v,0xfe,false,false);
+    auto branch=packing;branch[19]=branch[20]=0;run(branch,v,0xfe,false,false);
+    auto address=packing;address[19]=0xf8;address[20]=0xe6;run(address,v,0xfe,true,false);
+  }
+  run({0x90,0x22,0x22,0xe0,0x25,0xe0,0x80,0xfe},0,0x7f,false,true);
+}
+void dvbtRfTests(){
+  manta::DvbtRf::Station s;s.mhz=682;s.bandwidthMHz=8;s.transport.assign(188,255);s.transport[0]=0x47;s.transport[1]=0x1f;s.transport[2]=0xff;s.transport[3]=0x10;
+  manta::DvbtRf::validate(s);auto bad=s;bad.transport[0]=0;
+  rejects([&]{manta::DvbtRf::validate(bad);});bad=s;bad.transport.pop_back();rejects([&]{manta::DvbtRf::validate(bad);});
+  manta::DvbtRf rf;rf.stations.push_back(s);
+  require(rf.sample(0x2222,682,8).owned==0,"strict default has no fabricated DVB-T lock or reset observation");
+  rf.enabled=true;
+  require(rf.reception(681.999667,8)==true && rf.reception(683,8)==false,"ideal RF reception follows the original PLL frequency and rejects another channel");
+  require(!rf.reception(682,0).has_value(),"unknown six/seven MHz receiver bandwidth stays unknown");
+  const auto tps=rf.sample(0x2222,682,8),off=rf.sample(0x2222,683,8);
+  require(tps.known==2 && tps.value==2 && off.known==2 && off.value==0,"only the named hardware TPS observation is derived from an actual configured transport input");
+  require(rf.sample(0x2224,682,8).known==0x73 && rf.sample(0x2224,683,8).known==0,"TPS parameters are invalid before acquisition");
+  bool softwareUntouched=true;for(auto x:{0x2070,0x23e0,0x2f00,0x2f03})softwareUntouched&=rf.sample(uint16_t(x),682,8).owned==0;
+  require(softwareUntouched,"RF input cannot publish the original MCU's FEC state, TOP status or mailbox replies");
+  rf.stations.push_back(s);require(!rf.reception(682,8).has_value(),"cochannel inputs cannot silently become one perfect locked transmitter");
+  bool reverse=true;for(unsigned x=0x2000;x<0x2600;++x)reverse&=manta::dvbtXdataAddress(*manta::dvbtSharedAddress(uint16_t(x)))==x;
+  require(reverse && !manta::dvbtXdataAddress(0x1f224002).has_value(),"RF register aliases round trip without admitting padding lanes");
+}
 void coproValidityTests(){
+  {
+    const auto lowBit=manta::mcuDoubleMasks({0,0xfe});
+    require(lowBit.result.known==0xfd && (lowBit.flagsKnown&0xc4)==0xc4,"ADD A,ACC packs an unknown low bit without losing its correlation or inventing arithmetic flags");
+    const auto highBit=manta::mcuDoubleMasks({0,0x7f});
+    require(highBit.result.known==255 && (highBit.flagsKnown&0x80)==0,"doubling may determine every data bit while its carry remains invalid");
+    bool sound=true;
+    for(unsigned mask:{0xffu,0xfeu,0xfcu,0xf0u,0x80u,0x7fu,0u})for(unsigned v=0;v<256;++v){
+      const auto abstraction=manta::mcuDoubleMasks({uint8_t(v),uint8_t(mask)});
+      for(unsigned x=0;x<256;++x)if(((x^v)&mask)==0){
+        sound&=(((2*x)^abstraction.result.value)&abstraction.result.known&255)==0;
+      }
+    }
+    require(sound,"finite doubling masks contain every concrete represented result");
+    const auto packed=manta::mcuLogicMasks({0,255},{4,0xfb},manta::McuLogic::Or);
+    require(packed.known==0xfb,"packing an unknown configuration field through Rn retains that field's invalid bits");
+    const auto masked=manta::mcuLogicMasks({0xfb,255},{4,0xfb},manta::McuLogic::And);
+    require(masked.known==255 && masked.value==0,"a known zero mask removes unknown bits without guessing their values");
+  }
   manta::UnknownObservations memory;
   memory.markMemoryUnknown(0x154b44,4,0x1f200198);
   require(!memory.memoryKnown(0x154b44,4) && memory.memoryKnown(0x154b78,4),"validity queries distinguish a cached opaque value from known pointers in the same page");
@@ -3175,6 +3250,8 @@ int main() {
     geBitBltTests();
     geStretchRequestTests();
     vbiSlotTests();
+    mcuPackedDataTests();
+    dvbtRfTests();
     coproValidityTests();
     htotalBranchJoinTests();
     readMaskTests();

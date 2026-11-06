@@ -107,6 +107,7 @@ struct Options {
   std::optional<std::array<uint16_t,7>> exploratoryInputTiming;   // EXPLORATORY: HPERIOD,VTOTAL,SYNC[,VSTART,HSTART,VEND,HEND] for the scaler IP1 mode detector (main window)
   bool exploratoryPllTuner = false;
   std::string exploratoryAtvStations;   // EXPLORATORY: MHZ[=PICTURE.bmp][@LEVEL],... (docs/atv-tuner-model.md)    // EXPLORATORY: PLL tuner slave at 0xC0 on the tuner I2C bus (docs/atv-tuner-model.md)
+  std::string exploratoryDtvStations; // ideal RF observations from MHz|bandwidth|FILE.ts; native TSP packet path remains separate
   std::string exploratoryHdmiSignal;   // EXPLORATORY: the --exploratory-hdmi-signal mode text, for the summary
   std::string exploratoryInputPicture;   // EXPLORATORY: BMP shown as the video of the generated input signal (empty = built-in picture)
   bool nativeColdBoot=false;   // native build only: with --native-cpu and no --load-state, start at the reset vector (recompiled boot ROM, native/tools/gen_boot.py)

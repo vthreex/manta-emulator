@@ -72,6 +72,7 @@ static int appMain(const std::vector<std::string> &args) {
         o.gpioI2c = true;
       else if (a == "--exploratory-pll-tuner")
         o.exploratoryPllTuner = true;
+      else if (a == "--exploratory-dtv-stations")o.exploratoryDtvStations=value(i);
       else if (a == "--exploratory-atv-stations")
         o.exploratoryAtvStations = value(i);
       else if (a == "--candidate-miu")
@@ -484,6 +485,7 @@ static int appMain(const std::vector<std::string> &args) {
                "--exploratory-copro-zero-unknown-reads: LABELLED HYPOTHESIS, unknown coprocessor registers read as 0\n"
                "--candidate-copro-riu: connect the original multimedia CPU to board RIU models with invalid-bit tracking; no blanket-zero reads\n"
                "--diagnostic-copro-boundary-stop: debugger halt when original multimedia code reaches an unresolved hardware boundary\n"
+               "--exploratory-dtv-stations 'MHz|bandwidth|FILE.ts[;...]' or off: IDEAL RF HYPOTHESIS, no OFDM/ADC/timing calibration; silicon lock/TPS fields only, never FEC software state or channels; native packet delivery not yet implemented\n"
                "--copro-probes: inspect original multimedia loader output in guest RAM; no processor/reset/status emulation\n"
                "--opaque-read-policy FILE: guarded INVALID observations at exact code/hash/PC/address/width only; no values or readiness\n"
                "--opaque-policy-wait-ms N: debugger freeze of ALL virtual clocks at unmatched reads, maximum300000; default0\n"
