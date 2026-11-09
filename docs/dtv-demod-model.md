@@ -43,3 +43,14 @@ answer back in the argument registers. Machine::mvdCommand answers the start-up 
 0x11114237 (8051514C). The driver then runs its full set-up and play sequence (59 57 58 55 20 21 5C 13 14 15 12 10 11 08 0C 3C 65 39
 01 1F 0A 0B 03). No status command is polled afterwards; the decoded-frame report (interrupt or shared memory) is the next unknown,
 and the picture stays muted.
+
+## Decoder interrupt and open problem (2026-11-09)
+* Decoder interrupt path decoded: ISR 8050F6C8 gets its status from MVD command 0x30 (80514174), acks with 1F202200 bit2 (80513418),
+  re-enables MsOS interrupt 3 = hardware IRQ 3 (table 80654D2C; mask 1F2033D0/D4, final status 1F2033F0/F4 read by 8060A840).
+  On status bit 0x1000 it checks the shared frame-info byte +0x2B (8050EE70) and command 0x0D == 1 (8050DE70), then raises
+  E_MVD_EVENT_UNMUTE. Modelled (Machine::mvdTick, IRQ bank 0 in Riu): one "frame shown" every 2 M dispatches while locked.
+  MANTA_NO_MVDIRQ=1 disables it.
+* OPEN: after DTV Manual Tuning, leaving the menu shows NO SIGNAL on the found channel (both with and without A/V packets, with and
+  without the decoder interrupt, with three different signal-quality presets via MANTA_DMD_PRESET). The channel view polls
+  demodulator registers 0x2122/0x2224/0x2125/0x2113/0x2332 (quality loop 804F37C0). The DTV NO SIGNAL decision is not found yet;
+  the decoder ISR never ran (no command 0x30), so the un-mute path is untested.

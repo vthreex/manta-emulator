@@ -555,6 +555,16 @@ public:
   std::array<uint32_t, 4> fiqPending{};
   uint64_t fiqRaises = 0, fiqStatusReads = 0, fiqStatusWrites = 0, fiqLineChanges = 0;
   std::function<void()> fiqChanged;
+  // EXPLORATORY IRQ bank 0 (hw 0..31; mask 1F2033D0/D4, final status 1F2033F0/F4 as the original dispatcher 8060A840 reads them;
+  // write-1-to-clear assumed like the FIQ model). Used by the DTV video decoder model (MsOS interrupt 3 = hw 3, table 80654D2C).
+  bool irqModel = false; uint32_t irqPending0 = 0; uint64_t irqRaises = 0;
+  void irqRaise(unsigned hw) { if (!irqModel || hw >= 32) return; irqPending0 |= 1u << hw; ++irqRaises; if (fiqChanged) fiqChanged(); }
+  void irqClear(unsigned hw) { if (hw < 32 && (irqPending0 & (1u << hw))) { irqPending0 &= ~(1u << hw); if (fiqChanged) fiqChanged(); } }
+  bool irqLine() const {
+    if (!irqModel || !irqPending0) return false; uint8_t b[4]; uint32_t mask = 0xffffffffu; bool known = true;
+    for (unsigned i = 0; i < 4; ++i) known = known && coproPeekByte(0x1f2033d0u + (i < 2 ? i : i + 2), b[i]);
+    if (known) mask = uint32_t(b[0]) | uint32_t(b[1]) << 8 | uint32_t(b[2]) << 16 | uint32_t(b[3]) << 24;
+    return (irqPending0 & ~mask) != 0; }
   void fiqRaise(unsigned hw) { if (!fiqModel || hw >= 128) return; fiqPending[hw >> 5] |= 1u << (hw & 31); ++fiqRaises; if (fiqChanged) fiqChanged(); }
   bool fiqLine() const {
     for (unsigned bank : {1u, 3u}) {

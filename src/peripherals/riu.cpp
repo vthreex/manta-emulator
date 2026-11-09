@@ -1047,6 +1047,11 @@ uint32_t Riu::read(uint32_t a, unsigned n, uint32_t pc, uint32_t mask, uint64_t 
     }else throw std::runtime_error("EXPLORATORY MStar timer: register 1F006050.. not modelled");
     return v;
   }
+  if(irqModel && a>=0x1f2033f0u && a+n<=0x1f2033f8u){   // EXPLORATORY IRQ bank 0 final status (see irqRaise)
+    uint32_t v=0;
+    for(unsigned i=0;i<n;++i){ unsigned off=a+i-0x1f2033f0u, reg=off>>2, byte=off&3; if(byte<2) v|=((irqPending0>>(16*reg+8*byte))&255u)<<(8*i); }
+    return v;
+  }
   if(fiqModel && a>=0x1f2033b0u && a+n<=0x1f2033c0u){
     uint32_t v=0;
     for(unsigned i=0;i<n;++i){
@@ -1413,6 +1418,11 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
     return;
   }
   if (tick >= writeLogFrom && (writeLog.size() < 6000 || writeLog.count(storageKey(a)))) { auto& s = writeLog[storageKey(a)]; if (!s.count) s.firstPc = pc; ++s.count; s.last = v; s.width = n; }
+  if(irqModel && a>=0x1f2033f0u && a+n<=0x1f2033f8u){
+    for(unsigned i=0;i<n;++i){ unsigned off=a+i-0x1f2033f0u, reg=off>>2, byte=off&3; if(byte<2) irqPending0&=~(((v>>(8*i))&255u)<<(16*reg+8*byte)); }
+    if(fiqChanged)fiqChanged();
+    return;
+  }
   if(fiqModel && a>=0x1f2033b0u && a+n<=0x1f2033c0u){
     for(unsigned i=0;i<n;++i){
       unsigned off=a+i-0x1f2033b0u, reg=off>>2, byte=off&3;

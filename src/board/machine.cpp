@@ -57,6 +57,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.pllTuner(o.exploratoryPllTuner);
   riu_.dtvDemodModel = o.exploratoryDtvDemod;
   TspSectionDma::dropOnOverflow = o.exploratoryDtvDemod;
+  if (o.exploratoryDtvDemod) { riu_.irqModel = true; if (!riu_.fiqChanged) riu_.fiqChanged = [this] { updateIrqLines(); }; }
   if (!o.exploratoryAtvStations.empty()) setAtvStations(o.exploratoryAtvStations);
   if (!o.exploratoryDtvMuxes.empty()) setDtvMuxes(o.exploratoryDtvMuxes);
   riu_.candidateMiu = o.candidateMiu;
@@ -651,7 +652,7 @@ void Msd309Machine::formatEventLine(std::string &line, uint64_t tick, uint32_t p
 }
 // The guest wrote 3 to the reset-control byte 1F201FE0 (the original enable sequence; the meaning of the value is inferred from ordering only).
 void Msd309Machine::updateIrqLines() {
-  const uint32_t lines = riu_.fiqLine() ? 2u : 0u;   // FIQ -> Cause.IP3 (the guest's IP3 slot at 806F70B0 is the FIQ dispatcher path)
+  const uint32_t lines = (riu_.fiqLine() ? 2u : 0u) | (riu_.irqLine() ? 1u : 0u);   // IRQ bank 0 -> Cause.IP2 (EXPLORATORY DTV decoder model)   // FIQ -> Cause.IP3 (the guest's IP3 slot at 806F70B0 is the FIQ dispatcher path)
   if (lines == irqLinesApplied_) return;
   irqLinesApplied_ = lines;
   ++riu_.fiqLineChanges;
@@ -1541,6 +1542,7 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
     auto a = 0x1f000000 + uint32_t(off);
     auto pc = m.guestPc();
     if (a >= 0x1f206e00 && a < 0x1f206f00 && !m.riu_.atvStations.empty()) m.vbiFeed();
+    if (m.options_.exploratoryDtvDemod) m.mvdTick();
     // EXPLORATORY DTV mode: the MPEG video decoder's own RISC is not emulated; its command register 0x1101 (1F202201) reports bit1
     // "command done", which the original driver polls up to 2000 times per command (80513C5C). No decoded picture is implied.
     if (m.options_.exploratoryDtvDemod && a == 0x1f202201 && n == 1) return uint64_t(m.riu_.liveGet(a) | 0x02);
@@ -2374,6 +2376,7 @@ void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v,
     m.riu_.write(a, n, uint32_t(v), pc, m.cpu_.reg(UC_MIPS_REG_3), m.virtualTime_.cycles(m.dispatches_));
     if (m.options_.exploratoryDtvDemod && a == 0x1f206905 && n == 1 && (v & 0xff) == 2) m.dtvMailbox();
     if (m.options_.exploratoryDtvDemod && a == 0x1f202204 && n == 1) m.mvdCommand(uint8_t(v));
+    if (m.options_.exploratoryDtvDemod && a == 0x1f202200 && n == 1 && (v & 4)) m.riu_.irqClear(3);   // original ISR ack (80513418)
     { static const bool mvdLog = std::getenv("MANTA_MVD_LOG") != nullptr; if (mvdLog && a >= 0x1f202200 && a < 0x1f202240) std::fprintf(stderr, "MW %08x %u %08x %08x\n", a, n, unsigned(v), pc); }
     if (!m.riu_.selfClearBits.empty()) m.riu_.applySelfClearing(a, n);
     if (a >= 0x1f203e00 && a < 0x1f203ffc && m.riu_.gopBankKnown()) {
@@ -2666,6 +2669,10 @@ void Msd309Machine::dtvMailbox() {
   const uint8_t data = riu_.liveGet(0x1f224c05);
   uint8_t out = data;
   if (cmd == 1) { auto it = dmdRegs_.find(addr); out = it != dmdRegs_.end() ? it->second : 0;
+    { static std::map<uint16_t, uint8_t> preset = [] { std::map<uint16_t, uint8_t> m; if (const char* e = std::getenv("MANTA_DMD_PRESET")) { std::string t = e; size_t at = 0;
+        while (at < t.size()) { size_t c = t.find(',', at); if (c == std::string::npos) c = t.size(); auto it = t.substr(at, c - at); at = c + 1; auto eq = it.find('=');
+          if (eq != std::string::npos) m[uint16_t(std::stoul(it.substr(0, eq), nullptr, 16))] = uint8_t(std::stoul(it.substr(eq + 1), nullptr, 16)); } } return m; }();
+      if (riu_.dtvLockedMux() >= 0) { auto p = preset.find(addr); if (p != preset.end()) out = p->second; } }
     // lock stages the original query 804F4FEC tests (table 806254E8): FSM 0x23E0 == 0x0B, 0x232C bit1, 0x2070 bit3, 0x2145 bit0, 0x212F bit0,
     // 0x24CF bit4. While the tuner sits on a user multiplex they all read locked; elsewhere the FSM stays in its search state.
     if (riu_.dtvLockedMux() >= 0) { switch (addr) { case 0x23e0: out = 0x0b; break; case 0x232c: out |= 2; break; case 0x2070: out |= 8; break;
@@ -2680,13 +2687,29 @@ void Msd309Machine::dtvMailbox() {
 // back from the argument registers. The decoder's own RISC is not emulated; this answers the start-up handshake the driver checks:
 // 0x74 "firmware alive" = 1 (80514FBC, polled 2000x) and 0x5E firmware version = 0x11114237 (compared at 8051514C). Other commands keep
 // their arguments (logged with MANTA_MVD_LOG=1). No decoded picture is implied.
+// While a user multiplex is locked and the decoder has passed its handshake, every 2 M dispatches (ASSUMED frame period) the model
+// reports one shown frame: status 0x1000 for command 0x30, the shared frame-info flag (+0x2B of the buffer at *(806D847C), read by
+// 8050EE70) set, and hardware IRQ 3 raised. The original ISR 8050F6C8 then raises E_MVD_EVENT_UNMUTE itself. No pixels are decoded.
+void Msd309Machine::mvdTick() {
+  static const bool off = std::getenv("MANTA_NO_MVDIRQ") != nullptr; if (off) return;
+  if (!mvdPlaying_ || riu_.dtvLockedMux() < 0 || dispatches_ < mvdNextFrame_) return;
+  mvdNextFrame_ = dispatches_ + 2000000; ++mvdFrames_;
+  uint32_t buf = 0; std::memcpy(&buf, dramBacking_.data() + 0x006d847c, 4);
+  uint32_t miu1 = 0; if (dramBacking_[0x006fe9f0 + 0x3c] == 1) std::memcpy(&miu1, dramBacking_.data() + 0x006fe9f0 + 0x38, 4);
+  const uint64_t at = uint64_t((buf + miu1) & 0x1fffffff) + 0x2b;
+  if (buf && at < dramBacking_.size()) dramBacking_[at] = 1;
+  mvdStatus_ |= 0x1000;
+  riu_.irqRaise(3);
+}
 void Msd309Machine::mvdCommand(uint8_t cmd) {
   static const uint32_t argAt[6] = {0x1f202208, 0x1f202209, 0x1f20220c, 0x1f20220d, 0x1f202210, 0x1f202211};
   uint8_t arg[6]; for (int i = 0; i < 6; ++i) arg[i] = riu_.liveGet(argAt[i]);
   auto put32 = [&](uint32_t v) { for (int i = 0; i < 4; ++i) arg[i] = uint8_t(v >> (8 * i)); arg[4] = arg[5] = 0; };
   switch (cmd) {
     case 0x74: put32(1); break;
-    case 0x5e: put32(0x11114237u); break;
+    case 0x5e: put32(0x11114237u); mvdPlaying_ = true; break;
+    case 0x30: arg[2] = uint8_t(mvdStatus_); arg[3] = uint8_t(mvdStatus_ >> 8); mvdStatus_ = 0; break;   // interrupt status (80514174)
+    case 0x0d: arg[0] = 1; break;   // 8050DE70 == 1 -> the ISR raises E_MVD_EVENT_UNMUTE
     default: break;
   }
   if (std::getenv("MANTA_MVD_LOG")) std::fprintf(stderr, "MVDCMD %02x %02x %02x %02x %02x %02x %02x\n", cmd, arg[0], arg[1], arg[2], arg[3], arg[4], arg[5]);
