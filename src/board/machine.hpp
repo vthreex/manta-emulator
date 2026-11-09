@@ -252,7 +252,8 @@ class Msd309Machine {
   void setAtvStations(const std::string& spec);
   void vbiFeed();
   void dtvMailbox();
-  void setDtvMuxes(const std::string& spec);             // EXPLORATORY DVB-T demodulator mailbox (docs/dtv-demod-model.md)
+  void setDtvMuxes(const std::string& spec);
+  void mvdCommand(uint8_t cmd);   // EXPLORATORY MVD command responder             // EXPLORATORY DVB-T demodulator mailbox (docs/dtv-demod-model.md)
   std::map<uint16_t, uint8_t> dmdRegs_;                 // EXPLORATORY teletext slicer (docs/atv-teletext-model.md)
   uint64_t vbiLast_ = 0; uint32_t vbiSeq_ = 0, vbiSlot_ = 0;   // EXPLORATORY: video of the generated input signal
   void insertUsbImage(const std::string& path);

@@ -108,14 +108,30 @@ def build(cfg):
             eits.append(section(0x4e, s['id'], body, number=num, last=1))
     tdt = section(0x70, 0, mjd_bcd(utc), long_form=False)
     mux = Muxer()
-    for _ in range(int(cfg.get('cycles', 8))):
+    # optional audio/video: packets of PIDs 0x100 (video, carries the PCR) and 0x101 (audio) from an ffmpeg-made TS, copied to every
+    # service's PIDs with their own continuity counters
+    av = []
+    if cfg.get('av'):
+        d = open(cfg['av'], 'rb').read()
+        av = [d[i:i + 188] for i in range(0, len(d), 188) if (((d[i + 1] & 0x1f) << 8) | d[i + 2]) in (0x100, 0x101)]
+    cycles = int(cfg.get('cycles', 8))
+    per = (len(av) + cycles - 1) // cycles if av else 0
+    for k in range(cycles):
         mux.add_section(0x0000, section(0x00, tsid, pat))
         for pid, pmt in pmts: mux.add_section(pid, pmt)
         mux.add_section(0x0011, sdt)
         mux.add_section(0x0010, nit)
         for e in eits: mux.add_section(0x0012, e)
         mux.add_section(0x0014, tdt)
-        mux.null(int(cfg.get('nulls', 40)))
+        if av:
+            for p in av[k * per:(k + 1) * per]:
+                src = ((p[1] & 0x1f) << 8) | p[2]
+                for i in range(len(services)):
+                    pid = src + 2 * i
+                    cc = mux.cc.get(pid, 0); mux.cc[pid] = (cc + 1) & 15 if p[3] & 0x10 else cc
+                    mux.packets.append(bytes([0x47, (p[1] & 0xe0) | (pid >> 8), pid & 0xff, (p[3] & 0xf0) | cc]) + p[4:])
+        else:
+            mux.null(int(cfg.get('nulls', 40)))
     return b''.join(mux.packets)
 
 

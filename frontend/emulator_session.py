@@ -157,7 +157,7 @@ def build_command(st: Settings, shm_name: str):
         args.append('--exploratory-pll-tuner')
     # EXPLORATORY DVB-T: demodulator mailbox model + generated transport stream (docs/dtv-demod-model.md); replace it at run time with dtv-stations=...
     if '--exploratory-dtv-demod' not in args:
-        args += ['--exploratory-dtv-demod', '--exploratory-dtv-stations', '682|8|' + str(PKG / 'configs' / 'dtv' / 'example-mux.ts'),
+        args += ['--exploratory-dtv-demod', '--exploratory-dtv-stations', '682|8|' + (PKG / 'configs' / 'dtv' / 'example-mux.ts').as_posix(),
                  '--candidate-tsp-packets', '--exploratory-tsp-packet-cycles', '60000']
         if '--exploratory-provenance-extensions' not in args:
             args.append('--exploratory-provenance-extensions')

@@ -1544,6 +1544,7 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
     // EXPLORATORY DTV mode: the MPEG video decoder's own RISC is not emulated; its command register 0x1101 (1F202201) reports bit1
     // "command done", which the original driver polls up to 2000 times per command (80513C5C). No decoded picture is implied.
     if (m.options_.exploratoryDtvDemod && a == 0x1f202201 && n == 1) return uint64_t(m.riu_.liveGet(a) | 0x02);
+    { static const bool mvdLog = std::getenv("MANTA_MVD_LOG") != nullptr; if (mvdLog && a >= 0x1f202202 && a < 0x1f202240) std::fprintf(stderr, "MR %08x %u %08x %08x\n", a, n, unsigned(m.riu_.liveGet(a)), pc); }
     if(m.options_.explorePmNonresumeBranch && pc==0x80404bf4 && a==0x1f001cd1 && n==1){
       std::vector<uint8_t> helper(28);m.cpu_.read(0x00404bec,helper.data(),helper.size());
       if(sha256(helper)=="4405618c6483bb6fc54e12c7132b4713b570cea7f827f6452f0220338bef708c" &&
@@ -2372,6 +2373,8 @@ void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v,
     }
     m.riu_.write(a, n, uint32_t(v), pc, m.cpu_.reg(UC_MIPS_REG_3), m.virtualTime_.cycles(m.dispatches_));
     if (m.options_.exploratoryDtvDemod && a == 0x1f206905 && n == 1 && (v & 0xff) == 2) m.dtvMailbox();
+    if (m.options_.exploratoryDtvDemod && a == 0x1f202204 && n == 1) m.mvdCommand(uint8_t(v));
+    { static const bool mvdLog = std::getenv("MANTA_MVD_LOG") != nullptr; if (mvdLog && a >= 0x1f202200 && a < 0x1f202240) std::fprintf(stderr, "MW %08x %u %08x %08x\n", a, n, unsigned(v), pc); }
     if (!m.riu_.selfClearBits.empty()) m.riu_.applySelfClearing(a, n);
     if (a >= 0x1f203e00 && a < 0x1f203ffc && m.riu_.gopBankKnown()) {
       auto bank = m.riu_.gopBank();
@@ -2671,6 +2674,23 @@ void Msd309Machine::dtvMailbox() {
   if (std::getenv("MANTA_DMD_LOG")) std::fprintf(stderr, "DMD %u %04x %02x -> %02x\n", cmd, addr, data, out);
   riu_.livePut(0x1f224c05, out);
   riu_.livePut(0x1f224c00, 0xff);
+}
+// EXPLORATORY MPEG video decoder (MVD) command responder (docs/dtv-demod-model.md). The original driver (80513FD0) writes six argument
+// bytes to regs 0x1104..0x1109 (1F202208/09/0C/0D/10/11), the command to 0x1102 (1F202204), waits for 0x1101 bit1 and reads the answer
+// back from the argument registers. The decoder's own RISC is not emulated; this answers the start-up handshake the driver checks:
+// 0x74 "firmware alive" = 1 (80514FBC, polled 2000x) and 0x5E firmware version = 0x11114237 (compared at 8051514C). Other commands keep
+// their arguments (logged with MANTA_MVD_LOG=1). No decoded picture is implied.
+void Msd309Machine::mvdCommand(uint8_t cmd) {
+  static const uint32_t argAt[6] = {0x1f202208, 0x1f202209, 0x1f20220c, 0x1f20220d, 0x1f202210, 0x1f202211};
+  uint8_t arg[6]; for (int i = 0; i < 6; ++i) arg[i] = riu_.liveGet(argAt[i]);
+  auto put32 = [&](uint32_t v) { for (int i = 0; i < 4; ++i) arg[i] = uint8_t(v >> (8 * i)); arg[4] = arg[5] = 0; };
+  switch (cmd) {
+    case 0x74: put32(1); break;
+    case 0x5e: put32(0x11114237u); break;
+    default: break;
+  }
+  if (std::getenv("MANTA_MVD_LOG")) std::fprintf(stderr, "MVDCMD %02x %02x %02x %02x %02x %02x %02x\n", cmd, arg[0], arg[1], arg[2], arg[3], arg[4], arg[5]);
+  for (int i = 0; i < 6; ++i) riu_.livePut(argAt[i], arg[i]);
 }
 void Msd309Machine::setDtvMuxes(const std::string& spec) {
   riu_.dtvMuxes.clear(); size_t at = 0;

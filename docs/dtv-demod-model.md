@@ -35,3 +35,11 @@ Both profiles now start with the DTV options, the DTV hypothesis set (incl. MBX 
 Live page box "DTV broadcast": channels (name, now/next title + description) are built into DVB tables in the page (site/live/dtvts.js,
 byte-identical to tools/make_dtv_ts.py) and swapped in at run time (`dtv-stations=MHZ|8|FILE`). Verified in the wasm build (node): DTV ->
 DTV Manual Tuning -> PROGRAMME GUIDE lists Emu News / Emu Movies; HDMI input unchanged. The TS-processor CPU has no diagnostic budget in this mode.
+
+## Video decoder (MVD) handshake (exploratory)
+With real MPEG-2 packets in the stream (tools/make_dtv_ts.py `"av": FILE.ts`, packets of PID 0x100/0x101 from an ffmpeg-made TS),
+the firmware starts its MPEG video decoder. Command protocol (driver 80513FD0): arguments 0x1104..0x1109, command 0x1102, ack 0x1101 bit1,
+answer back in the argument registers. Machine::mvdCommand answers the start-up handshake: 0x74 "alive" = 1 (80514FBC), 0x5E version =
+0x11114237 (8051514C). The driver then runs its full set-up and play sequence (59 57 58 55 20 21 5C 13 14 15 12 10 11 08 0C 3C 65 39
+01 1F 0A 0B 03). No status command is polled afterwards; the decoded-frame report (interrupt or shared memory) is the next unknown,
+and the picture stays muted.
