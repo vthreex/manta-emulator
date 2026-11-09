@@ -55,7 +55,9 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.candidateBdma = o.candidateBdma;
   riu_.gpioI2c = o.gpioI2c;
   riu_.pllTuner(o.exploratoryPllTuner);
+  riu_.dtvDemodModel = o.exploratoryDtvDemod;
   if (!o.exploratoryAtvStations.empty()) setAtvStations(o.exploratoryAtvStations);
+  if (!o.exploratoryDtvMuxes.empty()) setDtvMuxes(o.exploratoryDtvMuxes);
   riu_.candidateMiu = o.candidateMiu;
   riu_.virtualRtc = o.virtualRtc;
   riu_.candidateUtmi = o.candidateUtmi;
@@ -2364,6 +2366,7 @@ void Msd309Machine::mmioWrite(uc_engine *, uint64_t off, unsigned n, uint64_t v,
       return;
     }
     m.riu_.write(a, n, uint32_t(v), pc, m.cpu_.reg(UC_MIPS_REG_3), m.virtualTime_.cycles(m.dispatches_));
+    if (m.options_.exploratoryDtvDemod && a == 0x1f206905 && n == 1 && (v & 0xff) == 2) m.dtvMailbox();
     if (!m.riu_.selfClearBits.empty()) m.riu_.applySelfClearing(a, n);
     if (a >= 0x1f203e00 && a < 0x1f203ffc && m.riu_.gopBankKnown()) {
       auto bank = m.riu_.gopBank();
@@ -2645,6 +2648,30 @@ void Msd309Machine::vbiFeed() {
   if (std::getenv("MANTA_VBI_LOG")) std::fprintf(stderr, "VBIW idx=%u back=%02x count=%u\n", idx, riu_.liveGet(0x1f206e79), count);
   riu_.livePut(0x1f206e41, uint8_t(riu_.liveGet(0x1f206e41) | 0x80));
 }
+// EXPLORATORY DVB-T demodulator mailbox (docs/dtv-demod-model.md). The original MIPS driver (804F2D78 read, 804F2E5C write, 804F2F14
+// cmd 4) puts the register address in 0x1F224C04/C01, data in C05, the command in C00 (1 read, 2 write, 4 write-other), rings the
+// doorbell 0x1F206905 = 2 and waits for C00 = 0xFF (255 polls), then reads C05. In the live profile the demodulator's own 8051 does
+// not run, so every request timed out. This model acknowledges at once and keeps a register file; lock status is in dtvLockValue().
+void Msd309Machine::dtvMailbox() {
+  const uint8_t cmd = riu_.liveGet(0x1f224c00);
+  const uint16_t addr = uint16_t(riu_.liveGet(0x1f224c04) << 8 | riu_.liveGet(0x1f224c01));
+  const uint8_t data = riu_.liveGet(0x1f224c05);
+  uint8_t out = data;
+  if (cmd == 1) { auto it = dmdRegs_.find(addr); out = it != dmdRegs_.end() ? it->second : 0;
+    // lock stages the original query 804F4FEC tests (table 806254E8): FSM 0x23E0 == 0x0B, 0x232C bit1, 0x2070 bit3, 0x2145 bit0, 0x212F bit0,
+    // 0x24CF bit4. While the tuner sits on a user multiplex they all read locked; elsewhere the FSM stays in its search state.
+    if (riu_.dtvLockedMux() >= 0) { switch (addr) { case 0x23e0: out = 0x0b; break; case 0x232c: out |= 2; break; case 0x2070: out |= 8; break;
+        case 0x2145: case 0x212f: out |= 1; break; case 0x24cf: out |= 0x10; break; default: break; } } }
+  else if (cmd == 2 || cmd == 4) dmdRegs_[uint16_t(addr | (cmd == 4 ? 0x8000u : 0u))] = data;
+  if (std::getenv("MANTA_DMD_LOG")) std::fprintf(stderr, "DMD %u %04x %02x -> %02x\n", cmd, addr, data, out);
+  riu_.livePut(0x1f224c05, out);
+  riu_.livePut(0x1f224c00, 0xff);
+}
+void Msd309Machine::setDtvMuxes(const std::string& spec) {
+  riu_.dtvMuxes.clear(); size_t at = 0;
+  while (at < spec.size()) { size_t e = spec.find(',', at); if (e == std::string::npos) e = spec.size(); std::string item = spec.substr(at, e - at); at = e + 1;
+    if (item.empty()) continue; Riu::DtvMux m; size_t bar = item.find('|'); m.mhz = std::stod(item.substr(0, bar)); if (bar != std::string::npos) m.spec = item.substr(bar + 1); riu_.dtvMuxes.push_back(m); }
+}
 void Msd309Machine::setAtvStations(const std::string& spec) {
   std::vector<Riu::AtvStation> stations; size_t at = 0;
   while (at < spec.size()) { size_t e = spec.find(',', at); if (e == std::string::npos) e = spec.size(); std::string item = spec.substr(at, e - at); at = e + 1;
@@ -2687,6 +2714,8 @@ void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requ
     return;
   }
   // EXPLORATORY ATV antenna: "atv-stations=MHZ[=PICTURE.bmp][@LEVEL],..." (LEVEL 0..1, default 1; empty = no stations).
+  // EXPLORATORY DVB-T multiplexes: "dtv-muxes=MHZ[|services...],..." (docs/dtv-demod-model.md)
+  if (function.rfind("dtv-muxes=", 0) == 0) { setDtvMuxes(function.substr(10)); irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY DVB-T multiplexes"}); return; }
   if (function.rfind("atv-stations=", 0) == 0) { setAtvStations(function.substr(13)); irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY ATV stations"}); return; }
   if (function.rfind("input-picture=", 0) == 0) {
     options_.exploratoryInputPicture = function.substr(14); inputPicture_ = {};

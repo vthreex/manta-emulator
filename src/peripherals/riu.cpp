@@ -1658,7 +1658,7 @@ void Riu::write(uint32_t a, unsigned n, uint32_t v, uint32_t pc, uint32_t mask, 
       event("vd_mcu_start_request",a,n,v,exploratoryVdMcuStartup?
         "original program readback complete; bounded original 8051/8052 startup experiment; no ready response fabricated":
         "original DVB-T program readback complete; auxiliary CPU execution disabled; no ready response fabricated");
-      if(exploratoryVdMcuStartup){
+      if(exploratoryVdMcuStartup && !dtvDemodModel){   // the DVB-T mailbox model answers instead of the original 8051
         bindVdCallbacks();
         vdMcuSuspended_=false;vdMcuBoundaryReason_.clear();
         try{

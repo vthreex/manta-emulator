@@ -106,6 +106,8 @@ struct Options {
   bool nativeCpu=false;   // native build only (manta_native_full): run the statically recompiled firmware instead of the interpreter (needs --load-state)
   std::optional<std::array<uint16_t,7>> exploratoryInputTiming;   // EXPLORATORY: HPERIOD,VTOTAL,SYNC[,VSTART,HSTART,VEND,HEND] for the scaler IP1 mode detector (main window)
   bool exploratoryPllTuner = false;
+  bool exploratoryDtvDemod = false;
+  std::string exploratoryDtvMuxes;     // EXPLORATORY: MHZ[|services],... (docs/dtv-demod-model.md)    // EXPLORATORY: DVB-T demodulator mailbox responder (docs/dtv-demod-model.md)
   std::string exploratoryAtvStations;   // EXPLORATORY: MHZ[=PICTURE.bmp][@LEVEL],... (docs/atv-tuner-model.md)    // EXPLORATORY: PLL tuner slave at 0xC0 on the tuner I2C bus (docs/atv-tuner-model.md)
   std::string exploratoryDtvStations; // ideal RF observations from MHz|bandwidth|FILE.ts; native TSP packet path remains separate
   bool candidateTspPackets=false; // unpaced post-FEC pin input, original TSP packet/section program
@@ -248,7 +250,10 @@ class Msd309Machine {
   mutable uint64_t processedKey_ = 0;
   mutable std::string loadedPicture_;
   void setAtvStations(const std::string& spec);
-  void vbiFeed();                 // EXPLORATORY teletext slicer (docs/atv-teletext-model.md)
+  void vbiFeed();
+  void dtvMailbox();
+  void setDtvMuxes(const std::string& spec);             // EXPLORATORY DVB-T demodulator mailbox (docs/dtv-demod-model.md)
+  std::map<uint16_t, uint8_t> dmdRegs_;                 // EXPLORATORY teletext slicer (docs/atv-teletext-model.md)
   uint64_t vbiLast_ = 0; uint32_t vbiSeq_ = 0, vbiSlot_ = 0;   // EXPLORATORY: video of the generated input signal
   void insertUsbImage(const std::string& path);
   void updateIrqLines();

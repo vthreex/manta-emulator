@@ -20,7 +20,7 @@ static std::filesystem::path utf8Path(const std::string &s) {
 // Hash of every option that can change guest-visible machine behaviour. Output/observation options and the run length are excluded so a
 // snapshot can be resumed with a different summary path, budget or remote script, but never under different hardware assumptions.
 static std::string stateFingerprint(const std::vector<std::string> &args, std::string &canonicalOut) {
-  static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--exploratory-atv-signal", "--exploratory-atv-stations", "--gop-history-interval-log2", "--save-state-at",
+  static const std::set<std::string> valued = {"--summary", "--coverage", "--pm51-history", "--save-state", "--load-state", "--profile", "--exploratory-atv-signal", "--exploratory-atv-stations", "--exploratory-dtv-muxes", "--gop-history-interval-log2", "--save-state-at",
     "--save-state-max-defer", "--max-instructions", "--ir-script", "--ir-keymap", "--gop-frame-history", "--gop-timeline-from", "--diagnostic-riu-write-log", "--diagnostic-riu-peek", "--diagnostic-usb-save-image", "--preview-capture",
     "--preview-close-after-ms", "--exploratory-video-plane", "--preview-capture-offscreen", "--export-gop-frame", "--dump-guest-range", "--watch-guest-access", "--dump-prefix", "--watch-pc-regs",
     "--offscreen-inspector", "--tsp-firmware-dump", "--record-trace", "--replay-trace", "--firmware", "--nvram", "--gop-frame-history-at", "--exploratory-cpi-after-load", "--exploratory-osk-test-at", "--frontend-shm", "--exploratory-gop-surface", "--preview-interval-log2", "--preview-max-fps", "--stuck-poll-limit"};
@@ -72,6 +72,10 @@ static int appMain(const std::vector<std::string> &args) {
         o.gpioI2c = true;
       else if (a == "--exploratory-pll-tuner")
         o.exploratoryPllTuner = true;
+      else if (a == "--exploratory-dtv-demod")
+        o.exploratoryDtvDemod = true;
+      else if (a == "--exploratory-dtv-muxes")
+        o.exploratoryDtvMuxes = value(i);
       else if (a == "--exploratory-dtv-stations")o.exploratoryDtvStations=value(i);
       else if (a == "--candidate-tsp-packets")o.candidateTspPackets=true;
       else if (a == "--exploratory-vd-xram-poweron-zero")o.exploratoryVdXramPoweronZero=true;

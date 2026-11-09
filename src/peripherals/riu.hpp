@@ -326,6 +326,7 @@ public:
   bool avdMcuSuspended()const{return avdMcuSuspended_;}
   const std::string& avdMcuBoundaryReason()const{return avdMcuBoundaryReason_;}
   bool exploratoryVdMcuStartup=false;
+  bool dtvDemodModel=false;   // EXPLORATORY DVB-T mailbox model active (Msd309Machine::dtvMailbox)
   bool deferVdSfr8eWrite=false;
   bool exploratoryVdSuspendedBoundary=false;
   bool deferVdResetKeyWrites=false;
@@ -750,6 +751,9 @@ public:
   double atvTunedMHz() const { const auto t=gpio_.pllTune();return t && !t->digital?t->mhz:-1; }
   double dtvTunedMHz() const { const auto t=gpio_.pllTune();return t && t->digital?t->mhz:-1; }
   unsigned dtvTunedBandwidthMHz()const{const auto t=gpio_.pllTune();return t && t->digital?t->bandwidthMHz:0;}
+  struct DtvMux { double mhz = 0; std::string spec; };   // EXPLORATORY user multiplex (docs/dtv-demod-model.md)
+  std::vector<DtvMux> dtvMuxes;
+  int dtvLockedMux() const { const double f = dtvTunedMHz(); if (f < 0) return -1; for (size_t i = 0; i < dtvMuxes.size(); ++i) if (std::fabs(f - dtvMuxes[i].mhz) <= 1.0) return int(i); return -1; }
   int atvLockedStation(double* offset = nullptr) const {
     const double f = atvTunedMHz(); if (f < 0) return -1; int best = -1; double bd = 3.0;
     for (size_t i = 0; i < atvStations.size(); ++i) { double d = std::fabs(f - atvStations[i].mhz); if (d <= bd) { bd = d; best = int(i); } }

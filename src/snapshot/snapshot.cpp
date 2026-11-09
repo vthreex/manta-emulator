@@ -556,8 +556,8 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
         t == "--exploratory-copro-dump-start") { ++i; continue; }
     if (t == "--exploratory-copro-seq") { i += 2; continue; }
     if (t == "--exploratory-input-timing" || t == "--exploratory-hdmi-signal" || t == "--exploratory-input-picture") { ++i; continue; }
-    if (t == "--exploratory-pll-tuner") continue;
-    if (t == "--exploratory-atv-stations") { ++i; continue; }   // generated input-signal timing: read at run time, no snapshot state
+    if (t == "--exploratory-pll-tuner" || t == "--exploratory-dtv-demod") continue;
+    if (t == "--exploratory-atv-stations" || t == "--exploratory-dtv-muxes") { ++i; continue; }   // generated input-signal timing: read at run time, no snapshot state
     if (t == "--diagnostic-riu-write-log" || t == "--diagnostic-riu-peek" || t == "--gop-history-interval-log2") { ++i; continue; }
     if (t == "--exploratory-mvop-plane") continue;
     if (t == "--diagnostic-usb-save-image") { ++i; continue; }
