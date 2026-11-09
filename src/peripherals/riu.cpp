@@ -389,7 +389,7 @@ void Riu::advanceTsp(uint64_t tick){
   // frequency. Scheduling uses the same monotonically increasing guest tick.
   while(tick-tspCpuTick_>=orDivider_){
     if(executionStopped && executionStopped())return;
-    if(tspCpu_.instructions()>=orBudget_)throw std::runtime_error("OpenRISC diagnostic dispatch budget reached; no hardware timeout or successful boot inferred");
+    if(!dtvDemodModel && tspCpu_.instructions()>=orBudget_)throw std::runtime_error("OpenRISC diagnostic dispatch budget reached; no hardware timeout or successful boot inferred");   // no diagnostic budget in the exploratory DTV mode
     if(candidateTspPackets && tspTransport.packetCycles && ((tspTransport.hasStation() && tspTransport.nextPacketTick<=tspCpuTick_) || tspTransport.pendingReplica()))feedTspTransport(tspCpuTick_);
     const auto deadline=candidateTspPackets && tspTransport.packetCycles && tspTransport.hasStation()?std::min(tick,tspTransport.nextPacketTick):tick;
     if(orIdleSkip){
@@ -469,7 +469,7 @@ bool Riu::orTryFastForward(uint64_t tick){
   if(available<period)return false;
   uint64_t iterations=available/period;
   const uint64_t retired=tspCpu_.instructions();
-  if(orBudget_>retired)iterations=std::min(iterations,(orBudget_-retired)/period);else iterations=0;
+  if(dtvDemodModel){}else if(orBudget_>retired)iterations=std::min(iterations,(orBudget_-retired)/period);else iterations=0;
   if(!iterations)return false;
   bool ok=tspCpu_.sameArch(orIdle_.state);
   for(size_t i=0;ok&&i<orIdle_.deps.size();++i)ok=orDepHolds(orIdle_.deps[i]);

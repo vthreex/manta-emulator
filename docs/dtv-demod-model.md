@@ -29,3 +29,9 @@ Result: DTV with dtv-one.ts locks, the firmware reads the stream (the banner nam
 EIT present/following (programme titles + descriptions) and TDT (clock); example `configs/dtv/example-mux.json`.
 With it the original DTV Manual Tuning on UHF 47 finds "DTV 2" (evidence/dtv-scan-generated-2-services.png) and the original
 PROGRAMME GUIDE lists "1 Emu News / Evening News" and "2 Emu Movies / The Long Boot" with the TDT clock (evidence/dtv-epg-generated.png).
+
+## Live page and control centre
+Both profiles now start with the DTV options, the DTV hypothesis set (incl. MBX `1f206700:01:00+ack`) and the example multiplex on UHF 47.
+Live page box "DTV broadcast": channels (name, now/next title + description) are built into DVB tables in the page (site/live/dtvts.js,
+byte-identical to tools/make_dtv_ts.py) and swapped in at run time (`dtv-stations=MHZ|8|FILE`). Verified in the wasm build (node): DTV ->
+DTV Manual Tuning -> PROGRAMME GUIDE lists Emu News / Emu Movies; HDMI input unchanged. The TS-processor CPU has no diagnostic budget in this mode.

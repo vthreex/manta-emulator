@@ -2721,6 +2721,16 @@ void Msd309Machine::deliverIrFunction(const std::string& function, uint64_t requ
   }
   // EXPLORATORY ATV antenna: "atv-stations=MHZ[=PICTURE.bmp][@LEVEL],..." (LEVEL 0..1, default 1; empty = no stations).
   // EXPLORATORY DVB-T multiplexes: "dtv-muxes=MHZ[|services...],..." (docs/dtv-demod-model.md)
+  // EXPLORATORY: replace the DVB-T transport input at run time ("dtv-stations=MHZ|8|FILE.ts;..."): like re-plugging the aerial; packet
+  // positions wrap modulo the new stream. Needs --exploratory-dtv-demod and --candidate-tsp-packets.
+  if (function.rfind("dtv-stations=", 0) == 0) {
+    if (!options_.exploratoryDtvDemod || !riu_.candidateTspPackets) { irLog_.push_back({dispatches_, function, -1, false, "needs --exploratory-dtv-demod and --candidate-tsp-packets"}); return; }
+    try { riu_.dvbtRf = DvbtRf::load(function.substr(13)); riu_.dtvMuxes.clear();
+      for (const auto& st : riu_.dvbtRf.stations) { Riu::DtvMux m; m.mhz = st.mhz; riu_.dtvMuxes.push_back(m); }
+      irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY DVB-T transport input replaced"});
+    } catch (const std::exception& e) { irLog_.push_back({dispatches_, function, -1, false, e.what()}); }
+    return;
+  }
   if (function.rfind("dtv-muxes=", 0) == 0) { setDtvMuxes(function.substr(10)); irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY DVB-T multiplexes"}); return; }
   if (function.rfind("atv-stations=", 0) == 0) { setAtvStations(function.substr(13)); irLog_.push_back({dispatches_, function, -1, true, "EXPLORATORY ATV stations"}); return; }
   if (function.rfind("input-picture=", 0) == 0) {

@@ -158,6 +158,13 @@ self.onmessage = async e => {
     } catch (err) { post({ type: 'log', s: 'atv: ' + (err && err.message || err) }); }
     return;
   }
+  // EXPLORATORY DTV broadcast: {type:'dtv', ts: ArrayBuffer (built by live/dtvts.js), mhz} -> dtv-stations=MHZ|8|/data/dtv-user.ts
+  if (m.type === 'dtv') {
+    if (!M || stopped) return;
+    try { M.FS.mkdirTree('/data'); M.FS.writeFile('/data/dtv-user.ts', new Uint8Array(m.ts)); key('dtv-stations=' + m.mhz + '|8|/data/dtv-user.ts'); }
+    catch (err) { post({ type: 'log', s: 'dtv: ' + (err && err.message || err) }); }
+    return;
+  }
   if (m.type !== 'start' || M || assets) return;
   try {
     const base = m.base; if (m.reload) fetchMode = 'reload';

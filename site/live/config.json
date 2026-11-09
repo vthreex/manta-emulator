@@ -168,7 +168,40 @@
   "60",
   "--exploratory-pll-tuner",
   "--exploratory-gop-palette-dma",
-  "--exploratory-gop-indexed-preview"
+  "--exploratory-gop-indexed-preview",
+  "--exploratory-dtv-demod",
+  "--exploratory-provenance-extensions",
+  "--exploratory-dtv-stations",
+  "682|8|/data/dtv.ts",
+  "--candidate-tsp-packets",
+  "--exploratory-tsp-packet-cycles",
+  "60000",
+  "--exploratory-mmio-bits",
+  "1f225dd8:ff:00+init",
+  "--exploratory-mmio-bits",
+  "1f225cbc:ff:00+init",
+  "--exploratory-mmio-bits",
+  "1f206728:ff:00+ack",
+  "--exploratory-mmio-bits",
+  "1f206729:ff:00+ack",
+  "--exploratory-mmio-bits",
+  "1f004074:ff:00+init",
+  "--exploratory-mmio-bits",
+  "1f004075:ff:00+init",
+  "--exploratory-mmio-bits",
+  "1f203600:ff:00+init",
+  "--exploratory-mmio-bits",
+  "1f203601:ff:00+init",
+  "--exploratory-mmio-bits",
+  "1f225cb0:ff:00+init",
+  "--exploratory-mmio-bits",
+  "1f205e78:ff:00+init@1",
+  "--exploratory-mmio-bits",
+  "1f205e79:f4:00+init@1",
+  "--exploratory-mmio-bits",
+  "1f203fe1:01:01+rmw",
+  "--exploratory-mmio-bits",
+  "1f206700:01:00+ack"
  ],
  "files": {
   "/data/firmware.bin": "firmware.bin",
@@ -176,7 +209,8 @@
   "/outputs/manta-emulator/configs/diagnostics/opaque-afec-indirect-port.tsv": "files/opaque-afec-indirect-port.tsv",
   "/data/state.snap": "state.snap",
   "/configs/input/ir-keymap.tsv": "files/ir-keymap.tsv",
-  "/configs/input/sar-keymap.tsv": "files/sar-keymap.tsv"
+  "/configs/input/sar-keymap.tsv": "files/sar-keymap.tsv",
+  "/data/dtv.ts": "files/dtv.ts"
  },
  "sizes": {
   "firmware.bin": 8388624,
@@ -185,7 +219,8 @@
   "state.snap": 27430694,
   "files/ir-keymap.tsv": 7884,
   "files/sar-keymap.tsv": 1313,
-  "manta.wasm": 39037408
+  "manta.wasm": 39106066,
+  "files/dtv.ts": 75200
  },
  "versions": {
   "firmware.bin": "d60645b549a4",
@@ -194,9 +229,10 @@
   "state.snap": "21c632a059a7",
   "files/ir-keymap.tsv": "7a5aba2a8dbb",
   "files/sar-keymap.tsv": "2306b2d48ac3",
-  "manta.wasm": "c0bdd2de5d3f",
+  "manta.wasm": "1ab72eda7174",
   "manta.js": "8416abc91b86",
-  "worker.js": "32fa44a88cd4"
+  "worker.js": "51e04fc9aae3",
+  "files/dtv.ts": "fa74e5bc8d92"
  },
  "snapshot": "no-signal-ready-v2.snap"
 }

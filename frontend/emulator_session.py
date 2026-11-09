@@ -155,6 +155,14 @@ def build_command(st: Settings, shm_name: str):
     # EXPLORATORY PLL tuner slave on the tuner I2C bus (docs/atv-tuner-model.md); stations come at run time (atv-stations=...)
     if '--exploratory-pll-tuner' not in args:
         args.append('--exploratory-pll-tuner')
+    # EXPLORATORY DVB-T: demodulator mailbox model + generated transport stream (docs/dtv-demod-model.md); replace it at run time with dtv-stations=...
+    if '--exploratory-dtv-demod' not in args:
+        args += ['--exploratory-dtv-demod', '--exploratory-dtv-stations', '682|8|' + str(PKG / 'configs' / 'dtv' / 'example-mux.ts'),
+                 '--candidate-tsp-packets', '--exploratory-tsp-packet-cycles', '60000']
+        if '--exploratory-provenance-extensions' not in args:
+            args.append('--exploratory-provenance-extensions')
+        for h in ['1f225dd8:ff:00+init', '1f225cbc:ff:00+init', '1f206728:ff:00+ack', '1f206729:ff:00+ack', '1f004074:ff:00+init', '1f004075:ff:00+init', '1f203600:ff:00+init', '1f203601:ff:00+init', '1f225cb0:ff:00+init', '1f205e78:ff:00+init@1', '1f205e79:f4:00+init@1', '1f203fe1:01:01+rmw', '1f206700:01:00+ack']:
+            args += ['--exploratory-mmio-bits', h]
     fw = st.firmware or str(REPO / 'work' / 'firmware-original.bin')
     args = ['--firmware', fw] + args
     try:
