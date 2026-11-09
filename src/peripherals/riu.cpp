@@ -487,6 +487,10 @@ bool Riu::orTryFastForward(uint64_t tick){
 OrWord Riu::tspCpuRead(uint32_t a,unsigned n,bool fetch){
   uint8_t kind=0;
   auto v=tspCpuReadImpl(a,n,fetch,&kind);
+  if(dtvDemodModel && !fetch){   // EXPLORATORY DTV mode: unknown TSP-CPU input bits read as 0 (same hypothesis as the live MIPS reads)
+    const uint32_t all=n==4?0xffffffffu:(1u<<(n*8))-1;
+    if((v.known&all)!=all){v.value&=v.known;v.known|=all;}
+  }
   if(orProbe_.on){
     // Bytes this window already wrote are produced inside the loop; everything else is an external input.
     bool internal=false;
@@ -633,7 +637,10 @@ void Riu::tspCpuWriteImpl(uint32_t a,unsigned n,OrWord v){
   auto dmask=tspBurstMappingActive_?tspBurstMapping_[1].mask:get(0x1f202ba0,2)|(get(0x1f202ba4,2)<<16);
   uint32_t wanted=n==4?0xffffffffu:(1u<<(n*8))-1;
   if((a&dmask)==dbase){
-    if((v.known&wanted)!=wanted)throw std::runtime_error("OpenRISC unknown bits stored in QMEM unsupported");
+    if((v.known&wanted)!=wanted){
+      if(!dtvDemodModel)throw std::runtime_error("OpenRISC unknown bits stored in QMEM unsupported");
+      v.value&=v.known;   // EXPLORATORY DTV mode: same zero-unknown hypothesis as the live MIPS reads; not a measurement
+    }
     for(unsigned i=0;i<n;++i)tspDownload_.byte((a&0x3fff)+i,uint8_t(v.value>>(i*8)));
     event("or1k_qmem_write",a,n,v.value,"original auxiliary instruction writes the shared downloaded QMEM backing");return;
   }

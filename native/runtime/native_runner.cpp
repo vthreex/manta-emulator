@@ -92,6 +92,11 @@ struct MachineBus : Bus {
       uint32_t v = uint32_t(a.mmioRead(p - 0x1f000000u, n));
       if (a.stopped) c.halt = true;
       static const uint32_t lockTrace = std::getenv("MANTA_LOCK_PC") ? uint32_t(std::strtoul(std::getenv("MANTA_LOCK_PC"), nullptr, 16)) : 0u;
+      static struct PcHist { std::map<uint64_t, uint64_t> m; bool on = std::getenv("MANTA_MMIO_PCS") != nullptr;
+        ~PcHist() { if (!on) return; std::vector<std::pair<uint64_t, uint64_t>> v(m.begin(), m.end());
+          std::sort(v.begin(), v.end(), [](auto& x, auto& y) { return x.second > y.second; });
+          for (size_t k = 0; k < v.size() && k < 40; ++k) std::fprintf(stderr, "PCH %08x %08x %llu\n", unsigned(v[k].first >> 32), unsigned(v[k].first), (unsigned long long)v[k].second); } } pcHist;
+      if (pcHist.on) ++pcHist.m[(uint64_t(pc) << 32) | p];
       if (lockTrace && p <= lockTrace && p + n > lockTrace) std::fprintf(stderr, "LP %08x %u %08x\n", pc, n, v);
       return v;
     }

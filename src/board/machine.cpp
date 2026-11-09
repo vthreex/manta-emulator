@@ -56,6 +56,7 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.gpioI2c = o.gpioI2c;
   riu_.pllTuner(o.exploratoryPllTuner);
   riu_.dtvDemodModel = o.exploratoryDtvDemod;
+  TspSectionDma::dropOnOverflow = o.exploratoryDtvDemod;
   if (!o.exploratoryAtvStations.empty()) setAtvStations(o.exploratoryAtvStations);
   if (!o.exploratoryDtvMuxes.empty()) setDtvMuxes(o.exploratoryDtvMuxes);
   riu_.candidateMiu = o.candidateMiu;
@@ -131,9 +132,10 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     riu_.dvbtPollTimer.divider=o.exploratoryDvbtTimerDivider;
   }
   if(!o.exploratoryDtvStations.empty()){
-    if(!o.exploratoryDvbtRegisters || !o.exploratoryPllTuner)
-      throw std::runtime_error("ideal DVB-T RF input requires the original MCU register bus and PLL tuner");
+    if((!o.exploratoryDvbtRegisters && !o.exploratoryDtvDemod) || !o.exploratoryPllTuner)
+      throw std::runtime_error("ideal DVB-T RF input requires the original MCU register bus (or the demodulator mailbox model) and PLL tuner");
     riu_.dvbtRf=DvbtRf::load(o.exploratoryDtvStations);
+    if(o.exploratoryDtvDemod)for(const auto& st:riu_.dvbtRf.stations){Riu::DtvMux m;m.mhz=st.mhz;riu_.dtvMuxes.push_back(m);}   // each TS station is also a lockable multiplex
   }
   if(o.candidateTspPackets){
     if(o.exploratoryDtvStations.empty() || !o.candidateMiu || !o.candidateTsp || !o.exploratoryTspCpu)
@@ -1539,6 +1541,9 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
     auto a = 0x1f000000 + uint32_t(off);
     auto pc = m.guestPc();
     if (a >= 0x1f206e00 && a < 0x1f206f00 && !m.riu_.atvStations.empty()) m.vbiFeed();
+    // EXPLORATORY DTV mode: the MPEG video decoder's own RISC is not emulated; its command register 0x1101 (1F202201) reports bit1
+    // "command done", which the original driver polls up to 2000 times per command (80513C5C). No decoded picture is implied.
+    if (m.options_.exploratoryDtvDemod && a == 0x1f202201 && n == 1) return uint64_t(m.riu_.liveGet(a) | 0x02);
     if(m.options_.explorePmNonresumeBranch && pc==0x80404bf4 && a==0x1f001cd1 && n==1){
       std::vector<uint8_t> helper(28);m.cpu_.read(0x00404bec,helper.data(),helper.size());
       if(sha256(helper)=="4405618c6483bb6fc54e12c7132b4713b570cea7f827f6452f0220338bef708c" &&
@@ -2670,7 +2675,8 @@ void Msd309Machine::dtvMailbox() {
 void Msd309Machine::setDtvMuxes(const std::string& spec) {
   riu_.dtvMuxes.clear(); size_t at = 0;
   while (at < spec.size()) { size_t e = spec.find(',', at); if (e == std::string::npos) e = spec.size(); std::string item = spec.substr(at, e - at); at = e + 1;
-    if (item.empty()) continue; Riu::DtvMux m; size_t bar = item.find('|'); m.mhz = std::stod(item.substr(0, bar)); if (bar != std::string::npos) m.spec = item.substr(bar + 1); riu_.dtvMuxes.push_back(m); }
+    if (item.empty()) continue; Riu::DtvMux m; size_t bar = item.find('|'); std::string head = item.substr(0, bar); if (bar != std::string::npos) m.spec = item.substr(bar + 1);
+    size_t eq = head.find('='); m.mhz = std::stod(head.substr(0, eq)); if (eq != std::string::npos) m.picture = head.substr(eq + 1); riu_.dtvMuxes.push_back(m); }
 }
 void Msd309Machine::setAtvStations(const std::string& spec) {
   std::vector<Riu::AtvStation> stations; size_t at = 0;
@@ -2812,7 +2818,7 @@ void Msd309Machine::publishPreviewLive() const {
     }
     if (!options_.videoPlane.empty() && dramBacking_.size() > 0x006fbd85) mix(dramBacking_[0x006fbd85]);
     mix(riu_.geBlendCopies); mix(riu_.geI2Glyphs); mix(riu_.geUniformStretches);
-    if (riu_.inputTiming.on || riu_.atvLockedStation() >= 0) {   // EXPLORATORY input picture: signal, picture and the firmware registers that place it
+    if (riu_.inputTiming.on || riu_.atvLockedStation() >= 0 || riu_.dtvLockedMux() >= 0) {   // EXPLORATORY input picture: signal, picture and the firmware registers that place it
       { double off = 0; int st = riu_.atvLockedStation(&off); mix(uint64_t(st + 1)); if (st >= 0) { mix(std::hash<std::string>{}(riu_.atvStations[size_t(st)].picture)); mix(uint64_t(int64_t(off * 1000)));
         mix(dispatches_ >> 22); } }   // the interference changes from frame to frame
       const auto& t = riu_.inputTiming;
@@ -2896,7 +2902,7 @@ void Msd309Machine::publishPreview() const {
     { uint64_t hsh=1469598103934665603ull; for(size_t k=0;k<frame.planeBgra.size();k+=61)hsh=(hsh^frame.planeBgra[k])*1099511628211ull; frame.checksum^=hsh; }
     frame.label+=" | EXPLORATORY ATV PICTURE: generated PAL colour bars decoded by a host-side decoder model, stretched; NOT scaler/panel output";
   }
-  if(riu_.inputTiming.on || riu_.atvLockedStation()>=0){
+  if(riu_.inputTiming.on || riu_.atvLockedStation()>=0 || riu_.dtvLockedMux()>=0){
     // the picture covers the whole panel, also when no OSD window is enabled: grow the frame to the OSD canvas (1360x768, the ZUI's coordinate space)
     constexpr uint32_t CW=1360,CH=768;
     if(frame.width<CW||frame.height<CH){
@@ -2912,7 +2918,8 @@ void Msd309Machine::publishPreview() const {
     // V size, H size relative to the input timing). Nearest scaling; no colour processing. Not decoded video, not verified panel output.
     // ATV (docs/atv-tuner-model.md): the picture of the station the tuner is locked to, through the same scaler/colour path; interference below.
     double atvOff=0; const int atvSt=riu_.inputTiming.on?-1:riu_.atvLockedStation(&atvOff);
-    const std::string wantPicture = atvSt>=0 ? riu_.atvStations[size_t(atvSt)].picture : options_.exploratoryInputPicture;
+    const int dtvMx=(riu_.inputTiming.on||atvSt>=0)?-1:riu_.dtvLockedMux();
+    const std::string wantPicture = atvSt>=0 ? riu_.atvStations[size_t(atvSt)].picture : dtvMx>=0 ? riu_.dtvMuxes[size_t(dtvMx)].picture : options_.exploratoryInputPicture;
     if(wantPicture!=loadedPicture_){ inputPicture_={}; loadedPicture_=wantPicture; }
     if(inputPicture_.empty()){
       try{ inputPicture_ = wantPicture.empty() ? builtinPicture() : loadBmpPicture(wantPicture); }
@@ -2929,7 +2936,7 @@ void Msd309Machine::publishPreview() const {
       if(dhs&&dhe&&dvs&&dve&&*dhe>*dhs&&*dve>*dvs){x0=int(*dhs)-int(*phs);x1=int(*dhe)-int(*phs);y0=int(*dvs)-int(*pvs);y1=int(*dve)-int(*pvs);}
       const auto& t=riu_.inputTiming; const double inW=t.hend>t.hstart?t.hend-t.hstart+1:inputPicture_.width, inH=t.vend>t.vstart?t.vend-t.vstart+1:inputPicture_.height;
       double cx=0,cy=0,cw=inW,ch=inH;
-      if(atvSt<0 && cvs&&chs&&cvz&&chz&&*chz&&*cvz){cx=double(*chs)-t.hstart;cy=double(*cvs)-t.vstart;cw=*chz;ch=*cvz;}
+      if(atvSt<0 && dtvMx<0 && cvs&&chs&&cvz&&chz&&*chz&&*cvz){cx=double(*chs)-t.hstart;cy=double(*cvs)-t.vstart;cw=*chz;ch=*cvz;}
       // Colour pipeline (EXPLORATORY): the source sends RGB; the scaler input converts it to YCbCr (ASSUMPTION: BT.601 full range, Cb/Cr centred at 128);
       // the VOP colour matrix the ORIGINAL firmware programs (bank 0x10 regs 0x26..0x2E, rows R/G/B x columns Cr/Y/Cb, 13-bit sign-magnitude s2.10;
       // enable = reg 0x2F bit0, ASSUMPTION) converts back to RGB. The firmware folds contrast/colour/tint into this matrix (contrast +6 scales every

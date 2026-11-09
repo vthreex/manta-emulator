@@ -12,3 +12,14 @@ tests/dtv_regression.py (`+ack` on 1F206728/29, `+init` reset values, `--explora
   1 MHz of a user multiplex.
 * Result: DTV channel 1 TVP1 at 682.0 MHz (divider 4309, UHF 47) -> the firmware shows its normal DTV banner (TVP1, "No Information",
   DTV, Polski) instead of NO SIGNAL. No transport stream / video yet.
+
+## With a transport stream (2026-11-09)
+`--exploratory-dtv-stations "MHZ|8|FILE.ts" --candidate-tsp-packets --exploratory-tsp-packet-cycles 60000` (the other session's real TS input)
+now works together with `--exploratory-dtv-demod`: every TS station is also a lockable multiplex; the options may be added to an older save
+state (the input starts at its first packet). In this exploratory mode only:
+* MBX (1F206700 bit0 "message pending") needs `--exploratory-mmio-bits 1f206700:01:00+ack`; without it the UI loop (805DB94C) hangs on DTV.
+* TSP section DMA drops a fragment that does not fit (the section fails its CRC) instead of stopping (TspSectionDma::dropOnOverflow).
+* TSP-CPU reads of unknown bits return 0 (same zero-unknown hypothesis as the live MIPS reads).
+* MPEG video decoder command register 0x1101 (1F202201) reports bit1 "command done" (driver 80513C5C polls up to 2000x per command).
+Result: DTV with dtv-one.ts locks, the firmware reads the stream (the banner name changes from TVP1 to the stream's service), MENU works,
+"Signal Information" is enabled. No decoded video; the firmware keeps the video window muted.

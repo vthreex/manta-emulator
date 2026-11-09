@@ -12,6 +12,9 @@ namespace manta {
 struct TspSectionDma {
   struct Ring { OrWord start,end,read,current,crc; };
   struct Transfer {std::vector<std::pair<uint32_t,uint8_t>> writes;uint32_t current=0,crc=0;};
+  // EXPLORATORY DTV mode (--exploratory-dtv-demod): a fragment that does not fit is dropped like a full hardware FIFO would (the
+  // section then fails its CRC and the original firmware discards it); strict mode keeps failing closed.
+  static inline bool dropOnOverflow=false; static inline uint64_t dropped=0;
   static uint32_t require(OrWord word){
     if(word.known!=0xffffffffu)throw std::runtime_error("TSP section DMA descriptor contains unknown bits");
     return word.value;
@@ -35,8 +38,8 @@ struct TspSectionDma {
     if((start&7) || start>=end || read<start || read>=end || cur<start || cur>=end || miuAddress(end-1)-miuAddress(start)!=end-start-1)
       throw std::runtime_error("TSP section DMA ring is outside the supported descriptor layout");
     const uint32_t free=read>cur?read-cur-1:(end-cur)+(read-start)-1;
-    if(length>free)throw std::runtime_error("TSP section DMA overflow policy unresolved");
     Transfer transfer;transfer.current=cur;transfer.crc=cmd==0x89?0xffffffffu:require(ring.crc);
+    if(length>free){if(!dropOnOverflow)throw std::runtime_error("TSP section DMA overflow policy unresolved");++dropped;transfer.crc^=1;return transfer;}
     for(unsigned i=0;i<length;++i){const auto byte=packet[source+i];
       transfer.writes.emplace_back(miuAddress(transfer.current),byte);transfer.crc=crcByte(transfer.crc,byte);
       if(++transfer.current==end)transfer.current=start;

@@ -751,7 +751,7 @@ public:
   double atvTunedMHz() const { const auto t=gpio_.pllTune();return t && !t->digital?t->mhz:-1; }
   double dtvTunedMHz() const { const auto t=gpio_.pllTune();return t && t->digital?t->mhz:-1; }
   unsigned dtvTunedBandwidthMHz()const{const auto t=gpio_.pllTune();return t && t->digital?t->bandwidthMHz:0;}
-  struct DtvMux { double mhz = 0; std::string spec; };   // EXPLORATORY user multiplex (docs/dtv-demod-model.md)
+  struct DtvMux { double mhz = 0; std::string picture, spec; };   // EXPLORATORY user multiplex (docs/dtv-demod-model.md)
   std::vector<DtvMux> dtvMuxes;
   int dtvLockedMux() const { const double f = dtvTunedMHz(); if (f < 0) return -1; for (size_t i = 0; i < dtvMuxes.size(); ++i) if (std::fabs(f - dtvMuxes[i].mhz) <= 1.0) return int(i); return -1; }
   int atvLockedStation(double* offset = nullptr) const {

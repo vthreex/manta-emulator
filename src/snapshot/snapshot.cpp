@@ -557,6 +557,9 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     if (t == "--exploratory-copro-seq") { i += 2; continue; }
     if (t == "--exploratory-input-timing" || t == "--exploratory-hdmi-signal" || t == "--exploratory-input-picture") { ++i; continue; }
     if (t == "--exploratory-pll-tuner" || t == "--exploratory-dtv-demod") continue;
+    // EXPLORATORY DTV input added to an older state: the transport input starts at its first packet (no saved position to restore).
+    if (t == "--candidate-tsp-packets" && options_.exploratoryDtvDemod) continue;
+    if ((t == "--exploratory-dtv-stations" || t == "--exploratory-tsp-packet-cycles") && options_.exploratoryDtvDemod) { ++i; continue; }
     if (t == "--exploratory-atv-stations" || t == "--exploratory-dtv-muxes") { ++i; continue; }   // generated input-signal timing: read at run time, no snapshot state
     if (t == "--diagnostic-riu-write-log" || t == "--diagnostic-riu-peek" || t == "--gop-history-interval-log2") { ++i; continue; }
     if (t == "--exploratory-mvop-plane") continue;
