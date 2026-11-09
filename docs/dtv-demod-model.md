@@ -23,3 +23,9 @@ state (the input starts at its first packet). In this exploratory mode only:
 * MPEG video decoder command register 0x1101 (1F202201) reports bit1 "command done" (driver 80513C5C polls up to 2000x per command).
 Result: DTV with dtv-one.ts locks, the firmware reads the stream (the banner name changes from TVP1 to the stream's service), MENU works,
 "Signal Information" is enabled. No decoded video; the firmware keeps the video window muted.
+
+## Channel names and EPG from a generated stream
+`tools/make_dtv_ts.py CONFIG.json OUT.ts` writes PAT, PMT, NIT (network name + logical channel numbers), SDT (channel names),
+EIT present/following (programme titles + descriptions) and TDT (clock); example `configs/dtv/example-mux.json`.
+With it the original DTV Manual Tuning on UHF 47 finds "DTV 2" (evidence/dtv-scan-generated-2-services.png) and the original
+PROGRAMME GUIDE lists "1 Emu News / Evening News" and "2 Emu Movies / The Long Boot" with the TDT clock (evidence/dtv-epg-generated.png).
