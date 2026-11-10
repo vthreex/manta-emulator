@@ -627,10 +627,18 @@ public:
   // regs 0x12..0x15 (5E48/4C/50/54, 12 bit, gatherer 805F2FE0): V start, H start, V end, H end of the detected active window (width = Hend-Hstart+1).
   struct InputTiming { bool on = false; uint16_t hperiod = 0, vtotal = 0; uint8_t sync = 0; bool window = false; uint16_t vstart = 0, hstart = 0, vend = 0, hend = 0; };
   InputTiming inputTiming;
+  // EXPLORATORY DTV: the decoder output (MVOP) reaches the scaler on input 4 (bank 1 reg 0x02 = 0x584 on DTV); while a user multiplex is
+  // locked the mode detector sees the stream's 576p50 timing (set by the machine from the mode table). Without it the firmware computes a
+  // 10x10 capture window and keeps the NO SIGNAL placeholder.
+  InputTiming dtvTiming;
+  bool inputTimingActive() const { return inputTiming.on || (dtvTiming.on && dtvLockedMux() >= 0); }
   std::optional<uint8_t> inputTimingByte(uint32_t a) const {
-    if (!inputTiming.on || scBank() != 1u) return {};
+    if (!inputTimingActive() || scBank() != 1u) return {};
     // only while the firmware selects the digital (HDMI/DVI) input: bank 1 reg 0x02 bits 2:0 = 7 (observed: HDMI 0x407/0x487, AV 0x584, YPbPr 0x4F0, VGA 0x80)
-    { auto sel = scByte(1, 0x08); if (sel.known & 7) { if ((sel.value & 7) != 7) return {}; } else return {}; }
+    const InputTiming* tp = nullptr;
+    { auto sel = scByte(1, 0x08); if (!(sel.known & 7)) return {};
+      if ((sel.value & 7) == 7 && inputTiming.on) tp = &inputTiming; else if ((sel.value & 7) == 4 && dtvTiming.on && dtvLockedMux() >= 0) tp = &dtvTiming; else return {}; }
+    const InputTiming& inputTiming = *tp;
     switch (a) {
     case 0x1f205e79: return inputTiming.sync;
     case 0x1f205e7c: return uint8_t(inputTiming.vtotal);
@@ -750,6 +758,7 @@ public:
     bytes_[0x1f2025e1] = {0x25, 0x80};
   }
   // the station's PAL signal also feeds the original AVD program (same model as --exploratory-atv-signal, switched by the tuner)
+  GpioI2c& gpioBus() { return gpio_; }
   void pllTuner(bool on) { gpio_.tuner.on = on; if (on && !exploratoryAtvSignal_) { atvHTotal_ = 1135; atvFieldLines_[0] = 312; atvFieldLines_[1] = 313; atvFieldSteps_ = 20000; } }
   bool atvSignalNow() const { return exploratoryAtvSignal_ || atvLockedStation() >= 0; }
   // EXPLORATORY ATV stations (docs/atv-tuner-model.md): RF picture-carrier frequencies the user places on the "antenna". The tuned RF is

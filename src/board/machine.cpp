@@ -57,6 +57,9 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   riu_.pllTuner(o.exploratoryPllTuner);
   riu_.dtvDemodModel = o.exploratoryDtvDemod;
   TspSectionDma::dropOnOverflow = o.exploratoryDtvDemod;
+  if (o.exploratoryDtvDemod) if (auto t = hdmiModeTiming("720x576@50")) {   // EXPLORATORY decoder-output timing toward the scaler (see Riu::dtvTiming)
+    riu_.dtvTiming.on = true; riu_.dtvTiming.hperiod = (*t)[0]; riu_.dtvTiming.vtotal = (*t)[1]; riu_.dtvTiming.sync = uint8_t((*t)[2]);
+    riu_.dtvTiming.window = true; riu_.dtvTiming.vstart = (*t)[3]; riu_.dtvTiming.hstart = (*t)[4]; riu_.dtvTiming.vend = (*t)[5]; riu_.dtvTiming.hend = (*t)[6]; }
   if (o.exploratoryDtvDemod) { riu_.irqModel = true; if (!riu_.fiqChanged) riu_.fiqChanged = [this] { updateIrqLines(); }; }
   if (!o.exploratoryAtvStations.empty()) setAtvStations(o.exploratoryAtvStations);
   if (!o.exploratoryDtvMuxes.empty()) setDtvMuxes(o.exploratoryDtvMuxes);
@@ -1546,6 +1549,11 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
     // EXPLORATORY DTV mode: the MPEG video decoder's own RISC is not emulated; its command register 0x1101 (1F202201) reports bit1
     // "command done", which the original driver polls up to 2000 times per command (80513C5C). No decoded picture is implied.
     if (m.options_.exploratoryDtvDemod && a == 0x1f202201 && n == 1) return uint64_t(m.riu_.liveGet(a) | 0x02);
+    // EXPLORATORY DTV mode: the audio DSP is not emulated. Its decoder status byte (audio reg 0x112E58 = 1F225CB0, read through
+    // 804F9004 by 804FD1E4 = audio GetInfo(0)) has bits 1:0 nonzero while it decodes; for a free-to-air service the app (80475B74)
+    // shows NO SIGNAL unless they are set. Report "decoding" only while a user multiplex is locked and the video decoder plays.
+    { static const bool audLog = std::getenv("MANTA_AUD_LOG") != nullptr; if (audLog && (a & ~3u) == 0x1f225cb0) std::fprintf(stderr, "AUD %08x %u pc %08x playing %d locked %d\n", a, n, pc, int(m.mvdPlaying_), m.riu_.dtvLockedMux()); }
+    if (m.options_.exploratoryDtvDemod && a == 0x1f225cb0 && m.mvdPlaying_ && m.riu_.dtvLockedMux() >= 0) return uint64_t(m.riu_.liveGet(a) | 0x01);
     { static const bool mvdLog = std::getenv("MANTA_MVD_LOG") != nullptr; if (mvdLog && a >= 0x1f202202 && a < 0x1f202240) std::fprintf(stderr, "MR %08x %u %08x %08x\n", a, n, unsigned(m.riu_.liveGet(a)), pc); }
     if(m.options_.explorePmNonresumeBranch && pc==0x80404bf4 && a==0x1f001cd1 && n==1){
       std::vector<uint8_t> helper(28);m.cpu_.read(0x00404bec,helper.data(),helper.size());
@@ -2708,7 +2716,8 @@ void Msd309Machine::mvdTick() {
   // the size is known.
   { uint32_t vol = 0; std::memcpy(&vol, dramBacking_.data() + 0x006d8538, 4); const uint64_t vb = (vol >= 0xd0000000u && vol < 0xe8000000u) ? 0x08000000ull + (vol - 0xd0000000u) : uint64_t(vol & 0x1fffffff);   // KSEG2 D0000000 = MIU1 (as the native bus maps it)
     if (vol && vb + 0x30 <= dramBacking_.size()) { const uint32_t w = 720, h = 576; std::memcpy(dramBacking_.data() + vb + 4, &w, 4); std::memcpy(dramBacking_.data() + vb + 8, &h, 4);
-      dramBacking_[vb + 0x10] = 3; dramBacking_[vb + 0x11] = 0; dramBacking_[vb + 0x20] = 4; dramBacking_[vb + 0x21] = 3; } }
+      dramBacking_[vb + 0x10] = 3; dramBacking_[vb + 0x11] = 0; dramBacking_[vb + 0x20] = 4; dramBacking_[vb + 0x21] = 3;
+      const uint32_t fr = 25000; std::memcpy(dramBacking_.data() + vb + 0x28, &fr, 4); } }   // +0x28 frame rate x1000 (805106EC; the driver's own default is 25000)
   mvdStatus_ |= 0x1000;
   riu_.irqRaise(3);
   if (std::getenv("MANTA_MVD_LOG") && mvdFrames_ < 20) { uint8_t m0 = 0, m1 = 0; bool k0 = riu_.coproPeekByte(0x1f2033d0, m0), k1 = riu_.coproPeekByte(0x1f2033d1, m1);

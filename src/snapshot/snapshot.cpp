@@ -381,6 +381,9 @@ std::vector<Msd309Machine::SnapSection> Msd309Machine::captureSections(uint32_t 
   if (riu_.usbHost.enabled()) { Section s{"usb", {}}; Ar a(s.bytes); riu_.usbHost.serialize(a); sections.push_back(std::move(s)); }   // EXPLORATORY pendrive state
   if(riu_.candidateTspPackets){Section s{"tsp-packets",{}};Ar a(s.bytes);riu_.tspTransport.serialize(a);sections.push_back(std::move(s));}
   if(riu_.dvbtPollTimer.divider){Section s{"dvbt-timer",{}};Ar a(s.bytes);riu_.dvbtPollTimer.serialize(a);a(riu_.dvbtTimerClock);sections.push_back(std::move(s));}
+  if(riu_.gpioBus().tuner.on && riu_.gpioBus().tuner.lastCount){Section s{"pll-tuner",{}};Ar a(s.bytes);auto& t=riu_.gpioBus().tuner;   // EXPLORATORY tuner: last PLL frame = tuned frequency
+    a(t.lastCount);for(auto& b:t.last)a(b);sections.push_back(std::move(s));}
+  if(options_.exploratoryDtvDemod && mvdPlaying_){Section s{"mvd",{}};Ar a(s.bytes);a(mvdPlaying_,mvdNextFrame_,mvdStatus_,mvdFrames_);sections.push_back(std::move(s));}   // EXPLORATORY video decoder model
   if (options_.exploratoryCopro && copro_.started) {   // EXPLORATORY coprocessor model state
     Section s{"copro", {}}; Ar a(s.bytes);
     copro_.serialize(a);
@@ -505,6 +508,19 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     if(!riu_.candidateTspPackets)throw SnapshotError("snapshot has TSP packet input but --candidate-tsp-packets is absent");
     Ar a(s.bytes.data(),s.bytes.size());riu_.tspTransport.serialize(a);if(a.remaining())throw SnapshotError("TSP packet state has trailing data");
   }
+  for(auto& s:sections)if(s.name=="mvd"){
+    if(!options_.exploratoryDtvDemod)throw SnapshotError("snapshot has video decoder state but --exploratory-dtv-demod is absent");
+    Ar a(s.bytes.data(),s.bytes.size());a(mvdPlaying_,mvdNextFrame_,mvdStatus_,mvdFrames_);if(a.remaining())throw SnapshotError("video decoder state has trailing data");
+  }
+  for(auto& s:sections)if(s.name=="pll-tuner"){
+    auto& t=riu_.gpioBus().tuner;if(!t.on)throw SnapshotError("snapshot has PLL tuner state but --exploratory-pll-tuner is absent");
+    Ar a(s.bytes.data(),s.bytes.size());a(t.lastCount);for(auto& b:t.last)a(b);if(a.remaining())throw SnapshotError("PLL tuner state has trailing data");
+  }
+  if(const char* e=std::getenv("MANTA_PLL_LAST")){   // debug knob for checkpoints saved before the "pll-tuner" section existed: hex frame bytes
+    auto& t=riu_.gpioBus().tuner;std::string h(e);t.lastCount=0;
+    for(size_t i=0;i+1<h.size()&&t.lastCount<6;i+=2)t.last[t.lastCount++]=uint8_t(std::stoul(h.substr(i,2),nullptr,16));
+  }
+  if(options_.exploratoryDtvDemod && std::getenv("MANTA_MVD_PLAYING")) mvdPlaying_ = true;   // debug knob for checkpoints saved before the "mvd" section existed
   for(auto& s:sections)if(s.name=="dvbt-timer"){
     if(!riu_.dvbtPollTimer.divider)throw SnapshotError("snapshot has a DVB-T timer but its candidate clock is absent");
     Ar a(s.bytes.data(),s.bytes.size());riu_.dvbtPollTimer.serialize(a);a(riu_.dvbtTimerClock);if(a.remaining())throw SnapshotError("DVB-T timer state has trailing data");

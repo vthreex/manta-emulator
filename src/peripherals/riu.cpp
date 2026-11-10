@@ -872,7 +872,7 @@ uint32_t Riu::knownBits(uint32_t a, unsigned n) const {
     auto bit=1u<<(8*(0x1f205f05-a));
     v&=~bit;if(pqSram_.known())v|=bit;
   }
-  if(inputTiming.on)for(unsigned i=0;i<n;++i)if(inputTimingByte(a+i))v|=0xffu<<(8*i);
+  if(inputTimingActive())for(unsigned i=0;i<n;++i)if(inputTimingByte(a+i))v|=0xffu<<(8*i);
   if(dvbtRf.enabled)for(unsigned i=0;i<n;++i){const auto b=dvbtLiveByte(a+i);v=(v&~(uint32_t(b.owned)<<(8*i)))|(uint32_t(b.known)<<(8*i));}
   if(dvbtPollTimer.divider){const auto status=*dvbtSharedAddress(0x23f9);
     if(a<=status && uint64_t(a)+n>status){const auto bit=1u<<(8*(status-a));v&=~bit;if(dvbtPollTimer.known())v|=bit;}}
@@ -967,7 +967,7 @@ uint32_t Riu::get(uint32_t a, unsigned n) const {
     v&=~8u;if(tspDownload_.done())v|=8;
   }
   if(a==0x1f205ea4 && (n==1 || n==2) && (scBank()==1 || scBank()==3) && analogDisconnected_)v&=~12u;
-  if(inputTiming.on)for(unsigned i=0;i<n;++i)if(auto b=inputTimingByte(a+i))v=(v&~(0xffu<<(8*i)))|(uint32_t(*b)<<(8*i));
+  if(inputTimingActive())for(unsigned i=0;i<n;++i)if(auto b=inputTimingByte(a+i))v=(v&~(0xffu<<(8*i)))|(uint32_t(*b)<<(8*i));
   {
     uint32_t lineValue=0;
     if(auto reg=usbLineStateRegister(a,n,&lineValue)){

@@ -95,7 +95,7 @@ struct MachineBus : Bus {
       static struct PcHist { std::map<uint64_t, uint64_t> m; bool on = std::getenv("MANTA_MMIO_PCS") != nullptr;
         ~PcHist() { if (!on) return; std::vector<std::pair<uint64_t, uint64_t>> v(m.begin(), m.end());
           std::sort(v.begin(), v.end(), [](auto& x, auto& y) { return x.second > y.second; });
-          for (size_t k = 0; k < v.size() && k < 40; ++k) std::fprintf(stderr, "PCH %08x %08x %llu\n", unsigned(v[k].first >> 32), unsigned(v[k].first), (unsigned long long)v[k].second); } } pcHist;
+          for (size_t k = 0; k < v.size() && k < 400; ++k) std::fprintf(stderr, "PCH %08x %08x %llu\n", unsigned(v[k].first >> 32), unsigned(v[k].first), (unsigned long long)v[k].second); } } pcHist;
       if (pcHist.on) ++pcHist.m[(uint64_t(pc) << 32) | p];
       {   // diagnostic (MANTA_WATCH_RAM=1): report changes of the DTV screen-status words with the PC of the next hardware access
         static const bool watch = std::getenv("MANTA_WATCH_RAM") != nullptr;
@@ -105,6 +105,15 @@ struct MachineBus : Bus {
           if (v != last[k]) { std::fprintf(stderr, "WATCH %08x %08x -> %08x pc %08x ra %08x\n", 0x80000000u | addrs[k], last[k], v, pc, unsigned(c.r[31])); last[k] = v; } }
       }
       if (lockTrace && p <= lockTrace && p + n > lockTrace) std::fprintf(stderr, "LP %08x %u %08x\n", pc, n, v);
+      {   // diagnostic (MANTA_STACK_PC=hexpc): code-looking words on the stack at a hardware access from that PC (first 4 hits)
+        static const uint32_t stackPc = std::getenv("MANTA_STACK_PC") ? uint32_t(std::strtoul(std::getenv("MANTA_STACK_PC"), nullptr, 16)) : 0u;
+        static int hits = 0;
+        if (stackPc && pc == stackPc && hits < 4) { ++hits; std::fprintf(stderr, "STK ra %08x:", unsigned(c.r[31]));
+          const uint32_t sp = uint32_t(c.r[29]) & 0x1fffffffu;
+          for (uint32_t k = 0; k < 256; ++k) { uint32_t w = 0; if (sp + 4 * k + 4 > a.dram.size()) break; std::memcpy(&w, a.dram.data() + sp + 4 * k, 4);
+            if (w >= 0x80300000u && w < 0x80610000u && (w & 3) == 0) std::fprintf(stderr, " %08x", w); }
+          std::fprintf(stderr, "\n"); }
+      }
       return v;
     }
     if (p >= 0x1fc00000u || (p >= 0x14000000u && p < 0x14800000u && a.options.candidateSpi)) {   // flash aperture / XIU window (read-only memory in the machine)
@@ -271,7 +280,28 @@ int nativeRun(Msd309Machine& machine) {
   uint32_t pc = nativeTakeover(a, c, bus, runner, hooks);
   uint64_t limit = a.options.limit ? a.options.limit : UINT64_MAX;
   uint64_t budget = limit > a.dispatches ? limit - a.dispatches : 1;
-  run_guest(c, pc, budget, &hooks);
+  // --save-state with the native engine: run to --save-state-at, hand the native CPU state (GPRs, HI/LO, CP0 Status/Cause/EPC/Compare/Count)
+  // back to the machine's CPU object, write the ordinary snapshot, then continue (or stop with --save-state-stop). The snapshot resumes through
+  // the normal native takeover.
+  if (!a.options.saveState.empty() && a.options.saveStateAt > a.dispatches) {
+    run_guest(c, pc, c.icount + (a.options.saveStateAt - a.dispatches), &hooks);
+    pc = c.last_pc;
+    if (!c.halt && !a.stopped && !c.fatal) {
+      bus.sync(c, pc);
+      a.cpu.reg(UC_MIPS_REG_HI, c.hi); a.cpu.reg(UC_MIPS_REG_LO, c.lo);
+      a.cpu.reg(UC_MIPS_REG_CP0_STATUS, c.cp0[12][0]);
+      a.cpu.reg(UC_MIPS_REG_CP0_CAUSE, (c.cp0[13][0] & ~0x8000u) | (c.ip7 ? 0x8000u : 0u));
+      a.cpu.reg(UC_MIPS_REG_CP0_EPC, c.cp0[14][0]);
+      a.cpu.reg(UC_MIPS_REG_CP0_COMPARE, c.cp0[11][0]);
+      a.cpu.reg(UC_MIPS_REG_CP0_COUNT, uint32_t(c.icount * c.count_per_insn) + c.count_off);
+      a.m.writeSnapshot(pc);
+      std::fprintf(stderr, "native: save state written at pc %08x (dispatch %llu)\n", pc, (unsigned long long)a.dispatches);
+      if (a.options.saveStateStop) a.stop("save-state written; run stopped", 0);
+    }
+    if (c.halt || a.stopped || c.fatal) budget = c.icount;   // nothing more to run
+    else budget = c.icount + (limit > a.dispatches ? limit - a.dispatches : 1);
+  }
+  if (budget > c.icount) run_guest(c, pc, budget, &hooks);
   pc = c.last_pc;
   bus.sync(c, pc);   // hand the final state back to the machine object so the summary shows it
   a.cpu.reg(UC_MIPS_REG_HI, c.hi);
