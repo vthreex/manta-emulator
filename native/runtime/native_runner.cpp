@@ -99,10 +99,14 @@ struct MachineBus : Bus {
       if (pcHist.on) ++pcHist.m[(uint64_t(pc) << 32) | p];
       {   // diagnostic (MANTA_WATCH_RAM=1): report changes of the DTV screen-status words with the PC of the next hardware access
         static const bool watch = std::getenv("MANTA_WATCH_RAM") != nullptr;
-        static const uint32_t addrs[] = {0x006b92c0, 0x006b905c, 0x006c0910, 0x006b9004, 0x006e3fc4};
-        static uint32_t last[5] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef};
-        if (watch) for (int k = 0; k < 5; ++k) { uint32_t v = 0; std::memcpy(&v, a.dram.data() + addrs[k], 4);
-          if (v != last[k]) { std::fprintf(stderr, "WATCH %08x %08x -> %08x pc %08x ra %08x\n", 0x80000000u | addrs[k], last[k], v, pc, unsigned(c.r[31])); last[k] = v; } }
+        static const uint32_t addrs[] = {0x006b92c0, 0x006b905c, 0x006c0910, 0x006b9004, 0x006e3fc4, 0x006e8444};
+        static uint32_t last[6] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef};
+        if (watch) for (int k = 0; k < 6; ++k) { uint32_t v = 0; std::memcpy(&v, a.dram.data() + addrs[k], 4);
+          if (v != last[k]) { std::fprintf(stderr, "WATCH %08x %08x -> %08x pc %08x ra %08x stk", 0x80000000u | addrs[k], last[k], v, pc, unsigned(c.r[31])); last[k] = v;
+            const uint32_t sp = uint32_t(c.r[29]) & 0x1fffffffu;
+            for (uint32_t j = 0; j < 128; ++j) { uint32_t w = 0; if (sp + 4 * j + 4 > a.dram.size()) break; std::memcpy(&w, a.dram.data() + sp + 4 * j, 4);
+              if (w >= 0x80300000u && w < 0x80610000u && (w & 3) == 0) std::fprintf(stderr, " %08x", w); }
+            std::fprintf(stderr, "\n"); } }
       }
       if (lockTrace && p <= lockTrace && p + n > lockTrace) std::fprintf(stderr, "LP %08x %u %08x\n", pc, n, v);
       {   // diagnostic (MANTA_STACK_PC=hexpc): code-looking words on the stack at a hardware access from that PC (first 4 hits)
