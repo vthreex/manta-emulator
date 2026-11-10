@@ -2692,14 +2692,27 @@ void Msd309Machine::dtvMailbox() {
 // 8050EE70) set, and hardware IRQ 3 raised. The original ISR 8050F6C8 then raises E_MVD_EVENT_UNMUTE itself. No pixels are decoded.
 void Msd309Machine::mvdTick() {
   static const bool off = std::getenv("MANTA_NO_MVDIRQ") != nullptr; if (off) return;
+  { static uint64_t lastWhy = 0; if (std::getenv("MANTA_MVD_LOG") && dispatches_ - lastWhy > 200000000) { lastWhy = dispatches_; std::fprintf(stderr, "MVDTICK playing %d locked %d\n", int(mvdPlaying_), riu_.dtvLockedMux()); } }
   if (!mvdPlaying_ || riu_.dtvLockedMux() < 0 || dispatches_ < mvdNextFrame_) return;
   mvdNextFrame_ = dispatches_ + 2000000; ++mvdFrames_;
   uint32_t buf = 0; std::memcpy(&buf, dramBacking_.data() + 0x006d847c, 4);
   uint32_t miu1 = 0; if (dramBacking_[0x006fe9f0 + 0x3c] == 1) std::memcpy(&miu1, dramBacking_.data() + 0x006fe9f0 + 0x38, 4);
   const uint64_t at = uint64_t((buf + miu1) & 0x1fffffff) + 0x2b;
   if (buf && at < dramBacking_.size()) dramBacking_[at] = 1;
+  // picture counter (+0x00, GetPicCounter 8050EC10) and display counter (+0x14, 8050EBB4) of the same frame-info buffer advance per frame
+  const uint64_t base = uint64_t((buf + miu1) & 0x1fffffff);
+  if (buf && base + 0x18 <= dramBacking_.size()) for (uint64_t off : {0x00ull, 0x14ull}) { uint32_t c = 0; std::memcpy(&c, dramBacking_.data() + base + off, 4); ++c; std::memcpy(dramBacking_.data() + base + off, &c, 4); }
+  // sequence-header ("VOL") buffer, pointer at 806D8538, read by MDrv_MVD_GetFrameInfo (805102F4): +4 width, +8 height, +0x10 frame-rate
+  // code, +0x11 progressive flag, +0x20/+0x21 aspect ratio. A real decoder fills it from the MPEG-2 sequence header; the model writes the
+  // stream's actual parameters (the generated clip: 720x576, 25 fps = code 3, 4:3). The TV clears its NO SIGNAL placeholder (80469A98) once
+  // the size is known.
+  { uint32_t vol = 0; std::memcpy(&vol, dramBacking_.data() + 0x006d8538, 4); const uint64_t vb = (vol >= 0xd0000000u && vol < 0xe8000000u) ? 0x08000000ull + (vol - 0xd0000000u) : uint64_t(vol & 0x1fffffff);   // KSEG2 D0000000 = MIU1 (as the native bus maps it)
+    if (vol && vb + 0x30 <= dramBacking_.size()) { const uint32_t w = 720, h = 576; std::memcpy(dramBacking_.data() + vb + 4, &w, 4); std::memcpy(dramBacking_.data() + vb + 8, &h, 4);
+      dramBacking_[vb + 0x10] = 3; dramBacking_[vb + 0x11] = 0; dramBacking_[vb + 0x20] = 4; dramBacking_[vb + 0x21] = 3; } }
   mvdStatus_ |= 0x1000;
   riu_.irqRaise(3);
+  if (std::getenv("MANTA_MVD_LOG") && mvdFrames_ < 20) { uint8_t m0 = 0, m1 = 0; bool k0 = riu_.coproPeekByte(0x1f2033d0, m0), k1 = riu_.coproPeekByte(0x1f2033d1, m1);
+    std::fprintf(stderr, "MVDIRQ frame %llu buf %08x pending %08x mask %d:%02x %d:%02x line %d lines %u\n", (unsigned long long)mvdFrames_, buf, riu_.irqPending0, k0, m0, k1, m1, int(riu_.irqLine()), irqLinesApplied_); }
 }
 void Msd309Machine::mvdCommand(uint8_t cmd) {
   static const uint32_t argAt[6] = {0x1f202208, 0x1f202209, 0x1f20220c, 0x1f20220d, 0x1f202210, 0x1f202211};

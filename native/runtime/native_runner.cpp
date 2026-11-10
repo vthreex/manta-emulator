@@ -97,6 +97,13 @@ struct MachineBus : Bus {
           std::sort(v.begin(), v.end(), [](auto& x, auto& y) { return x.second > y.second; });
           for (size_t k = 0; k < v.size() && k < 40; ++k) std::fprintf(stderr, "PCH %08x %08x %llu\n", unsigned(v[k].first >> 32), unsigned(v[k].first), (unsigned long long)v[k].second); } } pcHist;
       if (pcHist.on) ++pcHist.m[(uint64_t(pc) << 32) | p];
+      {   // diagnostic (MANTA_WATCH_RAM=1): report changes of the DTV screen-status words with the PC of the next hardware access
+        static const bool watch = std::getenv("MANTA_WATCH_RAM") != nullptr;
+        static const uint32_t addrs[] = {0x006b92c0, 0x006b905c, 0x006c0910, 0x006b9004, 0x006e3fc4};
+        static uint32_t last[5] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef};
+        if (watch) for (int k = 0; k < 5; ++k) { uint32_t v = 0; std::memcpy(&v, a.dram.data() + addrs[k], 4);
+          if (v != last[k]) { std::fprintf(stderr, "WATCH %08x %08x -> %08x pc %08x ra %08x\n", 0x80000000u | addrs[k], last[k], v, pc, unsigned(c.r[31])); last[k] = v; } }
+      }
       if (lockTrace && p <= lockTrace && p + n > lockTrace) std::fprintf(stderr, "LP %08x %u %08x\n", pc, n, v);
       return v;
     }

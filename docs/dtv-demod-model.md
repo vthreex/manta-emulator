@@ -54,3 +54,13 @@ and the picture stays muted.
   without the decoder interrupt, with three different signal-quality presets via MANTA_DMD_PRESET). The channel view polls
   demodulator registers 0x2122/0x2224/0x2125/0x2113/0x2332 (quality loop 804F37C0). The DTV NO SIGNAL decision is not found yet;
   the decoder ISR never ran (no command 0x30), so the un-mute path is untested.
+
+## 2026-11-10 progress (DTV picture still blocked)
+* NO SIGNAL on a clear DTV channel = screen status 1 written by 80470E60 as a placeholder (signal OK, service OK, not scrambled);
+  a CA descriptor in the PMT correctly gives NO CI MODULE (status 6). MANTA_WATCH_RAM=1 logs status changes with PCs.
+* The firmware never registers the decoder interrupt (8050F4A0 only called to unregister), so the un-mute comes from polling.
+* Model now fills the decoder's frame-info buffer (+0x00/+0x14 counters, +0x2B) and the sequence-header buffer (pointer 806D8538,
+  a D0000000 MIU1 alias: +4 width 720, +8 height 576, +0x10 frame-rate code 3, +0x20/21 aspect 4:3). Verified: the driver's copy at
+  806D8560 now holds 720x576 -> the TV reads the picture size. Status still 1: the clearing condition is not found yet.
+* Ruled out: decoder IRQ, counters, signal-quality readings, SDT running status, scan-flag clear (803FF83C).
+* Next: find what clears status 1 after the size is known (candidates 804D4474, 804D9368, 80451478; watch with MANTA_WATCH_RAM).
