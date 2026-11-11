@@ -54,7 +54,7 @@
   "--graphics-probes",
   "--or1k-trace-first-visits",
   "--or1k-dispatch-divider",
-  "32",
+  "128",
   "--max-or1k-instructions",
   "6500000000",
   "--exploratory-fetch-revision-byte",
@@ -219,7 +219,7 @@
   "state.snap": 27430694,
   "files/ir-keymap.tsv": 7884,
   "files/sar-keymap.tsv": 1313,
-  "manta.wasm": 39119447,
+  "manta.wasm": 39119868,
   "files/dtv.ts": 75200
  },
  "versions": {
@@ -229,7 +229,7 @@
   "state.snap": "21c632a059a7",
   "files/ir-keymap.tsv": "7a5aba2a8dbb",
   "files/sar-keymap.tsv": "2306b2d48ac3",
-  "manta.wasm": "49ed93d23b5d",
+  "manta.wasm": "e66472f54489",
   "manta.js": "8416abc91b86",
   "worker.js": "51e04fc9aae3",
   "files/dtv.ts": "fa74e5bc8d92"

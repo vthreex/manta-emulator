@@ -574,7 +574,9 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
   };
   riu_.avdInstructionText = trace_.is_open() || replay_.is_open();
   riu_.avdIdleSkip = !trace_.is_open() && !replay_.is_open() && !o.pauseMmio && !std::getenv("MANTA_NO_AVD_SKIP");
-  riu_.orIdleSkip = !trace_.is_open() && !replay_.is_open() && !o.pauseMmio && !std::getenv("MANTA_NO_OR_SKIP");
+  // In the exploratory DTV mode the stream input breaks the TS-processor idle loop every packet, so proving it costs more than it saves
+  // (measured: 15.3 s vs 12.0 s per 100 M dispatches); the skip is exact, so leaving it off changes no result.
+  riu_.orIdleSkip = !trace_.is_open() && !replay_.is_open() && !o.pauseMmio && !std::getenv("MANTA_NO_OR_SKIP") && !o.exploratoryDtvDemod;
   if (o.candidateMiu) {
     dramBacking_.resize(size_t(0x08000000) + o.miu1Bytes);
     if (o.miu0Bytes < 0x08000000) {
@@ -1541,12 +1543,15 @@ void Msd309Machine::interruptHook(uc_engine *, uint32_t n, void *p) {
 }
 // Code-identity guard for hot MMIO paths: the result of sha256(DRAM[phys, phys+size)) == expected, cached with the exact bytes it was
 // computed from; a later call re-hashes only when those bytes changed (memcmp), so the answer is identical to hashing every time.
-static bool cachedCodeMatches(const std::vector<uint8_t>& dram, uint32_t phys, size_t size, const char* expected) {
+// With the native engine the executed code is the recompiled stock image whatever RAM holds, so a verified match stays valid
+// (recompiledCode); the interpreter executes RAM and re-compares every time.
+static bool cachedCodeMatches(const std::vector<uint8_t>& dram, uint32_t phys, size_t size, const char* expected, bool recompiledCode = false) {
   struct Entry { std::vector<uint8_t> bytes; bool ok = false; };
   static std::map<std::pair<uint32_t, size_t>, Entry> cache;
   if (uint64_t(phys) + size > dram.size()) return false;
   const uint8_t* now = dram.data() + phys;
   auto& e = cache[{phys, size}];
+  if (recompiledCode && e.ok) return true;
   if (e.bytes.size() == size && std::memcmp(e.bytes.data(), now, size) == 0) return e.ok;
   e.bytes.assign(now, now + size);
   e.ok = sha256(std::span<const uint8_t>(e.bytes.data(), e.bytes.size())) == expected;
@@ -1926,7 +1931,7 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       // foreign-device bit use is rejected by PreservedBits independently.
       uint32_t instruction=0;
       m.cpu_.read(pc&0x1fffffff,&instruction,4);
-      if(instruction>>26==37 && cachedCodeMatches(m.dramBacking_,0x005d671c,0x28a0,"2dd76c78083be436df9036c3acbfba69ac3eaaca53c2292a85dd8c4e04d50ca3")) {
+      if(instruction>>26==37 && cachedCodeMatches(m.dramBacking_,0x005d671c,0x28a0,"2dd76c78083be436df9036c3acbfba69ac3eaaca53c2292a85dd8c4e04d50ca3",m.options_.nativeCpu)) {
         m.preservedBits_.seed((instruction>>16)&31,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
         m.riu_.prepareOpaqueRead(a);
         m.event("deferred_tsp_hal_observation",a,n,0,"INVALID observation in SHA-verified original HAL; preserved bits may only restore to same origin; no unknown status or hardware read side effect validated");
@@ -2629,7 +2634,7 @@ std::vector<GopLayer> Msd309Machine::collectGopLayers() const {
 void Msd309Machine::vbiFeed() {
   const int st = riu_.atvLockedStation();
   const uint8_t en = riu_.liveGet(0x1f206e3d);
-  { static uint64_t lastLog = 0; if (std::getenv("MANTA_VBI_LOG") && dispatches_ - lastLog > 50000000) { lastLog = dispatches_; std::fprintf(stderr, "VBI st=%d en=%02x base=%02x%02x%02x slots=%02x%02x\n", st, en, riu_.liveGet(0x1f206e74), riu_.liveGet(0x1f206e71), riu_.liveGet(0x1f206e70), riu_.liveGet(0x1f206e78), riu_.liveGet(0x1f206e75)); } }
+  { static uint64_t lastLog = 0; static const bool vbiLog = std::getenv("MANTA_VBI_LOG") != nullptr; if (vbiLog && dispatches_ - lastLog > 50000000) { lastLog = dispatches_; std::fprintf(stderr, "VBI st=%d en=%02x base=%02x%02x%02x slots=%02x%02x\n", st, en, riu_.liveGet(0x1f206e74), riu_.liveGet(0x1f206e71), riu_.liveGet(0x1f206e70), riu_.liveGet(0x1f206e78), riu_.liveGet(0x1f206e75)); } }
   if (st < 0 || !(en & 0x80)) { vbiLast_ = dispatches_; return; }
   const uint32_t base = (uint32_t(riu_.liveGet(0x1f206e70)) | uint32_t(riu_.liveGet(0x1f206e71)) << 8 | uint32_t(riu_.liveGet(0x1f206e74)) << 16) << 3;
   const uint32_t slots = uint32_t(riu_.liveGet(0x1f206e75)) | uint32_t(riu_.liveGet(0x1f206e78)) << 8;
@@ -2676,7 +2681,7 @@ void Msd309Machine::vbiFeed() {
   }
   const uint32_t idx = vbiSlot_ ? vbiSlot_ : slots;   // 1-based index of the last written slot, as the driver reads it
   riu_.livePut(0x1f206e79, uint8_t(idx)); riu_.livePut(0x1f206e7c, uint8_t(idx >> 8));
-  if (std::getenv("MANTA_VBI_LOG")) std::fprintf(stderr, "VBIW idx=%u back=%02x count=%u\n", idx, riu_.liveGet(0x1f206e79), count);
+  static const bool vbiLogW = std::getenv("MANTA_VBI_LOG") != nullptr; if (vbiLogW) std::fprintf(stderr, "VBIW idx=%u back=%02x count=%u\n", idx, riu_.liveGet(0x1f206e79), count);
   riu_.livePut(0x1f206e41, uint8_t(riu_.liveGet(0x1f206e41) | 0x80));
 }
 // EXPLORATORY DVB-T demodulator mailbox (docs/dtv-demod-model.md). The original MIPS driver (804F2D78 read, 804F2E5C write, 804F2F14
@@ -2698,7 +2703,7 @@ void Msd309Machine::dtvMailbox() {
     if (riu_.dtvLockedMux() >= 0) { switch (addr) { case 0x23e0: out = 0x0b; break; case 0x232c: out |= 2; break; case 0x2070: out |= 8; break;
         case 0x2145: case 0x212f: out |= 1; break; case 0x24cf: out |= 0x10; break; default: break; } } }
   else if (cmd == 2 || cmd == 4) dmdRegs_[uint16_t(addr | (cmd == 4 ? 0x8000u : 0u))] = data;
-  if (std::getenv("MANTA_DMD_LOG")) std::fprintf(stderr, "DMD %u %04x %02x -> %02x\n", cmd, addr, data, out);
+  static const bool dmdLog = std::getenv("MANTA_DMD_LOG") != nullptr; if (dmdLog) std::fprintf(stderr, "DMD %u %04x %02x -> %02x\n", cmd, addr, data, out);
   riu_.livePut(0x1f224c05, out);
   riu_.livePut(0x1f224c00, 0xff);
 }
@@ -2712,7 +2717,7 @@ void Msd309Machine::dtvMailbox() {
 // 8050EE70) set, and hardware IRQ 3 raised. The original ISR 8050F6C8 then raises E_MVD_EVENT_UNMUTE itself. No pixels are decoded.
 void Msd309Machine::mvdTick() {
   static const bool off = std::getenv("MANTA_NO_MVDIRQ") != nullptr; if (off) return;
-  { static uint64_t lastWhy = 0; if (std::getenv("MANTA_MVD_LOG") && dispatches_ - lastWhy > 200000000) { lastWhy = dispatches_; std::fprintf(stderr, "MVDTICK playing %d locked %d\n", int(mvdPlaying_), riu_.dtvLockedMux()); } }
+  { static uint64_t lastWhy = 0; static const bool mvdLogT = std::getenv("MANTA_MVD_LOG") != nullptr; if (mvdLogT && dispatches_ - lastWhy > 200000000) { lastWhy = dispatches_; std::fprintf(stderr, "MVDTICK playing %d locked %d\n", int(mvdPlaying_), riu_.dtvLockedMux()); } }
   if (!mvdPlaying_ || riu_.dtvLockedMux() < 0 || dispatches_ < mvdNextFrame_) return;
   mvdNextFrame_ = dispatches_ + 2000000; ++mvdFrames_;
   uint32_t buf = 0; std::memcpy(&buf, dramBacking_.data() + 0x006d847c, 4);
@@ -2732,7 +2737,7 @@ void Msd309Machine::mvdTick() {
       const uint32_t fr = 3; std::memcpy(dramBacking_.data() + vb + 0x28, &fr, 4); } }   // +0x28 MPEG-2 frame_rate_code (3 = 25 fps; table 8062E788, read by 805106B0 for decoder type 0x10)
   mvdStatus_ |= 0x1000;
   riu_.irqRaise(3);
-  if (std::getenv("MANTA_MVD_LOG") && mvdFrames_ < 20) { uint8_t m0 = 0, m1 = 0; bool k0 = riu_.coproPeekByte(0x1f2033d0, m0), k1 = riu_.coproPeekByte(0x1f2033d1, m1);
+  static const bool mvdLogF = std::getenv("MANTA_MVD_LOG") != nullptr; if (mvdLogF && mvdFrames_ < 20) { uint8_t m0 = 0, m1 = 0; bool k0 = riu_.coproPeekByte(0x1f2033d0, m0), k1 = riu_.coproPeekByte(0x1f2033d1, m1);
     std::fprintf(stderr, "MVDIRQ frame %llu buf %08x pending %08x mask %d:%02x %d:%02x line %d lines %u\n", (unsigned long long)mvdFrames_, buf, riu_.irqPending0, k0, m0, k1, m1, int(riu_.irqLine()), irqLinesApplied_); }
 }
 void Msd309Machine::mvdCommand(uint8_t cmd) {
@@ -2746,7 +2751,7 @@ void Msd309Machine::mvdCommand(uint8_t cmd) {
     case 0x0d: arg[0] = 1; break;   // 8050DE70 == 1 -> the ISR raises E_MVD_EVENT_UNMUTE
     default: break;
   }
-  if (std::getenv("MANTA_MVD_LOG")) std::fprintf(stderr, "MVDCMD %02x %02x %02x %02x %02x %02x %02x\n", cmd, arg[0], arg[1], arg[2], arg[3], arg[4], arg[5]);
+  static const bool mvdLogC = std::getenv("MANTA_MVD_LOG") != nullptr; if (mvdLogC) std::fprintf(stderr, "MVDCMD %02x %02x %02x %02x %02x %02x %02x\n", cmd, arg[0], arg[1], arg[2], arg[3], arg[4], arg[5]);
   for (int i = 0; i < 6; ++i) riu_.livePut(argAt[i], arg[i]);
 }
 void Msd309Machine::setDtvMuxes(const std::string& spec) {
