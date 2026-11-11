@@ -1,4 +1,5 @@
 #pragma once
+#include "video/mpeg2_video.hpp"
 #include "video/input_picture.hpp"
 #include <chrono>
 #include <functional>
@@ -255,6 +256,8 @@ class Msd309Machine {
   void setDtvMuxes(const std::string& spec);
   void mvdCommand(uint8_t cmd);   // EXPLORATORY MVD command responder
   void mvdTick();                 // EXPLORATORY MVD "frame shown" interrupt while a DTV multiplex plays
+  std::unique_ptr<Mpeg2Video> dtvVideo_; mutable uint64_t dtvVideoShown_ = 0; uint32_t dtvVideoPid_ = 0x1fff;   // EXPLORATORY MVD output model (src/video/mpeg2_video.hpp)
+  void onDtvPacket(std::span<const uint8_t> ts);
   bool mvdPlaying_ = false; uint64_t mvdNextFrame_ = 0; uint16_t mvdStatus_ = 0; uint64_t mvdFrames_ = 0;             // EXPLORATORY DVB-T demodulator mailbox (docs/dtv-demod-model.md)
   std::map<uint16_t, uint8_t> dmdRegs_;                 // EXPLORATORY teletext slicer (docs/atv-teletext-model.md)
   uint64_t vbiLast_ = 0; uint32_t vbiSeq_ = 0, vbiSlot_ = 0;   // EXPLORATORY: video of the generated input signal

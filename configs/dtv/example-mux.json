@@ -1,16 +1,1 @@
-{
-  "network": "Manta Emulator",
-  "tsid": 1,
-  "onid": 8442,
-  "utc": "2026-11-09T20:10:00",
-  "services": [
-    {"id": 1, "name": "Emu News", "provider": "Manta", "lcn": 1,
-     "events": [
-       {"title": "Evening News", "text": "Headlines from the emulated world", "start": "2026-11-09T20:00:00", "minutes": 30},
-       {"title": "Weather", "text": "Sunny with a chance of firmware", "start": "2026-11-09T20:30:00", "minutes": 15}]},
-    {"id": 2, "name": "Emu Movies", "provider": "Manta", "lcn": 2,
-     "events": [
-       {"title": "The Long Boot", "text": "A TV boots for fifteen minutes", "start": "2026-11-09T19:45:00", "minutes": 120},
-       {"title": "Late Show", "text": "Talk show", "start": "2026-11-09T21:45:00", "minutes": 60}]}
-  ]
-}
+{"network": "Manta Emulator", "tsid": 1, "onid": 8442, "utc": "2026-11-09T20:10:00", "services": [{"id": 1, "name": "Emu News", "provider": "Manta", "lcn": 1, "events": [{"title": "Evening News", "text": "Headlines from the emulated world", "start": "2026-11-09T20:00:00", "minutes": 30}, {"title": "Weather", "text": "Sunny with a chance of firmware", "start": "2026-11-09T20:30:00", "minutes": 15}]}, {"id": 2, "name": "Emu Movies", "provider": "Manta", "lcn": 2, "events": [{"title": "The Long Boot", "text": "A TV boots for fifteen minutes", "start": "2026-11-09T19:45:00", "minutes": 120}, {"title": "Late Show", "text": "Talk show", "start": "2026-11-09T21:45:00", "minutes": 60}]}], "av": "example-clip.ts", "cycles": 16}

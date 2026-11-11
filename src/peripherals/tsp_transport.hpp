@@ -20,6 +20,8 @@ public:
   std::function<void(uint32_t,uint32_t)> regWrite;
   std::function<bool(uint32_t,size_t)> memoryWritable;
   std::function<void(uint32_t,std::span<const uint8_t>)> memoryWrite;
+  // Every packet that reaches the TS input (also ones the busy section window drops), for decoder models fed by the same input.
+  std::function<void(std::span<const uint8_t>)> arrivalObserver;
   uint64_t inputPackets=0,filteredPackets=0,dmaBytes=0,dmaTransfers=0;
   uint64_t packetCycles=0,nextPacketTick=0,droppedPackets=0,lastInputTick=0;
   std::string inputIdentity;
@@ -27,14 +29,20 @@ public:
   unsigned activeFilter()const{return window_.filter();}
   unsigned activeCursor()const{return window_.cursor();}
   void serialize(snap::Ar& a){a.tag("TspTransport1");auto identity=inputIdentity;a(identity);
-    if(a.loading() && identity!=inputIdentity)throw snap::SnapshotError("TSP transport input changed since snapshot");
-    window_.serialize(a);a(done_,station_,packetIndex_,pending_,filters_,filterIndex_,inputPackets,filteredPackets,dmaBytes,dmaTransfers,packetCycles,nextPacketTick,droppedPackets,lastInputTick);}
+    const bool changed=a.loading() && identity!=inputIdentity;
+    const auto cycles=packetCycles;
+    window_.serialize(a);a(done_,station_,packetIndex_,pending_,filters_,filterIndex_,inputPackets,filteredPackets,dmaBytes,dmaTransfers,packetCycles,nextPacketTick,droppedPackets,lastInputTick);
+    if(a.loading() && cycles)packetCycles=cycles;   // the packet period given now (scheduling only) replaces the saved one
+    // Different aerial content than at the save (another multiplex file): the input restarts at the new stream's first packet,
+    // like re-plugging the aerial. Packets already in the receive window are the old stream's last ones.
+    if(changed){station_=-1;packetIndex_=0;filters_.clear();filterIndex_=0;}}
   void tune(int station,uint64_t now){if(station!=station_){station_=station;packetIndex_=0;filters_.clear();filterIndex_=0;nextPacketTick=now;}}
   bool hasStation()const{return station_>=0;}
   bool pendingReplica()const{return !window_.occupied() && filterIndex_<filters_.size();}
   bool pumpReplica(){return pendingReplica() && window_.capture(pending_,filters_[filterIndex_++]);}
   bool clockedSupply(int station,std::span<const uint8_t> transport,uint64_t now){
-    if(now<lastInputTick)throw std::runtime_error("TSP input clock moved backwards");lastInputTick=now;
+    if(now<lastInputTick)throw std::runtime_error("TSP input clock moved backwards");
+    lastInputTick=now;
     tune(station,now);
     bool delivered=pumpReplica();
     if(station<0 || transport.empty() || now<nextPacketTick)return delivered;
@@ -44,8 +52,11 @@ public:
     const auto arrivals=elapsed+1;nextPacketTick+=arrivals*packetCycles;
     // Live input cannot pause the transmitter when a one-slot receiver is
     // occupied. Drop that actual arrival; original continuity checks see gaps.
+    const auto packets=transport.size()/188;
+    auto observe=[&](uint64_t index){if(arrivalObserver && packets)arrivalObserver(transport.subspan((index%packets)*188,188));};
     for(uint64_t i=0;i<arrivals;++i){
-      if(window_.occupied() || filterIndex_<filters_.size()){const auto lost=arrivals-i;packetIndex_+=lost;inputPackets+=lost;droppedPackets+=lost;break;}
+      if(window_.occupied() || filterIndex_<filters_.size()){const auto lost=arrivals-i;for(uint64_t j=0;j<lost;++j)observe(packetIndex_+j);packetIndex_+=lost;inputPackets+=lost;droppedPackets+=lost;break;}
+      observe(packetIndex_);
       delivered=supply(station,transport) || delivered;
     }
     return delivered;

@@ -1,3 +1,4 @@
+#include <set>
 #include "video/hdmi_modes.hpp"
 #include "video/vbi_slot.hpp"
 #include "video/teletext_file.hpp"
@@ -61,6 +62,8 @@ Msd309Machine::Msd309Machine(Flash f, Options o) : flash_(std::move(f)), options
     riu_.dtvTiming.on = true; riu_.dtvTiming.hperiod = (*t)[0]; riu_.dtvTiming.vtotal = (*t)[1]; riu_.dtvTiming.sync = uint8_t((*t)[2]);
     riu_.dtvTiming.window = true; riu_.dtvTiming.vstart = (*t)[3]; riu_.dtvTiming.hstart = (*t)[4]; riu_.dtvTiming.vend = (*t)[5]; riu_.dtvTiming.hend = (*t)[6]; }
   if (o.exploratoryDtvDemod) { riu_.irqModel = true; if (!riu_.fiqChanged) riu_.fiqChanged = [this] { updateIrqLines(); }; }
+  if (o.exploratoryDtvDemod) { dtvVideo_ = std::make_unique<Mpeg2Video>();   // EXPLORATORY MVD output model fed by the same TS input as the TSP
+    riu_.tspTransport.arrivalObserver = [this](std::span<const uint8_t> ts) { onDtvPacket(ts); }; }
   if (!o.exploratoryAtvStations.empty()) setAtvStations(o.exploratoryAtvStations);
   if (!o.exploratoryDtvMuxes.empty()) setDtvMuxes(o.exploratoryDtvMuxes);
   riu_.candidateMiu = o.candidateMiu;
@@ -2740,6 +2743,27 @@ void Msd309Machine::mvdTick() {
   static const bool mvdLogF = std::getenv("MANTA_MVD_LOG") != nullptr; if (mvdLogF && mvdFrames_ < 20) { uint8_t m0 = 0, m1 = 0; bool k0 = riu_.coproPeekByte(0x1f2033d0, m0), k1 = riu_.coproPeekByte(0x1f2033d1, m1);
     std::fprintf(stderr, "MVDIRQ frame %llu buf %08x pending %08x mask %d:%02x %d:%02x line %d lines %u\n", (unsigned long long)mvdFrames_, buf, riu_.irqPending0, k0, m0, k1, m1, int(riu_.irqLine()), irqLinesApplied_); }
 }
+// EXPLORATORY MVD output model: a transport packet on the TS input whose PID the ORIGINAL firmware has programmed into a TSP PID
+// filter slot routed to the video decoder is decoded (MPEG-2, libmpeg2). The routing value comes from the firmware's own filter words.
+void Msd309Machine::onDtvPacket(std::span<const uint8_t> ts) {
+  if (!dtvVideo_ || ts.size() != 188) return;
+  const uint32_t pid = uint32_t(ts[1] & 31) << 8 | ts[2];
+  static const bool log = std::getenv("MANTA_TSP_FILTER_LOG") != nullptr;
+  bool video = false;
+  for (unsigned i = 0; i < 48; ++i) {
+    const auto w = riu_.tspTransport.regRead(0x210000 + 4 * i);
+    if ((w.known & 0x1fff) != 0x1fff || (w.value & 0x1fff) != pid) continue;
+    if (log) { static std::set<uint64_t> seen; const uint64_t k = uint64_t(i) << 40 | uint64_t(w.known) << 20 ^ w.value;
+      if (seen.insert(k).second) std::fprintf(stderr, "TSPF pid %04x slot %u value %08x known %08x\n", pid, i, w.value, w.known); }
+    // Destination field bits 23:22, read from the firmware's own filter words: 01 for the PMT video PID, 10 for the audio PID,
+    // 00 for PCR/idle slots; bit 21 = section output. Only "01" (video) reaches this decoder model.
+    if ((w.known & 0x00e00000) == 0x00e00000 && ((w.value >> 21) & 7) == 2) video = true;
+  }
+  if (!video) return;
+  if (pid != dtvVideoPid_) { dtvVideo_->reset(); dtvVideoPid_ = pid; }
+  dtvVideo_->feedPacket(ts);
+  dtvVideo_->advance(virtualTime_.cycles(dispatches_));   // decode what is due on the virtual clock
+}
 void Msd309Machine::mvdCommand(uint8_t cmd) {
   static const uint32_t argAt[6] = {0x1f202208, 0x1f202209, 0x1f20220c, 0x1f20220d, 0x1f202210, 0x1f202211};
   uint8_t arg[6]; for (int i = 0; i < 6; ++i) arg[i] = riu_.liveGet(argAt[i]);
@@ -2914,7 +2938,7 @@ void Msd309Machine::publishPreviewLive() const {
       { double off = 0; int st = riu_.atvLockedStation(&off); mix(uint64_t(st + 1)); if (st >= 0) { mix(std::hash<std::string>{}(riu_.atvStations[size_t(st)].picture)); mix(uint64_t(int64_t(off * 1000)));
         mix(dispatches_ >> 22); } }   // the interference changes from frame to frame
       const auto& t = riu_.inputTiming;
-      mix(t.hperiod); mix(t.vtotal); mix(t.hstart); mix(t.vstart); mix(t.hend); mix(t.vend); mix(inputPicture_.width); mix(inputPicture_.height);
+      mix(t.hperiod); mix(t.vtotal); mix(t.hstart); mix(t.vstart); mix(t.hend); mix(t.vend); mix(inputPicture_.width); mix(inputPicture_.height); if (dtvVideo_ && riu_.dtvLockedMux() >= 0) dtvVideo_->advance(virtualTime_.cycles(dispatches_)); mix(dtvVideo_ ? dtvVideo_->serial() : 0);
       mix(std::hash<std::string>{}(options_.exploratoryInputPicture));
       for (unsigned reg : {0x19u, 0x04u, 0x05u, 0x06u, 0x07u, 0x08u, 0x09u, 0x0au, 0x0bu, 0x26u, 0x27u, 0x28u, 0x29u, 0x2au, 0x2bu, 0x2cu, 0x2du, 0x2eu, 0x2fu}) { auto l = riu_.scByte(0x10, reg * 4), hb = riu_.scByte(0x10, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
       for (unsigned reg : {0x03u, 0x10u, 0x11u, 0x12u, 0x13u, 0x16u, 0x17u}) { auto l = riu_.scByte(0x12, reg * 4), hb = riu_.scByte(0x12, reg * 4 + 1); mix(l.value | l.known << 8 | uint64_t(hb.value) << 16 | uint64_t(hb.known) << 24); }
@@ -3012,7 +3036,12 @@ void Msd309Machine::publishPreview() const {
     double atvOff=0; const int atvSt=riu_.inputTiming.on?-1:riu_.atvLockedStation(&atvOff);
     const int dtvMx=(riu_.inputTiming.on||atvSt>=0)?-1:riu_.dtvLockedMux();
     const std::string wantPicture = atvSt>=0 ? riu_.atvStations[size_t(atvSt)].picture : dtvMx>=0 ? riu_.dtvMuxes[size_t(dtvMx)].picture : options_.exploratoryInputPicture;
-    if(wantPicture!=loadedPicture_){ inputPicture_={}; loadedPicture_=wantPicture; }
+    if(dtvMx>=0 && dtvVideo_){   // DTV: only what the MVD output model decoded from the stream; black until the first picture
+      dtvVideo_->advance(virtualTime_.cycles(dispatches_));
+      if(dtvVideo_->hasPicture()){ if(dtvVideoShown_!=dtvVideo_->serial()){ inputPicture_=dtvVideo_->picture(); dtvVideoShown_=dtvVideo_->serial(); } }
+      else if(loadedPicture_!="black"){ inputPicture_.width=720; inputPicture_.height=576; inputPicture_.bgra.assign(size_t(720)*576,0xff000000u); dtvVideoShown_=0; }
+      loadedPicture_=dtvVideo_->hasPicture()?std::string("mvd"):std::string("black");
+    }else if(wantPicture!=loadedPicture_){ inputPicture_={}; loadedPicture_=wantPicture; }
     if(inputPicture_.empty()){
       try{ inputPicture_ = wantPicture.empty() ? builtinPicture() : loadBmpPicture(wantPicture); }
       catch(const std::exception& e){ inputPicture_ = builtinPicture(); std::fprintf(stderr,"EXPLORATORY: input picture not loaded (%s); using the built-in picture%c",e.what(),10); }
@@ -3041,7 +3070,7 @@ void Msd309Machine::publishPreview() const {
       uint64_t key=1469598103934665603ull; auto mixk=[&](uint64_t v){key=(key^v)*1099511628211ull;};
       std::array<double,3> bo{};
       for(unsigned i=0;i<3;++i){ auto v=w16(0x0f,0x36+i,0x07ff); bo[i]=v?(double(*v)-1024.0)/4.0:0.0; }
-      mixk(csc); for(double c:m)mixk(uint64_t(int64_t(c*4096))); for(double c:bo)mixk(uint64_t(int64_t(c*16))); mixk(inputPicture_.width); mixk(inputPicture_.height); mixk(std::hash<std::string>{}(wantPicture));
+      mixk(csc); for(double c:m)mixk(uint64_t(int64_t(c*4096))); for(double c:bo)mixk(uint64_t(int64_t(c*16))); mixk(inputPicture_.width); mixk(inputPicture_.height); mixk(std::hash<std::string>{}(wantPicture)); mixk(dtvVideoShown_);
       if(processedKey_!=key || processedPicture_.size()!=inputPicture_.bgra.size()){
         processedKey_=key; processedPicture_.resize(inputPicture_.bgra.size());
         auto cl=[](double v){return uint32_t(v<0?0:v>255?255:v+0.5);};
@@ -3213,6 +3242,8 @@ std::string Msd309Machine::summary() const {
     << ",\n  \"candidate_bdma\": " << (options_.candidateBdma ? "true" : "false")
     << ",\n  \"diagnostic_init_prefix\": " << (options_.initPrefix ? "true" : "false")
     << ",\n  \"candidate_uart\": " << (options_.candidateUart ? "true" : "false")
+    << [&]{ if (!dtvVideo_) return std::string(); return ",\n  \"dtv_video\": {\"pid\": " + std::to_string(dtvVideoPid_) + ", \"pictures\": " + std::to_string(dtvVideo_->pictures()) +
+        ", \"errors\": " + std::to_string(dtvVideo_->errors()) + ", \"dropped_packets\": " + std::to_string(dtvVideo_->droppedPackets()) + ", \"queued_packets\": " + std::to_string(dtvVideo_->queued()) +", \"width\": " + std::to_string(dtvVideo_->width()) + ", \"height\": " + std::to_string(dtvVideo_->height()) + "}"; }()
     << [&]{ std::string o; if (const char* e = std::getenv("MANTA_RAM_DUMP")) {   // diagnostic: "ADDR+LEN,..." guest RAM bytes in the summary
         std::string spec = e; size_t at = 0; o = ",\n  \"ram_dump\": {";
         while (at < spec.size()) { size_t c = spec.find(',', at); if (c == std::string::npos) c = spec.size(); auto item = spec.substr(at, c - at); at = c + 1;

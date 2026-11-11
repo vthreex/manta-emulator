@@ -20,11 +20,12 @@ obj = os.path.join(out, "obj"); os.makedirs(obj, exist_ok=True)
 S = lambda *p: os.path.join(repo, *p)
 sources = [S("src/main.cpp"), S("src/cpu/engine.cpp"), S("src/cpu/openrisc.cpp"), S("src/cpu/vd_mcu.cpp"), S("src/board/machine.cpp"), S("src/peripherals/riu.cpp"),
            S("src/peripherals/gpio_i2c.cpp"), S("src/storage/flash.cpp"), S("src/storage/sha256.cpp"), S("src/snapshot/snapshot.cpp"), S("src/profile/sampler.cpp"),
-           S("src/ui/frontend_host.cpp"),
+           S("src/ui/frontend_host.cpp"), S("src/video/mpeg2_video.cpp"),
            S("src/cpu/third_party/emu8051/core.c"), S("src/cpu/third_party/emu8051/opcodes.c"), S("src/cpu/third_party/emu8051/disasm.c"),
            S("native/runtime/runtime.cpp"), S("native/runtime/native_runner.cpp"), S("native/runtime/pages.cpp"), S("native/runtime/page_osk.cpp"), S("native/runtime/page_net.cpp"),
            S("native/runtime/page_browser.cpp"), S("native/runtime/http.cpp"), S("native/runtime/html_text.cpp"), S("native/linux/uclite.cpp"), S("native/web/native_window_web.cpp")]
 sources += sorted(glob.glob(S("native/gen/*.cpp")))
+sources += [S("third_party/libmpeg2/" + f + ".c") for f in ("alloc", "cpu_accel", "cpu_state", "decode", "header", "idct", "motion_comp", "slice")]   # C (see compile_one)
 inc = ["-I", S("src"), "-I", S("native/runtime"), "-I", os.path.join(work, "unicorn-irq", "include")]
 common = ["-fwasm-exceptions", "-DMANTA_NATIVE_RUNNER", "-DMANTA_WEB"]
 hdr_mtime = max(os.path.getmtime(h) for h in glob.glob(S("src/**/*.hpp"), recursive=True) + glob.glob(S("native/runtime/*.hpp")))
@@ -36,6 +37,7 @@ def compile_one(src):
     if os.path.exists(o) and os.path.getmtime(o) > max(os.path.getmtime(src), deps) and "--force" not in sys.argv: return o, None
     # every source, the emu8051 .c files included, is compiled as C++ (as in native/linux/build.py: the 8051 core is called with C++ linkage)
     cmd = [emxx, "-std=c++20", "-x", "c++", "-c", src, "-o", o] + common + inc + (["-O1", "-fno-strict-aliasing", "-w"] if gen else ["-O2", "-w"])
+    if "libmpeg2" in src: cmd = [emxx, "-x", "c", "-std=gnu11", "-c", src, "-o", o, "-I", S("third_party/libmpeg2"), "-O2", "-w"]   # libmpeg2 is C
     r = subprocess.run(cmd, capture_output=True, text=True, env=env)
     return o, (r.stderr if r.returncode else None)
 

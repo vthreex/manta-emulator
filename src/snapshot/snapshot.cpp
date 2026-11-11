@@ -436,7 +436,8 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
       bool subset = options_.loadAllowExtraOptions && !canon.empty();
       std::vector<std::string> remaining = nowLines;
       // Older snapshots fingerprinted the TS-processor dispatch divider; it is a scheduling ratio only (re-applied after the restore).
-      for (size_t k = 0; k < oldLines.size(); ++k) if (oldLines[k] == "--or1k-dispatch-divider") { oldLines.erase(oldLines.begin() + k, oldLines.begin() + std::min(oldLines.size(), k + 2)); break; }
+      for (const char* opt : {"--or1k-dispatch-divider", "--exploratory-tsp-packet-cycles", "--exploratory-dtv-stations"})
+        for (size_t k = 0; k < oldLines.size();) if (oldLines[k] == opt) oldLines.erase(oldLines.begin() + k, oldLines.begin() + std::min(oldLines.size(), k + 2)); else ++k;
       if (subset) for (auto& l : oldLines) { auto it = std::find(remaining.begin(), remaining.end(), l); if (it == remaining.end()) { subset = false; break; } remaining.erase(it); }
       if (!subset) throw SnapshotError("snapshot was taken under a different run configuration (diagnostic assumptions/options differ)");
       for (auto& l : remaining) snapshotOptionDelta_ += l + " ";

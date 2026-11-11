@@ -8,7 +8,7 @@ CONFIG: {"network": "Manta", "tsid": 1, "onid": 0x20FA, "utc": "2026-11-09T20:00
          "services": [{"id": 1, "name": "DTV ONE", "provider": "Manta", "lcn": 1,
                        "events": [{"title": "News", "text": "Evening news", "start": "2026-11-09T19:30:00", "minutes": 60}, ...]}]}
 """
-import datetime, json, struct, sys
+import datetime, json, os, struct, sys
 
 
 def crc32(data):
@@ -137,6 +137,8 @@ def build(cfg):
 
 if __name__ == '__main__':
     cfg = json.load(open(sys.argv[1], encoding='utf-8'))
+    if cfg.get('av') and not os.path.isabs(cfg['av']):   # a clip path is relative to the config file
+        cfg['av'] = os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), cfg['av'])
     data = build(cfg)
     open(sys.argv[2], 'wb').write(data)
     print(len(data) // 188, 'packets')

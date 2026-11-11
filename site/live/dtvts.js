@@ -1,7 +1,9 @@
 // DVB-T transport stream builder for the EXPLORATORY DTV input (port of tools/make_dtv_ts.py). Writes only standard tables
 // (EN 300 468 / ISO 13818-1): PAT, PMT, NIT (network name + logical channel numbers), SDT (channel names), EIT present/following
-// (now/next titles + descriptions) and TDT (clock). The original firmware decodes them itself. No audio/video payload.
-// cfg = {network, tsid, onid, utc: Date, services: [{id, name, provider, lcn, events: [{title, text, start: Date, minutes}]}]}
+// (now/next titles + descriptions) and TDT (clock). The original firmware decodes them itself. Optional cfg.av: an MPEG-TS clip
+// (MPEG-2 video + MP2 audio, e.g. from ffmpeg); its video/audio packets are copied to every service's PIDs 0x100+2i / 0x101+2i
+// with their own continuity counters (as tools/make_dtv_ts.py does with "av").
+// cfg = {network, tsid, onid, utc: Date, services: [{id, name, provider, lcn, events: [{title, text, start: Date, minutes}]}], av: Uint8Array}
 (function (root) {
   function crc32(bytes) {
     let crc = 0xffffffff;
@@ -23,6 +25,27 @@
     return [...u16(mjd), bcd(d.getUTCHours()), bcd(d.getUTCMinutes()), bcd(d.getUTCSeconds())];
   }
   const durBcd = m => [bcd(Math.floor(m / 60) % 100), bcd(m % 60), 0];
+  // video/audio PIDs of the first programme of an MPEG-TS clip (PAT -> PMT): {v, a} (a may be -1); null when there is no MPEG video
+  function clipPids(d) {
+    const pid = i => ((d[i + 1] & 31) << 8) | d[i + 2];
+    const payload = i => { const afc = (d[i + 3] >> 4) & 3; let at = i + 4; if (afc === 3) at += 1 + d[i + 4]; return at; };
+    let pmt = -1;
+    for (let i = 0; i + 188 <= d.length && pmt < 0; i += 188) if (d[i] === 0x47 && pid(i) === 0 && (d[i + 1] & 0x40)) {
+      const at = payload(i), s = at + 1 + d[at], len = ((d[s + 1] & 15) << 8) | d[s + 2];
+      for (let k = s + 8; k + 4 <= s + 3 + len - 4; k += 4) { const prog = (d[k] << 8) | d[k + 1]; if (prog) { pmt = ((d[k + 2] & 31) << 8) | d[k + 3]; break; } }
+    }
+    if (pmt < 0) return null;
+    for (let i = 0; i + 188 <= d.length; i += 188) if (d[i] === 0x47 && pid(i) === pmt && (d[i + 1] & 0x40)) {
+      const at = payload(i), s = at + 1 + d[at], len = ((d[s + 1] & 15) << 8) | d[s + 2], end = s + 3 + len - 4;
+      let k = s + 12 + (((d[s + 10] & 15) << 8) | d[s + 11]), v = -1, a = -1;
+      for (; k + 5 <= end; k += 5 + (((d[k + 3] & 15) << 8) | d[k + 4])) {
+        const t = d[k], ep = ((d[k + 1] & 31) << 8) | d[k + 2];
+        if ((t === 1 || t === 2) && v < 0) v = ep; else if ((t === 3 || t === 4) && a < 0) a = ep;
+      }
+      return v < 0 ? null : { v, a };
+    }
+    return null;
+  }
   function build(cfg) {
     const tsid = cfg.tsid || 1, onid = cfg.onid || 0x20fa, utc = cfg.utc || new Date(), svcs = cfg.services || [];
     const packets = [], cc = {};
@@ -58,9 +81,19 @@
       });
     }
     const tdtBody = mjdBcd(utc), tdt = [0x70, 0x70 | (tdtBody.length >> 8), tdtBody.length & 255, ...tdtBody];
-    for (let k = 0; k < (cfg.cycles || 8); k++) {
+    let av = [];
+    const ids = cfg.av ? clipPids(cfg.av) : null;
+    if (ids) for (let i = 0; i + 188 <= cfg.av.length; i += 188) { const p = ((cfg.av[i + 1] & 31) << 8) | cfg.av[i + 2];
+      if (cfg.av[i] === 0x47 && (p === ids.v || p === ids.a)) av.push([p === ids.v ? 0x100 : 0x101, cfg.av.subarray(i, i + 188)]); }
+    const cycles = cfg.cycles || (av.length ? 16 : 8), per = av.length ? Math.ceil(av.length / cycles) : 0;
+    for (let k = 0; k < cycles; k++) {
       add(0, pat); for (const [pid, sec] of pmts) add(pid, sec); add(0x11, sdt); add(0x10, nit); for (const e of eits) add(0x12, e); add(0x14, tdt);
-      for (let n = 0; n < (cfg.nulls || 40); n++) { const p = new Uint8Array(188).fill(0xff); p.set([0x47, 0x1f, 0xff, 0x10], 0); packets.push(p); }
+      if (av.length) {
+        for (const [src, p] of av.slice(k * per, (k + 1) * per)) for (let i = 0; i < svcs.length; i++) {
+          const pid = src + 2 * i, c = cc[pid] || 0; cc[pid] = (p[3] & 0x10) ? (c + 1) & 15 : c;
+          const q = new Uint8Array(p); q[1] = (p[1] & 0xe0) | (pid >> 8); q[2] = pid & 255; q[3] = (p[3] & 0xf0) | c; packets.push(q);
+        }
+      } else for (let n = 0; n < (cfg.nulls || 40); n++) { const p = new Uint8Array(188).fill(0xff); p.set([0x47, 0x1f, 0xff, 0x10], 0); packets.push(p); }
     }
     const out = new Uint8Array(packets.length * 188); packets.forEach((p, i) => out.set(p, i * 188)); return out;
   }

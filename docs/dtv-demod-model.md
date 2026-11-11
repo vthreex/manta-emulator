@@ -73,3 +73,15 @@ Three gates were missing (all EXPLORATORY answers for hardware the emulator does
 * Picture info: for decoder type 0x10 the driver (805106B0) reads sequence-buffer +0x28 as the MPEG-2 frame_rate_code (table 8062E788,
   3 = 25000). With it 803E7674 accepts 720x576@25, the video state machine (806B9004) goes to 1 and the firmware unmutes.
 Note: `lui 0x806E; -0x7BBC` = 0x806D8444 (decoder active flag), not 0x806E8444.
+
+## 2026-11-11: real MPEG-2 video (EXPLORATORY MVD output model)
+The picture on a DTV channel is now decoded from the stream. `src/video/mpeg2_video.*` takes every packet that reaches the emulated TS
+input (TspTransport::arrivalObserver, also packets the busy section window drops) whose PID the ORIGINAL firmware has programmed into a
+TSP PID filter slot with destination field bits 23:22 = 01 (observed: 01 for the PMT video PID, 10 for audio, 00 PCR/idle; bit 21 =
+section output), reassembles PES and decodes it with libmpeg2 0.5.1 (third_party/libmpeg2, GPL-2.0-or-later). Pictures are shown at the
+stream's frame rate on the virtual 312 MHz clock (decode on demand); a full input buffer (2048 packets) refuses input until the next
+sequence header, so only whole groups of pictures reach the decoder. Until the first picture the DTV picture is black (no stand-in).
+Not modelled: the decoder RISC, PTS/PCR timing, audio (the "audio decoding" status is still answered by the model).
+Example: configs/dtv/example-mux.json with example-clip.ts (6 s Mandelbrot zoom, MPEG-2 1 Mbit/s); the live page's DTV tab takes a .ts clip.
+Snapshots: the TS file, the packet period and the TSP divider are not part of the configuration fingerprint; a different TS file
+restarts the input at its first packet.

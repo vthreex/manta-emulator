@@ -1,0 +1,5 @@
+libmpeg2 0.5.1 decoder core (GPL-2.0-or-later, see COPYING), from
+https://download.videolan.org/contrib/libmpeg2/libmpeg2-0.5.1.tar.gz
+(sha256 dee22e893cb5fc2b2b6ebd60b88478ab8556cb3b93f9a0d7ce8f3b61851871d4).
+Only the portable C decoder sources and headers are vendored, unchanged; config.h is ours.
+Used by src/video/mpeg2_video.* as the EXPLORATORY model of the MStar MVD output (decoded MPEG-2 pictures).
