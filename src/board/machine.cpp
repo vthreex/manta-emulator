@@ -2717,7 +2717,7 @@ void Msd309Machine::mvdTick() {
   { uint32_t vol = 0; std::memcpy(&vol, dramBacking_.data() + 0x006d8538, 4); const uint64_t vb = (vol >= 0xd0000000u && vol < 0xe8000000u) ? 0x08000000ull + (vol - 0xd0000000u) : uint64_t(vol & 0x1fffffff);   // KSEG2 D0000000 = MIU1 (as the native bus maps it)
     if (vol && vb + 0x30 <= dramBacking_.size()) { const uint32_t w = 720, h = 576; std::memcpy(dramBacking_.data() + vb + 4, &w, 4); std::memcpy(dramBacking_.data() + vb + 8, &h, 4);
       dramBacking_[vb + 0x10] = 3; dramBacking_[vb + 0x11] = 0; dramBacking_[vb + 0x20] = 4; dramBacking_[vb + 0x21] = 3;
-      const uint32_t fr = 25000; std::memcpy(dramBacking_.data() + vb + 0x28, &fr, 4); } }   // +0x28 frame rate x1000 (805106EC; the driver's own default is 25000)
+      const uint32_t fr = 3; std::memcpy(dramBacking_.data() + vb + 0x28, &fr, 4); } }   // +0x28 MPEG-2 frame_rate_code (3 = 25 fps; table 8062E788, read by 805106B0 for decoder type 0x10)
   mvdStatus_ |= 0x1000;
   riu_.irqRaise(3);
   if (std::getenv("MANTA_MVD_LOG") && mvdFrames_ < 20) { uint8_t m0 = 0, m1 = 0; bool k0 = riu_.coproPeekByte(0x1f2033d0, m0), k1 = riu_.coproPeekByte(0x1f2033d1, m1);

@@ -64,3 +64,12 @@ and the picture stays muted.
   806D8560 now holds 720x576 -> the TV reads the picture size. Status still 1: the clearing condition is not found yet.
 * Ruled out: decoder IRQ, counters, signal-quality readings, SDT running status, scan-flag clear (803FF83C).
 * Next: find what clears status 1 after the size is known (candidates 804D4474, 804D9368, 80451478; watch with MANTA_WATCH_RAM).
+
+## 2026-11-11: DTV picture shown
+Three gates were missing (all EXPLORATORY answers for hardware the emulator does not run):
+* Free-to-air services: 80475B74 needs audio GetInfo(0) = audio reg 0x112E58 (1F225CB0) bits 1:0 != 0 ("audio decoding"); otherwise
+  screen status 1 = NO SIGNAL. Answered while a multiplex is locked and the video decoder plays. (SDT running_status 4 is correct.)
+* Snapshots did not keep the PLL tuner frame, so every checkpoint test ran untuned: new optional sections `pll-tuner` and `mvd`.
+* Picture info: for decoder type 0x10 the driver (805106B0) reads sequence-buffer +0x28 as the MPEG-2 frame_rate_code (table 8062E788,
+  3 = 25000). With it 803E7674 accepts 720x576@25, the video state machine (806B9004) goes to 1 and the firmware unmutes.
+Note: `lui 0x806E; -0x7BBC` = 0x806D8444 (decoder active flag), not 0x806E8444.
