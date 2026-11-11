@@ -512,6 +512,7 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     if(!options_.exploratoryDtvDemod)throw SnapshotError("snapshot has video decoder state but --exploratory-dtv-demod is absent");
     Ar a(s.bytes.data(),s.bytes.size());a(mvdPlaying_,mvdNextFrame_,mvdStatus_,mvdFrames_);if(a.remaining())throw SnapshotError("video decoder state has trailing data");
   }
+  riu_.setOrDivider(options_.orDivider);   // the option (if given now) overrides the saved scheduling ratio
   for(auto& s:sections)if(s.name=="pll-tuner"){
     auto& t=riu_.gpioBus().tuner;if(!t.on)throw SnapshotError("snapshot has PLL tuner state but --exploratory-pll-tuner is absent");
     Ar a(s.bytes.data(),s.bytes.size());a(t.lastCount);for(auto& b:t.last)a(b);if(a.remaining())throw SnapshotError("PLL tuner state has trailing data");
@@ -576,6 +577,8 @@ void Msd309Machine::restoreSnapshot(const std::filesystem::path& path) {
     // EXPLORATORY DTV input added to an older state: the transport input starts at its first packet (no saved position to restore).
     if (t == "--candidate-tsp-packets" && options_.exploratoryDtvDemod) continue;
     if ((t == "--exploratory-dtv-stations" || t == "--exploratory-tsp-packet-cycles") && options_.exploratoryDtvDemod) { ++i; continue; }
+    // TSP-CPU dispatch divider: a provisional scheduling ratio (not measured hardware); re-applied after the restore below.
+    if (t == "--or1k-dispatch-divider") { ++i; continue; }
     if (t == "--exploratory-atv-stations" || t == "--exploratory-dtv-muxes") { ++i; continue; }   // generated input-signal timing: read at run time, no snapshot state
     if (t == "--diagnostic-riu-write-log" || t == "--diagnostic-riu-peek" || t == "--gop-history-interval-log2") { ++i; continue; }
     if (t == "--exploratory-mvop-plane") continue;

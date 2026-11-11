@@ -1539,6 +1539,19 @@ void Msd309Machine::interruptHook(uc_engine *, uint32_t n, void *p) {
               " status=" + hex(m.cpu_.reg(UC_MIPS_REG_CP0_STATUS)));
   m.stop("CPU exception " + std::to_string(n), last);
 }
+// Code-identity guard for hot MMIO paths: the result of sha256(DRAM[phys, phys+size)) == expected, cached with the exact bytes it was
+// computed from; a later call re-hashes only when those bytes changed (memcmp), so the answer is identical to hashing every time.
+static bool cachedCodeMatches(const std::vector<uint8_t>& dram, uint32_t phys, size_t size, const char* expected) {
+  struct Entry { std::vector<uint8_t> bytes; bool ok = false; };
+  static std::map<std::pair<uint32_t, size_t>, Entry> cache;
+  if (uint64_t(phys) + size > dram.size()) return false;
+  const uint8_t* now = dram.data() + phys;
+  auto& e = cache[{phys, size}];
+  if (e.bytes.size() == size && std::memcmp(e.bytes.data(), now, size) == 0) return e.ok;
+  e.bytes.assign(now, now + size);
+  e.ok = sha256(std::span<const uint8_t>(e.bytes.data(), e.bytes.size())) == expected;
+  return e.ok;
+}
 uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p) {
   auto &m = *static_cast<Msd309Machine *>(p);
   try {
@@ -1911,10 +1924,9 @@ uint64_t Msd309Machine::mmioRead(uc_engine *, uint64_t off, unsigned n, void *p)
       // TSP HAL, not hardware semantics. The entire loaded code region must
       // still match the immutable main stream. Every unknown branch/address/
       // foreign-device bit use is rejected by PreservedBits independently.
-      std::vector<uint8_t> original(0x28a0);uint32_t instruction=0;
-      m.cpu_.read(0x005d671c,original.data(),original.size());
+      uint32_t instruction=0;
       m.cpu_.read(pc&0x1fffffff,&instruction,4);
-      if(instruction>>26==37 && sha256(original)=="2dd76c78083be436df9036c3acbfba69ac3eaaca53c2292a85dd8c4e04d50ca3") {
+      if(instruction>>26==37 && cachedCodeMatches(m.dramBacking_,0x005d671c,0x28a0,"2dd76c78083be436df9036c3acbfba69ac3eaaca53c2292a85dd8c4e04d50ca3")) {
         m.preservedBits_.seed((instruction>>16)&31,n,m.riu_.knownBits(a,n),[&](unsigned b){return m.riu_.controlByteKey(a+b);});
         m.riu_.prepareOpaqueRead(a);
         m.event("deferred_tsp_hal_observation",a,n,0,"INVALID observation in SHA-verified original HAL; preserved bits may only restore to same origin; no unknown status or hardware read side effect validated");

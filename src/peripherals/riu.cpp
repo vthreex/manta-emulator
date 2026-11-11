@@ -495,7 +495,7 @@ OrWord Riu::tspCpuRead(uint32_t a,unsigned n,bool fetch){
     // Bytes this window already wrote are produced inside the loop; everything else is an external input.
     bool internal=false;
     if(!orProbe_.written.empty()){
-      std::vector<OrTgt> t;orReadTargets(a,n,kind,t);
+      static thread_local std::vector<OrTgt> t;t.clear();orReadTargets(a,n,kind,t);   // reused scratch (no allocation per probed read)
       size_t hit=0;for(const auto& x:t)if(orHasTarget(orProbe_.written,x))++hit;
       if(hit&&hit==t.size())internal=true;
       else if(hit)orProbe_.dirty=true;   // partially self-produced: not provable
@@ -621,7 +621,7 @@ bool Riu::orRestored(const std::vector<OrTgt>& written) const {
 }
 void Riu::tspCpuWrite(uint32_t a,unsigned n,OrWord v){
   if(orProbe_.on&&!orProbe_.dirty){
-    std::vector<OrTgt> t;
+    static thread_local std::vector<OrTgt> t;t.clear();   // reused scratch
     if(!orWriteTargets(a,n,v,t))orProbe_.dirty=true;
     else for(auto& x:t){
       if(orHasTarget(orProbe_.written,x))continue;

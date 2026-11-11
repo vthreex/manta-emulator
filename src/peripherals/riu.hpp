@@ -463,6 +463,7 @@ public:
   unsigned irDmaCapacity()const{return irDma_.capacity();}
   void configureExploratoryGopResetWindows(){exploratoryGopResetWindows_=true;}
   uint64_t gopResetPulses()const{return gopResetPulses_;}
+  void setOrDivider(uint64_t divider){if(divider)orDivider_=divider;}
   void configureOrTraceBudget(bool first,uint64_t budget,uint64_t divider){orFirstVisits_=first;orBudget_=budget;orDivider_=divider;}
   uint64_t orOriginalWords()const{return orOriginalWords_;}
   uint64_t orModifiedWords()const{return orModifiedWords_;}
