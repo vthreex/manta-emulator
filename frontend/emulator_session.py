@@ -79,7 +79,7 @@ class Settings:
     miu1_mb: int = 128                  # second DRAM bank; 128 = the stock board
     miu0_mb: int = 128                  # first DRAM bank mapped into the guest (EXPERIMENT: 2..128); 128 = the stock board
     pm51_divider: int = 32
-    or1k_divider: int = 4
+    or1k_divider: int = 32   # TS-processor core at 1/32 of the MIPS dispatch rate (provisional ratio); DTV is much faster than at 4
     scale_mode: str = 'fit'
     on_top: bool = False
     show_plane: bool = True
@@ -180,7 +180,7 @@ def build_command(st: Settings, shm_name: str):
             args[args.index(flag) + 1] = str(value)
         else:
             args.extend([flag, str(value)])
-    stock = (st.miu1_mb == 128 and st.miu0_mb == 128 and st.pm51_divider == 32 and st.or1k_divider == 4)
+    stock = (st.miu1_mb == 128 and st.miu0_mb == 128 and st.pm51_divider == 32)   # the OR1K divider may be changed on a snapshot load
     cold = st.start_mode != 'snapshot' or not stock
     if cold:
         override('--exploratory-cpi', st.cpi)
@@ -226,7 +226,7 @@ BOARDS = {
         'label': 'Manta LCD4214 (stock firmware)',
         'keymap': 'ir-keymap.tsv',
         'preset': {'firmware': '', 'start_mode': 'snapshot', 'snapshot': '', 'engine': 'native', 'cpi': 16, 'miu1_mb': 128, 'miu0_mb': 128, 'pm51_divider': 32,
-                   'or1k_divider': 4, 'budget_billions': 8.0, 'bringup': True, 'fast_jit': False},
+                   'or1k_divider': 32, 'budget_billions': 8.0, 'bringup': True, 'fast_jit': False},
         'remote_hint': 'IR remote (original firmware key path). Dotted outline = no verified IR code yet.',
     },
     'blaupunkt': {
@@ -234,7 +234,7 @@ BOARDS = {
         'keymap': 'sar-keymap.tsv',
         'image_candidates': ['work/firmware-okbin.bin', '<downloads>/OKbin.bin'],
         'preset': {'start_mode': 'snapshot', 'snapshot': 'work/checkpoints/okbin-app-up.snap', 'engine': 'interpreter', 'cpi': 16, 'miu1_mb': 128, 'miu0_mb': 128,
-                   'pm51_divider': 32, 'or1k_divider': 4, 'budget_billions': 0.0, 'bringup': True, 'fast_jit': True},
+                   'pm51_divider': 32, 'or1k_divider': 32, 'budget_billions': 0.0, 'bringup': True, 'fast_jit': True},
         'remote_hint': 'Local keypad (ADC) keys: arrows, VOL+/-, CH+/-, MENU. Each press is held ~20 M dispatches, so expect a short delay. Dotted outline = not mapped.',
     },
 }
