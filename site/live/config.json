@@ -219,7 +219,7 @@
   "state.snap": 27430694,
   "files/ir-keymap.tsv": 7884,
   "files/sar-keymap.tsv": 1313,
-  "manta.wasm": 39204440,
+  "manta.wasm": 39204580,
   "files/dtv.ts": 1856312
  },
  "versions": {
@@ -229,7 +229,7 @@
   "state.snap": "21c632a059a7",
   "files/ir-keymap.tsv": "7a5aba2a8dbb",
   "files/sar-keymap.tsv": "2306b2d48ac3",
-  "manta.wasm": "1c95fa5f1380",
+  "manta.wasm": "6b28f111ba3e",
   "manta.js": "8416abc91b86",
   "worker.js": "51e04fc9aae3",
   "files/dtv.ts": "f982803c148a"

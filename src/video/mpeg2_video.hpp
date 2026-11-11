@@ -24,6 +24,7 @@ public:
   void advance(uint64_t cycles);
   uint64_t droppedPackets() const { return dropped_; }
   size_t queued() const { return queue_.size(); }
+  unsigned framePeriod() const { return framePeriod_; }   // 27 MHz units per picture, from the sequence header
   bool hasPicture() const { return serial_ != 0; }
   uint64_t serial() const { return serial_; }      // increments with every decoded displayed picture
   uint64_t pictures() const { return serial_; }
