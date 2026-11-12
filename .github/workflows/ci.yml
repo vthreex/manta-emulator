@@ -1,0 +1,50 @@
+name: Build and test
+# Builds the patched Unicorn engine and the emulator with MinGW (tools/bootstrap.ps1) and runs the native tests.
+# Needs no firmware image: core_tests uses only synthetic inputs.
+on:
+  push:
+    branches: [master]
+    paths-ignore: ['site/**', 'docs/**', 'evidence/**', '**/*.md']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  windows-mingw:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: msys2/setup-msys2@v2
+        id: msys2
+        with:
+          msystem: UCRT64
+          update: false
+          install: mingw-w64-ucrt-x86_64-gcc
+      - name: Put MinGW gcc/g++ on PATH
+        shell: pwsh
+        run: |
+          "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+      - name: Cache the built engine
+        uses: actions/cache@v4
+        with:
+          path: build/.deps/engine
+          key: unicorn-${{ hashFiles('third_party/source-manifest.json', 'third_party/unicorn-2.1.4-manta-source.zip', 'tools/build_unicorn.ps1') }}-gcc
+      - name: Build and run the native tests
+        shell: pwsh
+        run: |
+          g++ --version
+          ./tools/bootstrap.ps1
+      - name: Upload the test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctest-log
+          path: build/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore

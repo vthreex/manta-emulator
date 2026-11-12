@@ -7,6 +7,7 @@ if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant
 $sourceParent = Join-Path $DependencyRoot 'engine-source'
 $engineBuild = Join-Path $DependencyRoot 'engine-build'
 $enginePrefix = Join-Path $DependencyRoot 'engine'
+if (Test-Path -LiteralPath (Join-Path $enginePrefix 'lib/libunicorn.dll.a')) { Write-Output $enginePrefix; return }   # already built (e.g. restored from the CI cache); delete the folder to rebuild
 # This archive is checksum verified and provided alongside the modified binary.
 python -m zipfile -e $archive $sourceParent
 if ($LASTEXITCODE -ne 0) { throw 'Engine extraction failed' }

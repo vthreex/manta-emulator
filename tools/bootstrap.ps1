@@ -11,7 +11,7 @@ $ninjaPath = Join-Path $dependencyRoot 'bin/ninja.exe'
 & (Join-Path $PSScriptRoot 'build_unicorn.ps1') -DependencyRoot $dependencyRoot
 $unicornRoot = Join-Path $dependencyRoot 'engine'
 $importLibrary = Join-Path $unicornRoot 'lib/libunicorn.dll.a'
-& $cmakePath -S $projectRoot -B $buildRoot -G Ninja "-DCMAKE_MAKE_PROGRAM=$ninjaPath" "-DUNICORN_ROOT=$unicornRoot" "-DUNICORN_LIBRARY=$importLibrary" "-DUNICORN_INCLUDE=$unicornRoot/include" -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release
+& $cmakePath -S $projectRoot -B $buildRoot -G Ninja "-DCMAKE_MAKE_PROGRAM=$ninjaPath" "-DUNICORN_ROOT=$unicornRoot" "-DUNICORN_LIBRARY=$importLibrary" "-DUNICORN_INCLUDE=$unicornRoot/include" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release
 if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed' }
 & $cmakePath --build $buildRoot
 if ($LASTEXITCODE -ne 0) { throw 'Build failed' }

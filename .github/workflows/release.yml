@@ -1,0 +1,61 @@
+name: Release
+# Push a tag like v1.2.0 (or run it by hand with a tag name) to build the Windows emulator, run the tests and publish a release.
+# The package contains no firmware images: bring your own dump (see firmware/README.md).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to create, e.g. v1.2.0'
+        required: true
+permissions:
+  contents: write
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: msys2/setup-msys2@v2
+        id: msys2
+        with:
+          msystem: UCRT64
+          update: false
+          install: mingw-w64-ucrt-x86_64-gcc
+      - name: Put MinGW gcc/g++ on PATH
+        shell: pwsh
+        run: |
+          "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+      - name: Build and run the native tests
+        shell: pwsh
+        run: ./tools/bootstrap.ps1
+      - name: Package
+        shell: pwsh
+        run: |
+          $pkg = "manta-emulator-$env:TAG-windows-x64"
+          New-Item -ItemType Directory -Force "$pkg/bin", "$pkg/licenses", "$pkg/source" | Out-Null
+          foreach ($exe in @('manta.exe', 'sunplus_run.exe', 'core_tests.exe')) { if (Test-Path "build/$exe") { Copy-Item "build/$exe" "$pkg/bin/" } }
+          Copy-Item build/.deps/engine/lib/*.dll "$pkg/bin/"
+          Copy-Item -Recurse frontend, configs "$pkg/"
+          Copy-Item README.md, LICENSE "$pkg/"
+          Copy-Item third_party/UNICORN-COPYING, third_party/UNICORN-COPYING.LGPL2, third_party/WINPTHREADS-COPYING "$pkg/licenses/"
+          Copy-Item -Recurse third_party/gcc-runtime-licenses "$pkg/licenses/"
+          Copy-Item third_party/libmpeg2/COPYING "$pkg/licenses/LIBMPEG2-COPYING"
+          # GPL: the matching engine source (with the project's patches) ships with the binary
+          Copy-Item third_party/unicorn-2.1.4-manta-source.zip, third_party/source-manifest.json "$pkg/source/"
+          Compress-Archive -Path $pkg -DestinationPath "$pkg.zip"
+          "PKG=$pkg.zip" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+      - name: Publish the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view $env:TAG 2>$null
+          if ($LASTEXITCODE -eq 0) { gh release upload $env:TAG $env:PKG --clobber }
+          else { gh release create $env:TAG $env:PKG --title "Manta emulator $env:TAG" --generate-notes --target $env:GITHUB_SHA }
