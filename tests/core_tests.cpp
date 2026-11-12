@@ -33,19 +33,22 @@
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
+#include <source_location>
+#include <cstdio>
 static int checks = 0;
 void require(bool v, const char *s) {
   ++checks;
   if (!v)
     throw std::runtime_error(s);
 }
-template <class F> void rejects(F f) {
+template <class F> void rejects(F f, std::source_location at = std::source_location::current()) {
   bool did = false;
   try {
     f();
   } catch (const std::exception &) {
     did = true;
   }
+  if (!did) std::fprintf(stderr, "rejects() at %s:%u did not reject\n", at.file_name(), unsigned(at.line()));
   require(did, "operation must reject");
 }
 void cpuTests() {
@@ -1357,7 +1360,8 @@ void tspPacketInputTests(){
   std::vector<uint8_t> again;manta::snap::Ar saveAgain(again);restored.serialize(saveAgain);
   require(state==again && load.remaining()==0,"TSP snapshot preserves pending actual bytes, cursor, acknowledgements and input index");
   manta::TspTransport changed;changed.inputIdentity="changed";
-  rejects([&]{manta::snap::Ar different(state.data(),state.size());changed.serialize(different);});
+  {manta::snap::Ar different(state.data(),state.size());changed.serialize(different);   // a different aerial stream loads, restarting at its first packet
+   require(!changed.hasStation() && different.remaining()==0 && !changed.pendingReplica(),"a changed TS input restarts at its first packet instead of reusing the saved position");}
   write(0x210218,0x10);write(0x210218,0);
   require(r.tspTransport.delivered()==1 && !(read(0x210214)&0x100),"original release command retires the packet without fabricating a second one");
   r.write(0x1f202db4,2,0x1234,0,0xffff,++tick);r.write(0x1f202db8,2,0x8001,0,0xffff,++tick);
