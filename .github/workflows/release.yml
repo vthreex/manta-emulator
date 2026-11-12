@@ -34,7 +34,7 @@ jobs:
           "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
       - name: Build and run the native tests
         shell: pwsh
-        run: ./tools/bootstrap.ps1
+        run: ./tools/bootstrap.ps1 -Targets manta,sunplus_run,core_tests
       - name: Package
         shell: pwsh
         run: |

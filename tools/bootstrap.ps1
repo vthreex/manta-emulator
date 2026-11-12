@@ -1,4 +1,4 @@
-param([string]$BuildDirectory = 'build')
+param([string]$BuildDirectory = 'build', [string[]]$Targets = @())   # -Targets manta,core_tests builds only those (CI); default: everything
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $buildRoot = Join-Path $projectRoot $BuildDirectory
@@ -13,7 +13,9 @@ $unicornRoot = Join-Path $dependencyRoot 'engine'
 $importLibrary = Join-Path $unicornRoot 'lib/libunicorn.dll.a'
 & $cmakePath -S $projectRoot -B $buildRoot -G Ninja "-DCMAKE_MAKE_PROGRAM=$ninjaPath" "-DUNICORN_ROOT=$unicornRoot" "-DUNICORN_LIBRARY=$importLibrary" "-DUNICORN_INCLUDE=$unicornRoot/include" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release
 if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed' }
-& $cmakePath --build $buildRoot
+$targetArgs = @(); if ($Targets.Count) { $targetArgs = @('--target') + $Targets }
+& $cmakePath --build $buildRoot @targetArgs
+if ($LASTEXITCODE -ne 0) { Write-Warning 'Build step failed; retrying once (a freshly linked .exe can be locked by a virus scanner)'; & $cmakePath --build $buildRoot @targetArgs }
 if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
 & (Join-Path $dependencyRoot 'cmake/data/bin/ctest.exe') --test-dir $buildRoot --output-on-failure
 if ($LASTEXITCODE -ne 0) { throw 'Tests failed' }

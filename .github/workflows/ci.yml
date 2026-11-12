@@ -40,7 +40,7 @@ jobs:
         shell: pwsh
         run: |
           g++ --version
-          ./tools/bootstrap.ps1
+          ./tools/bootstrap.ps1 -Targets manta,sunplus_run,core_tests
       - name: Upload the test log on failure
         if: failure()
         uses: actions/upload-artifact@v4
