@@ -31,6 +31,7 @@ Copy-Item (Join-Path $engineBuild 'libunicorn.dll') (Join-Path $enginePrefix 'li
 Copy-Item (Join-Path $engineBuild 'libunicorn.dll.a') (Join-Path $enginePrefix 'lib/libunicorn.dll.a') -Force
 foreach ($dllName in @('libwinpthread-1.dll', 'libgcc_s_seh-1.dll')) {
  $dllPath = (& $compilerCxx "-print-file-name=$dllName").Trim()
+ if (!(Test-Path -LiteralPath $dllPath)) { $dllPath = Join-Path (Split-Path -Parent $compilerCxx) $dllName }   # MSYS2 toolchains keep runtime DLLs next to g++
  if (!(Test-Path -LiteralPath $dllPath)) { throw "Missing compiler runtime: $dllName" }
  Copy-Item -LiteralPath $dllPath -Destination (Join-Path $enginePrefix 'lib') -Force
 }
